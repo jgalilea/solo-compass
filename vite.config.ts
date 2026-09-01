@@ -17,7 +17,7 @@ export default defineConfig({
       includeAssets: ["favicon.svg"],
       manifest: {
         id: base,
-        name: "Solo Compass — Oráculo Recluse",
+        name: "Solo Compass",
         short_name: "Solo Compass",
         description:
           "Oráculo Recluse y tablas de significado para guiar partidas de rol en solitario.",

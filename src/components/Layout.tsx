@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { IconBook, IconCompass, IconDice, IconScroll } from "./icons/Icons";
 
 const TABS = [
@@ -8,12 +8,15 @@ const TABS = [
 ];
 
 export function Layout() {
+  const location = useLocation();
+  const isOracleTab = location.pathname === "/";
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-ink-border/70 px-4 py-3">
-        <div className="mx-auto flex max-w-xl items-center gap-2 text-parchment">
-          <IconCompass size={20} className="text-gold" />
-          <span className="font-display text-base tracking-wide">
+      <header className="border-b border-ink-border/70 px-4 py-1.5">
+        <div className="mx-auto flex max-w-xl items-center gap-1.5 text-parchment">
+          <IconCompass size={15} className="text-gold" />
+          <span className="font-display text-xs tracking-wide">
             Solo Compass
           </span>
         </div>
@@ -23,18 +26,20 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="px-4 pb-2 text-center text-[11px] leading-relaxed text-parchment-dim/50">
-        Oráculo{" "}
-        <a
-          href="https://gravenutterance.itch.io/recluse"
-          target="_blank"
-          rel="noreferrer"
-          className="underline decoration-dotted hover:text-parchment-dim"
-        >
-          Recluse
-        </a>{" "}
-        de Graven Utterance (Oliver N), licencia CC BY 4.0.
-      </footer>
+      {!isOracleTab && (
+        <footer className="px-4 pb-2 text-center text-[11px] leading-relaxed text-parchment-dim/50">
+          Oráculo{" "}
+          <a
+            href="https://gravenutterance.itch.io/recluse"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted hover:text-parchment-dim"
+          >
+            Recluse
+          </a>{" "}
+          de Graven Utterance (Oliver N), licencia CC BY 4.0.
+        </footer>
+      )}
 
       <nav className="sticky bottom-0 z-40 border-t border-ink-border bg-ink-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-xl">
@@ -45,12 +50,12 @@ export function Layout() {
               end={end}
               className={({ isActive }) =>
                 [
-                  "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs transition",
+                  "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] transition",
                   isActive ? "text-gold" : "text-parchment-dim hover:text-parchment",
                 ].join(" ")
               }
             >
-              <Icon size={20} />
+              <Icon size={18} />
               {label}
             </NavLink>
           ))}

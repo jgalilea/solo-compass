@@ -19,20 +19,27 @@ export function EmptyState({
   title,
   description,
   action,
+  compact = false,
 }: {
   icon?: ReactNode;
   title: string;
   description?: string;
   action?: ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-ink-border bg-ink-900/40 px-6 py-16 text-center">
+    <div
+      className={[
+        "flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-ink-border bg-ink-900/40 px-6 text-center",
+        compact ? "py-6" : "py-16",
+      ].join(" ")}
+    >
       {icon && (
         <div className="flex items-center justify-center text-parchment-dim opacity-70">
           {icon}
         </div>
       )}
-      <p className="font-display text-lg text-parchment">{title}</p>
+      <p className="font-display text-base text-parchment">{title}</p>
       {description && (
         <p className="max-w-sm text-sm text-parchment-dim">{description}</p>
       )}
