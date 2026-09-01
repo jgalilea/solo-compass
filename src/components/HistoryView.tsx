@@ -4,14 +4,28 @@ import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { IconScroll, IconTrash } from "./icons/Icons";
+import type { HistoryEntry } from "../lib/history";
 
 type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
+
+function describeEntry(entry: HistoryEntry): string {
+  if (entry.kind === "oraculo") {
+    return entry.question ? `“${entry.question}”` : "Esta tirada del oráculo.";
+  }
+  return `${entry.tableName}: ${entry.resultText}`;
+}
 
 export function HistoryView() {
   const { status, entries, error, removeEntry, toggleFavorite, clear, retry } =
     useHistoryContext();
   const [filter, setFilter] = useState<Filter>("todo");
   const [confirmingClear, setConfirmingClear] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const entryToDelete = useMemo(
+    () => entries.find((e) => e.id === deleteId) ?? null,
+    [entries, deleteId],
+  );
 
   const filtered = useMemo(() => {
     if (filter === "todo") return entries;
@@ -27,7 +41,8 @@ export function HistoryView() {
             Historial
           </h1>
           <p className="mt-1 text-sm text-parchment-dim">
-            Tiradas guardadas en este dispositivo.
+            Tiradas guardadas en este dispositivo. Desliza una tirada a la
+            derecha para destacarla o a la izquierda para eliminarla.
           </p>
         </div>
         {entries.length > 0 && (
@@ -108,7 +123,7 @@ export function HistoryView() {
             <li key={entry.id}>
               <HistoryEntryCard
                 entry={entry}
-                onDelete={removeEntry}
+                onRequestDelete={setDeleteId}
                 onToggleFavorite={toggleFavorite}
               />
             </li>
@@ -126,6 +141,19 @@ export function HistoryView() {
             setConfirmingClear(false);
           }}
           onCancel={() => setConfirmingClear(false)}
+        />
+      )}
+
+      {entryToDelete && (
+        <ConfirmDialog
+          title="¿Eliminar esta tirada?"
+          description={`${describeEntry(entryToDelete)} Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar"
+          onConfirm={() => {
+            removeEntry(entryToDelete.id);
+            setDeleteId(null);
+          }}
+          onCancel={() => setDeleteId(null)}
         />
       )}
     </div>
