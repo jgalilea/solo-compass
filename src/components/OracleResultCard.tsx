@@ -1,10 +1,19 @@
 import { Die } from "./Die";
 import type { OracleRoll } from "../lib/oracle";
 
-const ANSWER_STYLES: Record<OracleRoll["answer"], { label: string; className: string }> = {
-  si: { label: "Sí", className: "text-yes" },
-  no: { label: "No", className: "text-no" },
-  contradiccion: { label: "Contradicción", className: "text-contradiction" },
+const ANSWER_STYLES: Record<
+  OracleRoll["answer"],
+  { label: string; className: string; sizeClass: string }
+> = {
+  si: { label: "Sí", className: "text-yes", sizeClass: "text-5xl" },
+  no: { label: "No", className: "text-no", sizeClass: "text-5xl" },
+  contradiccion: {
+    label: "Contradicción",
+    className: "text-contradiction",
+    // Palabra larga: en mayúsculas (Cinzel/Playfair/mono) a text-5xl
+    // se sale del ancho de la tarjeta en móvil, así que va más chica.
+    sizeClass: "text-3xl sm:text-4xl",
+  },
 };
 
 export function OracleResultCard({
@@ -32,7 +41,9 @@ export function OracleResultCard({
       </div>
 
       <div className="mt-5 text-center">
-        <div className={`font-display text-5xl font-semibold ${answer.className}`}>
+        <div
+          className={`break-words font-display font-semibold ${answer.sizeClass} ${answer.className}`}
+        >
           {answer.label}
         </div>
         {roll.qualifier && (

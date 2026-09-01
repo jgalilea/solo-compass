@@ -150,7 +150,7 @@ export function HistoryEntryCard({
             {entry.question && (
               <p className="text-sm italic text-parchment/90">“{entry.question}”</p>
             )}
-            <div className="mt-2 flex items-center gap-3">
+            <div className="mt-2 flex flex-wrap items-center gap-3">
               <div className="flex gap-1">
                 {entry.white.rolls.map((v, i) => (
                   <Die key={`w${i}`} value={v} color="blanco" size="sm" faded={v !== entry.white.kept} />
@@ -159,7 +159,9 @@ export function HistoryEntryCard({
                   <Die key={`b${i}`} value={v} color="negro" size="sm" faded={v !== entry.black.kept} />
                 ))}
               </div>
-              <span className={`font-display text-lg font-semibold ${ANSWER_COLOR[entry.answer]}`}>
+              <span
+                className={`break-words font-display text-lg font-semibold ${ANSWER_COLOR[entry.answer]}`}
+              >
                 {formatAnswer(entry)}
               </span>
             </div>
