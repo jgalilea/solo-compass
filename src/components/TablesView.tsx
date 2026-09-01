@@ -28,6 +28,7 @@ function buildTableRollEntry(table: MeaningTable): TableRollEntry {
     rolls,
     total,
     resultText: entry?.text ?? "Sin entrada definida para este valor.",
+    favorite: false,
   };
 }
 

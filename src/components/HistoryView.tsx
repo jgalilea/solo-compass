@@ -5,15 +5,17 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { IconScroll, IconTrash } from "./icons/Icons";
 
-type Filter = "todo" | "oraculo" | "tabla";
+type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
 
 export function HistoryView() {
-  const { status, entries, error, removeEntry, clear, retry } = useHistoryContext();
+  const { status, entries, error, removeEntry, toggleFavorite, clear, retry } =
+    useHistoryContext();
   const [filter, setFilter] = useState<Filter>("todo");
   const [confirmingClear, setConfirmingClear] = useState(false);
 
   const filtered = useMemo(() => {
     if (filter === "todo") return entries;
+    if (filter === "favoritas") return entries.filter((e) => e.favorite);
     return entries.filter((e) => e.kind === filter);
   }, [entries, filter]);
 
@@ -41,12 +43,13 @@ export function HistoryView() {
       </header>
 
       {status === "ready" && entries.length > 0 && (
-        <div className="flex gap-1 rounded-full border border-ink-border bg-ink-900/60 p-1 text-sm">
+        <div className="flex gap-1 rounded-full border border-ink-border bg-ink-900/60 p-1 text-xs">
           {(
             [
               ["todo", "Todo"],
               ["oraculo", "Oráculo"],
               ["tabla", "Tablas"],
+              ["favoritas", "Favoritas"],
             ] as [Filter, string][]
           ).map(([key, label]) => (
             <button
@@ -54,7 +57,7 @@ export function HistoryView() {
               type="button"
               onClick={() => setFilter(key)}
               className={[
-                "flex-1 rounded-full py-1.5 transition",
+                "flex-1 rounded-full px-1 py-1.5 transition",
                 filter === key
                   ? "bg-gold text-ink-950 font-medium"
                   : "text-parchment-dim hover:text-parchment",
@@ -85,14 +88,29 @@ export function HistoryView() {
       )}
 
       {status === "ready" && entries.length > 0 && filtered.length === 0 && (
-        <EmptyState title="Sin resultados para este filtro" />
+        <EmptyState
+          title={
+            filter === "favoritas"
+              ? "Aún no has destacado ninguna tirada"
+              : "Sin resultados para este filtro"
+          }
+          description={
+            filter === "favoritas"
+              ? "Toca la estrella de una tirada para marcarla como favorita."
+              : undefined
+          }
+        />
       )}
 
       {status === "ready" && filtered.length > 0 && (
         <ul className="flex flex-col gap-3">
           {filtered.map((entry) => (
             <li key={entry.id}>
-              <HistoryEntryCard entry={entry} onDelete={removeEntry} />
+              <HistoryEntryCard
+                entry={entry}
+                onDelete={removeEntry}
+                onToggleFavorite={toggleFavorite}
+              />
             </li>
           ))}
         </ul>

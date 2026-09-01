@@ -42,6 +42,7 @@ export interface OracleRoll {
   black: DiceGroup;
   answer: Answer;
   qualifier: Qualifier;
+  favorite: boolean;
 }
 
 export const LIKELIHOOD_DICE: Record<
@@ -110,6 +111,7 @@ export function rollOracle(
     black: { color: "negro", rolls: blackRolls, kept: blackKept },
     answer,
     qualifier,
+    favorite: false,
   };
 }
 

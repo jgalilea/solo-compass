@@ -1,7 +1,7 @@
 import { Die } from "./Die";
 import { formatAnswer } from "../lib/oracle";
 import type { HistoryEntry } from "../lib/history";
-import { IconClose } from "./icons/Icons";
+import { IconStar, IconTrash } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -21,24 +21,52 @@ function formatTime(ts: number): string {
 export function HistoryEntryCard({
   entry,
   onDelete,
+  onToggleFavorite,
 }: {
   entry: HistoryEntry;
   onDelete: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
 }) {
   return (
-    <div className="group relative rounded-2xl border border-ink-border bg-ink-800/50 p-4">
-      <button
-        type="button"
-        onClick={() => onDelete(entry.id)}
-        aria-label="Eliminar entrada"
-        className="absolute right-3 top-3 text-parchment-dim/50 opacity-0 transition hover:text-no group-hover:opacity-100 focus:opacity-100"
-      >
-        <IconClose size={14} />
-      </button>
-
-      <div className="flex items-center justify-between gap-3 pr-6 text-xs uppercase tracking-wide text-parchment-dim/70">
+    <div
+      className={[
+        "rounded-2xl border p-4 transition-colors",
+        entry.favorite
+          ? "border-gold/40 bg-gold/[0.06]"
+          : "border-ink-border bg-ink-800/50",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim/70">
         <span>{entry.kind === "oraculo" ? "Oráculo" : entry.tableName}</span>
-        <span>{formatTime(entry.timestamp)}</span>
+        <div className="flex items-center gap-2.5">
+          <span className="normal-case tracking-normal">
+            {formatTime(entry.timestamp)}
+          </span>
+          <button
+            type="button"
+            onClick={() => onToggleFavorite(entry.id)}
+            aria-pressed={entry.favorite}
+            aria-label={
+              entry.favorite ? "Quitar de destacadas" : "Marcar como destacada"
+            }
+            className={[
+              "-m-1 p-1 transition",
+              entry.favorite
+                ? "text-gold"
+                : "text-parchment-dim/50 hover:text-gold",
+            ].join(" ")}
+          >
+            <IconStar size={15} filled={entry.favorite} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(entry.id)}
+            aria-label="Eliminar entrada"
+            className="-m-1 p-1 text-parchment-dim/50 transition hover:text-no"
+          >
+            <IconTrash size={15} />
+          </button>
+        </div>
       </div>
 
       {entry.kind === "oraculo" ? (

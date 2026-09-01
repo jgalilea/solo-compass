@@ -86,6 +86,17 @@ export function IconAlertOctagon(props: IconProps) {
   );
 }
 
+export function IconStar({
+  filled = false,
+  ...props
+}: IconProps & { filled?: boolean }) {
+  return (
+    <svg {...base(props)} fill={filled ? "currentColor" : "none"}>
+      <path d="M12 3.6l2.47 5.15 5.63.77-4.08 4.02.98 5.66L12 16.4l-5 2.8.98-5.66-4.08-4.02 5.63-.77z" />
+    </svg>
+  );
+}
+
 export function IconTrash(props: IconProps) {
   return (
     <svg {...base(props)}>

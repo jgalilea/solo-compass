@@ -15,6 +15,7 @@ interface UseHistoryResult {
   error: string | null;
   addEntry: (entry: HistoryEntry) => void;
   removeEntry: (id: string) => void;
+  toggleFavorite: (id: string) => void;
   clear: () => void;
   retry: () => void;
 }
@@ -76,6 +77,17 @@ export function useHistory(): UseHistoryResult {
     [entries, persist],
   );
 
+  const toggleFavorite = useCallback(
+    (id: string) => {
+      persist(
+        entries.map((e) =>
+          e.id === id ? { ...e, favorite: !e.favorite } : e,
+        ),
+      );
+    },
+    [entries, persist],
+  );
+
   const clear = useCallback(() => {
     try {
       clearHistory();
@@ -92,5 +104,14 @@ export function useHistory(): UseHistoryResult {
     }
   }, []);
 
-  return { status, entries, error, addEntry, removeEntry, clear, retry: load };
+  return {
+    status,
+    entries,
+    error,
+    addEntry,
+    removeEntry,
+    toggleFavorite,
+    clear,
+    retry: load,
+  };
 }

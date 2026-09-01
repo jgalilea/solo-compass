@@ -9,6 +9,7 @@ export interface TableRollEntry {
   rolls: number[];
   total: number;
   resultText: string;
+  favorite: boolean;
 }
 
 export type HistoryEntry = OracleRoll | TableRollEntry;
@@ -52,7 +53,8 @@ export function loadHistory(): HistoryEntry[] {
     if (!Array.isArray(entries)) {
       throw new Error("Formato inesperado");
     }
-    return entries;
+    // Compatibilidad con historiales guardados antes de añadir favoritos.
+    return entries.map((e) => ({ ...e, favorite: e.favorite ?? false }));
   } catch {
     throw new HistoryStorageError(
       "El historial guardado está dañado y no se pudo leer.",
