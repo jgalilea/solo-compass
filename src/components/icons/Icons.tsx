@@ -115,3 +115,23 @@ export function IconClose(props: IconProps) {
     </svg>
   );
 }
+
+export function IconPalette(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.8 2-1.9 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a3 3 0 0 0 3-3c0-5-3.6-8.9-8-8.9z" />
+      <circle cx="7.3" cy="10.7" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9.3" cy="7" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="14.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="16.7" cy="10" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function IconCheck(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M5 12.5l4.5 4.5L19 7" />
+    </svg>
+  );
+}

@@ -2,6 +2,14 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Aplica el tema guardado antes del primer pintado, para evitar
+      // un parpadeo con el tema por defecto (fantasía) al cargar.
+      try {
+        var t = localStorage.getItem("solo-compass:theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
     <link rel="icon" type="image/svg+xml" href="/solo-compass/favicon.svg" />
     <link rel="apple-touch-icon" href="/solo-compass/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

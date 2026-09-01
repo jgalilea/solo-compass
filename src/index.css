@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @theme {
+  /* Fantasía es el tema por defecto: estos valores son los que
+     Tailwind usa para generar las clases (bg-gold, text-parchment,
+     font-display…) y también los que se aplican si no hay ningún
+     data-theme en <html>. El resto de temas los sobrescriben más
+     abajo con selectores :root[data-theme="…"]. */
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -12,6 +17,7 @@
   --color-ink-600: #262a36;
   --color-ink-500: #2f3340;
   --color-ink-border: #2a2d38;
+  --color-ink-glow: #16181f;
 
   --color-parchment: #f4efe6;
   --color-parchment-dim: #cfc9bc;
@@ -53,6 +59,109 @@
   }
 }
 
+/* ---------- Temas ---------- */
+/* El selector :root[data-theme="…"] tiene más especificidad que el
+   :root plano que emite @theme, así que gana siempre, sin depender
+   del orden de las reglas en el CSS compilado. */
+
+:root[data-theme="pulp"] {
+  --font-display: Georgia, "Times New Roman", serif;
+
+  --color-ink-950: #170e0b;
+  --color-ink-900: #1e1310;
+  --color-ink-800: #261914;
+  --color-ink-700: #301f18;
+  --color-ink-600: #3c281f;
+  --color-ink-500: #493226;
+  --color-ink-border: #3c281f;
+  --color-ink-glow: #2a1c15;
+
+  --color-parchment: #f3e6ca;
+  --color-parchment-dim: #c7b28c;
+
+  --color-gold: #dd9a35;
+  --color-gold-soft: #eebf72;
+
+  --color-yes: #8bb04f;
+  --color-no: #c8402c;
+  --color-contradiction: #a97bc0;
+}
+
+:root[data-theme="moderno"] {
+  --font-display: var(--font-sans);
+
+  --color-ink-950: #0a0b0d;
+  --color-ink-900: #101114;
+  --color-ink-800: #16181c;
+  --color-ink-700: #1e2126;
+  --color-ink-600: #272b31;
+  --color-ink-500: #31353c;
+  --color-ink-border: #2a2e34;
+  --color-ink-glow: #15171b;
+
+  --color-parchment: #eef0f3;
+  --color-parchment-dim: #9aa0aa;
+
+  --color-gold: #6c8cff;
+  --color-gold-soft: #9ab4ff;
+
+  --color-yes: #37d67a;
+  --color-no: #fb5c72;
+  --color-contradiction: #9b7bfa;
+}
+
+:root[data-theme="scifi"] {
+  --font-display: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --color-ink-950: #060a10;
+  --color-ink-900: #0a0f16;
+  --color-ink-800: #0e151d;
+  --color-ink-700: #131b25;
+  --color-ink-600: #19222e;
+  --color-ink-500: #202b39;
+  --color-ink-border: #1c2733;
+  --color-ink-glow: #0d1b24;
+
+  --color-parchment: #dbeef2;
+  --color-parchment-dim: #7c96a3;
+
+  --color-gold: #35e6d6;
+  --color-gold-soft: #8ff5ea;
+
+  --color-yes: #33e0a1;
+  --color-no: #ff4d6d;
+  --color-contradiction: #b06bff;
+}
+
+/* Acabados tipográficos: cada tema le da su acento a los títulos y
+   textos en font-display sin tocar los componentes. */
+:root[data-theme="pulp"] .font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+:root[data-theme="scifi"] .font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+:root[data-theme="moderno"] .font-display {
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+/* Pulp y sci-fi prefieren esquinas más cerradas que el resto. */
+:root[data-theme="pulp"] .rounded-3xl,
+:root[data-theme="scifi"] .rounded-3xl {
+  border-radius: 0.85rem;
+}
+
+:root[data-theme="pulp"] .rounded-2xl,
+:root[data-theme="scifi"] .rounded-2xl {
+  border-radius: 0.65rem;
+}
+
 html {
   color-scheme: dark;
 }
@@ -61,11 +170,12 @@ body {
   margin: 0;
   min-height: 100svh;
   background:
-    radial-gradient(ellipse at top, #16181f 0%, var(--color-ink-950) 55%);
+    radial-gradient(ellipse at top, var(--color-ink-glow) 0%, var(--color-ink-950) 55%);
   color: var(--color-parchment);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 #root {
