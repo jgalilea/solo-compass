@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-ink-950: #0b0c10;
+  --color-ink-900: #101218;
+  --color-ink-800: #14161c;
+  --color-ink-700: #1c1f28;
+  --color-ink-600: #262a36;
+  --color-ink-500: #2f3340;
+  --color-ink-border: #2a2d38;
+
+  --color-parchment: #f4efe6;
+  --color-parchment-dim: #cfc9bc;
+
+  --color-gold: #d7b26d;
+  --color-gold-soft: #ecd8a8;
+
+  --color-yes: #4fd1a5;
+  --color-no: #f4778a;
+  --color-contradiction: #b98af8;
+
+  --animate-die-roll: die-roll 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-up: fade-up 0.35s ease-out;
+
+  @keyframes die-roll {
+    0% {
+      transform: rotate(0deg) scale(0.6);
+      opacity: 0;
+    }
+    60% {
+      transform: rotate(20deg) scale(1.08);
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse at top, #16181f 0%, var(--color-ink-950) 55%);
+  color: var(--color-parchment);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink-950);
+}
+
+/* Barra de scroll discreta, coherente con el tema oscuro */
+* {
+  scrollbar-color: var(--color-ink-500) transparent;
+  scrollbar-width: thin;
+}
