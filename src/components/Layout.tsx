@@ -1,14 +1,24 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { IconBook, IconCompass, IconDice, IconScroll } from "./icons/Icons";
 
 const TABS = [
-  { to: "/", label: "Oráculo", icon: "🎲", end: true },
-  { to: "/tablas", label: "Tablas", icon: "📖", end: false },
-  { to: "/historial", label: "Historial", icon: "📜", end: false },
+  { to: "/", label: "Oráculo", Icon: IconDice, end: true },
+  { to: "/tablas", label: "Tablas", Icon: IconBook, end: false },
+  { to: "/historial", label: "Historial", Icon: IconScroll, end: false },
 ];
 
 export function Layout() {
   return (
     <div className="flex min-h-full flex-1 flex-col">
+      <header className="border-b border-ink-border/70 px-4 py-3">
+        <div className="mx-auto flex max-w-xl items-center gap-2 text-parchment">
+          <IconCompass size={20} className="text-gold" />
+          <span className="font-display text-base tracking-wide">
+            Solo Compass
+          </span>
+        </div>
+      </header>
+
       <main className="flex flex-1 flex-col">
         <Outlet />
       </main>
@@ -28,11 +38,11 @@ export function Layout() {
 
       <nav className="sticky bottom-0 z-40 border-t border-ink-border bg-ink-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-xl">
-          {TABS.map((tab) => (
+          {TABS.map(({ to, label, Icon, end }) => (
             <NavLink
-              key={tab.to}
-              to={tab.to}
-              end={tab.end}
+              key={to}
+              to={to}
+              end={end}
               className={({ isActive }) =>
                 [
                   "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs transition",
@@ -40,8 +50,8 @@ export function Layout() {
                 ].join(" ")
               }
             >
-              <span className="text-lg leading-none">{tab.icon}</span>
-              {tab.label}
+              <Icon size={20} />
+              {label}
             </NavLink>
           ))}
         </div>

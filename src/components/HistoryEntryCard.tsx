@@ -1,6 +1,7 @@
 import { Die } from "./Die";
 import { formatAnswer } from "../lib/oracle";
 import type { HistoryEntry } from "../lib/history";
+import { IconClose } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -32,7 +33,7 @@ export function HistoryEntryCard({
         aria-label="Eliminar entrada"
         className="absolute right-3 top-3 text-parchment-dim/50 opacity-0 transition hover:text-no group-hover:opacity-100 focus:opacity-100"
       >
-        ✕
+        <IconClose size={14} />
       </button>
 
       <div className="flex items-center justify-between gap-3 pr-6 text-xs uppercase tracking-wide text-parchment-dim/70">

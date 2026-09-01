@@ -4,6 +4,7 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { EmptyState } from "./StateViews";
+import { IconDice } from "./icons/Icons";
 
 export function OracleView() {
   const { addEntry } = useHistoryContext();
@@ -23,10 +24,11 @@ export function OracleView() {
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-          Oráculo Recluse
+          Oráculo
         </h1>
         <p className="mt-2 text-sm text-parchment-dim">
-          Formula una pregunta de sí/no y deja que los dados decidan.
+          Formula una pregunta de sí/no y deja que los dados decidan, con el
+          motor <span className="text-parchment">Recluse</span>.
         </p>
       </header>
 
@@ -64,7 +66,7 @@ export function OracleView() {
         <OracleResultCard key={animateKey} roll={lastRoll} animate />
       ) : (
         <EmptyState
-          icon="🎲"
+          icon={<IconDice size={28} />}
           title="Aún no has preguntado nada"
           description="Escribe una pregunta de sí/no, elige la probabilidad y lanza los dados para consultar al oráculo."
         />

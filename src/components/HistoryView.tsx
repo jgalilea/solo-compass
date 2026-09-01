@@ -3,6 +3,7 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
+import { IconScroll, IconTrash } from "./icons/Icons";
 
 type Filter = "todo" | "oraculo" | "tabla";
 
@@ -31,8 +32,9 @@ export function HistoryView() {
           <button
             type="button"
             onClick={() => setConfirmingClear(true)}
-            className="shrink-0 rounded-full border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
           >
+            <IconTrash size={14} />
             Borrar todo
           </button>
         )}
@@ -76,7 +78,7 @@ export function HistoryView() {
 
       {status === "ready" && entries.length === 0 && (
         <EmptyState
-          icon="📜"
+          icon={<IconScroll size={28} />}
           title="Todavía no hay tiradas"
           description="Consulta el oráculo o tira en una tabla y aparecerá aquí, guardado en este dispositivo."
         />

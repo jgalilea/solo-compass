@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { IconAlertOctagon } from "./icons/Icons";
 
 interface Props {
   children: ReactNode;
@@ -23,7 +24,7 @@ export class AppErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-          <div className="text-3xl">🌩️</div>
+          <IconAlertOctagon size={32} className="text-no" />
           <h1 className="font-display text-xl text-parchment">
             Algo se ha roto en la app
           </h1>
