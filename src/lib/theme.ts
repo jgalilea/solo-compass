@@ -19,14 +19,14 @@ export const THEMES: ThemeInfo[] = [
   {
     id: "fantasia",
     name: "Fantasía",
-    tagline: "Pergamino, oro viejo y velas.",
+    tagline: "Mazmorras, dragones y oro viejo.",
     swatch: ["#0b0c10", "#d7b26d", "#f4efe6"],
   },
   {
     id: "pulp",
     name: "Pulp",
-    tagline: "Novela de aventuras de bolsillo.",
-    swatch: ["#170e0b", "#dd9a35", "#f3e6ca"],
+    tagline: "Titular de periódico y culto secreto.",
+    swatch: ["#15120f", "#dd9a35", "#ece1c8"],
   },
   {
     id: "moderno",
@@ -37,14 +37,14 @@ export const THEMES: ThemeInfo[] = [
   {
     id: "scifi",
     name: "Sci-fi",
-    tagline: "Neón frío y consola de nave.",
-    swatch: ["#060a10", "#35e6d6", "#dbeef2"],
+    tagline: "Terminal, código y neón verde.",
+    swatch: ["#04070a", "#39e75f", "#d7ecdf"],
   },
   {
     id: "osr",
     name: "OSR",
     tagline: "Tinta, hueso y sangre seca.",
-    swatch: ["#000000", "#9c2b2b", "#f2f0eb"],
+    swatch: ["#000000", "#c81e1e", "#f2f0eb"],
   },
 ];
 

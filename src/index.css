@@ -1,12 +1,61 @@
 @import "tailwindcss";
 
+/* ---------- Fuentes autoalojadas ---------- */
+/* Un peso por familia salvo Cinzel/Playfair (400 y 700). Alojadas en
+   public/fonts para que funcionen offline como PWA, sin depender de
+   Google Fonts en tiempo de ejecución. Subset "latin" (cubre acentos
+   y ¿¡ del español). Licencia SIL Open Font License. */
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/solo-compass/fonts/cinzel-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/solo-compass/fonts/cinzel-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/solo-compass/fonts/playfair-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/solo-compass/fonts/playfair-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Share Tech Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/solo-compass/fonts/sharetech-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Pirata One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/solo-compass/fonts/pirata-400.woff2") format("woff2");
+}
+
 @theme {
   /* Fantasía es el tema por defecto: estos valores son los que
      Tailwind usa para generar las clases (bg-gold, text-parchment,
      font-display…) y también los que se aplican si no hay ningún
      data-theme en <html>. El resto de temas los sobrescriben más
      abajo con selectores :root[data-theme="…"]. */
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-display: "Cinzel", "Iowan Old Style", Palatino, Georgia, serif;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
@@ -64,27 +113,35 @@
    :root plano que emite @theme, así que gana siempre, sin depender
    del orden de las reglas en el CSS compilado. */
 
+/* Fantasía: tono manual de D&D — mayúsculas inscripcionales (Cinzel)
+   sobre pergamino y oro viejo. */
+:root[data-theme="fantasia"] {
+  --font-display: "Cinzel", "Iowan Old Style", Palatino, Georgia, serif;
+}
+
+/* Pulp: cabecera de periódico/pasquín pulp — serifa dramática de alto
+   contraste (Playfair Display), como Weird Tales o un dossier 007. */
 :root[data-theme="pulp"] {
-  --font-display: Georgia, "Times New Roman", serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
 
-  --color-ink-950: #170e0b;
-  --color-ink-900: #1e1310;
-  --color-ink-800: #261914;
-  --color-ink-700: #301f18;
-  --color-ink-600: #3c281f;
-  --color-ink-500: #493226;
-  --color-ink-border: #3c281f;
-  --color-ink-glow: #2a1c15;
+  --color-ink-950: #15120f;
+  --color-ink-900: #1c1713;
+  --color-ink-800: #241d17;
+  --color-ink-700: #2d251c;
+  --color-ink-600: #382e22;
+  --color-ink-500: #453829;
+  --color-ink-border: #382e22;
+  --color-ink-glow: #241c15;
 
-  --color-parchment: #f3e6ca;
-  --color-parchment-dim: #c7b28c;
+  --color-parchment: #ece1c8;
+  --color-parchment-dim: #b7a688;
 
   --color-gold: #dd9a35;
   --color-gold-soft: #eebf72;
 
   --color-yes: #8bb04f;
   --color-no: #c8402c;
-  --color-contradiction: #a97bc0;
+  --color-contradiction: #8f6aa8;
 }
 
 :root[data-theme="moderno"] {
@@ -110,31 +167,35 @@
   --color-contradiction: #9b7bfa;
 }
 
+/* Sci-fi: terminal/Matrix — monoespaciada (Share Tech Mono) y verde
+   fósforo sobre negro azulado, con rojo/ámbar de estado tipo consola. */
 :root[data-theme="scifi"] {
-  --font-display: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-display: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --color-ink-950: #060a10;
-  --color-ink-900: #0a0f16;
-  --color-ink-800: #0e151d;
-  --color-ink-700: #131b25;
-  --color-ink-600: #19222e;
-  --color-ink-500: #202b39;
-  --color-ink-border: #1c2733;
-  --color-ink-glow: #0d1b24;
+  --color-ink-950: #04070a;
+  --color-ink-900: #070b0f;
+  --color-ink-800: #0a0f14;
+  --color-ink-700: #0e141a;
+  --color-ink-600: #131b22;
+  --color-ink-500: #19222b;
+  --color-ink-border: #16202a;
+  --color-ink-glow: #06120d;
 
-  --color-parchment: #dbeef2;
-  --color-parchment-dim: #7c96a3;
+  --color-parchment: #d7ecdf;
+  --color-parchment-dim: #7a978a;
 
-  --color-gold: #35e6d6;
-  --color-gold-soft: #8ff5ea;
+  --color-gold: #39e75f;
+  --color-gold-soft: #8ff9ab;
 
-  --color-yes: #33e0a1;
-  --color-no: #ff4d6d;
-  --color-contradiction: #b06bff;
+  --color-yes: #39e75f;
+  --color-no: #ff3b3b;
+  --color-contradiction: #f5c542;
 }
 
+/* OSR: fantasía oscura y gótica (Mörk Borg / Shadowdark) — blackletter
+   (Pirata One) casi monocroma, con un rojo más vivo y crudo. */
 :root[data-theme="osr"] {
-  --font-display: "Courier New", Courier, ui-monospace, monospace;
+  --font-display: "Pirata One", "Courier New", Courier, monospace;
 
   --color-ink-950: #000000;
   --color-ink-900: #0a0a0a;
@@ -154,30 +215,31 @@
   --color-gold-soft: #ffffff;
 
   --color-yes: #f2f0eb;
-  --color-no: #9c2b2b;
-  --color-contradiction: #746b82;
+  --color-no: #c81e1e;
+  --color-contradiction: #5c4a6b;
 }
 
 /* Acabados tipográficos: cada tema le da su acento a los títulos y
    textos en font-display sin tocar los componentes. */
+:root[data-theme="fantasia"] .font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 :root[data-theme="pulp"] .font-display {
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   font-weight: 700;
 }
 
 :root[data-theme="scifi"] .font-display {
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.06em;
 }
 
 :root[data-theme="moderno"] .font-display {
   letter-spacing: -0.01em;
   font-weight: 600;
-}
-
-:root[data-theme="osr"] .font-display {
-  letter-spacing: 0.01em;
 }
 
 /* Pulp, sci-fi y OSR prefieren esquinas más cerradas que el resto. */
