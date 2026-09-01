@@ -5,7 +5,7 @@
  * (bg-gold, text-parchment, font-display…) que apuntan a esos tokens.
  */
 
-export type ThemeId = "fantasia" | "pulp" | "moderno" | "scifi";
+export type ThemeId = "fantasia" | "pulp" | "moderno" | "scifi" | "osr";
 
 export interface ThemeInfo {
   id: ThemeId;
@@ -39,6 +39,12 @@ export const THEMES: ThemeInfo[] = [
     name: "Sci-fi",
     tagline: "Neón frío y consola de nave.",
     swatch: ["#060a10", "#35e6d6", "#dbeef2"],
+  },
+  {
+    id: "osr",
+    name: "OSR",
+    tagline: "Tinta, hueso y sangre seca.",
+    swatch: ["#000000", "#9c2b2b", "#f2f0eb"],
   },
 ];
 

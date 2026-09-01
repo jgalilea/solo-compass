@@ -133,6 +133,31 @@
   --color-contradiction: #b06bff;
 }
 
+:root[data-theme="osr"] {
+  --font-display: "Courier New", Courier, ui-monospace, monospace;
+
+  --color-ink-950: #000000;
+  --color-ink-900: #0a0a0a;
+  --color-ink-800: #121212;
+  --color-ink-700: #1a1a1a;
+  --color-ink-600: #232323;
+  --color-ink-500: #2e2e2e;
+  --color-ink-border: #333333;
+  --color-ink-glow: #141414;
+
+  --color-parchment: #f2f0eb;
+  --color-parchment-dim: #8a8a86;
+
+  /* Sin dorado: el "acento" es hueso casi blanco, a juego con el
+     resto de la paleta en blanco y negro. */
+  --color-gold: #e8e4da;
+  --color-gold-soft: #ffffff;
+
+  --color-yes: #f2f0eb;
+  --color-no: #9c2b2b;
+  --color-contradiction: #746b82;
+}
+
 /* Acabados tipográficos: cada tema le da su acento a los títulos y
    textos en font-display sin tocar los componentes. */
 :root[data-theme="pulp"] .font-display {
@@ -151,15 +176,26 @@
   font-weight: 600;
 }
 
-/* Pulp y sci-fi prefieren esquinas más cerradas que el resto. */
+:root[data-theme="osr"] .font-display {
+  letter-spacing: 0.01em;
+}
+
+/* Pulp, sci-fi y OSR prefieren esquinas más cerradas que el resto. */
 :root[data-theme="pulp"] .rounded-3xl,
-:root[data-theme="scifi"] .rounded-3xl {
+:root[data-theme="scifi"] .rounded-3xl,
+:root[data-theme="osr"] .rounded-3xl {
   border-radius: 0.85rem;
 }
 
 :root[data-theme="pulp"] .rounded-2xl,
-:root[data-theme="scifi"] .rounded-2xl {
+:root[data-theme="scifi"] .rounded-2xl,
+:root[data-theme="osr"] .rounded-2xl {
   border-radius: 0.65rem;
+}
+
+/* OSR es blanco y negro casi puro: sin resplandor de fondo. */
+:root[data-theme="osr"] body {
+  background: var(--color-ink-950);
 }
 
 html {
