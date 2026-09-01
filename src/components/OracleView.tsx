@@ -21,9 +21,9 @@ export function OracleView() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-3 px-4 py-3 sm:gap-5 sm:py-6">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-2.5 px-4 py-2 sm:gap-5 sm:py-6">
       <header className="flex items-center justify-center gap-2">
-        <h1 className="font-display text-2xl text-parchment sm:text-3xl">
+        <h1 className="font-display text-xl text-parchment sm:text-3xl">
           Oráculo
         </h1>
         <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold">
@@ -31,7 +31,7 @@ export function OracleView() {
         </span>
       </header>
 
-      <div className="flex flex-col gap-3 rounded-3xl border border-ink-border bg-ink-800/50 p-4 sm:p-5">
+      <div className="flex flex-col gap-2.5 rounded-3xl border border-ink-border bg-ink-800/50 p-3.5 sm:p-5">
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
