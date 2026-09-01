@@ -18,26 +18,26 @@ export function OracleResultCard({
   const singleDie = roll.white.rolls.length === 1 && roll.black.rolls.length === 1;
 
   return (
-    <div className="animate-fade-up rounded-3xl border border-ink-border bg-ink-800/70 p-4 shadow-xl shadow-black/20 sm:p-5">
+    <div className="animate-fade-up flex flex-1 flex-col justify-center rounded-3xl border border-ink-border bg-ink-800/70 p-6 shadow-xl shadow-black/20">
       {roll.question && (
-        <p className="mb-3 text-center font-display text-base italic text-parchment/90 sm:text-lg">
+        <p className="mb-5 text-center font-display text-lg italic text-parchment/90">
           “{roll.question}”
         </p>
       )}
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-6">
         <DiceGroup group={roll.white} animate={animate} large={singleDie} />
-        <span className="text-sm text-parchment-dim/60">vs</span>
+        <span className="text-base text-parchment-dim/60">vs</span>
         <DiceGroup group={roll.black} animate={animate} large={singleDie} />
       </div>
 
-      <div className="mt-3 text-center">
-        <div className={`font-display text-3xl font-semibold sm:text-4xl ${answer.className}`}>
+      <div className="mt-5 text-center">
+        <div className={`font-display text-5xl font-semibold ${answer.className}`}>
           {answer.label}
         </div>
         {roll.qualifier && (
           <div
-            className={`text-sm font-medium sm:text-base ${
+            className={`mt-1 text-lg font-medium ${
               roll.qualifier === "y" ? "text-yes/90" : "text-no/90"
             }`}
           >
@@ -45,7 +45,7 @@ export function OracleResultCard({
           </div>
         )}
         {roll.answer === "contradiccion" && (
-          <p className="mx-auto mt-2 max-w-sm text-xs text-parchment-dim">
+          <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
             Alguna premisa de la pregunta es errónea. Revisa qué estás dando
             por sentado y replantea la pregunta.
           </p>
@@ -65,7 +65,7 @@ function DiceGroup({
   large: boolean;
 }) {
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-2">
       {group.rolls.map((v, i) => (
         <Die
           key={i}
@@ -73,7 +73,7 @@ function DiceGroup({
           color={group.color}
           animate={animate}
           faded={group.rolls.length > 1 && v !== group.kept}
-          size={large ? "md" : "sm"}
+          size={large ? "lg" : "md"}
         />
       ))}
     </div>

@@ -13,10 +13,10 @@ export function Layout() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-ink-border/70 px-4 py-2">
-        <div className="mx-auto flex max-w-xl items-center gap-2 text-parchment">
-          <IconCompass size={19} className="text-gold" />
-          <span className="font-display text-base tracking-wide">
+      <header className="border-b border-ink-border/70 px-4 py-3.5">
+        <div className="mx-auto flex max-w-xl items-center gap-2.5 text-parchment">
+          <IconCompass size={26} className="text-gold" />
+          <span className="font-display text-xl tracking-wide">
             Solo Compass
           </span>
         </div>

@@ -21,17 +21,15 @@ export function OracleView() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-2.5 px-4 py-2 sm:gap-5 sm:py-6">
-      <header className="flex items-center justify-center gap-2">
-        <h1 className="font-display text-xl text-parchment sm:text-3xl">
-          Oráculo
-        </h1>
-        <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-2 pt-8">
+      <header className="flex items-center justify-center gap-2.5">
+        <h1 className="font-display text-3xl text-parchment">Oráculo</h1>
+        <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
           Recluse
         </span>
       </header>
 
-      <div className="flex flex-col gap-2.5 rounded-3xl border border-ink-border bg-ink-800/50 p-3.5 sm:p-5">
+      <div className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -43,7 +41,7 @@ export function OracleView() {
           aria-label="Pregunta para el oráculo"
           placeholder="¿Consigue Lydia saltar la valla antes de que la alcancen?"
           rows={2}
-          className="w-full resize-none rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-2.5 text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+          className="w-full resize-none rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3 text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
         />
 
         <LikelihoodPicker value={likelihood} onChange={setLikelihood} />
@@ -51,7 +49,7 @@ export function OracleView() {
         <button
           type="button"
           onClick={handleRoll}
-          className="w-full rounded-2xl bg-gold py-2.5 font-display text-lg font-semibold text-ink-950 shadow-lg shadow-gold/10 transition hover:bg-gold-soft active:scale-[0.99]"
+          className="w-full rounded-2xl bg-gold py-3 font-display text-lg font-semibold text-ink-950 shadow-lg shadow-gold/10 transition hover:bg-gold-soft active:scale-[0.99]"
         >
           Lanzar los dados
         </button>
@@ -60,11 +58,13 @@ export function OracleView() {
       {lastRoll ? (
         <OracleResultCard key={animateKey} roll={lastRoll} animate />
       ) : (
-        <EmptyState
-          icon={<IconDice size={24} />}
-          title="Aún no has preguntado nada"
-          compact
-        />
+        <div className="flex flex-1 flex-col justify-center">
+          <EmptyState
+            icon={<IconDice size={32} />}
+            title="Aún no has preguntado nada"
+            description="Escribe una pregunta y lanza los dados."
+          />
+        </div>
       )}
     </div>
   );
