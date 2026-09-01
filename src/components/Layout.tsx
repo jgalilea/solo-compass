@@ -1,6 +1,7 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { IconBook, IconCompass, IconDice, IconScroll } from "./icons/Icons";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { AboutDialog } from "./AboutDialog";
 
 const TABS = [
   { to: "/", label: "Oráculo", Icon: IconDice, end: true },
@@ -9,9 +10,6 @@ const TABS = [
 ];
 
 export function Layout() {
-  const location = useLocation();
-  const isOracleTab = location.pathname === "/";
-
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-ink-border/70 px-4 py-3.5">
@@ -22,28 +20,16 @@ export function Layout() {
               Solo Compass
             </span>
           </div>
-          <ThemeSwitcher />
+          <div className="flex items-center gap-4">
+            <AboutDialog />
+            <ThemeSwitcher />
+          </div>
         </div>
       </header>
 
       <main className="flex flex-1 flex-col">
         <Outlet />
       </main>
-
-      {!isOracleTab && (
-        <footer className="px-4 pb-2 text-center text-[11px] leading-relaxed text-parchment-dim/50">
-          Oráculo{" "}
-          <a
-            href="https://gravenutterance.itch.io/recluse"
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-dotted hover:text-parchment-dim"
-          >
-            Recluse
-          </a>{" "}
-          de Graven Utterance (Oliver N), licencia CC BY 4.0.
-        </footer>
-      )}
 
       <nav className="sticky bottom-0 z-40 border-t border-ink-border bg-ink-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-xl">

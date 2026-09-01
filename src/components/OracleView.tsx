@@ -24,9 +24,15 @@ export function OracleView() {
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-2 pt-8">
       <header className="flex items-center justify-center gap-2.5">
         <h1 className="font-display text-3xl text-parchment">Oráculo</h1>
-        <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
+        <a
+          href="https://gravenutterance.itch.io/recluse"
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
+          title="Ver Recluse, de Graven Utterance (CC BY 4.0)"
+        >
           Recluse
-        </span>
+        </a>
       </header>
 
       <div className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
