@@ -49,7 +49,7 @@ export function HistoryView() {
           <button
             type="button"
             onClick={() => setConfirmingClear(true)}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
           >
             <IconTrash size={14} />
             Borrar todo
@@ -58,7 +58,7 @@ export function HistoryView() {
       </header>
 
       {status === "ready" && entries.length > 0 && (
-        <div className="flex gap-1 rounded-full border border-ink-border bg-ink-900/60 p-1 text-xs">
+        <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs">
           {(
             [
               ["todo", "Todo"],
@@ -72,7 +72,7 @@ export function HistoryView() {
               type="button"
               onClick={() => setFilter(key)}
               className={[
-                "flex-1 rounded-full px-1 py-1.5 transition",
+                "flex-1 rounded-xl px-1 py-1.5 transition",
                 filter === key
                   ? "bg-gold text-ink-950 font-medium"
                   : "text-parchment-dim hover:text-parchment",
