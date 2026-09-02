@@ -160,7 +160,18 @@ export function HistoryEntryCard({
                 ))}
               </div>
               <span
-                className={`break-words font-display text-lg font-semibold ${ANSWER_COLOR[entry.answer]}`}
+                className={[
+                  "break-words font-display font-semibold",
+                  // Las variantes largas ("Contradicción", "No, y
+                  // además.") no caben a text-lg junto a 4 dados en
+                  // algunas fuentes de tema (p. ej. Cinzel en
+                  // mayúsculas); van más pequeñas para seguir cabiendo
+                  // en una sola línea.
+                  entry.answer === "contradiccion" || entry.qualifier
+                    ? "text-sm"
+                    : "text-lg",
+                  ANSWER_COLOR[entry.answer],
+                ].join(" ")}
               >
                 {formatAnswer(entry)}
               </span>
