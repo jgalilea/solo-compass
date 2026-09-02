@@ -119,5 +119,5 @@ export function formatAnswer(roll: Pick<OracleRoll, "answer" | "qualifier">): st
   const base =
     roll.answer === "si" ? "Sí" : roll.answer === "no" ? "No" : "Contradicción";
   if (!roll.qualifier) return base;
-  return roll.qualifier === "y" ? `${base}, y…` : `${base}, pero…`;
+  return roll.qualifier === "y" ? `${base}, y además.` : `${base}, pero.`;
 }
