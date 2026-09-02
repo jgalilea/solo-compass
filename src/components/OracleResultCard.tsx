@@ -52,7 +52,7 @@ export function OracleResultCard({
               roll.qualifier === "y" ? "text-yes/90" : "text-no/90"
             }`}
           >
-            {roll.qualifier === "y" ? "…y encima más." : "…pero con matices."}
+            {roll.qualifier === "y" ? "…y además." : "…pero."}
           </div>
         )}
         {roll.answer === "contradiccion" && (
