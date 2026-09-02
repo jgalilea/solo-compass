@@ -274,6 +274,11 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color 200ms ease, color 200ms ease;
+  /* Bloquea el pellizco para hacer zoom y el zoom por doble-tap:
+     solo se permite el paneo vertical (que es todo lo que necesita
+     la app). Complementa al meta viewport, que algunos navegadores
+     no respetan del todo para estos gestos. */
+  touch-action: pan-y;
 }
 
 #root {
