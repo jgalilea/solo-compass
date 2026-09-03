@@ -4,7 +4,7 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { EmptyState } from "./StateViews";
-import { IconDice } from "./icons/Icons";
+import { IconDice, IconExternalLink } from "./icons/Icons";
 
 export function OracleView() {
   const { addEntry } = useHistoryContext();
@@ -28,10 +28,11 @@ export function OracleView() {
           href="https://gravenutterance.itch.io/recluse"
           target="_blank"
           rel="noreferrer"
-          className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
+          className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
           title="Ver Recluse, de Graven Utterance (CC BY 4.0)"
         >
           Recluse
+          <IconExternalLink size={11} />
         </a>
       </header>
 
