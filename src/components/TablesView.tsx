@@ -191,17 +191,17 @@ function TableCard({
               href={table.game.url}
               target="_blank"
               rel="noreferrer"
-              className="mt-0.5 inline-flex items-center gap-1 text-xs text-parchment-dim underline decoration-dotted transition hover:text-gold"
+              className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
             >
               {table.game.name}
               <IconExternalLink size={11} />
             </a>
           ) : (
-            <span className="mt-0.5 inline-block text-xs text-parchment-dim/70">
+            <span className="mt-1.5 inline-block rounded-full border border-ink-border bg-ink-900/60 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
               {table.game.name}
             </span>
           )}
-          <p className="mt-1.5 text-sm text-parchment-dim">{table.description}</p>
+          <p className="mt-2 text-sm text-parchment-dim">{table.description}</p>
         </div>
         <button
           type="button"
