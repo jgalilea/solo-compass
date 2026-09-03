@@ -13,11 +13,19 @@ export interface TableEntry {
   text: string;
 }
 
+export interface GameRef {
+  /** Nombre del juego/sistema al que pertenece la tabla (o "Genérico"). */
+  name: string;
+  /** Enlace opcional a la fuente/manual. Sin enlace si es una tabla genérica. */
+  url?: string;
+}
+
 export interface MeaningTable {
   id: string;
   name: string;
   description: string;
   dice: DiceType;
+  game: GameRef;
   entries: TableEntry[];
 }
 
@@ -49,12 +57,16 @@ function placeholderD20(name: string): TableEntry[] {
   }));
 }
 
+// El indicativo de juego + enlace por tabla son de ejemplo, para
+// mostrar cómo se ve la función con y sin enlace. Se sustituirán por
+// los datos reales más adelante.
 export const MEANING_TABLES: MeaningTable[] = [
   {
     id: "evento-aleatorio",
     name: "Evento aleatorio",
     description: "Qué interrumpe o cambia la escena actual.",
     dice: "d66",
+    game: { name: "Ironsworn", url: "https://ironswornrpg.com" },
     entries: placeholderD66("Evento aleatorio"),
   },
   {
@@ -62,6 +74,7 @@ export const MEANING_TABLES: MeaningTable[] = [
     name: "Acción de PNJ",
     description: "Qué hace un personaje no jugador ante la situación.",
     dice: "d20",
+    game: { name: "Mörk Borg", url: "https://morkborg.com" },
     entries: placeholderD20("Acción de PNJ"),
   },
   {
@@ -69,6 +82,7 @@ export const MEANING_TABLES: MeaningTable[] = [
     name: "Descriptor de escena",
     description: "Un adjetivo o tono para colorear el lugar o el momento.",
     dice: "d6",
+    game: { name: "Genérico" },
     entries: placeholderD6("Descriptor de escena"),
   },
 ];

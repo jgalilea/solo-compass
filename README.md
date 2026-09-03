@@ -24,8 +24,10 @@ de Graven Utterance (Oliver N), publicado bajo licencia
 
 - **Oráculo** (principal): pregunta, probabilidad y lanzamiento.
 - **Tablas**: tablas de significado con contenido de ejemplo — la
-  estructura ya soporta d6, d66 y d20; solo hay que sustituir el texto de
-  cada entrada en `src/lib/tables.ts`.
+  estructura ya soporta d6, d66 y d20, un indicativo de juego/sistema con
+  enlace opcional (`game`), favoritas y buscador; solo hay que sustituir el
+  texto de cada entrada (y el `game` real) en `src/lib/tables.ts`. El botón
+  con el tipo de dado abre la lista completa de resultados posibles.
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
   persistidas en `localStorage`.
 
