@@ -31,6 +31,15 @@ de Graven Utterance (Oliver N), publicado bajo licencia
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
   persistidas en `localStorage`.
 
+## Idioma
+
+Español e inglés, seleccionable desde el icono de idioma en la cabecera.
+Por defecto se usa el idioma del navegador (español si empieza por "es",
+inglés para cualquier otro caso); la elección manual se guarda en
+`localStorage` y tiene prioridad sobre la detección. Los textos viven en
+`src/lib/i18n/locales/{es,en}.ts`, con el mismo `Dictionary` tipado para
+ambos (TypeScript avisa si falta una clave en alguno de los dos).
+
 ## Stack
 
 TypeScript, React, React Router (`HashRouter`, compatible con GitHub

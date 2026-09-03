@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { Die } from "./Die";
-import { formatAnswer } from "../lib/oracle";
+import { formatAnswer } from "../lib/i18n/answerText";
 import type { HistoryEntry } from "../lib/history";
 import { IconStar, IconTrash } from "./icons/Icons";
+import { useLocaleContext } from "../hooks/useLocaleContext";
+import { interpolate } from "../lib/i18n";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -13,8 +15,8 @@ const ANSWER_COLOR: Record<string, string> = {
 const SWIPE_THRESHOLD = 76;
 const MAX_DRAG = 120;
 
-function formatTime(ts: number): string {
-  return new Intl.DateTimeFormat("es-ES", {
+function formatTime(dateLocale: string, ts: number): string {
+  return new Intl.DateTimeFormat(dateLocale, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -31,6 +33,7 @@ export function HistoryEntryCard({
   onRequestDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
 }) {
+  const { t } = useLocaleContext();
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -140,19 +143,17 @@ export function HistoryEntryCard({
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim/70">
-          <span>{entry.kind === "oraculo" ? "Oráculo" : entry.tableName}</span>
+          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.tableName}</span>
           <div className="flex items-center gap-2.5">
             <span className="normal-case tracking-normal">
-              {formatTime(entry.timestamp)}
+              {formatTime(t.dateLocale, entry.timestamp)}
             </span>
             <button
               type="button"
               onClick={() => onToggleFavorite(entry.id)}
               aria-pressed={entry.favorite}
               aria-label={
-                entry.favorite
-                  ? "Quitar de destacadas"
-                  : "Marcar como destacada"
+                entry.favorite ? t.history.favoriteRemove : t.history.favoriteAdd
               }
               className={[
                 "-m-1 p-1 transition",
@@ -166,7 +167,7 @@ export function HistoryEntryCard({
             <button
               type="button"
               onClick={() => onRequestDelete(entry.id)}
-              aria-label="Eliminar entrada"
+              aria-label={t.history.deleteEntry}
               className="-m-1 p-1 text-parchment-dim/50 transition hover:text-no"
             >
               <IconTrash size={15} />
@@ -197,7 +198,7 @@ export function HistoryEntryCard({
                   ANSWER_COLOR[entry.answer],
                 ].join(" ")}
               >
-                {formatAnswer(entry)}
+                {formatAnswer(t, entry)}
               </span>
             </div>
           </div>
@@ -205,7 +206,10 @@ export function HistoryEntryCard({
           <div className="mt-2">
             <p className="text-sm text-parchment/90">{entry.resultText}</p>
             <p className="mt-1 text-xs text-parchment-dim">
-              Tirada: {entry.rolls.join(" · ")} → {entry.total}
+              {interpolate(t.history.rollLabel, {
+                rolls: entry.rolls.join(" · "),
+                total: entry.total,
+              })}
             </p>
           </div>
         )}

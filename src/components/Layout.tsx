@@ -2,14 +2,18 @@ import { NavLink, Outlet } from "react-router-dom";
 import { IconBook, IconCompass, IconDice, IconScroll } from "./icons/Icons";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { AboutDialog } from "./AboutDialog";
-
-const TABS = [
-  { to: "/", label: "Oráculo", Icon: IconDice, end: true },
-  { to: "/tablas", label: "Tablas", Icon: IconBook, end: false },
-  { to: "/historial", label: "Historial", Icon: IconScroll, end: false },
-];
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 
 export function Layout() {
+  const { t } = useLocaleContext();
+
+  const tabs = [
+    { to: "/", label: t.nav.oracle, Icon: IconDice, end: true },
+    { to: "/tablas", label: t.nav.tables, Icon: IconBook, end: false },
+    { to: "/historial", label: t.nav.history, Icon: IconScroll, end: false },
+  ];
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-ink-border/70 px-4 py-3.5">
@@ -17,11 +21,12 @@ export function Layout() {
           <div className="flex items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
             <span className="font-display text-xl tracking-wide">
-              Solo Compass
+              {t.header.appName}
             </span>
           </div>
           <div className="flex items-center gap-4">
             <AboutDialog />
+            <LanguageSwitcher />
             <ThemeSwitcher />
           </div>
         </div>
@@ -33,7 +38,7 @@ export function Layout() {
 
       <nav className="sticky bottom-0 z-40 border-t border-ink-border bg-ink-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-xl">
-          {TABS.map(({ to, label, Icon, end }) => (
+          {tabs.map(({ to, label, Icon, end }) => (
             <NavLink
               key={to}
               to={to}

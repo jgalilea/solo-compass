@@ -1,14 +1,14 @@
 import { Die } from "./Die";
 import type { OracleRoll } from "../lib/oracle";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 
-const ANSWER_STYLES: Record<
+const ANSWER_STYLE: Record<
   OracleRoll["answer"],
-  { label: string; className: string; sizeClass: string }
+  { className: string; sizeClass: string }
 > = {
-  si: { label: "Sí", className: "text-yes", sizeClass: "text-5xl" },
-  no: { label: "No", className: "text-no", sizeClass: "text-5xl" },
+  si: { className: "text-yes", sizeClass: "text-5xl" },
+  no: { className: "text-no", sizeClass: "text-5xl" },
   contradiccion: {
-    label: "Contradicción",
     className: "text-contradiction",
     // Palabra larga: en mayúsculas (Cinzel/Playfair/mono) a text-5xl
     // se sale del ancho de la tarjeta en móvil, así que va más chica.
@@ -23,7 +23,8 @@ export function OracleResultCard({
   roll: OracleRoll;
   animate: boolean;
 }) {
-  const answer = ANSWER_STYLES[roll.answer];
+  const { t } = useLocaleContext();
+  const style = ANSWER_STYLE[roll.answer];
   const singleDie = roll.white.rolls.length === 1 && roll.black.rolls.length === 1;
 
   return (
@@ -36,15 +37,15 @@ export function OracleResultCard({
 
       <div className="flex items-center justify-center gap-6">
         <DiceGroup group={roll.white} animate={animate} large={singleDie} />
-        <span className="text-base text-parchment-dim/60">vs</span>
+        <span className="text-base text-parchment-dim/60">{t.oracle.vs}</span>
         <DiceGroup group={roll.black} animate={animate} large={singleDie} />
       </div>
 
       <div className="mt-5 text-center">
         <div
-          className={`break-words font-display font-semibold ${answer.sizeClass} ${answer.className}`}
+          className={`break-words font-display font-semibold ${style.sizeClass} ${style.className}`}
         >
-          {answer.label}
+          {t.answer[roll.answer]}
         </div>
         {roll.qualifier && (
           <div
@@ -52,13 +53,12 @@ export function OracleResultCard({
               roll.qualifier === "y" ? "text-yes/90" : "text-no/90"
             }`}
           >
-            {roll.qualifier === "y" ? "…y además." : "…pero."}
+            …{t.qualifier[roll.qualifier]}.
           </div>
         )}
         {roll.answer === "contradiccion" && (
           <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
-            Alguna premisa de la pregunta es errónea. Revisa qué estás dando
-            por sentado y replantea la pregunta.
+            {t.oracle.contradictionExplanation}
           </p>
         )}
       </div>

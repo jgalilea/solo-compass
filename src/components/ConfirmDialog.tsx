@@ -1,16 +1,20 @@
+import { useLocaleContext } from "../hooks/useLocaleContext";
+
 export function ConfirmDialog({
   title,
   description,
-  confirmLabel = "Confirmar",
+  confirmLabel,
   onConfirm,
   onCancel,
 }: {
   title: string;
   description?: string;
-  confirmLabel?: string;
+  confirmLabel: string;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLocaleContext();
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
@@ -35,7 +39,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
           >
-            Cancelar
+            {t.common.cancel}
           </button>
           <button
             type="button"

@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { IconAlertTriangle } from "./icons/Icons";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 
-export function LoadingState({ label = "Cargando…" }: { label?: string }) {
+export function LoadingState({ label }: { label?: string }) {
+  const { t } = useLocaleContext();
+  const text = label ?? t.common.loading;
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-parchment-dim">
       <span
         className="h-8 w-8 animate-spin rounded-full border-2 border-ink-500 border-t-gold"
         role="status"
-        aria-label={label}
+        aria-label={text}
       />
-      <p className="text-sm">{label}</p>
+      <p className="text-sm">{text}</p>
     </div>
   );
 }
@@ -49,7 +52,7 @@ export function EmptyState({
 }
 
 export function ErrorState({
-  title = "Algo ha ido mal",
+  title,
   description,
   onRetry,
 }: {
@@ -57,10 +60,13 @@ export function ErrorState({
   description?: string;
   onRetry?: () => void;
 }) {
+  const { t } = useLocaleContext();
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-no/30 bg-no/5 px-6 py-16 text-center">
       <IconAlertTriangle size={28} className="text-no" />
-      <p className="font-display text-lg text-parchment">{title}</p>
+      <p className="font-display text-lg text-parchment">
+        {title ?? t.common.somethingWrong}
+      </p>
       {description && (
         <p className="max-w-sm text-sm text-parchment-dim">{description}</p>
       )}
@@ -70,7 +76,7 @@ export function ErrorState({
           onClick={onRetry}
           className="mt-2 rounded-full border border-no/40 px-4 py-1.5 text-sm text-no transition hover:bg-no/10"
         >
-          Reintentar
+          {t.common.retry}
         </button>
       )}
     </div>

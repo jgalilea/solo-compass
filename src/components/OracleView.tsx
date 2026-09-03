@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { rollOracle, type Likelihood, type OracleRoll } from "../lib/oracle";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { EmptyState } from "./StateViews";
@@ -8,6 +9,7 @@ import { IconDice, IconExternalLink } from "./icons/Icons";
 
 export function OracleView() {
   const { addEntry } = useHistoryContext();
+  const { t } = useLocaleContext();
   const [question, setQuestion] = useState("");
   const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
   const [lastRoll, setLastRoll] = useState<OracleRoll | null>(null);
@@ -23,13 +25,13 @@ export function OracleView() {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-2 pt-8">
       <header className="flex items-center justify-center gap-2.5">
-        <h1 className="font-display text-3xl text-parchment">Oráculo</h1>
+        <h1 className="font-display text-3xl text-parchment">{t.oracle.title}</h1>
         <a
           href="https://gravenutterance.itch.io/recluse"
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
-          title="Ver Recluse, de Graven Utterance (CC BY 4.0)"
+          title={t.oracle.recluseLinkTitle}
         >
           Recluse
           <IconExternalLink size={11} />
@@ -45,8 +47,8 @@ export function OracleView() {
               handleRoll();
             }
           }}
-          aria-label="Pregunta para el oráculo"
-          placeholder="¿Consigue Lydia saltar la valla antes de que la alcancen?"
+          aria-label={t.oracle.questionLabel}
+          placeholder={t.oracle.questionPlaceholder}
           rows={2}
           className="w-full resize-none rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3 text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
         />
@@ -58,7 +60,7 @@ export function OracleView() {
           onClick={handleRoll}
           className="w-full rounded-2xl bg-gold py-3 font-display text-lg font-semibold text-ink-950 shadow-lg shadow-gold/10 transition hover:bg-gold-soft active:scale-[0.99]"
         >
-          Lanzar los dados
+          {t.oracle.rollButton}
         </button>
       </div>
 
@@ -68,8 +70,8 @@ export function OracleView() {
         <div className="flex flex-1 flex-col justify-center">
           <EmptyState
             icon={<IconDice size={32} />}
-            title="Aún no has preguntado nada"
-            description="Escribe una pregunta y lanza los dados."
+            title={t.oracle.emptyTitle}
+            description={t.oracle.emptyDescription}
           />
         </div>
       )}

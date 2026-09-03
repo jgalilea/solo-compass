@@ -1,4 +1,5 @@
-import { LIKELIHOOD_LABELS, type Likelihood } from "../lib/oracle";
+import type { Likelihood } from "../lib/oracle";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 
 const ORDER: Likelihood[] = [
   "muy-improbable",
@@ -15,10 +16,12 @@ export function LikelihoodPicker({
   value: Likelihood;
   onChange: (v: Likelihood) => void;
 }) {
+  const { t } = useLocaleContext();
+
   return (
     <div
       role="radiogroup"
-      aria-label="Probabilidad del suceso"
+      aria-label={t.likelihoodGroupLabel}
       className="grid grid-cols-5 gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1.5"
     >
       {ORDER.map((option) => {
@@ -36,9 +39,9 @@ export function LikelihoodPicker({
                 ? "bg-gold text-ink-950 shadow-sm"
                 : "text-parchment-dim hover:text-parchment",
             ].join(" ")}
-            title={LIKELIHOOD_LABELS[option]}
+            title={t.likelihood[option]}
           >
-            {LIKELIHOOD_LABELS[option]}
+            {t.likelihood[option]}
           </button>
         );
       })}

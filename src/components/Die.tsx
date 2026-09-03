@@ -1,3 +1,6 @@
+import { interpolate } from "../lib/i18n";
+import { useLocaleContext } from "../hooks/useLocaleContext";
+
 const PIP_LAYOUTS: Record<number, [number, number][]> = {
   1: [[50, 50]],
   2: [
@@ -47,6 +50,7 @@ export function Die({
   animate?: boolean;
   faded?: boolean;
 }) {
+  const { t } = useLocaleContext();
   const pips = PIP_LAYOUTS[value] ?? [];
   const dims = size === "lg" ? 72 : size === "md" ? 56 : 40;
 
@@ -58,7 +62,10 @@ export function Die({
       width={dims}
       height={dims}
       role="img"
-      aria-label={`Dado ${color} con valor ${value}`}
+      aria-label={interpolate(t.die.ariaLabel, {
+        color: t.die.color[color],
+        value,
+      })}
       className={[
         animate ? "animate-die-roll" : "",
         faded ? "opacity-40" : "",

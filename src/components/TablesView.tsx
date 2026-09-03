@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import {
   diceMax,
+  getMeaningTables,
   lookupEntry,
-  MEANING_TABLES,
   rollForTable,
   type MeaningTable,
 } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import type { TableRollEntry } from "../lib/history";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { useLocaleContext } from "../hooks/useLocaleContext";
+import { interpolate, type Dictionary } from "../lib/i18n";
 import { EmptyState } from "./StateViews";
 import {
   IconClose,
@@ -25,7 +27,7 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function buildTableRollEntry(table: MeaningTable): TableRollEntry {
+function buildTableRollEntry(t: Dictionary, table: MeaningTable): TableRollEntry {
   const { rolls, total } = rollForTable(table.dice);
   const entry = lookupEntry(table, total);
   return {
@@ -36,7 +38,7 @@ function buildTableRollEntry(table: MeaningTable): TableRollEntry {
     tableName: table.name,
     rolls,
     total,
-    resultText: entry?.text ?? "Sin entrada definida para este valor.",
+    resultText: entry?.text ?? t.tables.noEntryFallback,
     favorite: false,
   };
 }
@@ -52,6 +54,7 @@ function normalize(s: string): string {
 
 export function TablesView() {
   const { addEntry } = useHistoryContext();
+  const { t } = useLocaleContext();
   const [results, setResults] = useState<Record<string, TableRollEntry>>({});
   const [rollingId, setRollingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -59,10 +62,12 @@ export function TablesView() {
     loadFavoriteTableIds(),
   );
 
+  const tables = useMemo(() => getMeaningTables(t), [t]);
+
   function handleRoll(table: MeaningTable) {
     setRollingId(table.id);
     window.setTimeout(() => {
-      const historyEntry = buildTableRollEntry(table);
+      const historyEntry = buildTableRollEntry(t, table);
       setResults((prev) => ({ ...prev, [table.id]: historyEntry }));
       addEntry(historyEntry);
       setRollingId(null);
@@ -81,17 +86,17 @@ export function TablesView() {
 
   const filteredTables = useMemo(() => {
     const q = normalize(query.trim());
-    if (!q) return MEANING_TABLES;
-    return MEANING_TABLES.filter(
-      (t) =>
-        normalize(t.name).includes(q) ||
-        normalize(t.description).includes(q) ||
-        normalize(t.game.name).includes(q),
+    if (!q) return tables;
+    return tables.filter(
+      (table) =>
+        normalize(table.name).includes(q) ||
+        normalize(table.description).includes(q) ||
+        normalize(table.game.name).includes(q),
     );
-  }, [query]);
+  }, [tables, query]);
 
-  const favoriteTables = filteredTables.filter((t) => favoriteIds.has(t.id));
-  const otherTables = filteredTables.filter((t) => !favoriteIds.has(t.id));
+  const favoriteTables = filteredTables.filter((table) => favoriteIds.has(table.id));
+  const otherTables = filteredTables.filter((table) => !favoriteIds.has(table.id));
 
   function renderCard(table: MeaningTable) {
     return (
@@ -111,12 +116,9 @@ export function TablesView() {
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-          Tablas de significado
+          {t.tables.title}
         </h1>
-        <p className="mt-2 text-sm text-parchment-dim">
-          Contenido de ejemplo — sustituye las entradas por tus propias
-          tablas cuando quieras.
-        </p>
+        <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
       </header>
 
       <label className="relative block">
@@ -128,8 +130,8 @@ export function TablesView() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar tabla…"
-          aria-label="Buscar tabla por nombre"
+          placeholder={t.tables.searchPlaceholder}
+          aria-label={t.tables.searchLabel}
           className="w-full rounded-2xl border border-ink-border bg-ink-900/70 py-2.5 pl-10 pr-4 text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
         />
       </label>
@@ -137,8 +139,10 @@ export function TablesView() {
       {filteredTables.length === 0 ? (
         <EmptyState
           icon={<IconSearch size={24} />}
-          title="Sin resultados"
-          description={`Ninguna tabla coincide con «${query.trim()}».`}
+          title={t.tables.noResultsTitle}
+          description={interpolate(t.tables.noResultsDescription, {
+            query: query.trim(),
+          })}
         />
       ) : (
         <>
@@ -146,7 +150,7 @@ export function TablesView() {
             <div className="flex flex-col gap-4">
               <h2 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-parchment-dim">
                 <IconStar size={13} filled className="text-gold" />
-                Favoritas
+                {t.tables.favoritesHeading}
               </h2>
               {favoriteTables.map(renderCard)}
             </div>
@@ -155,7 +159,7 @@ export function TablesView() {
           <div className="flex flex-col gap-4">
             {favoriteTables.length > 0 && otherTables.length > 0 && (
               <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
-                Todas las tablas
+                {t.tables.allHeading}
               </h2>
             )}
             {otherTables.map(renderCard)}
@@ -181,6 +185,8 @@ function TableCard({
   onRoll: () => void;
   onToggleFavorite: () => void;
 }) {
+  const { t } = useLocaleContext();
+
   return (
     <div className="rounded-3xl border border-ink-border bg-ink-800/50 p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -207,9 +213,7 @@ function TableCard({
           type="button"
           onClick={onToggleFavorite}
           aria-pressed={favorite}
-          aria-label={
-            favorite ? "Quitar tabla de favoritas" : "Marcar tabla como favorita"
-          }
+          aria-label={favorite ? t.tables.favoriteRemove : t.tables.favoriteAdd}
           className={[
             "-m-1 shrink-0 p-1 transition",
             favorite ? "text-gold" : "text-parchment-dim/50 hover:text-gold",
@@ -227,13 +231,13 @@ function TableCard({
         disabled={rolling}
         className="mt-3 w-full rounded-2xl border border-gold/50 bg-gold/10 py-2.5 font-medium text-gold transition hover:bg-gold/20 disabled:opacity-60"
       >
-        {rolling ? "Lanzando…" : `Tirar ${table.dice}`}
+        {rolling ? t.tables.rolling : interpolate(t.tables.rollButton, { dice: table.dice })}
       </button>
 
       {result && (
         <div className="animate-fade-up mt-4 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
           <div className="flex items-center justify-between text-xs uppercase tracking-wide text-parchment-dim">
-            <span>Resultado {result.total}</span>
+            <span>{interpolate(t.tables.resultLabel, { n: result.total })}</span>
             <span>{result.rolls.join(" · ")}</span>
           </div>
           <p className="mt-2 text-parchment">{result.resultText}</p>
@@ -244,6 +248,7 @@ function TableCard({
 }
 
 function TableEntriesButton({ table }: { table: MeaningTable }) {
+  const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
 
   return (
@@ -251,13 +256,13 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        title="Ver todos los resultados posibles de esta tabla"
+        title={t.tables.viewResultsTitle}
         className="mt-3 flex items-center gap-1.5 rounded-xl border border-ink-border px-2.5 py-1.5 text-xs uppercase tracking-wide text-parchment-dim transition hover:border-gold/50 hover:text-gold"
       >
         <IconList size={13} />
         {table.dice} · 1–{diceMax(table.dice)}
         <span className="normal-case tracking-normal text-parchment-dim/70">
-          · ver resultados
+          {t.tables.viewResultsHint}
         </span>
       </button>
 
@@ -266,7 +271,7 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center"
           role="dialog"
           aria-modal="true"
-          aria-label={`Todos los resultados de ${table.name}`}
+          aria-label={interpolate(t.tables.allResultsDialogLabel, { name: table.name })}
           onClick={() => setOpen(false)}
         >
           <div
@@ -280,14 +285,15 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar"
+                aria-label={t.common.close}
                 className="-m-1 shrink-0 p-1 text-parchment-dim transition hover:text-parchment"
               >
                 <IconClose size={16} />
               </button>
             </div>
             <p className="mb-3 text-xs uppercase tracking-wide text-parchment-dim/70">
-              {table.dice} · {table.entries.length} resultados posibles
+              {table.dice} ·{" "}
+              {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
             </p>
             <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
               {table.entries.map((entry) => (

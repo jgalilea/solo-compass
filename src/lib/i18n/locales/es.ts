@@ -1,0 +1,150 @@
+import type { Dictionary } from "../types";
+
+export const es: Dictionary = {
+  common: {
+    close: "Cerrar",
+    cancel: "Cancelar",
+    loading: "Cargando…",
+    retry: "Reintentar",
+    somethingWrong: "Algo ha ido mal",
+  },
+  nav: {
+    oracle: "Oráculo",
+    tables: "Tablas",
+    history: "Historial",
+  },
+  header: {
+    appName: "Solo Compass",
+  },
+  language: {
+    triggerLabel: "Cambiar idioma",
+    dialogTitle: "Idioma",
+    names: { es: "Español", en: "English" },
+  },
+  themeSwitcher: {
+    triggerLabel: "Cambiar tema visual",
+    dialogTitle: "Tema visual",
+  },
+  theme: {
+    fantasia: { name: "Fantasía", tagline: "Mazmorras, dragones y oro viejo." },
+    pulp: { name: "Pulp", tagline: "Titular de periódico y culto secreto." },
+    moderno: { name: "Moderno", tagline: "Limpio, neutro, sin adornos." },
+    scifi: { name: "Sci-fi", tagline: "Terminal, código y neón verde." },
+    osr: { name: "OSR", tagline: "Tinta, hueso y sangre seca." },
+  },
+  about: {
+    triggerLabel: "Acerca de Solo Compass y créditos",
+    dialogLabel: "Acerca de Solo Compass",
+    description:
+      "Oráculo y tablas de significado para guiar partidas de rol en solitario. Todo el historial se guarda solo en este dispositivo.",
+    recluseUsedBy: "El oráculo usa",
+    recluseAuthor: "de Graven Utterance (Oliver N), bajo licencia",
+    recluseLicense: "CC BY 4.0",
+    recluseViewOriginal: "Ver Recluse original",
+  },
+  oracle: {
+    title: "Oráculo",
+    recluseLinkTitle: "Ver Recluse, de Graven Utterance (CC BY 4.0)",
+    questionLabel: "Pregunta para el oráculo",
+    questionPlaceholder:
+      "¿Consigue Lydia saltar la valla antes de que la alcancen?",
+    rollButton: "Lanzar los dados",
+    emptyTitle: "Aún no has preguntado nada",
+    emptyDescription: "Escribe una pregunta y lanza los dados.",
+    vs: "vs",
+    contradictionExplanation:
+      "Alguna premisa de la pregunta es errónea. Revisa qué estás dando por sentado y replantea la pregunta.",
+  },
+  likelihood: {
+    "muy-improbable": "Muy improbable",
+    improbable: "Improbable",
+    equilibrado: "Equilibrado",
+    probable: "Probable",
+    "muy-probable": "Muy probable",
+  },
+  likelihoodGroupLabel: "Probabilidad del suceso",
+  answer: {
+    si: "Sí",
+    no: "No",
+    contradiccion: "Contradicción",
+  },
+  qualifier: {
+    y: "y además",
+    pero: "pero",
+  },
+  die: {
+    ariaLabel: "Dado {color} con valor {value}",
+    color: { blanco: "blanco", negro: "negro" },
+  },
+  tables: {
+    title: "Tablas de significado",
+    subtitle:
+      "Contenido de ejemplo — sustituye las entradas por tus propias tablas cuando quieras.",
+    searchPlaceholder: "Buscar tabla…",
+    searchLabel: "Buscar tabla por nombre",
+    noResultsTitle: "Sin resultados",
+    noResultsDescription: "Ninguna tabla coincide con «{query}».",
+    favoritesHeading: "Favoritas",
+    allHeading: "Todas las tablas",
+    favoriteAdd: "Marcar tabla como favorita",
+    favoriteRemove: "Quitar tabla de favoritas",
+    rolling: "Lanzando…",
+    rollButton: "Tirar {dice}",
+    resultLabel: "Resultado {n}",
+    viewResultsTitle: "Ver todos los resultados posibles de esta tabla",
+    viewResultsHint: "· ver resultados",
+    resultsCountLabel: "{count} resultados posibles",
+    allResultsDialogLabel: "Todos los resultados de {name}",
+    genericGame: "Genérico",
+    noEntryFallback: "Sin entrada definida para este valor.",
+    placeholderEntry: "{name} · resultado {n} — sustituye este texto por tu tabla.",
+    names: {
+      eventoAleatorio: "Evento aleatorio",
+      accionPnj: "Acción de PNJ",
+      descriptorEscena: "Descriptor de escena",
+    },
+    descriptions: {
+      eventoAleatorio: "Qué interrumpe o cambia la escena actual.",
+      accionPnj: "Qué hace un personaje no jugador ante la situación.",
+      descriptorEscena: "Un adjetivo o tono para colorear el lugar o el momento.",
+    },
+  },
+  history: {
+    title: "Historial",
+    subtitle:
+      "Tiradas guardadas en este dispositivo. Desliza una tirada a la derecha para destacarla o a la izquierda para eliminarla.",
+    clearAll: "Borrar todo",
+    filterAll: "Todo",
+    filterOracle: "Oráculo",
+    filterTables: "Tablas",
+    filterFavorites: "Favoritas",
+    loading: "Cargando historial…",
+    loadErrorTitle: "No se pudo cargar el historial",
+    emptyTitle: "Todavía no hay tiradas",
+    emptyDescription:
+      "Consulta el oráculo o tira en una tabla y aparecerá aquí, guardado en este dispositivo.",
+    emptyFavoritesTitle: "Aún no has destacado ninguna tirada",
+    emptyFavoritesDescription:
+      "Toca la estrella de una tirada para marcarla como favorita.",
+    emptyFilterTitle: "Sin resultados para este filtro",
+    kindOracle: "Oráculo",
+    favoriteAdd: "Marcar como destacada",
+    favoriteRemove: "Quitar de destacadas",
+    deleteEntry: "Eliminar entrada",
+    rollLabel: "Tirada: {rolls} → {total}",
+    clearConfirmTitle: "¿Borrar todo el historial?",
+    clearConfirmDescription: "Esta acción no se puede deshacer.",
+    clearConfirmButton: "Borrar todo",
+    deleteConfirmTitle: "¿Eliminar esta tirada?",
+    deleteConfirmSuffix: "Esta acción no se puede deshacer.",
+    deleteConfirmButton: "Eliminar",
+    describeOracleFallback: "Esta tirada del oráculo.",
+  },
+  error: {
+    boundaryTitle: "Algo se ha roto en la app",
+    boundaryDescription:
+      "Ha ocurrido un error inesperado. Puedes recargar la página; tu historial guardado no se pierde.",
+    reload: "Recargar",
+  },
+  dateLocale: "es-ES",
+};

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { THEMES } from "../lib/theme";
 import { useThemeContext } from "../hooks/useThemeContext";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 import { IconCheck, IconClose, IconPalette } from "./icons/Icons";
 
 export function ThemeSwitcher() {
   const { theme, setTheme } = useThemeContext();
+  const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
 
   return (
@@ -12,7 +14,7 @@ export function ThemeSwitcher() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Cambiar tema visual"
+        aria-label={t.themeSwitcher.triggerLabel}
         className="-m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
       >
         <IconPalette size={20} />
@@ -23,7 +25,7 @@ export function ThemeSwitcher() {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center"
           role="dialog"
           aria-modal="true"
-          aria-label="Selector de tema visual"
+          aria-label={t.themeSwitcher.dialogTitle}
           onClick={() => setOpen(false)}
         >
           <div
@@ -31,11 +33,13 @@ export function ThemeSwitcher() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-display text-lg text-parchment">Tema visual</h2>
+              <h2 className="font-display text-lg text-parchment">
+                {t.themeSwitcher.dialogTitle}
+              </h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar"
+                aria-label={t.common.close}
                 className="-m-1 p-1 text-parchment-dim transition hover:text-parchment"
               >
                 <IconClose size={16} />
@@ -43,14 +47,15 @@ export function ThemeSwitcher() {
             </div>
 
             <div className="flex flex-col gap-2">
-              {THEMES.map((t) => {
-                const active = t.id === theme;
+              {THEMES.map((themeInfo) => {
+                const active = themeInfo.id === theme;
+                const label = t.theme[themeInfo.id];
                 return (
                   <button
-                    key={t.id}
+                    key={themeInfo.id}
                     type="button"
                     onClick={() => {
-                      setTheme(t.id);
+                      setTheme(themeInfo.id);
                       setOpen(false);
                     }}
                     aria-pressed={active}
@@ -62,7 +67,7 @@ export function ThemeSwitcher() {
                     ].join(" ")}
                   >
                     <span className="flex h-8 w-8 shrink-0 overflow-hidden rounded-full border border-ink-border/70">
-                      {t.swatch.map((c, i) => (
+                      {themeInfo.swatch.map((c, i) => (
                         <span
                           key={i}
                           className="h-full flex-1"
@@ -72,10 +77,10 @@ export function ThemeSwitcher() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium text-parchment">
-                        {t.name}
+                        {label.name}
                       </span>
                       <span className="block truncate text-xs text-parchment-dim">
-                        {t.tagline}
+                        {label.tagline}
                       </span>
                     </span>
                     {active && (

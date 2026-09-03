@@ -1,16 +1,18 @@
 import { useMemo, useState } from "react";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { IconScroll, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
+import type { Dictionary } from "../lib/i18n";
 
 type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
 
-function describeEntry(entry: HistoryEntry): string {
+function describeEntry(t: Dictionary, entry: HistoryEntry): string {
   if (entry.kind === "oraculo") {
-    return entry.question ? `“${entry.question}”` : "Esta tirada del oráculo.";
+    return entry.question ? `“${entry.question}”` : t.history.describeOracleFallback;
   }
   return `${entry.tableName}: ${entry.resultText}`;
 }
@@ -18,6 +20,7 @@ function describeEntry(entry: HistoryEntry): string {
 export function HistoryView() {
   const { status, entries, error, removeEntry, toggleFavorite, clear, retry } =
     useHistoryContext();
+  const { t } = useLocaleContext();
   const [filter, setFilter] = useState<Filter>("todo");
   const [confirmingClear, setConfirmingClear] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -33,17 +36,21 @@ export function HistoryView() {
     return entries.filter((e) => e.kind === filter);
   }, [entries, filter]);
 
+  const filters: [Filter, string][] = [
+    ["todo", t.history.filterAll],
+    ["oraculo", t.history.filterOracle],
+    ["tabla", t.history.filterTables],
+    ["favoritas", t.history.filterFavorites],
+  ];
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-            Historial
+            {t.history.title}
           </h1>
-          <p className="mt-1 text-sm text-parchment-dim">
-            Tiradas guardadas en este dispositivo. Desliza una tirada a la
-            derecha para destacarla o a la izquierda para eliminarla.
-          </p>
+          <p className="mt-1 text-sm text-parchment-dim">{t.history.subtitle}</p>
         </div>
         {entries.length > 0 && (
           <button
@@ -52,21 +59,14 @@ export function HistoryView() {
             className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
           >
             <IconTrash size={14} />
-            Borrar todo
+            {t.history.clearAll}
           </button>
         )}
       </header>
 
       {status === "ready" && entries.length > 0 && (
         <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs">
-          {(
-            [
-              ["todo", "Todo"],
-              ["oraculo", "Oráculo"],
-              ["tabla", "Tablas"],
-              ["favoritas", "Favoritas"],
-            ] as [Filter, string][]
-          ).map(([key, label]) => (
+          {filters.map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -84,11 +84,11 @@ export function HistoryView() {
         </div>
       )}
 
-      {status === "loading" && <LoadingState label="Cargando historial…" />}
+      {status === "loading" && <LoadingState label={t.history.loading} />}
 
       {status === "error" && (
         <ErrorState
-          title="No se pudo cargar el historial"
+          title={t.history.loadErrorTitle}
           description={error ?? undefined}
           onRetry={retry}
         />
@@ -97,8 +97,8 @@ export function HistoryView() {
       {status === "ready" && entries.length === 0 && (
         <EmptyState
           icon={<IconScroll size={28} />}
-          title="Todavía no hay tiradas"
-          description="Consulta el oráculo o tira en una tabla y aparecerá aquí, guardado en este dispositivo."
+          title={t.history.emptyTitle}
+          description={t.history.emptyDescription}
         />
       )}
 
@@ -106,13 +106,11 @@ export function HistoryView() {
         <EmptyState
           title={
             filter === "favoritas"
-              ? "Aún no has destacado ninguna tirada"
-              : "Sin resultados para este filtro"
+              ? t.history.emptyFavoritesTitle
+              : t.history.emptyFilterTitle
           }
           description={
-            filter === "favoritas"
-              ? "Toca la estrella de una tirada para marcarla como favorita."
-              : undefined
+            filter === "favoritas" ? t.history.emptyFavoritesDescription : undefined
           }
         />
       )}
@@ -133,9 +131,9 @@ export function HistoryView() {
 
       {confirmingClear && (
         <ConfirmDialog
-          title="¿Borrar todo el historial?"
-          description="Esta acción no se puede deshacer."
-          confirmLabel="Borrar todo"
+          title={t.history.clearConfirmTitle}
+          description={t.history.clearConfirmDescription}
+          confirmLabel={t.history.clearConfirmButton}
           onConfirm={() => {
             clear();
             setConfirmingClear(false);
@@ -146,9 +144,9 @@ export function HistoryView() {
 
       {entryToDelete && (
         <ConfirmDialog
-          title="¿Eliminar esta tirada?"
-          description={`${describeEntry(entryToDelete)} Esta acción no se puede deshacer.`}
-          confirmLabel="Eliminar"
+          title={t.history.deleteConfirmTitle}
+          description={`${describeEntry(t, entryToDelete)} ${t.history.deleteConfirmSuffix}`}
+          confirmLabel={t.history.deleteConfirmButton}
           onConfirm={() => {
             removeEntry(entryToDelete.id);
             setDeleteId(null);

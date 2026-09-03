@@ -56,14 +56,6 @@ export const LIKELIHOOD_DICE: Record<
   "muy-probable": { white: 3, black: 1 },
 };
 
-export const LIKELIHOOD_LABELS: Record<Likelihood, string> = {
-  "muy-improbable": "Muy improbable",
-  improbable: "Improbable",
-  equilibrado: "Equilibrado",
-  probable: "Probable",
-  "muy-probable": "Muy probable",
-};
-
 function rollDie(): number {
   return 1 + Math.floor(Math.random() * 6);
 }
@@ -113,11 +105,4 @@ export function rollOracle(
     qualifier,
     favorite: false,
   };
-}
-
-export function formatAnswer(roll: Pick<OracleRoll, "answer" | "qualifier">): string {
-  const base =
-    roll.answer === "si" ? "Sí" : roll.answer === "no" ? "No" : "Contradicción";
-  if (!roll.qualifier) return base;
-  return roll.qualifier === "y" ? `${base}, y además.` : `${base}, pero.`;
 }

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { IconClose, IconCompass, IconExternalLink, IconInfo } from "./icons/Icons";
+import { useLocaleContext } from "../hooks/useLocaleContext";
 
 const RECLUSE_URL = "https://gravenutterance.itch.io/recluse";
 
 export function AboutDialog() {
+  const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
 
   return (
@@ -11,7 +13,7 @@ export function AboutDialog() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Acerca de Solo Compass y créditos"
+        aria-label={t.about.triggerLabel}
         className="-m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
       >
         <IconInfo size={20} />
@@ -22,7 +24,7 @@ export function AboutDialog() {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center"
           role="dialog"
           aria-modal="true"
-          aria-label="Acerca de Solo Compass"
+          aria-label={t.about.dialogLabel}
           onClick={() => setOpen(false)}
         >
           <div
@@ -33,41 +35,37 @@ export function AboutDialog() {
               <div className="flex items-center gap-2">
                 <IconCompass size={20} className="text-gold" />
                 <h2 className="font-display text-lg text-parchment">
-                  Solo Compass
+                  {t.header.appName}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar"
+                aria-label={t.common.close}
                 className="-m-1 p-1 text-parchment-dim transition hover:text-parchment"
               >
                 <IconClose size={16} />
               </button>
             </div>
 
-            <p className="text-sm text-parchment-dim">
-              Oráculo y tablas de significado para guiar partidas de rol en
-              solitario. Todo el historial se guarda solo en este
-              dispositivo.
-            </p>
+            <p className="text-sm text-parchment-dim">{t.about.description}</p>
 
             <div className="mt-4 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
-                El oráculo usa
+                {t.about.recluseUsedBy}
               </p>
               <p className="mt-1 font-display text-base text-parchment">
                 Recluse
               </p>
               <p className="mt-1 text-sm text-parchment-dim">
-                de Graven Utterance (Oliver N), bajo licencia{" "}
+                {t.about.recluseAuthor}{" "}
                 <a
                   href="https://creativecommons.org/licenses/by/4.0/"
                   target="_blank"
                   rel="noreferrer"
                   className="underline decoration-dotted hover:text-parchment"
                 >
-                  CC BY 4.0
+                  {t.about.recluseLicense}
                 </a>
                 .
               </p>
@@ -77,7 +75,7 @@ export function AboutDialog() {
                 rel="noreferrer"
                 className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
               >
-                Ver Recluse original
+                {t.about.recluseViewOriginal}
                 <IconExternalLink size={14} />
               </a>
             </div>
