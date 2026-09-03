@@ -34,6 +34,12 @@ export function HistoryEntryCard({
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
+  // Refleja dragX sin esperar al repintado, para poder leer el valor
+  // final al soltar sin depender de un closure que podría quedar
+  // desactualizado (la actualización de dragX y la lectura al soltar
+  // pueden caer en el mismo tick).
+  const dragXRef = useRef(0);
+  const pointerIdRef = useRef<number | null>(null);
 
   // Se escuchan los eventos de puntero en window mientras se arrastra, para
   // no perder el gesto si el dedo/cursor sale de la tarjeta.
@@ -41,26 +47,47 @@ export function HistoryEntryCard({
     if (!dragging) return;
 
     function handleMove(e: globalThis.PointerEvent) {
+      if (e.pointerId !== pointerIdRef.current) return;
       const dx = e.clientX - startX.current;
-      setDragX(Math.max(-MAX_DRAG, Math.min(MAX_DRAG, dx)));
+      const clamped = Math.max(-MAX_DRAG, Math.min(MAX_DRAG, dx));
+      dragXRef.current = clamped;
+      setDragX(clamped);
     }
 
-    function handleUp() {
-      setDragX((current) => {
-        if (current >= SWIPE_THRESHOLD) {
-          onToggleFavorite(entry.id);
-        } else if (current <= -SWIPE_THRESHOLD) {
-          onRequestDelete(entry.id);
-        }
-        return 0;
-      });
+    function handleUp(e: globalThis.PointerEvent) {
+      if (e.pointerId !== pointerIdRef.current) return;
+      const finalX = dragXRef.current;
+      // Primero se limpia el estado visual local; el aviso al padre
+      // (que dispara renders en otro componente) va después y fuera
+      // de cualquier función de actualización de estado, para no
+      // arriesgarse a dejar el gesto a medio resetear.
+      dragXRef.current = 0;
+      setDragX(0);
       setDragging(false);
+      pointerIdRef.current = null;
+      if (finalX >= SWIPE_THRESHOLD) {
+        onToggleFavorite(entry.id);
+      } else if (finalX <= -SWIPE_THRESHOLD) {
+        onRequestDelete(entry.id);
+      }
+    }
+
+    function handleCancel() {
+      // Red de seguridad: si por lo que sea nunca llega el pointerup
+      // (p. ej. se cambia de app a medio gesto), no se dispara
+      // ninguna acción, solo se limpia el estado visual.
+      dragXRef.current = 0;
+      setDragX(0);
+      setDragging(false);
+      pointerIdRef.current = null;
     }
 
     window.addEventListener("pointermove", handleMove);
     window.addEventListener("pointerup", handleUp);
     window.addEventListener("pointercancel", handleUp);
+    window.addEventListener("blur", handleCancel);
     return () => {
+      window.removeEventListener("blur", handleCancel);
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
       window.removeEventListener("pointercancel", handleUp);
@@ -70,6 +97,8 @@ export function HistoryEntryCard({
   const handlePointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     startX.current = e.clientX;
+    dragXRef.current = 0;
+    pointerIdRef.current = e.pointerId;
     setDragging(true);
   }, []);
 
