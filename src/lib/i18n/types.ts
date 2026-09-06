@@ -127,6 +127,13 @@ export interface Dictionary {
     deleteConfirmSuffix: string;
     deleteConfirmButton: string;
     describeOracleFallback: string;
+    storageUnavailableError: string;
+    storageCorruptedError: string;
+    storageSaveError: string;
+    storageClearError: string;
+    genericLoadError: string;
+    genericSaveError: string;
+    genericClearError: string;
   };
   error: {
     boundaryTitle: string;

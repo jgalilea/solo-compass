@@ -1,4 +1,6 @@
+import { get, set, del } from "idb-keyval";
 import type { OracleRoll } from "./oracle";
+import type { Dictionary } from "./i18n";
 
 export interface TableRollEntry {
   kind: "tabla";
@@ -14,71 +16,89 @@ export interface TableRollEntry {
 
 export type HistoryEntry = OracleRoll | TableRollEntry;
 
-const STORAGE_KEY = "solo-compass:history";
-const STORAGE_VERSION = 1;
+// Se guarda en IndexedDB (vía idb-keyval) en vez de localStorage: el
+// historial no tiene techo natural de tamaño y localStorage está
+// limitado a ~5 MiB por origen, compartidos además con cualquier otra
+// app en el mismo dominio. IndexedDB da órdenes de magnitud más
+// espacio y es igual de gratuito/sin dependencias de servidor.
+const IDB_KEY = "solo-compass:history";
+const LEGACY_LOCALSTORAGE_KEY = "solo-compass:history";
 
-interface StoredPayload {
+interface LegacyStoredPayload {
   version: number;
   entries: HistoryEntry[];
 }
 
 export class HistoryStorageError extends Error {}
 
-function isBrowserStorageAvailable(): boolean {
+/**
+ * Si ya hay historial guardado en localStorage de antes de pasar a
+ * IndexedDB, lo migra una vez y limpia la clave antigua (para
+ * recuperar ese espacio del cupo compartido). Si algo falla aquí no
+ * se propaga como error: como mucho, el historial antiguo se pierde,
+ * pero no debe impedir que la app siga funcionando con IndexedDB.
+ */
+function migrateFromLocalStorage(): HistoryEntry[] | null {
   try {
-    const testKey = "solo-compass:__test__";
-    window.localStorage.setItem(testKey, "1");
-    window.localStorage.removeItem(testKey);
-    return true;
+    const raw = window.localStorage.getItem(LEGACY_LOCALSTORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LegacyStoredPayload | HistoryEntry[];
+    const entries = Array.isArray(parsed) ? parsed : parsed.entries;
+    if (!Array.isArray(entries)) return null;
+    const normalized = entries.map((e) => ({ ...e, favorite: e.favorite ?? false }));
+    window.localStorage.removeItem(LEGACY_LOCALSTORAGE_KEY);
+    return normalized;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function loadHistory(): HistoryEntry[] {
+export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
   if (typeof window === "undefined") return [];
-  if (!isBrowserStorageAvailable()) {
-    throw new HistoryStorageError(
-      "El almacenamiento local no está disponible en este navegador.",
-    );
+
+  let stored: HistoryEntry[] | undefined;
+  try {
+    stored = await get<HistoryEntry[]>(IDB_KEY);
+  } catch {
+    throw new HistoryStorageError(t.history.storageUnavailableError);
   }
 
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw) as StoredPayload | HistoryEntry[];
-    // Compatibilidad hacia atrás por si el formato cambia en el futuro.
-    const entries = Array.isArray(parsed) ? parsed : parsed.entries;
-    if (!Array.isArray(entries)) {
-      throw new Error("Formato inesperado");
+  if (stored) {
+    if (!Array.isArray(stored)) {
+      throw new HistoryStorageError(t.history.storageCorruptedError);
     }
     // Compatibilidad con historiales guardados antes de añadir favoritos.
-    return entries.map((e) => ({ ...e, favorite: e.favorite ?? false }));
+    return stored.map((e) => ({ ...e, favorite: e.favorite ?? false }));
+  }
+
+  const migrated = migrateFromLocalStorage();
+  if (migrated) {
+    try {
+      await set(IDB_KEY, migrated);
+    } catch {
+      // No se pudo persistir la migración todavía, pero se devuelven
+      // los datos igualmente para no perderlos de la sesión actual.
+    }
+    return migrated;
+  }
+
+  return [];
+}
+
+export async function saveHistory(t: Dictionary, entries: HistoryEntry[]): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    await set(IDB_KEY, entries);
   } catch {
-    throw new HistoryStorageError(
-      "El historial guardado está dañado y no se pudo leer.",
-    );
+    throw new HistoryStorageError(t.history.storageSaveError);
   }
 }
 
-export function saveHistory(entries: HistoryEntry[]): void {
-  if (typeof window === "undefined") return;
-  const payload: StoredPayload = { version: STORAGE_VERSION, entries };
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    throw new HistoryStorageError(
-      "No se pudo guardar el historial (¿almacenamiento lleno o bloqueado?).",
-    );
-  }
-}
-
-export function clearHistory(): void {
+export async function clearHistory(t: Dictionary): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.removeItem(STORAGE_KEY);
+    await del(IDB_KEY);
   } catch {
-    throw new HistoryStorageError("No se pudo borrar el historial.");
+    throw new HistoryStorageError(t.history.storageClearError);
   }
 }

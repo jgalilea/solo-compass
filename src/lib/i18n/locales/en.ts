@@ -136,6 +136,13 @@ export const en: Dictionary = {
     deleteConfirmSuffix: "This action can't be undone.",
     deleteConfirmButton: "Delete",
     describeOracleFallback: "This oracle roll.",
+    storageUnavailableError: "This browser's storage isn't available.",
+    storageCorruptedError: "The saved history is corrupted and couldn't be read.",
+    storageSaveError: "Couldn't save the history (storage full or blocked?).",
+    storageClearError: "Couldn't clear the history.",
+    genericLoadError: "Couldn't load the history.",
+    genericSaveError: "Couldn't save the history.",
+    genericClearError: "Couldn't clear the history.",
   },
   error: {
     boundaryTitle: "Something broke in the app",

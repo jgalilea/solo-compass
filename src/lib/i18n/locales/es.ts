@@ -139,6 +139,14 @@ export const es: Dictionary = {
     deleteConfirmSuffix: "Esta acción no se puede deshacer.",
     deleteConfirmButton: "Eliminar",
     describeOracleFallback: "Esta tirada del oráculo.",
+    storageUnavailableError:
+      "El almacenamiento de este navegador no está disponible.",
+    storageCorruptedError: "El historial guardado está dañado y no se pudo leer.",
+    storageSaveError: "No se pudo guardar el historial (¿almacenamiento lleno o bloqueado?).",
+    storageClearError: "No se pudo borrar el historial.",
+    genericLoadError: "No se pudo cargar el historial.",
+    genericSaveError: "No se pudo guardar el historial.",
+    genericClearError: "No se pudo borrar el historial.",
   },
   error: {
     boundaryTitle: "Algo se ha roto en la app",

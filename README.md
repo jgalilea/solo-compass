@@ -29,7 +29,7 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   texto de cada entrada (y el `game` real) en `src/lib/tables.ts`. El botón
   con el tipo de dado abre la lista completa de resultados posibles.
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
-  persistidas en `localStorage`.
+  persistidas en IndexedDB (ver "Almacenamiento" más abajo).
 
 ## Idioma
 
@@ -75,8 +75,20 @@ repositorio, actualízalo antes de desplegar.
 Alternativa manual (sin Actions): `npm run deploy`, que compila y publica
 `dist/` en la rama `gh-pages` usando el paquete `gh-pages`.
 
-## Datos y privacidad
+## Almacenamiento
 
-Todo el historial vive en el `localStorage` del navegador. No hay backend
-ni sincronización: borrar los datos del sitio o cambiar de navegador
-empieza un historial nuevo.
+Todo vive en el navegador, sin backend ni sincronización — borrar los
+datos del sitio o cambiar de navegador/dispositivo empieza de cero.
+
+- **Historial** (`src/lib/history.ts`): en **IndexedDB** vía
+  [`idb-keyval`](https://github.com/jakearchibald/idb-keyval), porque no
+  tiene techo natural de tamaño y `localStorage` está limitado a ~5 MiB
+  por origen — compartidos, además, con cualquier otra app en el mismo
+  dominio (`usuario.github.io` es un origen único para todos los
+  proyectos que cuelgan de ahí, con o sin ruta distinta). Si ya había
+  historial guardado en `localStorage` de una versión anterior, se migra
+  una vez sola a IndexedDB de forma automática y transparente.
+- **Tema, idioma y tablas favoritas**: siguen en `localStorage`, por ser
+  datos minúsculos y de lectura síncrona (el tema, en concreto, se lee
+  antes del primer pintado para evitar parpadeos, algo que IndexedDB no
+  permite al ser siempre asíncrono).

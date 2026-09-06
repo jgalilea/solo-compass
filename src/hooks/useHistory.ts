@@ -6,6 +6,7 @@ import {
   saveHistory,
   type HistoryEntry,
 } from "../lib/history";
+import { useLocaleContext } from "./useLocaleContext";
 
 export type HistoryStatus = "loading" | "ready" | "error";
 
@@ -21,47 +22,53 @@ interface UseHistoryResult {
 }
 
 export function useHistory(): UseHistoryResult {
+  const { t } = useLocaleContext();
   const [status, setStatus] = useState<HistoryStatus>("loading");
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    let cancelled = false;
     setStatus("loading");
     setError(null);
-    // Se difiere un tick para dejar pintar el estado de carga incluso
-    // aunque localStorage responda de forma síncrona.
-    const timer = window.setTimeout(() => {
-      try {
-        const loaded = loadHistory();
+    // IndexedDB es asíncrono de verdad (a diferencia del localStorage
+    // de antes), así que ya no hace falta simular el estado de carga
+    // con un setTimeout: la propia lectura tarda lo suyo.
+    loadHistory(t)
+      .then((loaded) => {
+        if (cancelled) return;
         setEntries(loaded);
         setStatus("ready");
-      } catch (err) {
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
         setError(
-          err instanceof HistoryStorageError
-            ? err.message
-            : "No se pudo cargar el historial.",
+          err instanceof HistoryStorageError ? err.message : t.history.genericLoadError,
         );
         setStatus("error");
-      }
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
 
   useEffect(() => load(), [load]);
 
-  const persist = useCallback((next: HistoryEntry[]) => {
-    setEntries(next);
-    try {
-      saveHistory(next);
-    } catch (err) {
-      setError(
-        err instanceof HistoryStorageError
-          ? err.message
-          : "No se pudo guardar el historial.",
-      );
-      setStatus("error");
-    }
-  }, []);
+  const persist = useCallback(
+    (next: HistoryEntry[]) => {
+      // Optimista: la UI refleja el cambio ya, sin esperar a que el
+      // guardado en IndexedDB confirme (es rápido, pero sigue siendo
+      // una operación asíncrona).
+      setEntries(next);
+      saveHistory(t, next).catch((err: unknown) => {
+        setError(
+          err instanceof HistoryStorageError ? err.message : t.history.genericSaveError,
+        );
+        setStatus("error");
+      });
+    },
+    [t],
+  );
 
   const addEntry = useCallback(
     (entry: HistoryEntry) => {
@@ -89,20 +96,19 @@ export function useHistory(): UseHistoryResult {
   );
 
   const clear = useCallback(() => {
-    try {
-      clearHistory();
-      setEntries([]);
-      setStatus("ready");
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof HistoryStorageError
-          ? err.message
-          : "No se pudo borrar el historial.",
-      );
-      setStatus("error");
-    }
-  }, []);
+    clearHistory(t)
+      .then(() => {
+        setEntries([]);
+        setStatus("ready");
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        setError(
+          err instanceof HistoryStorageError ? err.message : t.history.genericClearError,
+        );
+        setStatus("error");
+      });
+  }, [t]);
 
   return {
     status,
