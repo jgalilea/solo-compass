@@ -4,8 +4,9 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
+import { OracleSwitcher } from "./OracleSwitcher";
 import { EmptyState } from "./StateViews";
-import { IconDice, IconExternalLink } from "./icons/Icons";
+import { IconDice } from "./icons/Icons";
 
 export function OracleView() {
   const { addEntry } = useHistoryContext();
@@ -26,16 +27,7 @@ export function OracleView() {
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-2 pt-8">
       <header className="flex items-center justify-center gap-2.5">
         <h1 className="font-display text-3xl text-parchment">{t.oracle.title}</h1>
-        <a
-          href="https://gravenutterance.itch.io/recluse"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
-          title={t.oracle.recluseLinkTitle}
-        >
-          Recluse
-          <IconExternalLink size={11} />
-        </a>
+        <OracleSwitcher />
       </header>
 
       <div className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">

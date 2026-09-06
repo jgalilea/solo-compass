@@ -6,6 +6,7 @@ import { HistoryView } from "./components/HistoryView";
 import { HistoryProvider } from "./hooks/HistoryContext";
 import { ThemeProvider } from "./hooks/ThemeContext";
 import { LocaleProvider } from "./hooks/LocaleContext";
+import { OracleProvider } from "./hooks/OracleContext";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 function App() {
@@ -16,17 +17,19 @@ function App() {
     <LocaleProvider>
       <AppErrorBoundary>
         <ThemeProvider>
-          <HistoryProvider>
-            <HashRouter>
-              <Routes>
-                <Route element={<Layout />}>
-                  <Route index element={<OracleView />} />
-                  <Route path="tablas" element={<TablesView />} />
-                  <Route path="historial" element={<HistoryView />} />
-                </Route>
-              </Routes>
-            </HashRouter>
-          </HistoryProvider>
+          <OracleProvider>
+            <HistoryProvider>
+              <HashRouter>
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route index element={<OracleView />} />
+                    <Route path="tablas" element={<TablesView />} />
+                    <Route path="historial" element={<HistoryView />} />
+                  </Route>
+                </Routes>
+              </HashRouter>
+            </HistoryProvider>
+          </OracleProvider>
         </ThemeProvider>
       </AppErrorBoundary>
     </LocaleProvider>

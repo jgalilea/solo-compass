@@ -37,14 +37,18 @@ export const en: Dictionary = {
     dialogLabel: "About Solo Compass",
     description:
       "An oracle and meaning tables to guide solo tabletop RPG sessions. All history is saved only on this device.",
-    recluseUsedBy: "The oracle uses",
-    recluseAuthor: "by Graven Utterance (Oliver N), licensed under",
-    recluseLicense: "CC BY 4.0",
-    recluseViewOriginal: "View original Recluse",
+    oracleUsedBy: "The oracle uses",
+    oracleCreditBy: "by {author}, licensed under",
+    oracleViewOriginal: "View original",
+  },
+  oracleSwitcher: {
+    triggerLabel: "Change oracle",
+    dialogTitle: "Oracle",
+    moreComingSoon: "More oracles are coming soon.",
+    viewOriginal: "View original",
   },
   oracle: {
     title: "Oracle",
-    recluseLinkTitle: "View Recluse, by Graven Utterance (CC BY 4.0)",
     questionLabel: "Question for the oracle",
     questionPlaceholder: "Does Lydia make it over the fence before they catch her?",
     rollButton: "Roll the dice",

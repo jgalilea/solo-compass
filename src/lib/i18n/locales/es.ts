@@ -37,14 +37,18 @@ export const es: Dictionary = {
     dialogLabel: "Acerca de Solo Compass",
     description:
       "Oráculo y tablas de significado para guiar partidas de rol en solitario. Todo el historial se guarda solo en este dispositivo.",
-    recluseUsedBy: "El oráculo usa",
-    recluseAuthor: "de Graven Utterance (Oliver N), bajo licencia",
-    recluseLicense: "CC BY 4.0",
-    recluseViewOriginal: "Ver Recluse original",
+    oracleUsedBy: "El oráculo usa",
+    oracleCreditBy: "de {author}, bajo licencia",
+    oracleViewOriginal: "Ver original",
+  },
+  oracleSwitcher: {
+    triggerLabel: "Cambiar oráculo",
+    dialogTitle: "Oráculo",
+    moreComingSoon: "Habrá más oráculos disponibles próximamente.",
+    viewOriginal: "Ver original",
   },
   oracle: {
     title: "Oráculo",
-    recluseLinkTitle: "Ver Recluse, de Graven Utterance (CC BY 4.0)",
     questionLabel: "Pregunta para el oráculo",
     questionPlaceholder:
       "¿Consigue Lydia saltar la valla antes de que la alcancen?",

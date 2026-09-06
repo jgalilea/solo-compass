@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { IconClose, IconCompass, IconExternalLink, IconInfo } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-
-const RECLUSE_URL = "https://gravenutterance.itch.io/recluse";
+import { useOracleContext } from "../hooks/useOracleContext";
+import { getOracle } from "../lib/oracles";
+import { interpolate } from "../lib/i18n";
 
 export function AboutDialog() {
   const { t } = useLocaleContext();
+  const { oracleId } = useOracleContext();
+  const oracle = getOracle(oracleId);
   const [open, setOpen] = useState(false);
 
   return (
@@ -52,30 +55,30 @@ export function AboutDialog() {
 
             <div className="mt-4 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
-                {t.about.recluseUsedBy}
+                {t.about.oracleUsedBy}
               </p>
               <p className="mt-1 font-display text-base text-parchment">
-                Recluse
+                {oracle.name}
               </p>
               <p className="mt-1 text-sm text-parchment-dim">
-                {t.about.recluseAuthor}{" "}
+                {interpolate(t.about.oracleCreditBy, { author: oracle.author })}{" "}
                 <a
-                  href="https://creativecommons.org/licenses/by/4.0/"
+                  href={oracle.licenseUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="underline decoration-dotted hover:text-parchment"
                 >
-                  {t.about.recluseLicense}
+                  {oracle.license}
                 </a>
                 .
               </p>
               <a
-                href={RECLUSE_URL}
+                href={oracle.url}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
               >
-                {t.about.recluseViewOriginal}
+                {t.about.oracleViewOriginal}
                 <IconExternalLink size={14} />
               </a>
             </div>

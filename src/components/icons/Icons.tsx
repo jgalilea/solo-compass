@@ -185,3 +185,14 @@ export function IconLanguage(props: IconProps) {
     </svg>
   );
 }
+
+export function IconSwap(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 8h13" />
+      <path d="M13 4l4 4-4 4" />
+      <path d="M20 16H7" />
+      <path d="M11 20l-4-4 4-4" />
+    </svg>
+  );
+}

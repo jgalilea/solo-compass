@@ -44,14 +44,18 @@ export interface Dictionary {
     triggerLabel: string;
     dialogLabel: string;
     description: string;
-    recluseUsedBy: string;
-    recluseAuthor: string;
-    recluseLicense: string;
-    recluseViewOriginal: string;
+    oracleUsedBy: string;
+    oracleCreditBy: string;
+    oracleViewOriginal: string;
+  };
+  oracleSwitcher: {
+    triggerLabel: string;
+    dialogTitle: string;
+    moreComingSoon: string;
+    viewOriginal: string;
   };
   oracle: {
     title: string;
-    recluseLinkTitle: string;
     questionLabel: string;
     questionPlaceholder: string;
     rollButton: string;

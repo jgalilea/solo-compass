@@ -5,7 +5,17 @@ tablas de significado y un historial de todo lo que has lanzado.
 Funciona en el navegador, se puede instalar como PWA y no necesita
 conexión ni servidor: todo se guarda en tu dispositivo.
 
-## Oráculo Recluse
+## Oráculos
+
+El badge junto al título "Oráculo" es un selector (`src/lib/oracles.ts`
++ `OracleSwitcher`): de momento solo hay uno registrado, pero la
+estructura ya soporta añadir más (cada uno con su propio nombre, autor,
+licencia y enlace) sin tocar el resto de la app. Cuando llegue un
+segundo oráculo con reglas propias, `OracleView` pasará a despachar
+según el id seleccionado; hoy la mecánica de tirada sigue siendo
+específica de Recluse.
+
+### Recluse
 
 Implementa el oráculo [**Recluse**](https://gravenutterance.itch.io/recluse)
 de Graven Utterance (Oliver N), publicado bajo licencia
