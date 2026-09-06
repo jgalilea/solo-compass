@@ -21,10 +21,14 @@ export interface Dictionary {
     loading: string;
     retry: string;
     somethingWrong: string;
+    viewOriginal: string;
+    save: string;
+    delete: string;
   };
   nav: {
     oracle: string;
     tables: string;
+    journal: string;
     history: string;
   };
   header: {
@@ -45,14 +49,13 @@ export interface Dictionary {
     dialogLabel: string;
     description: string;
     oracleUsedBy: string;
-    oracleCreditBy: string;
-    oracleViewOriginal: string;
+    journalUsedBy: string;
+    creditBy: string;
   };
   oracleSwitcher: {
     triggerLabel: string;
     dialogTitle: string;
     moreComingSoon: string;
-    viewOriginal: string;
   };
   oracle: {
     title: string;
@@ -63,6 +66,7 @@ export interface Dictionary {
     emptyDescription: string;
     vs: string;
     contradictionExplanation: string;
+    consequencePlaceholder: string;
   };
   likelihood: Record<Likelihood, string>;
   likelihoodGroupLabel: string;
@@ -138,6 +142,46 @@ export interface Dictionary {
     genericLoadError: string;
     genericSaveError: string;
     genericClearError: string;
+  };
+  journal: {
+    title: string;
+    subtitle: string;
+    campaignsHeading: string;
+    newCampaign: string;
+    newCampaignPlaceholder: string;
+    createButton: string;
+    renameCampaign: string;
+    renameCampaignPlaceholder: string;
+    deleteCampaign: string;
+    deleteCampaignConfirmTitle: string;
+    deleteCampaignConfirmDescription: string;
+    deleteCampaignConfirmButton: string;
+    setActive: string;
+    unsetActive: string;
+    activeLabel: string;
+    activeCampaignNote: string;
+    noActiveCampaignNote: string;
+    noCampaignsTitle: string;
+    noCampaignsDescription: string;
+    noEntriesTitle: string;
+    noEntriesDescription: string;
+    kindAction: string;
+    kindQuestion: string;
+    kindRoll: string;
+    kindConsequence: string;
+    kindNote: string;
+    addPlaceholder: string;
+    addButton: string;
+    newSessionButton: string;
+    newSessionPlaceholder: string;
+    deleteEntry: string;
+    exportButton: string;
+    importButton: string;
+    importNamePrompt: string;
+    importError: string;
+    loading: string;
+    loadErrorTitle: string;
+    lonelogCreditLine: string;
   };
   error: {
     boundaryTitle: string;

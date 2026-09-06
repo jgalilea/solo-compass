@@ -3,6 +3,7 @@ import { IconClose, IconCompass, IconExternalLink, IconInfo } from "./icons/Icon
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { getOracle } from "../lib/oracles";
+import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
 import { interpolate } from "../lib/i18n";
 
 export function AboutDialog() {
@@ -31,7 +32,7 @@ export function AboutDialog() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-t-3xl border border-ink-border bg-ink-800 p-5 shadow-2xl sm:rounded-3xl"
+            className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-t-3xl border border-ink-border bg-ink-800 p-5 shadow-2xl sm:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -61,7 +62,7 @@ export function AboutDialog() {
                 {oracle.name}
               </p>
               <p className="mt-1 text-sm text-parchment-dim">
-                {interpolate(t.about.oracleCreditBy, { author: oracle.author })}{" "}
+                {interpolate(t.about.creditBy, { author: oracle.author })}{" "}
                 <a
                   href={oracle.licenseUrl}
                   target="_blank"
@@ -78,7 +79,35 @@ export function AboutDialog() {
                 rel="noreferrer"
                 className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
               >
-                {t.about.oracleViewOriginal}
+                {t.common.viewOriginal}
+                <IconExternalLink size={14} />
+              </a>
+            </div>
+
+            <div className="mt-3 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
+                {t.about.journalUsedBy}
+              </p>
+              <p className="mt-1 font-display text-base text-parchment">Lonelog</p>
+              <p className="mt-1 text-sm text-parchment-dim">
+                {interpolate(t.about.creditBy, { author: "Roberto Bisceglie" })}{" "}
+                <a
+                  href={LONELOG_LICENSE_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-dotted hover:text-parchment"
+                >
+                  CC BY-SA 4.0
+                </a>
+                .
+              </p>
+              <a
+                href={LONELOG_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
+              >
+                {t.common.viewOriginal}
                 <IconExternalLink size={14} />
               </a>
             </div>

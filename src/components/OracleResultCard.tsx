@@ -28,7 +28,7 @@ export function OracleResultCard({
   const singleDie = roll.white.rolls.length === 1 && roll.black.rolls.length === 1;
 
   return (
-    <div className="animate-fade-up flex flex-1 flex-col justify-center rounded-3xl border border-ink-border bg-ink-800/70 p-6 shadow-xl shadow-black/20">
+    <div className="animate-fade-up rounded-3xl border border-ink-border bg-ink-800/70 p-6 shadow-xl shadow-black/20">
       {roll.question && (
         <p className="mb-5 text-center font-display text-lg italic text-parchment/90">
           “{roll.question}”

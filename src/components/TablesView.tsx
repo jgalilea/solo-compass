@@ -9,6 +9,7 @@ import {
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import type { TableRollEntry } from "../lib/history";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate, type Dictionary } from "../lib/i18n";
 import { EmptyState } from "./StateViews";
@@ -54,6 +55,7 @@ function normalize(s: string): string {
 
 export function TablesView() {
   const { addEntry } = useHistoryContext();
+  const { campaigns, activeCampaignId, addEntry: addJournalEntry } = useJournalContext();
   const { t } = useLocaleContext();
   const [results, setResults] = useState<Record<string, TableRollEntry>>({});
   const [rollingId, setRollingId] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export function TablesView() {
   );
 
   const tables = useMemo(() => getMeaningTables(t), [t]);
+  const activeCampaign = campaigns.find((c) => c.id === activeCampaignId) ?? null;
 
   function handleRoll(table: MeaningTable) {
     setRollingId(table.id);
@@ -70,6 +73,10 @@ export function TablesView() {
       const historyEntry = buildTableRollEntry(t, table);
       setResults((prev) => ({ ...prev, [table.id]: historyEntry }));
       addEntry(historyEntry);
+      if (activeCampaign) {
+        const diceText = `${table.name} ${historyEntry.rolls.join("/")} -> ${historyEntry.resultText}`;
+        addJournalEntry(activeCampaign.id, "roll", diceText, historyEntry.id);
+      }
       setRollingId(null);
     }, 220);
   }
@@ -119,6 +126,11 @@ export function TablesView() {
           {t.tables.title}
         </h1>
         <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
+        {activeCampaign && (
+          <p className="mt-1 text-xs text-gold/80">
+            {interpolate(t.journal.activeCampaignNote, { name: activeCampaign.name })}
+          </p>
+        )}
       </header>
 
       <label className="relative block">

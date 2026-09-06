@@ -7,10 +7,14 @@ export const es: Dictionary = {
     loading: "Cargando…",
     retry: "Reintentar",
     somethingWrong: "Algo ha ido mal",
+    viewOriginal: "Ver original",
+    save: "Guardar",
+    delete: "Eliminar",
   },
   nav: {
     oracle: "Oráculo",
     tables: "Tablas",
+    journal: "Diario",
     history: "Historial",
   },
   header: {
@@ -38,14 +42,13 @@ export const es: Dictionary = {
     description:
       "Oráculo y tablas de significado para guiar partidas de rol en solitario. Todo el historial se guarda solo en este dispositivo.",
     oracleUsedBy: "El oráculo usa",
-    oracleCreditBy: "de {author}, bajo licencia",
-    oracleViewOriginal: "Ver original",
+    journalUsedBy: "El diario se escribe en notación",
+    creditBy: "de {author}, bajo licencia",
   },
   oracleSwitcher: {
     triggerLabel: "Cambiar oráculo",
     dialogTitle: "Oráculo",
     moreComingSoon: "Habrá más oráculos disponibles próximamente.",
-    viewOriginal: "Ver original",
   },
   oracle: {
     title: "Oráculo",
@@ -58,6 +61,7 @@ export const es: Dictionary = {
     vs: "vs",
     contradictionExplanation:
       "Alguna premisa de la pregunta es errónea. Revisa qué estás dando por sentado y replantea la pregunta.",
+    consequencePlaceholder: "¿Qué pasa? Se apunta en el diario.",
   },
   likelihood: {
     "muy-improbable": "Muy improbable",
@@ -151,6 +155,51 @@ export const es: Dictionary = {
     genericLoadError: "No se pudo cargar el historial.",
     genericSaveError: "No se pudo guardar el historial.",
     genericClearError: "No se pudo borrar el historial.",
+  },
+  journal: {
+    title: "Diario",
+    subtitle:
+      "Registra tus campañas en notación Lonelog. Con una campaña activa, las tiradas del oráculo y las tablas se apuntan solas.",
+    campaignsHeading: "Campañas",
+    newCampaign: "Nueva campaña",
+    newCampaignPlaceholder: "Nombre de la campaña",
+    createButton: "Crear",
+    renameCampaign: "Renombrar campaña",
+    renameCampaignPlaceholder: "Nuevo nombre",
+    deleteCampaign: "Eliminar campaña",
+    deleteCampaignConfirmTitle: "¿Eliminar «{name}»?",
+    deleteCampaignConfirmDescription:
+      "Se borrarán también todas sus entradas del diario. Esta acción no se puede deshacer.",
+    deleteCampaignConfirmButton: "Eliminar",
+    setActive: "Activar",
+    unsetActive: "Desactivar",
+    activeLabel: "Activa",
+    activeCampaignNote: "Registrando en «{name}».",
+    noActiveCampaignNote:
+      "Sin campaña activa: las tiradas no se registran en ningún diario.",
+    noCampaignsTitle: "Todavía no tienes ninguna campaña",
+    noCampaignsDescription:
+      "Crea una para empezar a registrar tus partidas, o importa un diario en formato Lonelog.",
+    noEntriesTitle: "Esta campaña aún no tiene entradas",
+    noEntriesDescription:
+      "Se irán apuntando solas al tirar el oráculo o las tablas, o añade una a mano abajo.",
+    kindAction: "Acción",
+    kindQuestion: "Pregunta",
+    kindRoll: "Tirada",
+    kindConsequence: "Consecuencia",
+    kindNote: "Nota",
+    addPlaceholder: "Escribe algo…",
+    addButton: "Añadir",
+    newSessionButton: "Nueva sesión",
+    newSessionPlaceholder: "Título de la sesión (opcional)",
+    deleteEntry: "Eliminar entrada",
+    exportButton: "Exportar a Markdown",
+    importButton: "Importar diario (.md)",
+    importNamePrompt: "Nombre para la campaña importada",
+    importError: "No se pudo leer el archivo. ¿Es un .md válido?",
+    loading: "Cargando diario…",
+    loadErrorTitle: "No se pudo cargar el diario",
+    lonelogCreditLine: "Registrado con {app} en notación {lonelog} (CC BY-SA 4.0).",
   },
   error: {
     boundaryTitle: "Algo se ha roto en la app",

@@ -38,8 +38,37 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   enlace opcional (`game`), favoritas y buscador; solo hay que sustituir el
   texto de cada entrada (y el `game` real) en `src/lib/tables.ts`. El botón
   con el tipo de dado abre la lista completa de resultados posibles.
+- **Diario**: campañas con un registro narrativo en notación
+  [Lonelog](https://lonelog.itch.io/lonelog) (ver más abajo). Con una
+  campaña activa, las tiradas del oráculo y de las tablas se apuntan
+  solas; el oráculo además ofrece un pequeño campo para añadir la
+  consecuencia (`=>`) justo después de tirar. Exporta cada campaña a
+  `.md` o importa un diario existente en formato Lonelog.
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
   persistidas en IndexedDB (ver "Almacenamiento" más abajo).
+
+## Diario y notación Lonelog
+
+[Lonelog](https://lonelog.itch.io/lonelog) (Roberto Bisceglie, CC BY-SA
+4.0) es un estándar abierto de texto plano para registrar sesiones de
+rol en solitario, con cinco símbolos: `@` acción, `?` pregunta, `d:`
+tirada (con el resultado inline vía `->`), `=>` consecuencia, y
+`=== Título ===` para secciones. `src/lib/lonelog.ts` implementa el
+formateo y el parseo en los dos sentidos:
+
+- **Exportar** (`exportCampaignToMarkdown`) genera un `.md` con esas
+  líneas más un crédito visible a Lonelog y a la app — un archivo
+  válido para cualquier herramienta compatible (p. ej. el plugin de
+  Obsidian), no solo para esta app.
+- **Importar** (`parseMarkdownToEntries`) es deliberadamente permisivo:
+  cualquier línea que no encaje con un símbolo reconocido (prosa
+  suelta, etiquetas `[N:...]` de PNJ/lugar/reloj que Lonelog admite
+  pero que esta app aún no interpreta) se guarda como nota en vez de
+  romper la importación.
+
+Campañas y entradas del diario se guardan en IndexedDB (mismo motivo
+que el historial). Qué campaña está activa es un dato pequeño y se
+queda en `localStorage`.
 
 ## Idioma
 
@@ -98,7 +127,9 @@ datos del sitio o cambiar de navegador/dispositivo empieza de cero.
   proyectos que cuelgan de ahí, con o sin ruta distinta). Si ya había
   historial guardado en `localStorage` de una versión anterior, se migra
   una vez sola a IndexedDB de forma automática y transparente.
-- **Tema, idioma y tablas favoritas**: siguen en `localStorage`, por ser
-  datos minúsculos y de lectura síncrona (el tema, en concreto, se lee
-  antes del primer pintado para evitar parpadeos, algo que IndexedDB no
-  permite al ser siempre asíncrono).
+- **Diario** (`src/lib/journal.ts`): campañas y entradas también en
+  IndexedDB, mismo motivo que el historial.
+- **Tema, idioma, tablas favoritas y campaña activa**: siguen en
+  `localStorage`, por ser datos minúsculos y de lectura síncrona (el
+  tema, en concreto, se lee antes del primer pintado para evitar
+  parpadeos, algo que IndexedDB no permite al ser siempre asíncrono).

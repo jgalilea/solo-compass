@@ -3,10 +3,12 @@ import { Layout } from "./components/Layout";
 import { OracleView } from "./components/OracleView";
 import { TablesView } from "./components/TablesView";
 import { HistoryView } from "./components/HistoryView";
+import { JournalView } from "./components/JournalView";
 import { HistoryProvider } from "./hooks/HistoryContext";
 import { ThemeProvider } from "./hooks/ThemeContext";
 import { LocaleProvider } from "./hooks/LocaleContext";
 import { OracleProvider } from "./hooks/OracleContext";
+import { JournalProvider } from "./hooks/JournalContext";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 function App() {
@@ -18,17 +20,20 @@ function App() {
       <AppErrorBoundary>
         <ThemeProvider>
           <OracleProvider>
-            <HistoryProvider>
-              <HashRouter>
-                <Routes>
-                  <Route element={<Layout />}>
-                    <Route index element={<OracleView />} />
-                    <Route path="tablas" element={<TablesView />} />
-                    <Route path="historial" element={<HistoryView />} />
-                  </Route>
-                </Routes>
-              </HashRouter>
-            </HistoryProvider>
+            <JournalProvider>
+              <HistoryProvider>
+                <HashRouter>
+                  <Routes>
+                    <Route element={<Layout />}>
+                      <Route index element={<OracleView />} />
+                      <Route path="tablas" element={<TablesView />} />
+                      <Route path="diario" element={<JournalView />} />
+                      <Route path="historial" element={<HistoryView />} />
+                    </Route>
+                  </Routes>
+                </HashRouter>
+              </HistoryProvider>
+            </JournalProvider>
           </OracleProvider>
         </ThemeProvider>
       </AppErrorBoundary>

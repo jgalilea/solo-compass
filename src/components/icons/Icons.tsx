@@ -196,3 +196,50 @@ export function IconSwap(props: IconProps) {
     </svg>
   );
 }
+
+export function IconFeather(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M20 4c-6 0-14 3-14 12 0 2 1 4 2 4 9 0 12-8 12-14 0-1 0-1.5 0-2z" />
+      <path d="M8 20 20 8" />
+      <path d="M12 16l-3-3" />
+    </svg>
+  );
+}
+
+export function IconDownload(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 4v11" />
+      <path d="M7.5 11 12 15.5 16.5 11" />
+      <path d="M5 19.5h14" />
+    </svg>
+  );
+}
+
+export function IconUpload(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 20V9" />
+      <path d="M7.5 12.5 12 8l4.5 4.5" />
+      <path d="M5 19.5h14" />
+    </svg>
+  );
+}
+
+export function IconPlus(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+export function IconPencil(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 20l0.9-3.6L16.5 5 19 7.5 7.6 19.1z" strokeLinejoin="round" />
+      <path d="M14.5 6.5 17.5 9.5" />
+    </svg>
+  );
+}

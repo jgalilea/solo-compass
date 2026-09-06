@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { IconBook, IconCompass, IconDice, IconScroll } from "./icons/Icons";
+import { IconBook, IconCompass, IconDice, IconFeather, IconScroll } from "./icons/Icons";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { AboutDialog } from "./AboutDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -11,6 +11,7 @@ export function Layout() {
   const tabs = [
     { to: "/", label: t.nav.oracle, Icon: IconDice, end: true },
     { to: "/tablas", label: t.nav.tables, Icon: IconBook, end: false },
+    { to: "/diario", label: t.nav.journal, Icon: IconFeather, end: false },
     { to: "/historial", label: t.nav.history, Icon: IconScroll, end: false },
   ];
 

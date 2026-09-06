@@ -73,7 +73,7 @@ export function OracleSwitcher() {
                           {oracleInfo.name}
                         </span>
                         <span className="block truncate text-xs text-parchment-dim">
-                          {interpolate(t.about.oracleCreditBy, {
+                          {interpolate(t.about.creditBy, {
                             author: oracleInfo.author,
                           })}{" "}
                           {oracleInfo.license}
@@ -90,7 +90,7 @@ export function OracleSwitcher() {
                       onClick={(e) => e.stopPropagation()}
                       className="mt-2 flex items-center justify-center gap-1.5 rounded-xl border border-ink-border py-1.5 text-xs text-parchment-dim transition hover:text-gold"
                     >
-                      {t.oracleSwitcher.viewOriginal}
+                      {t.common.viewOriginal}
                       <IconExternalLink size={11} />
                     </a>
                   </div>
