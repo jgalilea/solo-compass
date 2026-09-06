@@ -54,17 +54,25 @@ export function useHistory(): UseHistoryResult {
 
   useEffect(() => load(), [load]);
 
+  // Forma funcional de setState (parte siempre del estado más
+  // reciente, no de "entries" capturado por closure): si addEntry se
+  // llama más de una vez en el mismo evento antes de que React
+  // repinte, la segunda llamada no pisa a la primera. Mismo bug que
+  // se coló en useJournal con la pregunta + tirada del oráculo.
   const persist = useCallback(
-    (next: HistoryEntry[]) => {
-      // Optimista: la UI refleja el cambio ya, sin esperar a que el
-      // guardado en IndexedDB confirme (es rápido, pero sigue siendo
-      // una operación asíncrona).
-      setEntries(next);
-      saveHistory(t, next).catch((err: unknown) => {
-        setError(
-          err instanceof HistoryStorageError ? err.message : t.history.genericSaveError,
-        );
-        setStatus("error");
+    (updater: (prev: HistoryEntry[]) => HistoryEntry[]) => {
+      setEntries((prev) => {
+        const next = updater(prev);
+        // Optimista: la UI refleja el cambio ya, sin esperar a que el
+        // guardado en IndexedDB confirme (es rápido, pero sigue
+        // siendo una operación asíncrona).
+        saveHistory(t, next).catch((err: unknown) => {
+          setError(
+            err instanceof HistoryStorageError ? err.message : t.history.genericSaveError,
+          );
+          setStatus("error");
+        });
+        return next;
       });
     },
     [t],
@@ -72,27 +80,25 @@ export function useHistory(): UseHistoryResult {
 
   const addEntry = useCallback(
     (entry: HistoryEntry) => {
-      persist([entry, ...entries]);
+      persist((prev) => [entry, ...prev]);
     },
-    [entries, persist],
+    [persist],
   );
 
   const removeEntry = useCallback(
     (id: string) => {
-      persist(entries.filter((e) => e.id !== id));
+      persist((prev) => prev.filter((e) => e.id !== id));
     },
-    [entries, persist],
+    [persist],
   );
 
   const toggleFavorite = useCallback(
     (id: string) => {
-      persist(
-        entries.map((e) =>
-          e.id === id ? { ...e, favorite: !e.favorite } : e,
-        ),
+      persist((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, favorite: !e.favorite } : e)),
       );
     },
-    [entries, persist],
+    [persist],
   );
 
   const clear = useCallback(() => {

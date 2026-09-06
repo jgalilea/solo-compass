@@ -80,27 +80,38 @@ export function useJournal(): UseJournalResult {
     saveActiveCampaignId(id);
   }, []);
 
-  const persistCampaigns = useCallback(
-    (next: Campaign[]) => {
-      setCampaigns(next);
-      saveCampaigns(t, next).catch((err: unknown) => {
-        setError(
-          err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
-        );
-        setStatus("error");
+  // updateCampaigns/updateEntries siempre parten del estado más
+  // reciente (forma funcional de setState), no de "campaigns"/
+  // "entries" capturados por closure — así, si addEntry se llama dos
+  // veces seguidas en el mismo evento (p. ej. pregunta + tirada), la
+  // segunda no pisa a la primera antes de que React repinte.
+  const updateCampaigns = useCallback(
+    (updater: (prev: Campaign[]) => Campaign[]) => {
+      setCampaigns((prev) => {
+        const next = updater(prev);
+        saveCampaigns(t, next).catch((err: unknown) => {
+          setError(
+            err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
+          );
+          setStatus("error");
+        });
+        return next;
       });
     },
     [t],
   );
 
-  const persistEntries = useCallback(
-    (next: JournalEntry[]) => {
-      setEntries(next);
-      saveJournalEntries(t, next).catch((err: unknown) => {
-        setError(
-          err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
-        );
-        setStatus("error");
+  const updateEntries = useCallback(
+    (updater: (prev: JournalEntry[]) => JournalEntry[]) => {
+      setEntries((prev) => {
+        const next = updater(prev);
+        saveJournalEntries(t, next).catch((err: unknown) => {
+          setError(
+            err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
+          );
+          setStatus("error");
+        });
+        return next;
       });
     },
     [t],
@@ -109,30 +120,30 @@ export function useJournal(): UseJournalResult {
   const createCampaignFn = useCallback(
     (name: string) => {
       const campaign = buildCampaign(name);
-      persistCampaigns([campaign, ...campaigns]);
+      updateCampaigns((prev) => [campaign, ...prev]);
       return campaign;
     },
-    [campaigns, persistCampaigns],
+    [updateCampaigns],
   );
 
   const renameCampaign = useCallback(
     (id: string, name: string) => {
-      persistCampaigns(
-        campaigns.map((c) =>
+      updateCampaigns((prev) =>
+        prev.map((c) =>
           c.id === id ? { ...c, name: name.trim(), updatedAt: Date.now() } : c,
         ),
       );
     },
-    [campaigns, persistCampaigns],
+    [updateCampaigns],
   );
 
   const deleteCampaign = useCallback(
     (id: string) => {
-      persistCampaigns(campaigns.filter((c) => c.id !== id));
-      persistEntries(entries.filter((e) => e.campaignId !== id));
+      updateCampaigns((prev) => prev.filter((c) => c.id !== id));
+      updateEntries((prev) => prev.filter((e) => e.campaignId !== id));
       if (activeCampaignId === id) setActiveCampaignId(null);
     },
-    [campaigns, entries, activeCampaignId, persistCampaigns, persistEntries, setActiveCampaignId],
+    [activeCampaignId, updateCampaigns, updateEntries, setActiveCampaignId],
   );
 
   const addEntry = useCallback(
@@ -145,32 +156,30 @@ export function useJournal(): UseJournalResult {
         text,
         linkedRollId,
       };
-      persistEntries([...entries, entry]);
-      persistCampaigns(
-        campaigns.map((c) =>
-          c.id === campaignId ? { ...c, updatedAt: entry.timestamp } : c,
-        ),
+      updateEntries((prev) => [...prev, entry]);
+      updateCampaigns((prev) =>
+        prev.map((c) => (c.id === campaignId ? { ...c, updatedAt: entry.timestamp } : c)),
       );
     },
-    [entries, campaigns, persistEntries, persistCampaigns],
+    [updateEntries, updateCampaigns],
   );
 
   const removeEntry = useCallback(
     (id: string) => {
-      persistEntries(entries.filter((e) => e.id !== id));
+      updateEntries((prev) => prev.filter((e) => e.id !== id));
     },
-    [entries, persistEntries],
+    [updateEntries],
   );
 
   const importCampaign = useCallback(
     (name: string, markdownText: string) => {
       const campaign = buildCampaign(name);
       const imported = parseMarkdownToEntries(markdownText, campaign.id, campaign.createdAt);
-      persistCampaigns([campaign, ...campaigns]);
-      persistEntries([...entries, ...imported]);
+      updateCampaigns((prev) => [campaign, ...prev]);
+      updateEntries((prev) => [...prev, ...imported]);
       return campaign;
     },
-    [campaigns, entries, persistCampaigns, persistEntries],
+    [updateCampaigns, updateEntries],
   );
 
   return {
