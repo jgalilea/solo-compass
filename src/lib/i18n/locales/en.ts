@@ -193,6 +193,8 @@ export const en: Dictionary = {
     newSessionPlaceholder: "Session title (optional)",
     deleteEntry: "Delete entry",
     exportButton: "Export to Markdown",
+    exportedToastTitle: "Downloaded {filename}",
+    exportedToastDescription: "Saved to your browser's Downloads folder.",
     importButton: "Import journal (.md)",
     importNamePrompt: "Name for the imported campaign",
     importError: "Couldn't read the file. Is it a valid .md?",

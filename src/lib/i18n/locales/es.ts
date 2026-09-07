@@ -198,6 +198,8 @@ export const es: Dictionary = {
     newSessionPlaceholder: "Título de la sesión (opcional)",
     deleteEntry: "Eliminar entrada",
     exportButton: "Exportar a Markdown",
+    exportedToastTitle: "Descargado {filename}",
+    exportedToastDescription: "Guardado en la carpeta de Descargas de tu navegador.",
     importButton: "Importar diario (.md)",
     importNamePrompt: "Nombre para la campaña importada",
     importError: "No se pudo leer el archivo. ¿Es un .md válido?",

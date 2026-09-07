@@ -10,6 +10,7 @@ import {
 import type { Campaign } from "../lib/journal";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
+import { Toast } from "./Toast";
 import {
   IconCheck,
   IconChevronRight,
@@ -113,6 +114,7 @@ export function JournalView() {
   const [renameValue, setRenameValue] = useState("");
   const [deletingCampaign, setDeletingCampaign] = useState<Campaign | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Orden de visualización de las campañas (drag and drop). Se
@@ -235,7 +237,9 @@ export function JournalView() {
 
   function handleExport(campaign: Campaign, campaignEntries: JournalEntry[]) {
     const markdown = exportCampaignToMarkdown(t, campaign.name, campaignEntries);
-    downloadTextFile(`${sanitizeFilename(campaign.name)}.md`, markdown);
+    const filename = `${sanitizeFilename(campaign.name)}.md`;
+    downloadTextFile(filename, markdown);
+    setExportedFilename(filename);
   }
 
   return (
@@ -446,6 +450,15 @@ export function JournalView() {
             setDeletingCampaign(null);
           }}
           onCancel={() => setDeletingCampaign(null)}
+        />
+      )}
+
+      {exportedFilename && (
+        <Toast
+          title={interpolate(t.journal.exportedToastTitle, { filename: exportedFilename })}
+          description={t.journal.exportedToastDescription}
+          closeLabel={t.common.close}
+          onDismiss={() => setExportedFilename(null)}
         />
       )}
     </div>

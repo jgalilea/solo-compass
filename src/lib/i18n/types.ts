@@ -180,6 +180,8 @@ export interface Dictionary {
     newSessionPlaceholder: string;
     deleteEntry: string;
     exportButton: string;
+    exportedToastTitle: string;
+    exportedToastDescription: string;
     importButton: string;
     importNamePrompt: string;
     importError: string;
