@@ -172,6 +172,10 @@ export const en: Dictionary = {
     activeLabel: "Active",
     activeCampaignNote: "Logging to “{name}.”",
     noActiveCampaignNote: "No active campaign: rolls aren't being logged anywhere.",
+    favoriteAdd: "Mark campaign as favorite",
+    favoriteRemove: "Remove campaign from favorites",
+    dragHandle: "Drag to reorder",
+    toggleSession: "Show or hide the session",
     noCampaignsTitle: "You don't have any campaigns yet",
     noCampaignsDescription:
       "Create one to start logging your games, or import a Lonelog-format journal.",

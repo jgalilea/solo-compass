@@ -161,6 +161,10 @@ export interface Dictionary {
     activeLabel: string;
     activeCampaignNote: string;
     noActiveCampaignNote: string;
+    favoriteAdd: string;
+    favoriteRemove: string;
+    dragHandle: string;
+    toggleSession: string;
     noCampaignsTitle: string;
     noCampaignsDescription: string;
     noEntriesTitle: string;

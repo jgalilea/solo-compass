@@ -177,6 +177,10 @@ export const es: Dictionary = {
     activeCampaignNote: "Registrando en «{name}».",
     noActiveCampaignNote:
       "Sin campaña activa: las tiradas no se registran en ningún diario.",
+    favoriteAdd: "Marcar campaña como favorita",
+    favoriteRemove: "Quitar campaña de favoritas",
+    dragHandle: "Arrastrar para reordenar",
+    toggleSession: "Mostrar u ocultar la sesión",
     noCampaignsTitle: "Todavía no tienes ninguna campaña",
     noCampaignsDescription:
       "Crea una para empezar a registrar tus partidas, o importa un diario en formato Lonelog.",

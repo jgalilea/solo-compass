@@ -7,6 +7,7 @@ export interface Campaign {
   name: string;
   createdAt: number;
   updatedAt: number;
+  favorite: boolean;
 }
 
 // Igual que el historial: sin techo natural de tamaño, así que va en
@@ -23,7 +24,9 @@ export async function loadCampaigns(t: Dictionary): Promise<Campaign[]> {
   if (typeof window === "undefined") return [];
   try {
     const stored = await get<Campaign[]>(CAMPAIGNS_KEY);
-    return Array.isArray(stored) ? stored : [];
+    if (!Array.isArray(stored)) return [];
+    // Compatibilidad con campañas guardadas antes de añadir favoritos.
+    return stored.map((c) => ({ ...c, favorite: c.favorite ?? false }));
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }
@@ -66,7 +69,7 @@ function makeId(): string {
 
 export function createCampaign(name: string): Campaign {
   const now = Date.now();
-  return { id: makeId(), name: name.trim(), createdAt: now, updatedAt: now };
+  return { id: makeId(), name: name.trim(), createdAt: now, updatedAt: now, favorite: false };
 }
 
 export function createJournalEntryId(): string {

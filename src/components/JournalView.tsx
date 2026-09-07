@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { interpolate } from "../lib/i18n";
+import { interpolate, type Dictionary } from "../lib/i18n";
 import {
   exportCampaignToMarkdown,
   type JournalEntry,
@@ -12,10 +12,13 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import {
   IconCheck,
+  IconChevronRight,
   IconDownload,
   IconFeather,
+  IconGripVertical,
   IconPencil,
   IconPlus,
+  IconStar,
   IconTrash,
   IconUpload,
 } from "./icons/Icons";
@@ -38,7 +41,11 @@ const SYMBOL: Record<JournalLineKind, string> = {
 };
 
 function downloadTextFile(filename: string, content: string) {
-  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  // Al descargarse, el archivo se queda solo con bytes + extensión —
+  // el "charset=utf-8" del blob no viaja con él. Sin un BOM, algunos
+  // visores (sobre todo en iOS) adivinan mal la codificación y
+  // muestran los acentos/símbolos rotos al abrirlo fuera de la app.
+  const blob = new Blob(["﻿" + content], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -51,6 +58,26 @@ function downloadTextFile(filename: string, content: string) {
 
 function sanitizeFilename(name: string): string {
   return name.trim().replace(/[\\/:*?"<>|]+/g, "-") || "diario";
+}
+
+interface EntryGroup {
+  sessionEntry: JournalEntry | null;
+  items: JournalEntry[];
+}
+
+function groupBySession(sortedEntries: JournalEntry[]): EntryGroup[] {
+  const groups: EntryGroup[] = [];
+  let current: EntryGroup = { sessionEntry: null, items: [] };
+  for (const entry of sortedEntries) {
+    if (entry.kind === "session") {
+      groups.push(current);
+      current = { sessionEntry: entry, items: [] };
+    } else {
+      current.items.push(entry);
+    }
+  }
+  groups.push(current);
+  return groups.filter((g) => g.sessionEntry !== null || g.items.length > 0);
 }
 
 const INPUT_CLASS =
@@ -71,6 +98,8 @@ export function JournalView() {
     createCampaign,
     renameCampaign,
     deleteCampaign,
+    reorderCampaigns,
+    toggleCampaignFavorite,
     addEntry,
     removeEntry,
     importCampaign,
@@ -86,18 +115,76 @@ export function JournalView() {
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [composerKind, setComposerKind] = useState<JournalLineKind>("note");
-  const [composerText, setComposerText] = useState("");
-  const [sessionTitle, setSessionTitle] = useState("");
-  const [showNewSession, setShowNewSession] = useState(false);
+  // Orden de visualización de las campañas (drag and drop). Se
+  // sincroniza con `campaigns` pero preserva el orden manual — los
+  // ids nuevos (creada/importada) se añaden al principio.
+  const [order, setOrder] = useState<string[]>(() => campaigns.map((c) => c.id));
+  const orderRef = useRef(order);
+  useEffect(() => {
+    orderRef.current = order;
+  }, [order]);
+  useEffect(() => {
+    setOrder((prev) => {
+      const ids = campaigns.map((c) => c.id);
+      const idSet = new Set(ids);
+      const kept = prev.filter((id) => idSet.has(id));
+      const added = ids.filter((id) => !prev.includes(id));
+      const next = [...added, ...kept];
+      if (next.length === prev.length && next.every((id, i) => id === prev[i])) return prev;
+      return next;
+    });
+  }, [campaigns]);
 
-  const kindLabels: Record<Exclude<JournalLineKind, "session">, string> = {
-    action: t.journal.kindAction,
-    question: t.journal.kindQuestion,
-    roll: t.journal.kindRoll,
-    consequence: t.journal.kindConsequence,
-    note: t.journal.kindNote,
-  };
+  const byId = useMemo(() => new Map(campaigns.map((c) => [c.id, c])), [campaigns]);
+  const orderedCampaigns = order
+    .map((id) => byId.get(id))
+    .filter((c): c is Campaign => !!c);
+
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const rowRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+
+  useEffect(() => {
+    if (!draggingId) return;
+
+    function handleMove(e: PointerEvent) {
+      const y = e.clientY;
+      let targetId: string | null = null;
+      for (const [id, el] of rowRefs.current) {
+        if (id === draggingId) continue;
+        const rect = el.getBoundingClientRect();
+        if (y >= rect.top && y <= rect.bottom) {
+          targetId = id;
+          break;
+        }
+      }
+      if (targetId) {
+        const current = orderRef.current;
+        const from = current.indexOf(draggingId as string);
+        const to = current.indexOf(targetId);
+        if (from !== -1 && to !== -1 && from !== to) {
+          const next = [...current];
+          next.splice(from, 1);
+          next.splice(to, 0, draggingId as string);
+          orderRef.current = next;
+          setOrder(next);
+        }
+      }
+    }
+
+    function handleUp() {
+      setDraggingId(null);
+      reorderCampaigns(orderRef.current);
+    }
+
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+    window.addEventListener("pointercancel", handleUp);
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleUp);
+    };
+  }, [draggingId, reorderCampaigns]);
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId) ?? null;
 
@@ -146,24 +233,9 @@ export function JournalView() {
     }
   }
 
-  function handleExport() {
-    if (!activeCampaign) return;
-    const markdown = exportCampaignToMarkdown(t, activeCampaign.name, activeEntries);
-    downloadTextFile(`${sanitizeFilename(activeCampaign.name)}.md`, markdown);
-  }
-
-  function handleAddEntry() {
-    if (!activeCampaign || !composerText.trim()) return;
-    addEntry(activeCampaign.id, composerKind, composerText.trim());
-    setComposerText("");
-  }
-
-  function handleAddSession() {
-    if (!activeCampaign) return;
-    const title = sessionTitle.trim() || new Date().toLocaleDateString();
-    addEntry(activeCampaign.id, "session", title);
-    setSessionTitle("");
-    setShowNewSession(false);
+  function handleExport(campaign: Campaign, campaignEntries: JournalEntry[]) {
+    const markdown = exportCampaignToMarkdown(t, campaign.name, campaignEntries);
+    downloadTextFile(`${sanitizeFilename(campaign.name)}.md`, markdown);
   }
 
   return (
@@ -207,9 +279,7 @@ export function JournalView() {
               </div>
             </div>
 
-            {importError && (
-              <p className="text-sm text-no">{importError}</p>
-            )}
+            {importError && <p className="text-sm text-no">{importError}</p>}
 
             {campaigns.length === 0 && !showNewCampaignForm && (
               <EmptyState
@@ -221,12 +291,18 @@ export function JournalView() {
             )}
 
             <ul className="flex flex-col gap-2.5">
-              {campaigns.map((campaign) => {
+              {orderedCampaigns.map((campaign) => {
                 const isActive = campaign.id === activeCampaignId;
                 const isRenaming = renamingId === campaign.id;
+                const isDragging = draggingId === campaign.id;
                 return (
                   <li
                     key={campaign.id}
+                    ref={(el) => {
+                      if (el) rowRefs.current.set(campaign.id, el);
+                      else rowRefs.current.delete(campaign.id);
+                    }}
+                    style={isDragging ? { opacity: 0.5 } : undefined}
                     className={[
                       "rounded-2xl border p-4",
                       isActive ? "border-gold/50 bg-gold/[0.06]" : "border-ink-border bg-ink-800/50",
@@ -248,6 +324,32 @@ export function JournalView() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onPointerDown={(e) => {
+                            e.preventDefault();
+                            setDraggingId(campaign.id);
+                          }}
+                          aria-label={t.journal.dragHandle}
+                          style={{ touchAction: "none" }}
+                          className="-m-2 shrink-0 cursor-grab p-2 text-parchment-dim/40 active:cursor-grabbing"
+                        >
+                          <IconGripVertical size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleCampaignFavorite(campaign.id)}
+                          aria-pressed={campaign.favorite}
+                          aria-label={
+                            campaign.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd
+                          }
+                          className={[
+                            "-m-2 shrink-0 p-2 transition",
+                            campaign.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+                          ].join(" ")}
+                        >
+                          <IconStar size={16} filled={campaign.favorite} />
+                        </button>
                         <button
                           type="button"
                           onClick={() => setActiveCampaignId(isActive ? null : campaign.id)}
@@ -321,97 +423,15 @@ export function JournalView() {
           </section>
 
           {activeCampaign && (
-            <section className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="min-w-0 truncate font-display text-xl text-parchment">
-                  {activeCampaign.name}
-                </h2>
-                <button
-                  type="button"
-                  onClick={handleExport}
-                  className="flex shrink-0 items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-                >
-                  <IconDownload size={15} />
-                  {t.journal.exportButton}
-                </button>
-              </div>
-
-              <p className="-mt-2 text-sm text-gold/80">
-                {interpolate(t.journal.activeCampaignNote, { name: activeCampaign.name })}
-              </p>
-
-              {activeEntries.length === 0 ? (
-                <EmptyState
-                  icon={<IconFeather size={20} />}
-                  title={t.journal.noEntriesTitle}
-                  description={t.journal.noEntriesDescription}
-                  compact
-                />
-              ) : (
-                <ul className="flex flex-col gap-2">
-                  {activeEntries.map((entry) => (
-                    <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
-                  ))}
-                </ul>
-              )}
-
-              <div className="flex flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/50 p-4">
-                <div className="flex flex-wrap gap-1.5">
-                  {COMPOSER_KINDS.map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      onClick={() => setComposerKind(kind)}
-                      className={[
-                        "rounded-lg px-3 py-2 text-sm transition",
-                        composerKind === kind
-                          ? "bg-gold text-ink-950 font-medium"
-                          : "text-parchment-dim hover:text-parchment",
-                      ].join(" ")}
-                    >
-                      {kindLabels[kind]}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    value={composerText}
-                    onChange={(e) => setComposerText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
-                    placeholder={t.journal.addPlaceholder}
-                    className={`${INPUT_CLASS} bg-ink-800/70`}
-                  />
-                  <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
-                    {t.journal.addButton}
-                  </button>
-                </div>
-              </div>
-
-              {showNewSession ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    autoFocus
-                    value={sessionTitle}
-                    onChange={(e) => setSessionTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAddSession()}
-                    placeholder={t.journal.newSessionPlaceholder}
-                    className={INPUT_CLASS}
-                  />
-                  <button type="button" onClick={handleAddSession} className={SECONDARY_BUTTON_CLASS}>
-                    {t.common.save}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowNewSession(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-                >
-                  <IconPlus size={15} />
-                  {t.journal.newSessionButton}
-                </button>
-              )}
-            </section>
+            <ActiveCampaignPanel
+              key={activeCampaign.id}
+              campaign={activeCampaign}
+              entries={activeEntries}
+              onExport={() => handleExport(activeCampaign, activeEntries)}
+              onAddEntry={(kind, text) => addEntry(activeCampaign.id, kind, text)}
+              onDeleteEntry={removeEntry}
+              t={t}
+            />
           )}
         </>
       )}
@@ -432,6 +452,238 @@ export function JournalView() {
   );
 }
 
+/**
+ * key={campaign.id} en el sitio de uso: al cambiar de campaña activa,
+ * React desmonta y vuelve a montar este componente, así que el estado
+ * local (sesiones plegadas, texto del composer) empieza limpio cada
+ * vez en vez de arrastrarse de una campaña a otra.
+ */
+function ActiveCampaignPanel({
+  campaign,
+  entries,
+  onExport,
+  onAddEntry,
+  onDeleteEntry,
+  t,
+}: {
+  campaign: Campaign;
+  entries: JournalEntry[];
+  onExport: () => void;
+  onAddEntry: (kind: JournalLineKind, text: string) => void;
+  onDeleteEntry: (id: string) => void;
+  t: Dictionary;
+}) {
+  const groups = useMemo(() => groupBySession(entries), [entries]);
+  const lastSessionId = useMemo(() => {
+    const last = groups.findLast((g) => g.sessionEntry);
+    return last?.sessionEntry?.id ?? null;
+  }, [groups]);
+  const [manualOverrides, setManualOverrides] = useState<Map<string, boolean>>(new Map());
+
+  function isSessionExpanded(id: string): boolean {
+    return manualOverrides.get(id) ?? id === lastSessionId;
+  }
+
+  function toggleSession(id: string) {
+    setManualOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(id, !isSessionExpanded(id));
+      return next;
+    });
+  }
+
+  const [composerKind, setComposerKind] = useState<JournalLineKind>("note");
+  const [composerText, setComposerText] = useState("");
+  const [sessionTitle, setSessionTitle] = useState("");
+  const [showNewSession, setShowNewSession] = useState(false);
+
+  const kindLabels: Record<Exclude<JournalLineKind, "session">, string> = {
+    action: t.journal.kindAction,
+    question: t.journal.kindQuestion,
+    roll: t.journal.kindRoll,
+    consequence: t.journal.kindConsequence,
+    note: t.journal.kindNote,
+  };
+
+  function handleAddEntry() {
+    if (!composerText.trim()) return;
+    onAddEntry(composerKind, composerText.trim());
+    setComposerText("");
+  }
+
+  function handleAddSession() {
+    const title = sessionTitle.trim() || new Date().toLocaleDateString();
+    onAddEntry("session", title);
+    setSessionTitle("");
+    setShowNewSession(false);
+  }
+
+  return (
+    <section className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="min-w-0 truncate font-display text-xl text-parchment">{campaign.name}</h2>
+        <button
+          type="button"
+          onClick={onExport}
+          className="flex shrink-0 items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+        >
+          <IconDownload size={15} />
+          {t.journal.exportButton}
+        </button>
+      </div>
+
+      <p className="-mt-2 text-sm text-gold/80">
+        {interpolate(t.journal.activeCampaignNote, { name: campaign.name })}
+      </p>
+
+      {entries.length === 0 ? (
+        <EmptyState
+          icon={<IconFeather size={20} />}
+          title={t.journal.noEntriesTitle}
+          description={t.journal.noEntriesDescription}
+          compact
+        />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {groups.map((group, i) =>
+            group.sessionEntry ? (
+              <SessionGroupRow
+                key={group.sessionEntry.id}
+                group={group}
+                expanded={isSessionExpanded(group.sessionEntry.id)}
+                onToggle={() => toggleSession(group.sessionEntry!.id)}
+                onDeleteEntry={onDeleteEntry}
+                deleteLabel={t.journal.deleteEntry}
+                toggleLabel={t.journal.toggleSession}
+              />
+            ) : (
+              <Fragment key={`prologue-${i}`}>
+                {group.items.map((entry) => (
+                  <EntryRow key={entry.id} entry={entry} onDelete={onDeleteEntry} deleteLabel={t.journal.deleteEntry} />
+                ))}
+              </Fragment>
+            ),
+          )}
+        </ul>
+      )}
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/50 p-4">
+        <div className="flex flex-wrap gap-1.5">
+          {COMPOSER_KINDS.map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              onClick={() => setComposerKind(kind)}
+              className={[
+                "rounded-lg px-3 py-2 text-sm transition",
+                composerKind === kind
+                  ? "bg-gold text-ink-950 font-medium"
+                  : "text-parchment-dim hover:text-parchment",
+              ].join(" ")}
+            >
+              {kindLabels[kind]}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={composerText}
+            onChange={(e) => setComposerText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
+            placeholder={t.journal.addPlaceholder}
+            className={`${INPUT_CLASS} bg-ink-800/70`}
+          />
+          <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
+            {t.journal.addButton}
+          </button>
+        </div>
+      </div>
+
+      {showNewSession ? (
+        <div className="flex items-center gap-2">
+          <input
+            autoFocus
+            value={sessionTitle}
+            onChange={(e) => setSessionTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddSession()}
+            placeholder={t.journal.newSessionPlaceholder}
+            className={INPUT_CLASS}
+          />
+          <button type="button" onClick={handleAddSession} className={SECONDARY_BUTTON_CLASS}>
+            {t.common.save}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowNewSession(true)}
+          className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+        >
+          <IconPlus size={15} />
+          {t.journal.newSessionButton}
+        </button>
+      )}
+    </section>
+  );
+}
+
+function SessionGroupRow({
+  group,
+  expanded,
+  onToggle,
+  onDeleteEntry,
+  deleteLabel,
+  toggleLabel,
+}: {
+  group: EntryGroup;
+  expanded: boolean;
+  onToggle: () => void;
+  onDeleteEntry: (id: string) => void;
+  deleteLabel: string;
+  toggleLabel: string;
+}) {
+  const session = group.sessionEntry;
+  if (!session) return null;
+
+  return (
+    <li className="flex flex-col gap-2">
+      <div className="flex items-center gap-1 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          aria-label={toggleLabel}
+          className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
+        >
+          <IconChevronRight
+            size={16}
+            className={`shrink-0 text-parchment-dim transition-transform ${expanded ? "rotate-90" : ""}`}
+          />
+          <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment-dim">
+            {session.text}
+          </span>
+          <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onDeleteEntry(session.id)}
+          aria-label={deleteLabel}
+          className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
+        >
+          <IconTrash size={16} />
+        </button>
+      </div>
+      {expanded && (
+        <ul className="flex flex-col gap-2 pl-1">
+          {group.items.map((entry) => (
+            <EntryRow key={entry.id} entry={entry} onDelete={onDeleteEntry} deleteLabel={deleteLabel} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
 function EntryRow({
   entry,
   onDelete,
@@ -441,16 +693,6 @@ function EntryRow({
   onDelete: (id: string) => void;
   deleteLabel: string;
 }) {
-  if (entry.kind === "session") {
-    return (
-      <li className="my-1 flex items-center gap-2 text-xs uppercase tracking-wide text-parchment-dim/70">
-        <span className="h-px flex-1 bg-ink-border" />
-        {entry.text}
-        <span className="h-px flex-1 bg-ink-border" />
-      </li>
-    );
-  }
-
   const symbol = SYMBOL[entry.kind];
 
   return (

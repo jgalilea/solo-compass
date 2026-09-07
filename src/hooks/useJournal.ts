@@ -29,6 +29,8 @@ interface UseJournalResult {
   createCampaign: (name: string) => Campaign;
   renameCampaign: (id: string, name: string) => void;
   deleteCampaign: (id: string) => void;
+  reorderCampaigns: (orderedIds: string[]) => void;
+  toggleCampaignFavorite: (id: string) => void;
   addEntry: (
     campaignId: string,
     kind: JournalLineKind,
@@ -137,6 +139,29 @@ export function useJournal(): UseJournalResult {
     [updateCampaigns],
   );
 
+  const reorderCampaigns = useCallback(
+    (orderedIds: string[]) => {
+      updateCampaigns((prev) => {
+        const byId = new Map(prev.map((c) => [c.id, c]));
+        const reordered = orderedIds.map((id) => byId.get(id)).filter((c): c is Campaign => !!c);
+        // Por si acaso algún id no estuviera en orderedIds (no debería
+        // pasar), se añaden al final para no perder ninguna campaña.
+        const missing = prev.filter((c) => !orderedIds.includes(c.id));
+        return [...reordered, ...missing];
+      });
+    },
+    [updateCampaigns],
+  );
+
+  const toggleCampaignFavorite = useCallback(
+    (id: string) => {
+      updateCampaigns((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, favorite: !c.favorite } : c)),
+      );
+    },
+    [updateCampaigns],
+  );
+
   const deleteCampaign = useCallback(
     (id: string) => {
       updateCampaigns((prev) => prev.filter((c) => c.id !== id));
@@ -192,6 +217,8 @@ export function useJournal(): UseJournalResult {
     createCampaign: createCampaignFn,
     renameCampaign,
     deleteCampaign,
+    reorderCampaigns,
+    toggleCampaignFavorite,
     addEntry,
     removeEntry,
     importCampaign,

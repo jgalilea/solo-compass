@@ -101,7 +101,10 @@ export function parseMarkdownToEntries(
   startTimestamp: number,
 ): JournalEntry[] {
   const entries: JournalEntry[] = [];
-  const lines = text.split(/\r?\n/);
+  // Quita un posible BOM inicial (lo añade nuestra propia exportación
+  // para que los visores externos detecten bien el UTF-8) para que no
+  // se cuele en la primera línea y la deje sin reconocer.
+  const lines = text.replace(/^﻿/, "").split(/\r?\n/);
   let index = 0;
 
   for (const rawLine of lines) {
