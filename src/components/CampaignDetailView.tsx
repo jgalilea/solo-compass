@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { exportCampaignToMarkdown, type JournalLineKind } from "../lib/lonelog";
+import { exportCampaignToMarkdown } from "../lib/lonelog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
@@ -16,6 +16,7 @@ import {
   PRIMARY_BUTTON_CLASS,
   sanitizeFilename,
   SECONDARY_BUTTON_CLASS,
+  type ComposerKind,
 } from "../lib/journalUi";
 import {
   IconArchive,
@@ -99,17 +100,27 @@ export function CampaignDetailView() {
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
 
   const [composerExpanded, setComposerExpanded] = useState(true);
-  const [composerKind, setComposerKind] = useState<JournalLineKind>("note");
+  const [composerKind, setComposerKind] = useState<ComposerKind>("note");
   const [composerText, setComposerText] = useState("");
   const [sessionTitle, setSessionTitle] = useState("");
   const [showNewSession, setShowNewSession] = useState(false);
 
-  const kindLabels: Record<Exclude<JournalLineKind, "session">, string> = {
+  const kindLabels: Record<ComposerKind, string> = {
     action: t.journal.kindAction,
-    question: t.journal.kindQuestion,
     roll: t.journal.kindRoll,
     consequence: t.journal.kindConsequence,
     note: t.journal.kindNote,
+  };
+
+  // Una línea de contexto bajo los botones para que quede claro qué
+  // es cada tipo sin añadir pasos — sobre todo "Tirada", que se
+  // confunde fácil con las tiradas del oráculo/tablas (esas ya se
+  // registran solas; esta es para las de tu propio sistema).
+  const kindHints: Record<ComposerKind, string> = {
+    action: t.journal.composerHintAction,
+    roll: t.journal.composerHintRoll,
+    consequence: t.journal.composerHintConsequence,
+    note: t.journal.composerHintNote,
   };
 
   if (status === "loading") {
@@ -439,6 +450,7 @@ export function CampaignDetailView() {
                 <IconChevronRight size={16} className="rotate-90" />
               </button>
             </div>
+            <p className="-mt-1 text-xs text-parchment-dim/70">{kindHints[composerKind]}</p>
             <div className="flex items-center gap-2">
               <input
                 value={composerText}

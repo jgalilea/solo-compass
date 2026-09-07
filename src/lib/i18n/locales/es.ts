@@ -219,6 +219,12 @@ export const es: Dictionary = {
     kindRoll: "Tirada",
     kindConsequence: "Consecuencia",
     kindNote: "Nota",
+    composerHintAction: "Lo que hace tu personaje, con o sin tirada.",
+    composerHintRoll:
+      "Tirada de tu propio sistema — el oráculo y las tablas ya se registran solos.",
+    composerHintConsequence:
+      "Qué pasa como resultado de una tirada (oráculo, tabla o tu sistema).",
+    composerHintNote: "Narración libre, sin más.",
     addPlaceholder: "Escribe algo…",
     addButton: "Añadir",
     newSessionButton: "Nueva sesión",

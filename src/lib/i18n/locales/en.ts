@@ -213,6 +213,12 @@ export const en: Dictionary = {
     kindRoll: "Roll",
     kindConsequence: "Consequence",
     kindNote: "Note",
+    composerHintAction: "What your character does, with or without a roll.",
+    composerHintRoll:
+      "A roll from your own system — the oracle and tables already log themselves.",
+    composerHintConsequence:
+      "What happens as a result of a roll (oracle, table, or your system).",
+    composerHintNote: "Free-form narration, nothing more.",
     addPlaceholder: "Write something…",
     addButton: "Add",
     newSessionButton: "New session",

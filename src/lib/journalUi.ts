@@ -14,13 +14,14 @@ export const PRIMARY_BUTTON_CLASS =
 export const SECONDARY_BUTTON_CLASS =
   "shrink-0 rounded-xl border border-ink-border px-4 py-3 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold";
 
-export const COMPOSER_KINDS: Exclude<JournalLineKind, "session">[] = [
-  "action",
-  "question",
-  "roll",
-  "consequence",
-  "note",
-];
+// "question" se queda fuera a propósito: el oráculo ya tiene su
+// propia pantalla, que registra pregunta + tirada juntas solo — no
+// hay caso de uso real para apuntar una pregunta suelta aquí. Sigue
+// existiendo como JournalLineKind porque las entradas ya guardadas
+// (o importadas de otro Lonelog) pueden tener ese tipo.
+export type ComposerKind = Exclude<JournalLineKind, "session" | "question">;
+
+export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "roll", "consequence"];
 
 export const SYMBOL: Record<JournalLineKind, string> = {
   action: "@",

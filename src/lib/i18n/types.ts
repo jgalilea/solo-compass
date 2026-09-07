@@ -200,6 +200,10 @@ export interface Dictionary {
     kindRoll: string;
     kindConsequence: string;
     kindNote: string;
+    composerHintAction: string;
+    composerHintRoll: string;
+    composerHintConsequence: string;
+    composerHintNote: string;
     addPlaceholder: string;
     addButton: string;
     newSessionButton: string;
