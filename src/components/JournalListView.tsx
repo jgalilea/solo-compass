@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
@@ -30,6 +30,7 @@ export function JournalListView() {
     error,
     campaigns,
     activeCampaignId,
+    setActiveCampaignId,
     createCampaign,
     reorderCampaigns,
     toggleCampaignFavorite,
@@ -37,6 +38,7 @@ export function JournalListView() {
     retry,
   } = useJournalContext();
   const { t } = useLocaleContext();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [newCampaignName, setNewCampaignName] = useState("");
@@ -136,9 +138,11 @@ export function JournalListView() {
 
   function handleCreateCampaign() {
     if (!newCampaignName.trim()) return;
-    createCampaign(newCampaignName);
+    const campaign = createCampaign(newCampaignName);
+    setActiveCampaignId(campaign.id);
     setNewCampaignName("");
     setShowNewCampaignForm(false);
+    navigate(`/diario/${campaign.id}`);
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -148,7 +152,9 @@ export function JournalListView() {
     try {
       const text = await file.text();
       const name = file.name.replace(/\.md$/i, "");
-      importCampaign(name, text);
+      const campaign = importCampaign(name, text);
+      setActiveCampaignId(campaign.id);
+      navigate(`/diario/${campaign.id}`);
       setImportError(null);
     } catch {
       setImportError(t.journal.importError);
