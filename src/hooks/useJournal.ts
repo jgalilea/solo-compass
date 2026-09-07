@@ -116,16 +116,18 @@ export function useJournal(): UseJournalResult {
     [t],
   );
 
-  // Activar una campaña archivada la desarchiva: si estaba guardada
-  // fuera de la lista principal es porque no se estaba usando, y
-  // activarla es justo la señal de que se vuelve a usar.
+  // Una campaña pausada o archivada no puede ser la activa a la vez —
+  // no tiene sentido registrar solo en algo "en pausa". Activarla es
+  // justo la señal de que se vuelve a usar, así que la reanuda sola.
   const setActiveCampaignId = useCallback(
     (id: string | null) => {
       setActiveCampaignIdState(id);
       saveActiveCampaignId(id);
       if (id) {
         updateCampaigns((prev) =>
-          prev.map((c) => (c.id === id && c.status === "archived" ? { ...c, status: "ongoing" } : c)),
+          prev.map((c) =>
+            c.id === id && c.status !== "ongoing" ? { ...c, status: "ongoing" } : c,
+          ),
         );
       }
     },
@@ -184,14 +186,14 @@ export function useJournal(): UseJournalResult {
     [activeCampaignId, updateCampaigns, updateEntries, setActiveCampaignId],
   );
 
-  // Archivar la campaña activa la desactiva (una campaña archivada no
-  // puede ser la que recibe el auto-registro).
+  // Pausar o archivar la campaña activa la desactiva (una campaña que
+  // no está en curso no puede ser la que recibe el auto-registro).
   const setCampaignStatus = useCallback(
     (id: string, status: CampaignStatus) => {
       updateCampaigns((prev) =>
         prev.map((c) => (c.id === id ? { ...c, status, updatedAt: Date.now() } : c)),
       );
-      if (status === "archived" && activeCampaignId === id) {
+      if (status !== "ongoing" && activeCampaignId === id) {
         setActiveCampaignId(null);
       }
     },
