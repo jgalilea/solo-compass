@@ -1,16 +1,64 @@
-import { useState } from "react";
-import { IconClose, IconCompass, IconExternalLink, IconInfo } from "./icons/Icons";
+import { useRef, useState } from "react";
+import {
+  IconClose,
+  IconCompass,
+  IconDownload,
+  IconExternalLink,
+  IconInfo,
+  IconUpload,
+} from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { getOracle } from "../lib/oracles";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
 import { interpolate } from "../lib/i18n";
+import { backupFilename, BackupError, buildBackup, downloadBackupFile, restoreBackup } from "../lib/backup";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 export function AboutDialog() {
   const { t } = useLocaleContext();
   const { oracleId } = useOracleContext();
   const oracle = getOracle(oracleId);
   const [open, setOpen] = useState(false);
+
+  const [exportedFilename, setExportedFilename] = useState<string | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleExportAll() {
+    const payload = await buildBackup(t);
+    const filename = backupFilename();
+    downloadBackupFile(filename, payload);
+    setExportedFilename(filename);
+  }
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text();
+    setImportError(null);
+    setPendingRestore(text);
+  }
+
+  async function confirmRestore() {
+    if (!pendingRestore || restoring) return;
+    setRestoring(true);
+    try {
+      await restoreBackup(t, pendingRestore);
+      // Recarga completa a propósito: history/journal/theme/locale…
+      // viven repartidos en varios contextos de React ya montados, y
+      // la forma más simple y fiable de que todos reflejen los datos
+      // recién restaurados es arrancar de cero.
+      window.location.reload();
+    } catch (err) {
+      setImportError(err instanceof BackupError ? err.message : t.about.importAllError);
+      setRestoring(false);
+      setPendingRestore(null);
+    }
+  }
 
   return (
     <>
@@ -124,8 +172,62 @@ export function AboutDialog() {
                 </dl>
               </div>
             </div>
+
+            <div className="mt-3 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
+                {t.about.dataSectionTitle}
+              </p>
+              <p className="mt-1.5 text-sm text-parchment-dim">
+                {t.about.dataSectionDescription}
+              </p>
+
+              {exportedFilename && (
+                <p className="mt-2 text-xs text-gold/80">
+                  {interpolate(t.about.exportedAllConfirmation, { filename: exportedFilename })}
+                </p>
+              )}
+              {importError && <p className="mt-2 text-xs text-no">{importError}</p>}
+
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportAll}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-ink-border py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                >
+                  <IconDownload size={14} />
+                  {t.about.exportAllButton}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-ink-border py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                >
+                  <IconUpload size={14} />
+                  {t.about.importAllButton}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  onChange={handleImportFile}
+                />
+              </div>
+            </div>
           </div>
         </div>
+      )}
+
+      {pendingRestore && (
+        <ConfirmDialog
+          title={t.about.importAllConfirmTitle}
+          description={
+            restoring ? t.about.importAllSuccessReloading : t.about.importAllConfirmDescription
+          }
+          confirmLabel={t.about.importAllConfirmButton}
+          onConfirm={confirmRestore}
+          onCancel={() => setPendingRestore(null)}
+        />
       )}
     </>
   );

@@ -63,6 +63,16 @@ export interface Dictionary {
     legendRoll: string;
     legendConsequence: string;
     legendNote: string;
+    dataSectionTitle: string;
+    dataSectionDescription: string;
+    exportAllButton: string;
+    exportedAllConfirmation: string;
+    importAllButton: string;
+    importAllConfirmTitle: string;
+    importAllConfirmDescription: string;
+    importAllConfirmButton: string;
+    importAllError: string;
+    importAllSuccessReloading: string;
   };
   oracleSwitcher: {
     triggerLabel: string;
@@ -186,6 +196,7 @@ export interface Dictionary {
     composerShow: string;
     composerHide: string;
     composerCollapsedLabel: string;
+    diceRollerLabel: string;
     searchPlaceholder: string;
     searchLabel: string;
     noSearchResultsTitle: string;
@@ -216,6 +227,7 @@ export interface Dictionary {
     newSessionButton: string;
     newSessionPlaceholder: string;
     deleteEntry: string;
+    editEntry: string;
     exportButton: string;
     exportedToastTitle: string;
     exportedToastDescription: string;

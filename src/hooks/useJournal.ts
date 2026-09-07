@@ -40,6 +40,7 @@ interface UseJournalResult {
     linkedRollId?: string,
   ) => void;
   removeEntry: (id: string) => void;
+  editEntry: (id: string, text: string) => void;
   importCampaign: (name: string, markdownText: string) => Campaign;
   retry: () => void;
 }
@@ -225,6 +226,13 @@ export function useJournal(): UseJournalResult {
     [updateEntries],
   );
 
+  const editEntry = useCallback(
+    (id: string, text: string) => {
+      updateEntries((prev) => prev.map((e) => (e.id === id ? { ...e, text } : e)));
+    },
+    [updateEntries],
+  );
+
   const importCampaign = useCallback(
     (name: string, markdownText: string) => {
       const campaign = buildCampaign(name);
@@ -251,6 +259,7 @@ export function useJournal(): UseJournalResult {
     setCampaignStatus,
     addEntry,
     removeEntry,
+    editEntry,
     importCampaign,
     retry: load,
   };

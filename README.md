@@ -50,7 +50,12 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   la lista tiene buscador, pinea las favoritas arriba y deja pausar o
   archivar campañas (las archivadas quedan en su propia sección
   plegada). Un indicador fijo en todas las pantallas recuerda cuál es
-  la campaña activa y lleva directo a ella.
+  la campaña activa y lleva directo a ella. El formulario manual solo
+  ofrece Acción/Tirada/Consecuencia/Nota (no Pregunta, que ya cubre el
+  oráculo del todo); al elegir "Tirada" aparece un roller de dados
+  genérico (d4–d20, d% y 4dF, `src/lib/dice.ts`) para tiradas de tu
+  propio sistema, agnóstico de reglas. Cualquier entrada (o el título
+  de una sesión) se puede editar después de creada, no solo borrar.
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
   persistidas en IndexedDB (ver "Almacenamiento" más abajo).
 
@@ -136,7 +141,15 @@ datos del sitio o cambiar de navegador/dispositivo empieza de cero.
   una vez sola a IndexedDB de forma automática y transparente.
 - **Diario** (`src/lib/journal.ts`): campañas y entradas también en
   IndexedDB, mismo motivo que el historial.
-- **Tema, idioma, tablas favoritas y campaña activa**: siguen en
-  `localStorage`, por ser datos minúsculos y de lectura síncrona (el
-  tema, en concreto, se lee antes del primer pintado para evitar
-  parpadeos, algo que IndexedDB no permite al ser siempre asíncrono).
+- **Tema, modo claro/oscuro, idioma, oráculo, tablas favoritas y
+  campaña activa**: siguen en `localStorage`, por ser datos minúsculos
+  y de lectura síncrona (el tema y el modo, en concreto, se leen antes
+  del primer pintado para evitar parpadeos, algo que IndexedDB no
+  permite al ser siempre asíncrono).
+
+Como todo vive solo en el dispositivo, "Acerca de" (icono ⓘ del
+encabezado) incluye una copia de seguridad completa: **exportar todo**
+descarga un único `.json` con historial + diario + ajustes
+(`src/lib/backup.ts`), y **restaurar copia** lo vuelve a cargar entero
+(sustituyendo lo que hubiera, previa confirmación) recargando la app al
+terminar para que todos los contextos reflejen los datos restaurados.

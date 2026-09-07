@@ -5,6 +5,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportCampaignToMarkdown } from "../lib/lonelog";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { DiceRoller } from "./DiceRoller";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
 import { EntryRow, SessionGroupRow } from "./journalShared";
@@ -50,6 +51,7 @@ export function CampaignDetailView() {
     setCampaignStatus,
     addEntry,
     removeEntry,
+    editEntry,
   } = useJournalContext();
 
   const campaign = campaigns.find((c) => c.id === campaignId) ?? null;
@@ -94,6 +96,8 @@ export function CampaignDetailView() {
   }
 
   const [previousExpanded, setPreviousExpanded] = useState(false);
+  const [editingSessionTitle, setEditingSessionTitle] = useState(false);
+  const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -166,11 +170,25 @@ export function CampaignDetailView() {
     setComposerText("");
   }
 
+  // Encadena tiradas del roller genérico al texto ya escrito (p. ej.
+  // "Ataque al orco" + tocar d20 -> "Ataque al orco d20 -> 14"), en
+  // vez de sustituirlo, para poder ir añadiendo contexto y dados.
+  function handleDiceRoll(text: string) {
+    setComposerText((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
+  }
+
   function handleAddSession() {
     const title = sessionTitle.trim() || new Date().toLocaleDateString();
     addEntry(campaign!.id, "session", title);
     setSessionTitle("");
     setShowNewSession(false);
+  }
+
+  function commitSessionTitleEdit() {
+    if (currentGroup?.sessionEntry && sessionTitleEditValue.trim()) {
+      editEntry(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
+    }
+    setEditingSessionTitle(false);
   }
 
   function handleExport() {
@@ -322,31 +340,76 @@ export function CampaignDetailView() {
           <ul className="flex flex-col gap-2">
             {currentGroup.sessionEntry ? (
               <li className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
-                    {currentGroup.sessionEntry.text}
-                  </span>
-                  <span className="shrink-0 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gold">
-                    {t.journal.currentSessionBadge}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeEntry(currentGroup.sessionEntry!.id)}
-                    aria-label={t.journal.deleteEntry}
-                    className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
-                  >
-                    <IconTrash size={16} />
-                  </button>
-                </div>
+                {editingSessionTitle ? (
+                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-2.5">
+                    <input
+                      autoFocus
+                      value={sessionTitleEditValue}
+                      onChange={(e) => setSessionTitleEditValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitSessionTitleEdit();
+                        if (e.key === "Escape") setEditingSessionTitle(false);
+                      }}
+                      className={`${INPUT_CLASS} bg-ink-800/70`}
+                    />
+                    <button type="button" onClick={commitSessionTitleEdit} className={PRIMARY_BUTTON_CLASS}>
+                      {t.common.save}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
+                      {currentGroup.sessionEntry.text}
+                    </span>
+                    <span className="shrink-0 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gold">
+                      {t.journal.currentSessionBadge}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSessionTitleEditValue(currentGroup.sessionEntry!.text);
+                        setEditingSessionTitle(true);
+                      }}
+                      aria-label={t.journal.editEntry}
+                      className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-gold"
+                    >
+                      <IconPencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeEntry(currentGroup.sessionEntry!.id)}
+                      aria-label={t.journal.deleteEntry}
+                      className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
+                    >
+                      <IconTrash size={16} />
+                    </button>
+                  </div>
+                )}
                 <ul className="flex flex-col gap-2 pl-1">
                   {currentGroup.items.map((entry) => (
-                    <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+                    <EntryRow
+                      key={entry.id}
+                      entry={entry}
+                      onDelete={removeEntry}
+                      onEdit={editEntry}
+                      deleteLabel={t.journal.deleteEntry}
+                      editLabel={t.journal.editEntry}
+                      saveLabel={t.common.save}
+                    />
                   ))}
                 </ul>
               </li>
             ) : (
               currentGroup.items.map((entry) => (
-                <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+                <EntryRow
+                  key={entry.id}
+                  entry={entry}
+                  onDelete={removeEntry}
+                  onEdit={editEntry}
+                  deleteLabel={t.journal.deleteEntry}
+                  editLabel={t.journal.editEntry}
+                  saveLabel={t.common.save}
+                />
               ))
             )}
           </ul>
@@ -404,13 +467,24 @@ export function CampaignDetailView() {
                     expanded={isSessionExpanded(group.sessionEntry.id)}
                     onToggle={() => toggleSession(group.sessionEntry!.id)}
                     onDeleteEntry={removeEntry}
+                    onEditEntry={editEntry}
                     deleteLabel={t.journal.deleteEntry}
+                    editLabel={t.journal.editEntry}
+                    saveLabel={t.common.save}
                     toggleLabel={t.journal.toggleSession}
                   />
                 ) : (
                   <Fragment key={`prologue-${i}`}>
                     {group.items.map((entry) => (
-                      <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+                      <EntryRow
+                        key={entry.id}
+                        entry={entry}
+                        onDelete={removeEntry}
+                        onEdit={editEntry}
+                        deleteLabel={t.journal.deleteEntry}
+                        editLabel={t.journal.editEntry}
+                        saveLabel={t.common.save}
+                      />
                     ))}
                   </Fragment>
                 ),
@@ -451,6 +525,9 @@ export function CampaignDetailView() {
               </button>
             </div>
             <p className="-mt-1 text-xs text-parchment-dim/70">{kindHints[composerKind]}</p>
+            {composerKind === "roll" && (
+              <DiceRoller onRoll={handleDiceRoll} ariaLabel={t.journal.diceRollerLabel} />
+            )}
             <div className="flex items-center gap-2">
               <input
                 value={composerText}
