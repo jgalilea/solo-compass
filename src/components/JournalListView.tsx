@@ -9,6 +9,7 @@ import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import {
   IconCheck,
   IconChevronRight,
+  IconClose,
   IconFeather,
   IconGripVertical,
   IconPlus,
@@ -175,7 +176,7 @@ export function JournalListView() {
       {status === "ready" && (
         <>
           {hasAnyCampaigns && (
-            <div className="relative">
+            <div className="relative flex">
               <IconSearch
                 size={17}
                 className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/50"
@@ -185,8 +186,18 @@ export function JournalListView() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t.journal.searchPlaceholder}
                 aria-label={t.journal.searchLabel}
-                className={`${INPUT_CLASS} pl-10`}
+                className={`${INPUT_CLASS} w-full pl-10 ${search ? "pr-10" : ""}`}
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label={t.common.close}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-dim/60 transition hover:text-parchment"
+                >
+                  <IconClose size={15} />
+                </button>
+              )}
             </div>
           )}
 
