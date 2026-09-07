@@ -253,6 +253,15 @@ export function CampaignDetailView() {
             >
               <IconPencil size={19} />
             </button>
+            <button
+              type="button"
+              onClick={() => setDeleting(true)}
+              aria-label={t.journal.deleteCampaign}
+              title={t.journal.deleteCampaign}
+              className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-no"
+            >
+              <IconTrash size={19} />
+            </button>
           </>
         )}
       </div>
@@ -304,20 +313,10 @@ export function CampaignDetailView() {
         <button
           type="button"
           onClick={handleExport}
-          className="flex items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          className="ml-auto flex items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
         >
           <IconDownload size={15} />
           {t.journal.exportButton}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setDeleting(true)}
-          aria-label={t.journal.deleteCampaign}
-          title={t.journal.deleteCampaign}
-          className="ml-auto rounded-xl border border-ink-border p-2.5 text-parchment-dim/70 transition hover:border-no/40 hover:text-no"
-        >
-          <IconTrash size={16} />
         </button>
       </div>
 
