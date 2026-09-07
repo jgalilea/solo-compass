@@ -44,6 +44,12 @@ export interface Dictionary {
     dialogTitle: string;
   };
   theme: Record<ThemeId, { name: string; tagline: string }>;
+  modeSwitcher: {
+    groupLabel: string;
+    light: string;
+    dark: string;
+    auto: string;
+  };
   about: {
     triggerLabel: string;
     dialogLabel: string;

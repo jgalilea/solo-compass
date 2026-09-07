@@ -6,6 +6,7 @@ import { HistoryView } from "./components/HistoryView";
 import { JournalView } from "./components/JournalView";
 import { HistoryProvider } from "./hooks/HistoryContext";
 import { ThemeProvider } from "./hooks/ThemeContext";
+import { ModeProvider } from "./hooks/ModeContext";
 import { LocaleProvider } from "./hooks/LocaleContext";
 import { OracleProvider } from "./hooks/OracleContext";
 import { JournalProvider } from "./hooks/JournalContext";
@@ -19,22 +20,24 @@ function App() {
     <LocaleProvider>
       <AppErrorBoundary>
         <ThemeProvider>
-          <OracleProvider>
-            <JournalProvider>
-              <HistoryProvider>
-                <HashRouter>
-                  <Routes>
-                    <Route element={<Layout />}>
-                      <Route index element={<OracleView />} />
-                      <Route path="tablas" element={<TablesView />} />
-                      <Route path="diario" element={<JournalView />} />
-                      <Route path="historial" element={<HistoryView />} />
-                    </Route>
-                  </Routes>
-                </HashRouter>
-              </HistoryProvider>
-            </JournalProvider>
-          </OracleProvider>
+          <ModeProvider>
+            <OracleProvider>
+              <JournalProvider>
+                <HistoryProvider>
+                  <HashRouter>
+                    <Routes>
+                      <Route element={<Layout />}>
+                        <Route index element={<OracleView />} />
+                        <Route path="tablas" element={<TablesView />} />
+                        <Route path="diario" element={<JournalView />} />
+                        <Route path="historial" element={<HistoryView />} />
+                      </Route>
+                    </Routes>
+                  </HashRouter>
+                </HistoryProvider>
+              </JournalProvider>
+            </OracleProvider>
+          </ModeProvider>
         </ThemeProvider>
       </AppErrorBoundary>
     </LocaleProvider>

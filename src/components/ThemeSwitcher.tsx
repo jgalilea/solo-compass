@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { THEMES } from "../lib/theme";
+import { MODES, type ThemeMode } from "../lib/mode";
 import { useThemeContext } from "../hooks/useThemeContext";
+import { useModeContext } from "../hooks/useModeContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { IconCheck, IconClose, IconPalette } from "./icons/Icons";
 
 export function ThemeSwitcher() {
   const { theme, setTheme } = useThemeContext();
+  const { mode, setMode, resolvedMode } = useModeContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
 
@@ -46,10 +49,41 @@ export function ThemeSwitcher() {
               </button>
             </div>
 
+            <div
+              role="radiogroup"
+              aria-label={t.modeSwitcher.groupLabel}
+              className="mb-4 grid grid-cols-3 gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1.5"
+            >
+              {MODES.map((option) => {
+                const active = option === mode;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setMode(option)}
+                    className={[
+                      "rounded-xl px-2 py-2 text-xs font-medium transition",
+                      active
+                        ? "bg-gold text-ink-950 shadow-sm"
+                        : "text-parchment-dim hover:text-parchment",
+                    ].join(" ")}
+                  >
+                    {modeLabel(t.modeSwitcher, option)}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="flex flex-col gap-2">
               {THEMES.map((themeInfo) => {
                 const active = themeInfo.id === theme;
                 const label = t.theme[themeInfo.id];
+                const swatch =
+                  resolvedMode === "light"
+                    ? themeInfo.swatchLight
+                    : themeInfo.swatch;
                 return (
                   <button
                     key={themeInfo.id}
@@ -67,7 +101,7 @@ export function ThemeSwitcher() {
                     ].join(" ")}
                   >
                     <span className="flex h-8 w-8 shrink-0 overflow-hidden rounded-full border border-ink-border/70">
-                      {themeInfo.swatch.map((c, i) => (
+                      {swatch.map((c, i) => (
                         <span
                           key={i}
                           className="h-full flex-1"
@@ -95,4 +129,11 @@ export function ThemeSwitcher() {
       )}
     </>
   );
+}
+
+function modeLabel(
+  labels: { light: string; dark: string; auto: string },
+  mode: ThemeMode,
+): string {
+  return labels[mode];
 }

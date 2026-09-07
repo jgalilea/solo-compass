@@ -11,16 +11,39 @@ export interface ThemeInfo {
   id: ThemeId;
   /** [fondo, acento, texto] para la muestra de color del selector. */
   swatch: [string, string, string];
+  /** Igual, pero para el modo claro del mismo tema. */
+  swatchLight: [string, string, string];
 }
 
 // El nombre y la descripción de cada tema viven en el diccionario de
-// idioma (src/lib/i18n/locales/*.ts, clave `theme`), no aquí.
+// idioma (src/lib/i18n/locales/*.ts, clave `theme`), no aquí. Los
+// colores tienen que coincidir con los definidos en src/index.css.
 export const THEMES: ThemeInfo[] = [
-  { id: "fantasia", swatch: ["#0b0c10", "#d7b26d", "#f4efe6"] },
-  { id: "pulp", swatch: ["#15120f", "#dd9a35", "#ece1c8"] },
-  { id: "moderno", swatch: ["#0a0b0d", "#6c8cff", "#eef0f3"] },
-  { id: "scifi", swatch: ["#04070a", "#39e75f", "#d7ecdf"] },
-  { id: "osr", swatch: ["#000000", "#c81e1e", "#f2f0eb"] },
+  {
+    id: "fantasia",
+    swatch: ["#0b0c10", "#d7b26d", "#f4efe6"],
+    swatchLight: ["#f7f1e4", "#9c6f1f", "#2b2013"],
+  },
+  {
+    id: "pulp",
+    swatch: ["#15120f", "#dd9a35", "#ece1c8"],
+    swatchLight: ["#f2e6cc", "#a8621f", "#241a10"],
+  },
+  {
+    id: "moderno",
+    swatch: ["#0a0b0d", "#6c8cff", "#eef0f3"],
+    swatchLight: ["#f7f8fa", "#3757e0", "#14171c"],
+  },
+  {
+    id: "scifi",
+    swatch: ["#04070a", "#39e75f", "#d7ecdf"],
+    swatchLight: ["#eef8f4", "#0e8a56", "#0c1f17"],
+  },
+  {
+    id: "osr",
+    swatch: ["#000000", "#c81e1e", "#f2f0eb"],
+    swatchLight: ["#f4f1ea", "#b81f1a", "#0a0a0a"],
+  },
 ];
 
 const STORAGE_KEY = "solo-compass:theme";

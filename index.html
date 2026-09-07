@@ -3,11 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <script>
-      // Aplica el tema guardado antes del primer pintado, para evitar
-      // un parpadeo con el tema por defecto (fantasía) al cargar.
+      // Aplica el tema y el modo claro/oscuro guardados antes del
+      // primer pintado, para evitar un parpadeo con los valores por
+      // defecto al cargar.
       try {
         var t = localStorage.getItem("solo-compass:theme");
         if (t) document.documentElement.setAttribute("data-theme", t);
+
+        var m = localStorage.getItem("solo-compass:mode") || "dark";
+        if (m === "auto") {
+          m =
+            window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.setAttribute("data-mode", m);
+        document.documentElement.style.colorScheme = m;
       } catch (e) {}
     </script>
     <link rel="icon" type="image/svg+xml" href="/solo-compass/favicon.svg" />

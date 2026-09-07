@@ -36,6 +36,12 @@ export const es: Dictionary = {
     scifi: { name: "Sci-fi", tagline: "Terminal, código y neón verde." },
     osr: { name: "OSR", tagline: "Tinta, hueso y sangre seca." },
   },
+  modeSwitcher: {
+    groupLabel: "Modo claro u oscuro",
+    light: "Claro",
+    dark: "Oscuro",
+    auto: "Automático",
+  },
   about: {
     triggerLabel: "Acerca de Solo Compass y créditos",
     dialogLabel: "Acerca de Solo Compass",

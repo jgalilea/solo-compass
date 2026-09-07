@@ -219,6 +219,123 @@
   --color-contradiction: #5c4a6b;
 }
 
+/* ---------- Modo claro ---------- */
+/* El modo (claro/oscuro/automático) es independiente del tema: cada
+   uno de los 5 temas de arriba es la paleta oscura; aquí va su
+   equivalente clara. Se activan con data-mode="light" además de
+   data-theme, así que :root[data-theme="x"][data-mode="light"] tiene
+   más especificidad que :root[data-theme="x"] solo y gana siempre —
+   el tipo de letra y los acabados (mayúsculas, radios) no cambian
+   con el modo, se quedan definidos arriba, solo el color. */
+
+:root[data-theme="fantasia"][data-mode="light"] {
+  --color-ink-950: #f7f1e4;
+  --color-ink-900: #f2e9d6;
+  --color-ink-800: #ece0c8;
+  --color-ink-700: #e2d3b4;
+  --color-ink-600: #d3c09a;
+  --color-ink-500: #b8a37c;
+  --color-ink-border: #d9c7a3;
+  --color-ink-glow: #fffaf0;
+
+  --color-parchment: #2b2013;
+  --color-parchment-dim: #6b5a3e;
+
+  --color-gold: #9c6f1f;
+  --color-gold-soft: #b8862f;
+
+  --color-yes: #2f8a5f;
+  --color-no: #b23a4a;
+  --color-contradiction: #7c4fb0;
+}
+
+:root[data-theme="pulp"][data-mode="light"] {
+  --color-ink-950: #f2e6cc;
+  --color-ink-900: #ecdcb8;
+  --color-ink-800: #e4d0a2;
+  --color-ink-700: #d6bd88;
+  --color-ink-600: #c2a56c;
+  --color-ink-500: #a8894e;
+  --color-ink-border: #cbb079;
+  --color-ink-glow: #f8efd9;
+
+  --color-parchment: #241a10;
+  --color-parchment-dim: #5c4a35;
+
+  --color-gold: #a8621f;
+  --color-gold-soft: #c17a2f;
+
+  --color-yes: #5c7a2e;
+  --color-no: #a92e1f;
+  --color-contradiction: #6b4a8a;
+}
+
+:root[data-theme="moderno"][data-mode="light"] {
+  --color-ink-950: #f7f8fa;
+  --color-ink-900: #f1f3f6;
+  --color-ink-800: #eaedf2;
+  --color-ink-700: #dde1e8;
+  --color-ink-600: #c9cfd9;
+  --color-ink-500: #aab1c0;
+  --color-ink-border: #d7dbe3;
+  --color-ink-glow: #ffffff;
+
+  --color-parchment: #14171c;
+  --color-parchment-dim: #5b6572;
+
+  --color-gold: #3757e0;
+  --color-gold-soft: #5470f0;
+
+  --color-yes: #1f9d5c;
+  --color-no: #e0384f;
+  --color-contradiction: #7a4fd6;
+}
+
+:root[data-theme="scifi"][data-mode="light"] {
+  --color-ink-950: #eef8f4;
+  --color-ink-900: #e6f4ee;
+  --color-ink-800: #dcf0e6;
+  --color-ink-700: #c9e6d8;
+  --color-ink-600: #aed6c4;
+  --color-ink-500: #86bea7;
+  --color-ink-border: #bfe0d0;
+  --color-ink-glow: #f5fdfa;
+
+  --color-parchment: #0c1f17;
+  --color-parchment-dim: #4a685c;
+
+  --color-gold: #0e8a56;
+  --color-gold-soft: #14a366;
+
+  --color-yes: #0e8a56;
+  --color-no: #d6304a;
+  --color-contradiction: #9c6b0a;
+}
+
+/* OSR ya era blanco y negro casi puro en oscuro; en claro se invierte
+   sin más — sigue siendo el mismo pergamino/tinta, solo que ahora el
+   hueso es el fondo en vez del texto. */
+:root[data-theme="osr"][data-mode="light"] {
+  --color-ink-950: #f4f1ea;
+  --color-ink-900: #ece7dc;
+  --color-ink-800: #e2dcce;
+  --color-ink-700: #d2c9b4;
+  --color-ink-600: #bcae90;
+  --color-ink-500: #9c8a68;
+  --color-ink-border: #c7bca3;
+  --color-ink-glow: #fbf9f4;
+
+  --color-parchment: #0a0a0a;
+  --color-parchment-dim: #55503f;
+
+  --color-gold: #1a1a1a;
+  --color-gold-soft: #000000;
+
+  --color-yes: #0a0a0a;
+  --color-no: #b81f1a;
+  --color-contradiction: #4a3a58;
+}
+
 /* Acabados tipográficos: cada tema le da su acento a los títulos y
    textos en font-display sin tocar los componentes. */
 :root[data-theme="fantasia"] .font-display {
