@@ -7,13 +7,20 @@
  *   ?   pregunta al oráculo
  *   d:  tirada (el resultado va inline con "->", p. ej. "d: ... -> ...")
  *   =>  consecuencia narrativa
- *   === Título ===   cabecera de sección/sesión
+ *   === Título ===   cabecera de sección/sesión (spec original)
  *
  * Este módulo es el único sitio que sabe traducir entre nuestras
  * entradas de diario y ese formato de texto, en los dos sentidos
  * (exportar/importar), para que el resultado sea un .md válido para
  * cualquier herramienta compatible con Lonelog (p. ej. el plugin de
  * Obsidian), no solo para esta app.
+ *
+ * Al exportar, las sesiones se escriben como "## Título" (encabezado
+ * Markdown real) en vez del "=== Título ===" literal del spec — se
+ * ve bien en cualquier visor de Markdown (con su peso/margen propio),
+ * que es el motivo de ser de exportar a .md. Al importar se admiten
+ * los dos formatos, para poder leer también archivos Lonelog de
+ * fuera que sí usen el marcador original.
  */
 
 import { interpolate, type Dictionary } from "./i18n";
@@ -47,7 +54,7 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
 export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   switch (entry.kind) {
     case "session":
-      return `=== ${entry.text} ===`;
+      return `## ${entry.text}`;
     case "note":
       return entry.text;
     default:
@@ -69,7 +76,10 @@ export function buildCreditLine(t: Dictionary): string {
 
 /**
  * Genera el .md de una campaña: cabecera + crédito visible a Lonelog
- * (como cita, no como comentario oculto) + una línea por entrada.
+ * (como cita, no como comentario oculto) + una entrada por párrafo.
+ * Cada bloque va separado por una línea en blanco (no solo un salto
+ * de línea) para que Markdown los trate como párrafos distintos —
+ * si no, la mayoría de visores los junta todos pegados en uno solo.
  */
 export function exportCampaignToMarkdown(
   t: Dictionary,
@@ -78,22 +88,31 @@ export function exportCampaignToMarkdown(
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const lines = sorted.map((e) => formatLine(e));
-  return [`# ${campaignName}`, "", `> ${buildCreditLine(t)}`, "", ...lines, ""].join("\n");
+  const blocks = [`# ${campaignName}`, `> ${buildCreditLine(t)}`, ...lines];
+  return blocks.join("\n\n") + "\n";
 }
 
 const ROLL_PREFIX = /^d:\s?/;
 const ACTION_PREFIX = /^@\s?/;
 const QUESTION_PREFIX = /^\?\s?/;
 const CONSEQUENCE_PREFIX = /^=>\s?/;
-const SESSION_LINE = /^===\s*(.+?)\s*===$/;
+/** "=== Título ===", el marcador de sesión del spec original. */
+const LEGACY_SESSION_LINE = /^===\s*(.+?)\s*===$/;
+/** "## Título", el que usa nuestra propia exportación. */
+const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
+/** Título H1 (# solo, no ## ni más) — el nombre de campaña a ignorar. */
+const H1_TITLE_LINE = /^#(?!#)/;
 
 /**
  * Parsea texto en notación Lonelog a entradas. Deliberadamente
  * permisivo: cualquier línea que no encaje con un símbolo reconocido
  * se guarda como nota en vez de descartarse o fallar — igual que
  * Lonelog admite contenido adicional (etiquetas, prosa suelta) sin
- * romper el resto del documento. Las líneas vacías, los títulos
- * Markdown (#) y las citas (>) de cabecera se ignoran.
+ * romper el resto del documento. Las líneas vacías, el título H1
+ * Markdown (#, el nombre de campaña) y las citas (>) se ignoran; las
+ * sesiones se reconocen tanto en "## Título" (lo que exportamos)
+ * como en "=== Título ===" (el marcador original de Lonelog, por si
+ * se importa un archivo de otra herramienta).
  */
 export function parseMarkdownToEntries(
   text: string,
@@ -110,15 +129,19 @@ export function parseMarkdownToEntries(
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
-    if (line.startsWith("#") || line.startsWith(">")) continue;
+    if (H1_TITLE_LINE.test(line) || line.startsWith(">")) continue;
 
-    const sessionMatch = line.match(SESSION_LINE);
+    const h2Match = line.match(H2_SESSION_LINE);
+    const legacySessionMatch = line.match(LEGACY_SESSION_LINE);
     let kind: JournalLineKind;
     let content: string;
 
-    if (sessionMatch) {
+    if (h2Match) {
       kind = "session";
-      content = sessionMatch[1];
+      content = h2Match[1];
+    } else if (legacySessionMatch) {
+      kind = "session";
+      content = legacySessionMatch[1];
     } else if (ROLL_PREFIX.test(line)) {
       kind = "roll";
       content = line.replace(ROLL_PREFIX, "");
