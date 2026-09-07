@@ -96,7 +96,10 @@ export function CampaignDetailView() {
   }
 
   const [previousExpanded, setPreviousExpanded] = useState(false);
-  const [editingSessionTitle, setEditingSessionTitle] = useState(false);
+  // Un solo id "en edición" a la vez para toda la pantalla (título de
+  // sesión o cualquier entrada) — abrir uno cierra cualquier otro que
+  // estuviera abierto, en vez de permitir varios formularios a la vez.
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
@@ -188,7 +191,7 @@ export function CampaignDetailView() {
     if (currentGroup?.sessionEntry && sessionTitleEditValue.trim()) {
       editEntry(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
     }
-    setEditingSessionTitle(false);
+    setEditingEntryId(null);
   }
 
   function handleExport() {
@@ -340,7 +343,7 @@ export function CampaignDetailView() {
           <ul className="flex flex-col gap-2">
             {currentGroup.sessionEntry ? (
               <li className="flex flex-col gap-2">
-                {editingSessionTitle ? (
+                {editingEntryId === currentGroup.sessionEntry.id ? (
                   <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-2.5">
                     <input
                       autoFocus
@@ -348,7 +351,7 @@ export function CampaignDetailView() {
                       onChange={(e) => setSessionTitleEditValue(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") commitSessionTitleEdit();
-                        if (e.key === "Escape") setEditingSessionTitle(false);
+                        if (e.key === "Escape") setEditingEntryId(null);
                       }}
                       className={`${INPUT_CLASS} bg-ink-800/70`}
                     />
@@ -368,7 +371,7 @@ export function CampaignDetailView() {
                       type="button"
                       onClick={() => {
                         setSessionTitleEditValue(currentGroup.sessionEntry!.text);
-                        setEditingSessionTitle(true);
+                        setEditingEntryId(currentGroup.sessionEntry!.id);
                       }}
                       aria-label={t.journal.editEntry}
                       className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-gold"
@@ -395,6 +398,9 @@ export function CampaignDetailView() {
                       deleteLabel={t.journal.deleteEntry}
                       editLabel={t.journal.editEntry}
                       saveLabel={t.common.save}
+                      editingId={editingEntryId}
+                      onStartEdit={setEditingEntryId}
+                      onStopEdit={() => setEditingEntryId(null)}
                     />
                   ))}
                 </ul>
@@ -409,6 +415,9 @@ export function CampaignDetailView() {
                   deleteLabel={t.journal.deleteEntry}
                   editLabel={t.journal.editEntry}
                   saveLabel={t.common.save}
+                  editingId={editingEntryId}
+                  onStartEdit={setEditingEntryId}
+                  onStopEdit={() => setEditingEntryId(null)}
                 />
               ))
             )}
@@ -472,6 +481,9 @@ export function CampaignDetailView() {
                     editLabel={t.journal.editEntry}
                     saveLabel={t.common.save}
                     toggleLabel={t.journal.toggleSession}
+                    editingId={editingEntryId}
+                    onStartEdit={setEditingEntryId}
+                    onStopEdit={() => setEditingEntryId(null)}
                   />
                 ) : (
                   <Fragment key={`prologue-${i}`}>
@@ -484,6 +496,9 @@ export function CampaignDetailView() {
                         deleteLabel={t.journal.deleteEntry}
                         editLabel={t.journal.editEntry}
                         saveLabel={t.common.save}
+                        editingId={editingEntryId}
+                        onStartEdit={setEditingEntryId}
+                        onStopEdit={() => setEditingEntryId(null)}
                       />
                     ))}
                   </Fragment>

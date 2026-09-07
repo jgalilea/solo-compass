@@ -7,6 +7,11 @@ import { IconChevronRight, IconPencil, IconTrash } from "./icons/Icons";
  * Filas compartidas entre JournalListView y CampaignDetailView (esta
  * última es quien realmente las usa; conviven aquí porque son
  * componentes, no utilidades — ver src/lib/journalUi.ts para esas).
+ *
+ * Qué entrada está en edición vive en el padre (un solo id para toda
+ * la pantalla, vía editingId/onStartEdit/onStopEdit) en vez de en
+ * cada fila: así abrir una cierra cualquier otra que estuviera
+ * abierta, en vez de permitir varios formularios a la vez.
  */
 
 export function SessionGroupRow({
@@ -19,6 +24,9 @@ export function SessionGroupRow({
   editLabel,
   saveLabel,
   toggleLabel,
+  editingId,
+  onStartEdit,
+  onStopEdit,
 }: {
   group: EntryGroup;
   expanded: boolean;
@@ -29,15 +37,19 @@ export function SessionGroupRow({
   editLabel: string;
   saveLabel: string;
   toggleLabel: string;
+  editingId: string | null;
+  onStartEdit: (id: string) => void;
+  onStopEdit: () => void;
 }) {
   const session = group.sessionEntry;
-  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(session?.text ?? "");
   if (!session) return null;
 
+  const editing = editingId === session.id;
+
   function commit() {
     if (value.trim()) onEditEntry(session!.id, value.trim());
-    setEditing(false);
+    onStopEdit();
   }
 
   return (
@@ -50,7 +62,7 @@ export function SessionGroupRow({
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit();
-              if (e.key === "Escape") setEditing(false);
+              if (e.key === "Escape") onStopEdit();
             }}
             className={`${INPUT_CLASS} bg-ink-800/70`}
           />
@@ -80,7 +92,7 @@ export function SessionGroupRow({
             type="button"
             onClick={() => {
               setValue(session.text);
-              setEditing(true);
+              onStartEdit(session.id);
             }}
             aria-label={editLabel}
             className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-gold"
@@ -108,6 +120,9 @@ export function SessionGroupRow({
               deleteLabel={deleteLabel}
               editLabel={editLabel}
               saveLabel={saveLabel}
+              editingId={editingId}
+              onStartEdit={onStartEdit}
+              onStopEdit={onStopEdit}
             />
           ))}
         </ul>
@@ -123,6 +138,9 @@ export function EntryRow({
   deleteLabel,
   editLabel,
   saveLabel,
+  editingId,
+  onStartEdit,
+  onStopEdit,
 }: {
   entry: JournalEntry;
   onDelete: (id: string) => void;
@@ -130,14 +148,17 @@ export function EntryRow({
   deleteLabel: string;
   editLabel: string;
   saveLabel: string;
+  editingId: string | null;
+  onStartEdit: (id: string) => void;
+  onStopEdit: () => void;
 }) {
   const symbol = SYMBOL[entry.kind];
-  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(entry.text);
+  const editing = editingId === entry.id;
 
   function commit() {
     if (value.trim()) onEdit(entry.id, value.trim());
-    setEditing(false);
+    onStopEdit();
   }
 
   if (editing) {
@@ -152,7 +173,7 @@ export function EntryRow({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
-            if (e.key === "Escape") setEditing(false);
+            if (e.key === "Escape") onStopEdit();
           }}
           rows={2}
           className="min-w-0 flex-1 resize-none rounded-lg border border-ink-border bg-ink-800/70 px-2.5 py-1.5 text-base text-parchment focus:border-gold focus:outline-none"
@@ -180,7 +201,7 @@ export function EntryRow({
         type="button"
         onClick={() => {
           setValue(entry.text);
-          setEditing(true);
+          onStartEdit(entry.id);
         }}
         aria-label={editLabel}
         className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-gold"
