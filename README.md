@@ -47,10 +47,13 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   aventuras (`/diario`) y el contenido de cada una (`/diario/:id`) son
   pantallas separadas, así que las sesiones de la aventura abierta
   nunca compiten por espacio con la lista aunque haya muchas aventuras;
-  la lista tiene buscador, pinea las favoritas arriba y deja pausar o
-  archivar aventuras (las archivadas quedan en su propia sección
-  plegada). Un indicador fijo en todas las pantallas recuerda cuál es
-  la aventura activa y lleva directo a ella. El formulario manual solo
+  la lista tiene buscador, pinea las favoritas arriba y deja archivar
+  aventuras (las archivadas quedan en su propia sección plegada). Solo
+  una aventura puede estar activa a la vez; el resto se ven como
+  "pausadas" — no es un estado que se guarde, es solo cómo se ve
+  cualquier aventura en curso que no es la activa ahora mismo. Un
+  indicador fijo en todas las pantallas recuerda cuál es la aventura
+  activa y lleva directo a ella. El formulario manual solo
   ofrece Acción/Tirada/Consecuencia/Nota (no Pregunta, que ya cubre el
   oráculo del todo); al elegir "Tirada" aparece un roller de dados
   genérico (d4–d20, d% y 4dF, `src/lib/dice.ts`) para tiradas de tu

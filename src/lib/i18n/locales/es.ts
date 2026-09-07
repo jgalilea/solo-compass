@@ -223,8 +223,6 @@ export const es: Dictionary = {
     backToList: "Volver al diario",
     statusPaused: "Pausada",
     statusArchived: "Archivada",
-    pauseAdventure: "Pausar aventura",
-    resumeAdventure: "Reanudar aventura",
     archiveAdventure: "Archivar aventura",
     unarchiveAdventure: "Desarchivar aventura",
     archivedHeading: "Archivadas",

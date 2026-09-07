@@ -117,18 +117,18 @@ export function useJournal(): UseJournalResult {
     [t],
   );
 
-  // Una aventura pausada o archivada no puede ser la activa a la vez —
-  // no tiene sentido registrar solo en algo "en pausa". Activarla es
-  // justo la señal de que se vuelve a usar, así que la reanuda sola.
+  // Una aventura archivada no puede ser la activa a la vez — activarla
+  // es justo la señal de que se vuelve a usar, así que la desarchiva
+  // sola. "En pausa" no es un estado propio: es solo cómo se ve una
+  // aventura "ongoing" que no es esta, así que no hay nada que
+  // "despausar" aparte de activarla.
   const setActiveAdventureId = useCallback(
     (id: string | null) => {
       setActiveAdventureIdState(id);
       saveActiveAdventureId(id);
       if (id) {
         updateAdventures((prev) =>
-          prev.map((a) =>
-            a.id === id && a.status !== "ongoing" ? { ...a, status: "ongoing" } : a,
-          ),
+          prev.map((a) => (a.id === id && a.status === "archived" ? { ...a, status: "ongoing" } : a)),
         );
       }
     },
@@ -187,14 +187,14 @@ export function useJournal(): UseJournalResult {
     [activeAdventureId, updateAdventures, updateEntries, setActiveAdventureId],
   );
 
-  // Pausar o archivar la aventura activa la desactiva (una aventura
-  // que no está en curso no puede ser la que recibe el auto-registro).
+  // Archivar la aventura activa la desactiva (una aventura archivada
+  // no puede ser la que recibe el auto-registro).
   const setAdventureStatus = useCallback(
     (id: string, status: AdventureStatus) => {
       updateAdventures((prev) =>
         prev.map((a) => (a.id === id ? { ...a, status, updatedAt: Date.now() } : a)),
       );
-      if (status !== "ongoing" && activeAdventureId === id) {
+      if (status === "archived" && activeAdventureId === id) {
         setActiveAdventureId(null);
       }
     },

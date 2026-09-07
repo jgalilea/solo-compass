@@ -327,7 +327,7 @@ export function JournalListView() {
                         <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
                           {adventure.name}
                         </span>
-                        <StatusBadge status={adventure.status} t={t} />
+                        <StatusBadge isArchived t={t} />
                         <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40" />
                       </Link>
                     </li>
@@ -342,28 +342,24 @@ export function JournalListView() {
   );
 }
 
+// "Pausada" no es un estado guardado: es solo cómo se ve cualquier
+// aventura en curso que no es la activa ahora mismo — de ahí que este
+// componente reciba booleanos ya calculados, no el status en crudo.
 function StatusBadge({
-  status,
+  isPaused = false,
+  isArchived = false,
   t,
 }: {
-  status: Adventure["status"];
+  isPaused?: boolean;
+  isArchived?: boolean;
   t: { journal: { statusPaused: string; statusArchived: string } };
 }) {
-  if (status === "paused") {
-    return (
-      <span className="shrink-0 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-        {t.journal.statusPaused}
-      </span>
-    );
-  }
-  if (status === "archived") {
-    return (
-      <span className="shrink-0 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-        {t.journal.statusArchived}
-      </span>
-    );
-  }
-  return null;
+  if (!isPaused && !isArchived) return null;
+  return (
+    <span className="shrink-0 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+      {isArchived ? t.journal.statusArchived : t.journal.statusPaused}
+    </span>
+  );
 }
 
 function AdventureRow({
@@ -423,7 +419,7 @@ function AdventureRow({
         <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
           {adventure.name}
         </span>
-        <StatusBadge status={adventure.status} t={t} />
+        <StatusBadge isPaused={!isActive} t={t} />
         {isActive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
             <IconCheck size={12} />

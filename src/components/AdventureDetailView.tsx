@@ -27,7 +27,6 @@ import {
   IconChevronRight,
   IconDownload,
   IconFeather,
-  IconPause,
   IconPencil,
   IconPlay,
   IconPlus,
@@ -202,7 +201,9 @@ export function AdventureDetailView() {
   }
 
   const isArchived = adventure.status === "archived";
-  const isPaused = adventure.status === "paused";
+  // "Pausada" no es un estado guardado: es solo cómo se ve cualquier
+  // aventura en curso que no es la activa ahora mismo.
+  const isPaused = !isArchived && !isActive;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 py-8 sm:py-12">
@@ -288,18 +289,6 @@ export function AdventureDetailView() {
         >
           {isActive ? <IconCheck size={16} /> : <IconPlay size={16} />}
         </button>
-
-        {!isArchived && (
-          <button
-            type="button"
-            onClick={() => setAdventureStatus(adventure.id, isPaused ? "ongoing" : "paused")}
-            aria-label={isPaused ? t.journal.resumeAdventure : t.journal.pauseAdventure}
-            title={isPaused ? t.journal.resumeAdventure : t.journal.pauseAdventure}
-            className="rounded-xl border border-ink-border p-2.5 text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-          >
-            {isPaused ? <IconPlay size={16} /> : <IconPause size={16} />}
-          </button>
-        )}
 
         <button
           type="button"

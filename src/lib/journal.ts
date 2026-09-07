@@ -3,13 +3,13 @@ import type { Dictionary } from "./i18n";
 import type { JournalEntry } from "./lonelog";
 
 /**
- * "ongoing": en curso, aparece en la lista principal.
- * "paused": en pausa — solo organizativo, sigue en la lista principal
- * pero marcada, no afecta a si puede ser la aventura activa.
+ * "ongoing": en curso, aparece en la lista principal — "en pausa" no
+ * es un estado propio: es solo cómo se ve una aventura "ongoing" que
+ * no es la activa ahora mismo (se deriva, no se guarda).
  * "archived": fuera de la lista principal (va en su propia sección
  * plegada), no puede ser la aventura activa — activarla la desarchiva.
  */
-export type AdventureStatus = "ongoing" | "paused" | "archived";
+export type AdventureStatus = "ongoing" | "archived";
 
 export interface Adventure {
   id: string;
@@ -35,12 +35,14 @@ export async function loadAdventures(t: Dictionary): Promise<Adventure[]> {
   try {
     const stored = await get<Adventure[]>(ADVENTURES_KEY);
     if (!Array.isArray(stored)) return [];
-    // Compatibilidad con aventuras guardadas antes de añadir favoritos
-    // y antes de añadir estado (pausa/archivo).
+    // Compatibilidad con aventuras guardadas antes de añadir favoritos,
+    // y con el "paused" que existió como estado propio antes de pasar
+    // a derivarse — cualquier valor que no sea "archived" cae a
+    // "ongoing", que es como se ve ahora mismo si no es la activa.
     return stored.map((a) => ({
       ...a,
       favorite: a.favorite ?? false,
-      status: a.status ?? "ongoing",
+      status: a.status === "archived" ? "archived" : "ongoing",
     }));
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);

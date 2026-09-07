@@ -217,8 +217,6 @@ export const en: Dictionary = {
     backToList: "Back to journal",
     statusPaused: "Paused",
     statusArchived: "Archived",
-    pauseAdventure: "Pause adventure",
-    resumeAdventure: "Resume adventure",
     archiveAdventure: "Archive adventure",
     unarchiveAdventure: "Unarchive adventure",
     archivedHeading: "Archived",

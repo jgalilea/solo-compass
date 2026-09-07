@@ -204,8 +204,6 @@ export interface Dictionary {
     backToList: string;
     statusPaused: string;
     statusArchived: string;
-    pauseAdventure: string;
-    resumeAdventure: string;
     archiveAdventure: string;
     unarchiveAdventure: string;
     archivedHeading: string;
