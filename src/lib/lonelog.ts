@@ -7,20 +7,16 @@
  *   ?   pregunta al oráculo
  *   d:  tirada (el resultado va inline con "->", p. ej. "d: ... -> ...")
  *   =>  consecuencia narrativa
- *   === Título ===   cabecera de sección/sesión (spec original)
+ *   === Título ===   cabecera de sección/sesión
  *
  * Este módulo es el único sitio que sabe traducir entre nuestras
  * entradas de diario y ese formato de texto, en los dos sentidos
  * (exportar/importar), para que el resultado sea un .md válido para
  * cualquier herramienta compatible con Lonelog (p. ej. el plugin de
- * Obsidian), no solo para esta app.
- *
- * Al exportar, las sesiones se escriben como "## Título" (encabezado
- * Markdown real) en vez del "=== Título ===" literal del spec — se
- * ve bien en cualquier visor de Markdown (con su peso/margen propio),
- * que es el motivo de ser de exportar a .md. Al importar se admiten
- * los dos formatos, para poder leer también archivos Lonelog de
- * fuera que sí usen el marcador original.
+ * Obsidian), no solo para esta app. Se exporta en la notación tal
+ * cual, sin sustituir símbolos por equivalentes Markdown — el
+ * espaciado entre líneas (una en blanco entre cada entrada) es lo
+ * único que se ajusta, para que se lea bien como párrafos.
  */
 
 import { interpolate, type Dictionary } from "./i18n";
@@ -54,7 +50,7 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
 export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   switch (entry.kind) {
     case "session":
-      return `## ${entry.text}`;
+      return `=== ${entry.text} ===`;
     case "note":
       return entry.text;
     default:
@@ -96,9 +92,11 @@ const ROLL_PREFIX = /^d:\s?/;
 const ACTION_PREFIX = /^@\s?/;
 const QUESTION_PREFIX = /^\?\s?/;
 const CONSEQUENCE_PREFIX = /^=>\s?/;
-/** "=== Título ===", el marcador de sesión del spec original. */
+/** "=== Título ===", el marcador de sesión de Lonelog. */
 const LEGACY_SESSION_LINE = /^===\s*(.+?)\s*===$/;
-/** "## Título", el que usa nuestra propia exportación. */
+/** "## Título" — no lo exportamos, pero se reconoce igual al importar
+ *  por si el archivo viene de fuera y usa un encabezado Markdown en
+ *  vez del marcador de Lonelog para las sesiones. */
 const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
 /** Título H1 (# solo, no ## ni más) — el nombre de campaña a ignorar. */
 const H1_TITLE_LINE = /^#(?!#)/;
@@ -110,9 +108,9 @@ const H1_TITLE_LINE = /^#(?!#)/;
  * Lonelog admite contenido adicional (etiquetas, prosa suelta) sin
  * romper el resto del documento. Las líneas vacías, el título H1
  * Markdown (#, el nombre de campaña) y las citas (>) se ignoran; las
- * sesiones se reconocen tanto en "## Título" (lo que exportamos)
- * como en "=== Título ===" (el marcador original de Lonelog, por si
- * se importa un archivo de otra herramienta).
+ * sesiones se reconocen en "=== Título ===" (lo que exportamos) y
+ * también en "## Título" al importar, por si el archivo viene de
+ * fuera.
  */
 export function parseMarkdownToEntries(
   text: string,
