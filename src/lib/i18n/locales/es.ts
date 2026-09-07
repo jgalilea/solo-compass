@@ -50,6 +50,12 @@ export const es: Dictionary = {
     oracleUsedBy: "El oráculo usa",
     journalUsedBy: "El diario se escribe en notación",
     creditBy: "de {author}, bajo licencia",
+    legendTitle: "Símbolos del diario",
+    legendAction: "lo que hace tu personaje.",
+    legendQuestion: "lo que le preguntas al oráculo.",
+    legendRoll: "el resultado de una tirada — del oráculo, una tabla, o tu propio sistema.",
+    legendConsequence: "qué pasa como consecuencia de una tirada.",
+    legendNote: "narración libre, sin símbolo.",
   },
   oracleSwitcher: {
     triggerLabel: "Cambiar oráculo",
@@ -185,6 +191,7 @@ export const es: Dictionary = {
       "Sin campaña activa: las tiradas no se registran en ningún diario.",
     activateHint:
       "Actívala para que las tiradas del oráculo y las tablas se registren aquí solas.",
+    activateNudge: "Activa una campaña en el diario para registrar esto solo",
     goToActiveCampaign: "Ir a la campaña activa",
     favoriteAdd: "Marcar campaña como favorita",
     favoriteRemove: "Quitar campaña de favoritas",

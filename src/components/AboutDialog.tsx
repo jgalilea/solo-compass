@@ -110,10 +110,32 @@ export function AboutDialog() {
                 {t.common.viewOriginal}
                 <IconExternalLink size={14} />
               </a>
+
+              <div className="mt-4 border-t border-ink-border pt-3.5">
+                <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
+                  {t.about.legendTitle}
+                </p>
+                <dl className="mt-2 flex flex-col gap-1.5">
+                  <LegendRow symbol="@" description={t.about.legendAction} />
+                  <LegendRow symbol="?" description={t.about.legendQuestion} />
+                  <LegendRow symbol="d:" description={t.about.legendRoll} />
+                  <LegendRow symbol="=>" description={t.about.legendConsequence} />
+                  <LegendRow description={t.about.legendNote} />
+                </dl>
+              </div>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+function LegendRow({ symbol, description }: { symbol?: string; description: string }) {
+  return (
+    <div className="flex items-start gap-2.5 text-sm">
+      <dt className="w-6 shrink-0 pt-0.5 text-right font-display text-gold">{symbol}</dt>
+      <dd className="min-w-0 flex-1 text-parchment-dim">{description}</dd>
+    </div>
   );
 }

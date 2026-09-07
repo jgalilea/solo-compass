@@ -57,6 +57,12 @@ export interface Dictionary {
     oracleUsedBy: string;
     journalUsedBy: string;
     creditBy: string;
+    legendTitle: string;
+    legendAction: string;
+    legendQuestion: string;
+    legendRoll: string;
+    legendConsequence: string;
+    legendNote: string;
   };
   oracleSwitcher: {
     triggerLabel: string;
@@ -168,6 +174,7 @@ export interface Dictionary {
     activeCampaignNote: string;
     noActiveCampaignNote: string;
     activateHint: string;
+    activateNudge: string;
     goToActiveCampaign: string;
     favoriteAdd: string;
     favoriteRemove: string;

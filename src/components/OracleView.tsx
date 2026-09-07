@@ -9,6 +9,8 @@ import { formatAnswer } from "../lib/i18n/answerText";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { OracleSwitcher } from "./OracleSwitcher";
+import { ActivateCampaignNudge } from "./ActivateCampaignNudge";
+import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
 import { IconDice } from "./icons/Icons";
 
@@ -51,6 +53,8 @@ export function OracleView() {
         <h1 className="font-display text-3xl text-parchment">{t.oracle.title}</h1>
         <OracleSwitcher />
       </header>
+
+      <ActivateCampaignNudge />
 
       <div className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
         <textarea
@@ -98,49 +102,6 @@ export function OracleView() {
             description={t.oracle.emptyDescription}
           />
         </div>
-      )}
-    </div>
-  );
-}
-
-function ConsequenceComposer({
-  onSave,
-  placeholder,
-  saveLabel,
-}: {
-  onSave: (text: string) => void;
-  placeholder: string;
-  saveLabel: string;
-}) {
-  const [text, setText] = useState("");
-  const [saved, setSaved] = useState(false);
-
-  function handleSave() {
-    if (!text.trim() || saved) return;
-    onSave(text.trim());
-    setSaved(true);
-  }
-
-  if (saved) return null;
-
-  return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3.5">
-      <span className="shrink-0 font-display text-base text-gold">=&gt;</span>
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
-      />
-      {text.trim() && (
-        <button
-          type="button"
-          onClick={handleSave}
-          className="-m-2 shrink-0 p-2 text-sm font-medium text-gold"
-        >
-          {saveLabel}
-        </button>
       )}
     </div>
   );

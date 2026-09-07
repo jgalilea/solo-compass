@@ -12,6 +12,9 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate, type Dictionary } from "../lib/i18n";
+import type { Campaign } from "../lib/journal";
+import { ActivateCampaignNudge } from "./ActivateCampaignNudge";
+import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
 import {
   IconClose,
@@ -81,6 +84,11 @@ export function TablesView() {
     }, 220);
   }
 
+  function handleConsequence(rollId: string, text: string) {
+    if (!activeCampaign) return;
+    addJournalEntry(activeCampaign.id, "consequence", text, rollId);
+  }
+
   function toggleFavorite(id: string) {
     setFavoriteIds((prev) => {
       const next = new Set(prev);
@@ -113,8 +121,10 @@ export function TablesView() {
         result={results[table.id]}
         rolling={rollingId === table.id}
         favorite={favoriteIds.has(table.id)}
+        activeCampaign={activeCampaign}
         onRoll={() => handleRoll(table)}
         onToggleFavorite={() => toggleFavorite(table.id)}
+        onSaveConsequence={(rollId, text) => handleConsequence(rollId, text)}
       />
     );
   }
@@ -126,12 +136,9 @@ export function TablesView() {
           {t.tables.title}
         </h1>
         <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
-        {activeCampaign && (
-          <p className="mt-1 text-xs text-gold/80">
-            {interpolate(t.journal.activeCampaignNote, { name: activeCampaign.name })}
-          </p>
-        )}
       </header>
+
+      <ActivateCampaignNudge />
 
       <label className="relative block">
         <IconSearch
@@ -187,15 +194,19 @@ function TableCard({
   result,
   rolling,
   favorite,
+  activeCampaign,
   onRoll,
   onToggleFavorite,
+  onSaveConsequence,
 }: {
   table: MeaningTable;
   result?: TableRollEntry;
   rolling: boolean;
   favorite: boolean;
+  activeCampaign: Campaign | null;
   onRoll: () => void;
   onToggleFavorite: () => void;
+  onSaveConsequence: (rollId: string, text: string) => void;
 }) {
   const { t } = useLocaleContext();
 
@@ -253,6 +264,17 @@ function TableCard({
             <span>{result.rolls.join(" · ")}</span>
           </div>
           <p className="mt-2 text-parchment">{result.resultText}</p>
+        </div>
+      )}
+
+      {result && activeCampaign && (
+        <div className="mt-3">
+          <ConsequenceComposer
+            key={result.id}
+            onSave={(text) => onSaveConsequence(result.id, text)}
+            placeholder={t.oracle.consequencePlaceholder}
+            saveLabel={t.common.save}
+          />
         </div>
       )}
     </div>
