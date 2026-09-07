@@ -78,7 +78,7 @@ export function Die({
         width="92"
         height="92"
         rx="18"
-        fill={isWhite ? "var(--color-parchment)" : "#20222b"}
+        fill={isWhite ? "var(--color-die-white)" : "var(--color-die-black)"}
         stroke={isWhite ? "#c9c2b2" : "#3a3d4a"}
         strokeWidth="2"
       />
@@ -88,7 +88,7 @@ export function Die({
           cx={cx}
           cy={cy}
           r={7}
-          fill={isWhite ? "#20222b" : "var(--color-parchment)"}
+          fill={isWhite ? "var(--color-die-black)" : "var(--color-die-white)"}
         />
       ))}
     </svg>

@@ -78,6 +78,14 @@
   --color-no: #f4778a;
   --color-contradiction: #b98af8;
 
+  /* Los dados físicos del oráculo son uno blanco y uno negro, siempre
+     — a diferencia de --color-parchment (que es "el color del texto"
+     y por eso se invierte en modo claro), estos dos tokens no se
+     redefinen en modo claro, así que los dados se ven igual pase lo
+     que pase con el tema o el modo. */
+  --color-die-white: #f4efe6;
+  --color-die-black: #20222b;
+
   --animate-die-roll: die-roll 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-fade-up: fade-up 0.35s ease-out;
 
@@ -142,6 +150,8 @@
   --color-yes: #8bb04f;
   --color-no: #c8402c;
   --color-contradiction: #8f6aa8;
+
+  --color-die-white: #ece1c8;
 }
 
 :root[data-theme="moderno"] {
@@ -165,6 +175,8 @@
   --color-yes: #37d67a;
   --color-no: #fb5c72;
   --color-contradiction: #9b7bfa;
+
+  --color-die-white: #eef0f3;
 }
 
 /* Sci-fi: terminal/Matrix — monoespaciada (Share Tech Mono) y verde
@@ -190,6 +202,8 @@
   --color-yes: #39e75f;
   --color-no: #ff3b3b;
   --color-contradiction: #f5c542;
+
+  --color-die-white: #d7ecdf;
 }
 
 /* OSR: fantasía oscura y gótica (Mörk Borg / Shadowdark) — blackletter
@@ -217,6 +231,8 @@
   --color-yes: #f2f0eb;
   --color-no: #c81e1e;
   --color-contradiction: #5c4a6b;
+
+  --color-die-white: #f2f0eb;
 }
 
 /* ---------- Modo claro ---------- */
