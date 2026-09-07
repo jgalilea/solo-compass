@@ -53,6 +53,13 @@ function sanitizeFilename(name: string): string {
   return name.trim().replace(/[\\/:*?"<>|]+/g, "-") || "diario";
 }
 
+const INPUT_CLASS =
+  "min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-4 py-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none";
+const PRIMARY_BUTTON_CLASS =
+  "shrink-0 rounded-xl bg-gold px-4 py-3 text-sm font-medium text-ink-950";
+const SECONDARY_BUTTON_CLASS =
+  "shrink-0 rounded-xl border border-ink-border px-4 py-3 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold";
+
 export function JournalView() {
   const {
     status,
@@ -160,7 +167,7 @@ export function JournalView() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-4 py-8 sm:py-12">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
           {t.journal.title}
@@ -185,9 +192,9 @@ export function JournalView() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1 text-xs text-parchment-dim transition hover:text-gold"
+                  className="-m-2 flex items-center gap-1.5 p-2 text-sm text-parchment-dim transition hover:text-gold"
                 >
-                  <IconUpload size={13} />
+                  <IconUpload size={16} />
                   {t.journal.importButton}
                 </button>
                 <input
@@ -201,7 +208,7 @@ export function JournalView() {
             </div>
 
             {importError && (
-              <p className="text-xs text-no">{importError}</p>
+              <p className="text-sm text-no">{importError}</p>
             )}
 
             {campaigns.length === 0 && !showNewCampaignForm && (
@@ -213,7 +220,7 @@ export function JournalView() {
               />
             )}
 
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2.5">
               {campaigns.map((campaign) => {
                 const isActive = campaign.id === activeCampaignId;
                 const isRenaming = renamingId === campaign.id;
@@ -221,7 +228,7 @@ export function JournalView() {
                   <li
                     key={campaign.id}
                     className={[
-                      "rounded-2xl border p-3",
+                      "rounded-2xl border p-4",
                       isActive ? "border-gold/50 bg-gold/[0.06]" : "border-ink-border bg-ink-800/50",
                     ].join(" ")}
                   >
@@ -233,31 +240,27 @@ export function JournalView() {
                           onChange={(e) => setRenameValue(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && commitRename()}
                           placeholder={t.journal.renameCampaignPlaceholder}
-                          className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-3 py-1.5 text-sm text-parchment focus:border-gold focus:outline-none"
+                          className={INPUT_CLASS}
                         />
-                        <button
-                          type="button"
-                          onClick={commitRename}
-                          className="shrink-0 rounded-xl bg-gold px-3 py-1.5 text-xs font-medium text-ink-950"
-                        >
+                        <button type="button" onClick={commitRename} className={PRIMARY_BUTTON_CLASS}>
                           {t.common.save}
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setActiveCampaignId(isActive ? null : campaign.id)}
                           aria-pressed={isActive}
                           aria-label={`${isActive ? t.journal.unsetActive : t.journal.setActive}: ${campaign.name}`}
-                          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                          className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
                         >
-                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">
+                          <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
                             {campaign.name}
                           </span>
                           {isActive && (
-                            <span className="flex shrink-0 items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold">
-                              <IconCheck size={11} />
+                            <span className="flex shrink-0 items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
+                              <IconCheck size={12} />
                               {t.journal.activeLabel}
                             </span>
                           )}
@@ -266,17 +269,17 @@ export function JournalView() {
                           type="button"
                           onClick={() => startRename(campaign)}
                           aria-label={t.journal.renameCampaign}
-                          className="-m-1 shrink-0 p-1 text-parchment-dim/60 transition hover:text-gold"
+                          className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-gold"
                         >
-                          <IconPencil size={14} />
+                          <IconPencil size={18} />
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeletingCampaign(campaign)}
                           aria-label={t.journal.deleteCampaign}
-                          className="-m-1 shrink-0 p-1 text-parchment-dim/60 transition hover:text-no"
+                          className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-no"
                         >
-                          <IconTrash size={14} />
+                          <IconTrash size={18} />
                         </button>
                       </div>
                     )}
@@ -293,13 +296,9 @@ export function JournalView() {
                   onChange={(e) => setNewCampaignName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreateCampaign()}
                   placeholder={t.journal.newCampaignPlaceholder}
-                  className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-3 py-1.5 text-sm text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none"
+                  className={INPUT_CLASS}
                 />
-                <button
-                  type="button"
-                  onClick={handleCreateCampaign}
-                  className="shrink-0 rounded-xl bg-gold px-3 py-1.5 text-xs font-medium text-ink-950"
-                >
+                <button type="button" onClick={handleCreateCampaign} className={PRIMARY_BUTTON_CLASS}>
                   {t.journal.createButton}
                 </button>
               </div>
@@ -307,22 +306,22 @@ export function JournalView() {
               <button
                 type="button"
                 onClick={() => setShowNewCampaignForm(true)}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-ink-border py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-3 text-base text-parchment-dim transition hover:border-gold/50 hover:text-gold"
               >
-                <IconPlus size={14} />
+                <IconPlus size={16} />
                 {t.journal.newCampaign}
               </button>
             )}
 
             {campaigns.length > 0 && !activeCampaign && (
-              <p className="text-center text-xs text-parchment-dim/70">
+              <p className="text-center text-sm text-parchment-dim/70">
                 {t.journal.noActiveCampaignNote}
               </p>
             )}
           </section>
 
           {activeCampaign && (
-            <section className="flex flex-col gap-3 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
+            <section className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="min-w-0 truncate font-display text-xl text-parchment">
                   {activeCampaign.name}
@@ -330,14 +329,14 @@ export function JournalView() {
                 <button
                   type="button"
                   onClick={handleExport}
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-2.5 py-1.5 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                  className="flex shrink-0 items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
                 >
-                  <IconDownload size={13} />
+                  <IconDownload size={15} />
                   {t.journal.exportButton}
                 </button>
               </div>
 
-              <p className="text-xs text-gold/80">
+              <p className="-mt-2 text-sm text-gold/80">
                 {interpolate(t.journal.activeCampaignNote, { name: activeCampaign.name })}
               </p>
 
@@ -349,22 +348,22 @@ export function JournalView() {
                   compact
                 />
               ) : (
-                <ul className="flex flex-col gap-1.5">
+                <ul className="flex flex-col gap-2">
                   {activeEntries.map((entry) => (
                     <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
                   ))}
                 </ul>
               )}
 
-              <div className="flex flex-col gap-2 rounded-2xl border border-ink-border bg-ink-900/50 p-3">
-                <div className="flex flex-wrap gap-1">
+              <div className="flex flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/50 p-4">
+                <div className="flex flex-wrap gap-1.5">
                   {COMPOSER_KINDS.map((kind) => (
                     <button
                       key={kind}
                       type="button"
                       onClick={() => setComposerKind(kind)}
                       className={[
-                        "rounded-lg px-2 py-1 text-xs transition",
+                        "rounded-lg px-3 py-2 text-sm transition",
                         composerKind === kind
                           ? "bg-gold text-ink-950 font-medium"
                           : "text-parchment-dim hover:text-parchment",
@@ -380,13 +379,9 @@ export function JournalView() {
                     onChange={(e) => setComposerText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
                     placeholder={t.journal.addPlaceholder}
-                    className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-800/70 px-3 py-2 text-sm text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none"
+                    className={`${INPUT_CLASS} bg-ink-800/70`}
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddEntry}
-                    className="shrink-0 rounded-xl bg-gold px-3 py-2 text-xs font-medium text-ink-950"
-                  >
+                  <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
                     {t.journal.addButton}
                   </button>
                 </div>
@@ -400,13 +395,9 @@ export function JournalView() {
                     onChange={(e) => setSessionTitle(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddSession()}
                     placeholder={t.journal.newSessionPlaceholder}
-                    className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-3 py-1.5 text-sm text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none"
+                    className={INPUT_CLASS}
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddSession}
-                    className="shrink-0 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim hover:text-gold"
-                  >
+                  <button type="button" onClick={handleAddSession} className={SECONDARY_BUTTON_CLASS}>
                     {t.common.save}
                   </button>
                 </div>
@@ -414,9 +405,9 @@ export function JournalView() {
                 <button
                   type="button"
                   onClick={() => setShowNewSession(true)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-ink-border py-1.5 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
                 >
-                  <IconPlus size={13} />
+                  <IconPlus size={15} />
                   {t.journal.newSessionButton}
                 </button>
               )}
@@ -452,7 +443,7 @@ function EntryRow({
 }) {
   if (entry.kind === "session") {
     return (
-      <li className="my-1 flex items-center gap-2 text-[11px] uppercase tracking-wide text-parchment-dim/70">
+      <li className="my-1 flex items-center gap-2 text-xs uppercase tracking-wide text-parchment-dim/70">
         <span className="h-px flex-1 bg-ink-border" />
         {entry.text}
         <span className="h-px flex-1 bg-ink-border" />
@@ -463,20 +454,20 @@ function EntryRow({
   const symbol = SYMBOL[entry.kind];
 
   return (
-    <li className="flex items-start gap-2 rounded-xl border border-ink-border/70 bg-ink-900/40 px-3 py-2">
+    <li className="flex items-start gap-2.5 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3">
       {symbol && (
-        <span className="shrink-0 pt-0.5 font-display text-xs text-gold">{symbol}</span>
+        <span className="shrink-0 pt-0.5 font-display text-sm text-gold">{symbol}</span>
       )}
-      <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-parchment/90">
+      <p className="min-w-0 flex-1 whitespace-pre-wrap text-base text-parchment/90">
         {entry.text}
       </p>
       <button
         type="button"
         onClick={() => onDelete(entry.id)}
         aria-label={deleteLabel}
-        className="-m-1 shrink-0 p-1 text-parchment-dim/40 transition hover:text-no"
+        className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
       >
-        <IconTrash size={13} />
+        <IconTrash size={16} />
       </button>
     </li>
   );

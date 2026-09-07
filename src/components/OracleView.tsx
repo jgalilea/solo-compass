@@ -124,20 +124,20 @@ function ConsequenceComposer({
   if (saved) return null;
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-2.5">
-      <span className="shrink-0 font-display text-sm text-gold">=&gt;</span>
+    <div className="flex items-center gap-2.5 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3.5">
+      <span className="shrink-0 font-display text-base text-gold">=&gt;</span>
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSave()}
         placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-sm text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
       />
       {text.trim() && (
         <button
           type="button"
           onClick={handleSave}
-          className="shrink-0 text-xs font-medium text-gold"
+          className="-m-2 shrink-0 p-2 text-sm font-medium text-gold"
         >
           {saveLabel}
         </button>
