@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { exportCampaignToMarkdown } from "../lib/lonelog";
+import { exportAdventureToMarkdown } from "../lib/lonelog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DiceRoller } from "./DiceRoller";
 import { EmptyState, LoadingState } from "./StateViews";
@@ -35,36 +35,36 @@ import {
   IconTrash,
 } from "./icons/Icons";
 
-export function CampaignDetailView() {
-  const { campaignId = "" } = useParams<{ campaignId: string }>();
+export function AdventureDetailView() {
+  const { adventureId = "" } = useParams<{ adventureId: string }>();
   const navigate = useNavigate();
   const { t } = useLocaleContext();
   const {
     status,
-    campaigns,
+    adventures,
     entries,
-    activeCampaignId,
-    setActiveCampaignId,
-    renameCampaign,
-    deleteCampaign,
-    toggleCampaignFavorite,
-    setCampaignStatus,
+    activeAdventureId,
+    setActiveAdventureId,
+    renameAdventure,
+    deleteAdventure,
+    toggleAdventureFavorite,
+    setAdventureStatus,
     addEntry,
     removeEntry,
     editEntry,
   } = useJournalContext();
 
-  const campaign = campaigns.find((c) => c.id === campaignId) ?? null;
-  const isActive = campaignId === activeCampaignId;
+  const adventure = adventures.find((c) => c.id === adventureId) ?? null;
+  const isActive = adventureId === activeAdventureId;
 
-  const campaignEntries = useMemo(
+  const adventureEntries = useMemo(
     () =>
       entries
-        .filter((e) => e.campaignId === campaignId)
+        .filter((e) => e.adventureId === adventureId)
         .sort((a, b) => a.timestamp - b.timestamp),
-    [entries, campaignId],
+    [entries, adventureId],
   );
-  const groups = useMemo(() => groupBySession(campaignEntries), [campaignEntries]);
+  const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
   const lastSessionId = useMemo(() => {
     const last = groups.findLast((g) => g.sessionEntry);
     return last?.sessionEntry?.id ?? null;
@@ -138,15 +138,15 @@ export function CampaignDetailView() {
     );
   }
 
-  if (!campaign) {
-    // Campaña inexistente (id inválido, o borrada mientras estaba
+  if (!adventure) {
+    // Aventura inexistente (id inválido, o borrada mientras estaba
     // abierta en otra pestaña) — de vuelta a la lista en vez de
     // enseñar una pantalla rota.
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-8 text-center sm:py-12">
         <EmptyState
           icon={<IconFeather size={24} />}
-          title={t.journal.noCampaignsTitle}
+          title={t.journal.noAdventuresTitle}
           action={
             <Link to="/diario" className={PRIMARY_BUTTON_CLASS}>
               {t.journal.backToList}
@@ -158,18 +158,18 @@ export function CampaignDetailView() {
   }
 
   function startRename() {
-    setRenameValue(campaign!.name);
+    setRenameValue(adventure!.name);
     setRenaming(true);
   }
 
   function commitRename() {
-    if (renameValue.trim()) renameCampaign(campaign!.id, renameValue);
+    if (renameValue.trim()) renameAdventure(adventure!.id, renameValue);
     setRenaming(false);
   }
 
   function handleAddEntry() {
     if (!composerText.trim()) return;
-    addEntry(campaign!.id, composerKind, composerText.trim());
+    addEntry(adventure!.id, composerKind, composerText.trim());
     setComposerText("");
   }
 
@@ -182,7 +182,7 @@ export function CampaignDetailView() {
 
   function handleAddSession() {
     const title = sessionTitle.trim() || new Date().toLocaleDateString();
-    addEntry(campaign!.id, "session", title);
+    addEntry(adventure!.id, "session", title);
     setSessionTitle("");
     setShowNewSession(false);
   }
@@ -195,14 +195,14 @@ export function CampaignDetailView() {
   }
 
   function handleExport() {
-    const markdown = exportCampaignToMarkdown(t, campaign!.name, campaignEntries);
-    const filename = `${sanitizeFilename(campaign!.name)}.md`;
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries);
+    const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
   }
 
-  const isArchived = campaign.status === "archived";
-  const isPaused = campaign.status === "paused";
+  const isArchived = adventure.status === "archived";
+  const isPaused = adventure.status === "paused";
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 py-8 sm:py-12">
@@ -221,7 +221,7 @@ export function CampaignDetailView() {
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && commitRename()}
-              placeholder={t.journal.renameCampaignPlaceholder}
+              placeholder={t.journal.renameAdventurePlaceholder}
               className={INPUT_CLASS}
             />
             <button type="button" onClick={commitRename} className={PRIMARY_BUTTON_CLASS}>
@@ -231,24 +231,24 @@ export function CampaignDetailView() {
         ) : (
           <>
             <h1 className="min-w-0 flex-1 truncate font-display text-2xl text-parchment sm:text-3xl">
-              {campaign.name}
+              {adventure.name}
             </h1>
             <button
               type="button"
-              onClick={() => toggleCampaignFavorite(campaign.id)}
-              aria-pressed={campaign.favorite}
-              aria-label={campaign.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
+              onClick={() => toggleAdventureFavorite(adventure.id)}
+              aria-pressed={adventure.favorite}
+              aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
               className={[
                 "-m-2 shrink-0 p-2 transition",
-                campaign.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+                adventure.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
               ].join(" ")}
             >
-              <IconStar size={19} filled={campaign.favorite} />
+              <IconStar size={19} filled={adventure.favorite} />
             </button>
             <button
               type="button"
               onClick={startRename}
-              aria-label={t.journal.renameCampaign}
+              aria-label={t.journal.renameAdventure}
               className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-gold"
             >
               <IconPencil size={19} />
@@ -256,8 +256,8 @@ export function CampaignDetailView() {
             <button
               type="button"
               onClick={() => setDeleting(true)}
-              aria-label={t.journal.deleteCampaign}
-              title={t.journal.deleteCampaign}
+              aria-label={t.journal.deleteAdventure}
+              title={t.journal.deleteAdventure}
               className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-no"
             >
               <IconTrash size={19} />
@@ -275,25 +275,26 @@ export function CampaignDetailView() {
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => setActiveCampaignId(isActive ? null : campaign.id)}
+          onClick={() => setActiveAdventureId(isActive ? null : adventure.id)}
           aria-pressed={isActive}
+          aria-label={isActive ? t.journal.unsetActive : t.journal.setActive}
+          title={isActive ? t.journal.unsetActive : t.journal.setActive}
           className={[
-            "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition",
+            "rounded-xl border p-2.5 transition",
             isActive
-              ? "border border-gold/50 bg-gold/10 text-gold"
-              : "border border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+              ? "border-gold/50 bg-gold/10 text-gold"
+              : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
           ].join(" ")}
         >
-          <IconCheck size={16} />
-          {isActive ? t.journal.unsetActive : t.journal.setActive}
+          {isActive ? <IconCheck size={16} /> : <IconPlay size={16} />}
         </button>
 
         {!isArchived && (
           <button
             type="button"
-            onClick={() => setCampaignStatus(campaign.id, isPaused ? "ongoing" : "paused")}
-            aria-label={isPaused ? t.journal.resumeCampaign : t.journal.pauseCampaign}
-            title={isPaused ? t.journal.resumeCampaign : t.journal.pauseCampaign}
+            onClick={() => setAdventureStatus(adventure.id, isPaused ? "ongoing" : "paused")}
+            aria-label={isPaused ? t.journal.resumeAdventure : t.journal.pauseAdventure}
+            title={isPaused ? t.journal.resumeAdventure : t.journal.pauseAdventure}
             className="rounded-xl border border-ink-border p-2.5 text-parchment-dim transition hover:border-gold/50 hover:text-gold"
           >
             {isPaused ? <IconPlay size={16} /> : <IconPause size={16} />}
@@ -302,9 +303,9 @@ export function CampaignDetailView() {
 
         <button
           type="button"
-          onClick={() => setCampaignStatus(campaign.id, isArchived ? "ongoing" : "archived")}
-          aria-label={isArchived ? t.journal.unarchiveCampaign : t.journal.archiveCampaign}
-          title={isArchived ? t.journal.unarchiveCampaign : t.journal.archiveCampaign}
+          onClick={() => setAdventureStatus(adventure.id, isArchived ? "ongoing" : "archived")}
+          aria-label={isArchived ? t.journal.unarchiveAdventure : t.journal.archiveAdventure}
+          title={isArchived ? t.journal.unarchiveAdventure : t.journal.archiveAdventure}
           className="rounded-xl border border-ink-border p-2.5 text-parchment-dim transition hover:border-gold/50 hover:text-gold"
         >
           {isArchived ? <IconArchiveRestore size={16} /> : <IconArchive size={16} />}
@@ -322,7 +323,7 @@ export function CampaignDetailView() {
 
       {isActive ? (
         <p className="-mt-2 text-sm text-gold/80">
-          {interpolate(t.journal.activeCampaignNote, { name: campaign.name })}
+          {interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
         </p>
       ) : (
         !isArchived && (
@@ -330,7 +331,7 @@ export function CampaignDetailView() {
         )
       )}
 
-      {campaignEntries.length === 0 ? (
+      {adventureEntries.length === 0 ? (
         <EmptyState
           icon={<IconFeather size={20} />}
           title={t.journal.noEntriesTitle}
@@ -571,11 +572,11 @@ export function CampaignDetailView() {
 
       {deleting && (
         <ConfirmDialog
-          title={interpolate(t.journal.deleteCampaignConfirmTitle, { name: campaign.name })}
-          description={t.journal.deleteCampaignConfirmDescription}
-          confirmLabel={t.journal.deleteCampaignConfirmButton}
+          title={interpolate(t.journal.deleteAdventureConfirmTitle, { name: adventure.name })}
+          description={t.journal.deleteAdventureConfirmDescription}
+          confirmLabel={t.journal.deleteAdventureConfirmButton}
           onConfirm={() => {
-            deleteCampaign(campaign.id);
+            deleteAdventure(adventure.id);
             setDeleting(false);
             navigate("/diario");
           }}

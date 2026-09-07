@@ -38,19 +38,19 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   enlace opcional (`game`), favoritas y buscador; solo hay que sustituir el
   texto de cada entrada (y el `game` real) en `src/lib/tables.ts`. El botón
   con el tipo de dado abre la lista completa de resultados posibles.
-- **Diario**: campañas con un registro narrativo en notación
+- **Diario**: aventuras con un registro narrativo en notación
   [Lonelog](https://lonelog.itch.io/lonelog) (ver más abajo). Con una
-  campaña activa, las tiradas del oráculo y de las tablas se apuntan
+  aventura activa, las tiradas del oráculo y de las tablas se apuntan
   solas; el oráculo además ofrece un pequeño campo para añadir la
-  consecuencia (`=>`) justo después de tirar. Exporta cada campaña a
+  consecuencia (`=>`) justo después de tirar. Exporta cada aventura a
   `.md` o importa un diario existente en formato Lonelog. La lista de
-  campañas (`/diario`) y el contenido de cada una (`/diario/:id`) son
-  pantallas separadas, así que las sesiones de la campaña abierta
-  nunca compiten por espacio con la lista aunque haya muchas campañas;
+  aventuras (`/diario`) y el contenido de cada una (`/diario/:id`) son
+  pantallas separadas, así que las sesiones de la aventura abierta
+  nunca compiten por espacio con la lista aunque haya muchas aventuras;
   la lista tiene buscador, pinea las favoritas arriba y deja pausar o
-  archivar campañas (las archivadas quedan en su propia sección
+  archivar aventuras (las archivadas quedan en su propia sección
   plegada). Un indicador fijo en todas las pantallas recuerda cuál es
-  la campaña activa y lleva directo a ella. El formulario manual solo
+  la aventura activa y lleva directo a ella. El formulario manual solo
   ofrece Acción/Tirada/Consecuencia/Nota (no Pregunta, que ya cubre el
   oráculo del todo); al elegir "Tirada" aparece un roller de dados
   genérico (d4–d20, d% y 4dF, `src/lib/dice.ts`) para tiradas de tu
@@ -68,7 +68,7 @@ tirada (con el resultado inline vía `->`), `=>` consecuencia, y
 `=== Título ===` para secciones. `src/lib/lonelog.ts` implementa el
 formateo y el parseo en los dos sentidos:
 
-- **Exportar** (`exportCampaignToMarkdown`) genera un `.md` con esas
+- **Exportar** (`exportAdventureToMarkdown`) genera un `.md` con esas
   líneas más un crédito visible a Lonelog y a la app — un archivo
   válido para cualquier herramienta compatible (p. ej. el plugin de
   Obsidian), no solo para esta app.
@@ -78,8 +78,8 @@ formateo y el parseo en los dos sentidos:
   pero que esta app aún no interpreta) se guarda como nota en vez de
   romper la importación.
 
-Campañas y entradas del diario se guardan en IndexedDB (mismo motivo
-que el historial). Qué campaña está activa es un dato pequeño y se
+Aventuras y entradas del diario se guardan en IndexedDB (mismo motivo
+que el historial). Qué aventura está activa es un dato pequeño y se
 queda en `localStorage`.
 
 ## Idioma
@@ -139,10 +139,10 @@ datos del sitio o cambiar de navegador/dispositivo empieza de cero.
   proyectos que cuelgan de ahí, con o sin ruta distinta). Si ya había
   historial guardado en `localStorage` de una versión anterior, se migra
   una vez sola a IndexedDB de forma automática y transparente.
-- **Diario** (`src/lib/journal.ts`): campañas y entradas también en
+- **Diario** (`src/lib/journal.ts`): aventuras y entradas también en
   IndexedDB, mismo motivo que el historial.
 - **Tema, modo claro/oscuro, idioma, oráculo, tablas favoritas y
-  campaña activa**: siguen en `localStorage`, por ser datos minúsculos
+  aventura activa**: siguen en `localStorage`, por ser datos minúsculos
   y de lectura síncrona (el tema y el modo, en concreto, se leen antes
   del primer pintado para evitar parpadeos, algo que IndexedDB no
   permite al ser siempre asíncrono).

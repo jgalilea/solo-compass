@@ -5,52 +5,58 @@ import type { JournalEntry } from "./lonelog";
 /**
  * "ongoing": en curso, aparece en la lista principal.
  * "paused": en pausa — solo organizativo, sigue en la lista principal
- * pero marcada, no afecta a si puede ser la campaña activa.
+ * pero marcada, no afecta a si puede ser la aventura activa.
  * "archived": fuera de la lista principal (va en su propia sección
- * plegada), no puede ser la campaña activa — activarla la desarchiva.
+ * plegada), no puede ser la aventura activa — activarla la desarchiva.
  */
-export type CampaignStatus = "ongoing" | "paused" | "archived";
+export type AdventureStatus = "ongoing" | "paused" | "archived";
 
-export interface Campaign {
+export interface Adventure {
   id: string;
   name: string;
   createdAt: number;
   updatedAt: number;
   favorite: boolean;
-  status: CampaignStatus;
+  status: AdventureStatus;
 }
 
 // Igual que el historial: sin techo natural de tamaño, así que va en
 // IndexedDB en vez de localStorage (ver src/lib/history.ts para el
-// razonamiento completo). Todas las campañas y todas las entradas
-// comparten una única clave cada una; se filtran por campaignId en
+// razonamiento completo). Todas las aventuras y todas las entradas
+// comparten una única clave cada una; se filtran por adventureId en
 // memoria — con los volúmenes reales de un diario de rol, de sobra.
-const CAMPAIGNS_KEY = "solo-compass:journal-campaigns";
+//
+// El valor de la clave sigue diciendo "campaigns" aunque el código y
+// la interfaz ya dicen "aventuras": es una cadena opaca de
+// almacenamiento, invisible para quien usa la app, y cambiarla
+// dejaría sin encontrar los datos que alguien ya tuviera guardados
+// con el nombre anterior. Solo se renombra el identificador de JS.
+const ADVENTURES_KEY = "solo-compass:journal-campaigns";
 const ENTRIES_KEY = "solo-compass:journal-entries";
 
 export class JournalStorageError extends Error {}
 
-export async function loadCampaigns(t: Dictionary): Promise<Campaign[]> {
+export async function loadAdventures(t: Dictionary): Promise<Adventure[]> {
   if (typeof window === "undefined") return [];
   try {
-    const stored = await get<Campaign[]>(CAMPAIGNS_KEY);
+    const stored = await get<Adventure[]>(ADVENTURES_KEY);
     if (!Array.isArray(stored)) return [];
-    // Compatibilidad con campañas guardadas antes de añadir favoritos
+    // Compatibilidad con aventuras guardadas antes de añadir favoritos
     // y antes de añadir estado (pausa/archivo).
-    return stored.map((c) => ({
-      ...c,
-      favorite: c.favorite ?? false,
-      status: c.status ?? "ongoing",
+    return stored.map((a) => ({
+      ...a,
+      favorite: a.favorite ?? false,
+      status: a.status ?? "ongoing",
     }));
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }
 }
 
-export async function saveCampaigns(t: Dictionary, campaigns: Campaign[]): Promise<void> {
+export async function saveAdventures(t: Dictionary, adventures: Adventure[]): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    await set(CAMPAIGNS_KEY, campaigns);
+    await set(ADVENTURES_KEY, adventures);
   } catch {
     throw new JournalStorageError(t.history.storageSaveError);
   }
@@ -60,7 +66,15 @@ export async function loadJournalEntries(t: Dictionary): Promise<JournalEntry[]>
   if (typeof window === "undefined") return [];
   try {
     const stored = await get<JournalEntry[]>(ENTRIES_KEY);
-    return Array.isArray(stored) ? stored : [];
+    if (!Array.isArray(stored)) return [];
+    // Compatibilidad con entradas guardadas cuando el campo se
+    // llamaba campaignId (antes de que el proyecto pasara a llamar
+    // "aventura" a lo que antes era "campaña") — se adopta el valor
+    // antiguo si falta el nuevo, sin tocar lo demás.
+    return stored.map((e) => {
+      const legacy = e as JournalEntry & { campaignId?: string };
+      return { ...e, adventureId: e.adventureId ?? legacy.campaignId ?? "" };
+    });
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }
@@ -82,7 +96,7 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createCampaign(name: string): Campaign {
+export function createAdventure(name: string): Adventure {
   const now = Date.now();
   return {
     id: makeId(),

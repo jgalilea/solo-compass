@@ -2,7 +2,7 @@ import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 /**
  * Constantes de estilo y utilidades compartidas por JournalListView y
- * CampaignDetailView. Separado de src/components/journalShared.tsx
+ * AdventureDetailView. Separado de src/components/journalShared.tsx
  * (que solo exporta componentes) para que el fast refresh de React
  * funcione en ambos, igual que con los *ContextInstance.ts.
  */

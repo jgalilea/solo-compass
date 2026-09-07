@@ -9,7 +9,7 @@ import { formatAnswer } from "../lib/i18n/answerText";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { OracleSwitcher } from "./OracleSwitcher";
-import { ActivateCampaignNudge } from "./ActivateCampaignNudge";
+import { ActivateAdventureNudge } from "./ActivateAdventureNudge";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
 import { IconDice } from "./icons/Icons";
@@ -18,13 +18,13 @@ export function OracleView() {
   const { addEntry } = useHistoryContext();
   const { t } = useLocaleContext();
   const { oracleId } = useOracleContext();
-  const { campaigns, activeCampaignId, addEntry: addJournalEntry } = useJournalContext();
+  const { adventures, activeAdventureId, addEntry: addJournalEntry } = useJournalContext();
   const [question, setQuestion] = useState("");
   const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
   const [lastRoll, setLastRoll] = useState<OracleRoll | null>(null);
   const [animateKey, setAnimateKey] = useState(0);
 
-  const activeCampaign = campaigns.find((c) => c.id === activeCampaignId) ?? null;
+  const activeAdventure = adventures.find((c) => c.id === activeAdventureId) ?? null;
 
   function handleRoll() {
     const roll = rollOracle(question, likelihood);
@@ -32,19 +32,19 @@ export function OracleView() {
     setAnimateKey((k) => k + 1);
     addEntry(roll);
 
-    if (activeCampaign) {
+    if (activeAdventure) {
       const oracleName = getOracle(oracleId).name;
       if (roll.question) {
-        addJournalEntry(activeCampaign.id, "question", roll.question, roll.id);
+        addJournalEntry(activeAdventure.id, "question", roll.question, roll.id);
       }
       const diceText = `${oracleName} — ${t.die.color.blanco} ${roll.white.kept} / ${t.die.color.negro} ${roll.black.kept} -> ${formatAnswer(t, roll)}`;
-      addJournalEntry(activeCampaign.id, "roll", diceText, roll.id);
+      addJournalEntry(activeAdventure.id, "roll", diceText, roll.id);
     }
   }
 
   function handleConsequence(text: string) {
-    if (!activeCampaign || !lastRoll) return;
-    addJournalEntry(activeCampaign.id, "consequence", text, lastRoll.id);
+    if (!activeAdventure || !lastRoll) return;
+    addJournalEntry(activeAdventure.id, "consequence", text, lastRoll.id);
   }
 
   return (
@@ -54,7 +54,7 @@ export function OracleView() {
         <OracleSwitcher />
       </header>
 
-      <ActivateCampaignNudge />
+      <ActivateAdventureNudge />
 
       <div className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5">
         <textarea
@@ -85,7 +85,7 @@ export function OracleView() {
       {lastRoll ? (
         <div className="flex flex-1 flex-col justify-center gap-3">
           <OracleResultCard key={animateKey} roll={lastRoll} animate />
-          {activeCampaign && (
+          {activeAdventure && (
             <ConsequenceComposer
               key={`${animateKey}-consequence`}
               onSave={handleConsequence}

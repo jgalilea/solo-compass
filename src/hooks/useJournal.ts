@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  createCampaign as buildCampaign,
+  createAdventure as buildAdventure,
   createJournalEntryId,
   JournalStorageError,
-  loadCampaigns,
+  loadAdventures,
   loadJournalEntries,
-  saveCampaigns,
+  saveAdventures,
   saveJournalEntries,
-  type Campaign,
-  type CampaignStatus,
+  type Adventure,
+  type AdventureStatus,
 } from "../lib/journal";
 import {
   parseMarkdownToEntries,
   type JournalEntry,
   type JournalLineKind,
 } from "../lib/lonelog";
-import { loadActiveCampaignId, saveActiveCampaignId } from "../lib/activeCampaign";
+import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { useLocaleContext } from "./useLocaleContext";
 
 export type JournalStatus = "loading" | "ready" | "error";
@@ -23,25 +23,25 @@ export type JournalStatus = "loading" | "ready" | "error";
 interface UseJournalResult {
   status: JournalStatus;
   error: string | null;
-  campaigns: Campaign[];
+  adventures: Adventure[];
   entries: JournalEntry[];
-  activeCampaignId: string | null;
-  setActiveCampaignId: (id: string | null) => void;
-  createCampaign: (name: string) => Campaign;
-  renameCampaign: (id: string, name: string) => void;
-  deleteCampaign: (id: string) => void;
-  reorderCampaigns: (orderedIds: string[]) => void;
-  toggleCampaignFavorite: (id: string) => void;
-  setCampaignStatus: (id: string, status: CampaignStatus) => void;
+  activeAdventureId: string | null;
+  setActiveAdventureId: (id: string | null) => void;
+  createAdventure: (name: string) => Adventure;
+  renameAdventure: (id: string, name: string) => void;
+  deleteAdventure: (id: string) => void;
+  reorderAdventures: (orderedIds: string[]) => void;
+  toggleAdventureFavorite: (id: string) => void;
+  setAdventureStatus: (id: string, status: AdventureStatus) => void;
   addEntry: (
-    campaignId: string,
+    adventureId: string,
     kind: JournalLineKind,
     text: string,
     linkedRollId?: string,
   ) => void;
   removeEntry: (id: string) => void;
   editEntry: (id: string, text: string) => void;
-  importCampaign: (name: string, markdownText: string) => Campaign;
+  importAdventure: (name: string, markdownText: string) => Adventure;
   retry: () => void;
 }
 
@@ -49,20 +49,20 @@ export function useJournal(): UseJournalResult {
   const { t } = useLocaleContext();
   const [status, setStatus] = useState<JournalStatus>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [adventures, setAdventures] = useState<Adventure[]>([]);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [activeCampaignId, setActiveCampaignIdState] = useState<string | null>(
-    () => loadActiveCampaignId(),
+  const [activeAdventureId, setActiveAdventureIdState] = useState<string | null>(
+    () => loadActiveAdventureId(),
   );
 
   const load = useCallback(() => {
     let cancelled = false;
     setStatus("loading");
     setError(null);
-    Promise.all([loadCampaigns(t), loadJournalEntries(t)])
-      .then(([loadedCampaigns, loadedEntries]) => {
+    Promise.all([loadAdventures(t), loadJournalEntries(t)])
+      .then(([loadedAdventures, loadedEntries]) => {
         if (cancelled) return;
-        setCampaigns(loadedCampaigns);
+        setAdventures(loadedAdventures);
         setEntries(loadedEntries);
         setStatus("ready");
       })
@@ -80,16 +80,16 @@ export function useJournal(): UseJournalResult {
 
   useEffect(() => load(), [load]);
 
-  // updateCampaigns/updateEntries siempre parten del estado más
-  // reciente (forma funcional de setState), no de "campaigns"/
+  // updateAdventures/updateEntries siempre parten del estado más
+  // reciente (forma funcional de setState), no de "adventures"/
   // "entries" capturados por closure — así, si addEntry se llama dos
   // veces seguidas en el mismo evento (p. ej. pregunta + tirada), la
   // segunda no pisa a la primera antes de que React repinte.
-  const updateCampaigns = useCallback(
-    (updater: (prev: Campaign[]) => Campaign[]) => {
-      setCampaigns((prev) => {
+  const updateAdventures = useCallback(
+    (updater: (prev: Adventure[]) => Adventure[]) => {
+      setAdventures((prev) => {
         const next = updater(prev);
-        saveCampaigns(t, next).catch((err: unknown) => {
+        saveAdventures(t, next).catch((err: unknown) => {
           setError(
             err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
           );
@@ -117,106 +117,106 @@ export function useJournal(): UseJournalResult {
     [t],
   );
 
-  // Una campaña pausada o archivada no puede ser la activa a la vez —
+  // Una aventura pausada o archivada no puede ser la activa a la vez —
   // no tiene sentido registrar solo en algo "en pausa". Activarla es
   // justo la señal de que se vuelve a usar, así que la reanuda sola.
-  const setActiveCampaignId = useCallback(
+  const setActiveAdventureId = useCallback(
     (id: string | null) => {
-      setActiveCampaignIdState(id);
-      saveActiveCampaignId(id);
+      setActiveAdventureIdState(id);
+      saveActiveAdventureId(id);
       if (id) {
-        updateCampaigns((prev) =>
-          prev.map((c) =>
-            c.id === id && c.status !== "ongoing" ? { ...c, status: "ongoing" } : c,
+        updateAdventures((prev) =>
+          prev.map((a) =>
+            a.id === id && a.status !== "ongoing" ? { ...a, status: "ongoing" } : a,
           ),
         );
       }
     },
-    [updateCampaigns],
+    [updateAdventures],
   );
 
-  const createCampaignFn = useCallback(
+  const createAdventureFn = useCallback(
     (name: string) => {
-      const campaign = buildCampaign(name);
-      updateCampaigns((prev) => [campaign, ...prev]);
-      return campaign;
+      const adventure = buildAdventure(name);
+      updateAdventures((prev) => [adventure, ...prev]);
+      return adventure;
     },
-    [updateCampaigns],
+    [updateAdventures],
   );
 
-  const renameCampaign = useCallback(
+  const renameAdventure = useCallback(
     (id: string, name: string) => {
-      updateCampaigns((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, name: name.trim(), updatedAt: Date.now() } : c,
+      updateAdventures((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, name: name.trim(), updatedAt: Date.now() } : a,
         ),
       );
     },
-    [updateCampaigns],
+    [updateAdventures],
   );
 
-  const reorderCampaigns = useCallback(
+  const reorderAdventures = useCallback(
     (orderedIds: string[]) => {
-      updateCampaigns((prev) => {
-        const byId = new Map(prev.map((c) => [c.id, c]));
-        const reordered = orderedIds.map((id) => byId.get(id)).filter((c): c is Campaign => !!c);
+      updateAdventures((prev) => {
+        const byId = new Map(prev.map((a) => [a.id, a]));
+        const reordered = orderedIds.map((id) => byId.get(id)).filter((a): a is Adventure => !!a);
         // Por si acaso algún id no estuviera en orderedIds (no debería
-        // pasar), se añaden al final para no perder ninguna campaña.
-        const missing = prev.filter((c) => !orderedIds.includes(c.id));
+        // pasar), se añaden al final para no perder ninguna aventura.
+        const missing = prev.filter((a) => !orderedIds.includes(a.id));
         return [...reordered, ...missing];
       });
     },
-    [updateCampaigns],
+    [updateAdventures],
   );
 
-  const toggleCampaignFavorite = useCallback(
+  const toggleAdventureFavorite = useCallback(
     (id: string) => {
-      updateCampaigns((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, favorite: !c.favorite } : c)),
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, favorite: !a.favorite } : a)),
       );
     },
-    [updateCampaigns],
+    [updateAdventures],
   );
 
-  const deleteCampaign = useCallback(
+  const deleteAdventure = useCallback(
     (id: string) => {
-      updateCampaigns((prev) => prev.filter((c) => c.id !== id));
-      updateEntries((prev) => prev.filter((e) => e.campaignId !== id));
-      if (activeCampaignId === id) setActiveCampaignId(null);
+      updateAdventures((prev) => prev.filter((a) => a.id !== id));
+      updateEntries((prev) => prev.filter((e) => e.adventureId !== id));
+      if (activeAdventureId === id) setActiveAdventureId(null);
     },
-    [activeCampaignId, updateCampaigns, updateEntries, setActiveCampaignId],
+    [activeAdventureId, updateAdventures, updateEntries, setActiveAdventureId],
   );
 
-  // Pausar o archivar la campaña activa la desactiva (una campaña que
-  // no está en curso no puede ser la que recibe el auto-registro).
-  const setCampaignStatus = useCallback(
-    (id: string, status: CampaignStatus) => {
-      updateCampaigns((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, status, updatedAt: Date.now() } : c)),
+  // Pausar o archivar la aventura activa la desactiva (una aventura
+  // que no está en curso no puede ser la que recibe el auto-registro).
+  const setAdventureStatus = useCallback(
+    (id: string, status: AdventureStatus) => {
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status, updatedAt: Date.now() } : a)),
       );
-      if (status !== "ongoing" && activeCampaignId === id) {
-        setActiveCampaignId(null);
+      if (status !== "ongoing" && activeAdventureId === id) {
+        setActiveAdventureId(null);
       }
     },
-    [activeCampaignId, updateCampaigns, setActiveCampaignId],
+    [activeAdventureId, updateAdventures, setActiveAdventureId],
   );
 
   const addEntry = useCallback(
-    (campaignId: string, kind: JournalLineKind, text: string, linkedRollId?: string) => {
+    (adventureId: string, kind: JournalLineKind, text: string, linkedRollId?: string) => {
       const entry: JournalEntry = {
         id: createJournalEntryId(),
-        campaignId,
+        adventureId,
         timestamp: Date.now(),
         kind,
         text,
         linkedRollId,
       };
       updateEntries((prev) => [...prev, entry]);
-      updateCampaigns((prev) =>
-        prev.map((c) => (c.id === campaignId ? { ...c, updatedAt: entry.timestamp } : c)),
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === adventureId ? { ...a, updatedAt: entry.timestamp } : a)),
       );
     },
-    [updateEntries, updateCampaigns],
+    [updateEntries, updateAdventures],
   );
 
   const removeEntry = useCallback(
@@ -233,34 +233,34 @@ export function useJournal(): UseJournalResult {
     [updateEntries],
   );
 
-  const importCampaign = useCallback(
+  const importAdventure = useCallback(
     (name: string, markdownText: string) => {
-      const campaign = buildCampaign(name);
-      const imported = parseMarkdownToEntries(markdownText, campaign.id, campaign.createdAt);
-      updateCampaigns((prev) => [campaign, ...prev]);
+      const adventure = buildAdventure(name);
+      const imported = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
+      updateAdventures((prev) => [adventure, ...prev]);
       updateEntries((prev) => [...prev, ...imported]);
-      return campaign;
+      return adventure;
     },
-    [updateCampaigns, updateEntries],
+    [updateAdventures, updateEntries],
   );
 
   return {
     status,
     error,
-    campaigns,
+    adventures,
     entries,
-    activeCampaignId,
-    setActiveCampaignId,
-    createCampaign: createCampaignFn,
-    renameCampaign,
-    deleteCampaign,
-    reorderCampaigns,
-    toggleCampaignFavorite,
-    setCampaignStatus,
+    activeAdventureId,
+    setActiveAdventureId,
+    createAdventure: createAdventureFn,
+    renameAdventure,
+    deleteAdventure,
+    reorderAdventures,
+    toggleAdventureFavorite,
+    setAdventureStatus,
     addEntry,
     removeEntry,
     editEntry,
-    importCampaign,
+    importAdventure,
     retry: load,
   };
 }

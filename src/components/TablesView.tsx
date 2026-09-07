@@ -12,8 +12,8 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate, type Dictionary } from "../lib/i18n";
-import type { Campaign } from "../lib/journal";
-import { ActivateCampaignNudge } from "./ActivateCampaignNudge";
+import type { Adventure } from "../lib/journal";
+import { ActivateAdventureNudge } from "./ActivateAdventureNudge";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
 import {
@@ -58,7 +58,7 @@ function normalize(s: string): string {
 
 export function TablesView() {
   const { addEntry } = useHistoryContext();
-  const { campaigns, activeCampaignId, addEntry: addJournalEntry } = useJournalContext();
+  const { adventures, activeAdventureId, addEntry: addJournalEntry } = useJournalContext();
   const { t } = useLocaleContext();
   const [results, setResults] = useState<Record<string, TableRollEntry>>({});
   const [rollingId, setRollingId] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function TablesView() {
   );
 
   const tables = useMemo(() => getMeaningTables(t), [t]);
-  const activeCampaign = campaigns.find((c) => c.id === activeCampaignId) ?? null;
+  const activeAdventure = adventures.find((c) => c.id === activeAdventureId) ?? null;
 
   function handleRoll(table: MeaningTable) {
     setRollingId(table.id);
@@ -76,17 +76,17 @@ export function TablesView() {
       const historyEntry = buildTableRollEntry(t, table);
       setResults((prev) => ({ ...prev, [table.id]: historyEntry }));
       addEntry(historyEntry);
-      if (activeCampaign) {
+      if (activeAdventure) {
         const diceText = `${table.name} ${historyEntry.rolls.join("/")} -> ${historyEntry.resultText}`;
-        addJournalEntry(activeCampaign.id, "roll", diceText, historyEntry.id);
+        addJournalEntry(activeAdventure.id, "roll", diceText, historyEntry.id);
       }
       setRollingId(null);
     }, 220);
   }
 
   function handleConsequence(rollId: string, text: string) {
-    if (!activeCampaign) return;
-    addJournalEntry(activeCampaign.id, "consequence", text, rollId);
+    if (!activeAdventure) return;
+    addJournalEntry(activeAdventure.id, "consequence", text, rollId);
   }
 
   function toggleFavorite(id: string) {
@@ -121,7 +121,7 @@ export function TablesView() {
         result={results[table.id]}
         rolling={rollingId === table.id}
         favorite={favoriteIds.has(table.id)}
-        activeCampaign={activeCampaign}
+        activeAdventure={activeAdventure}
         onRoll={() => handleRoll(table)}
         onToggleFavorite={() => toggleFavorite(table.id)}
         onSaveConsequence={(rollId, text) => handleConsequence(rollId, text)}
@@ -138,7 +138,7 @@ export function TablesView() {
         <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
       </header>
 
-      <ActivateCampaignNudge />
+      <ActivateAdventureNudge />
 
       <label className="relative block">
         <IconSearch
@@ -194,7 +194,7 @@ function TableCard({
   result,
   rolling,
   favorite,
-  activeCampaign,
+  activeAdventure,
   onRoll,
   onToggleFavorite,
   onSaveConsequence,
@@ -203,7 +203,7 @@ function TableCard({
   result?: TableRollEntry;
   rolling: boolean;
   favorite: boolean;
-  activeCampaign: Campaign | null;
+  activeAdventure: Adventure | null;
   onRoll: () => void;
   onToggleFavorite: () => void;
   onSaveConsequence: (rollId: string, text: string) => void;
@@ -267,7 +267,7 @@ function TableCard({
         </div>
       )}
 
-      {result && activeCampaign && (
+      {result && activeAdventure && (
         <div className="mt-3">
           <ConsequenceComposer
             key={result.id}

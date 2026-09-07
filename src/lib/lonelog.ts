@@ -31,7 +31,7 @@ export type JournalLineKind =
 
 export interface JournalEntry {
   id: string;
-  campaignId: string;
+  adventureId: string;
   timestamp: number;
   kind: JournalLineKind;
   /** El texto ya sin el símbolo/prefijo de Lonelog. */
@@ -71,20 +71,20 @@ export function buildCreditLine(t: Dictionary): string {
 }
 
 /**
- * Genera el .md de una campaña: cabecera + crédito visible a Lonelog
+ * Genera el .md de una aventura: cabecera + crédito visible a Lonelog
  * (como cita, no como comentario oculto) + una entrada por párrafo.
  * Cada bloque va separado por una línea en blanco (no solo un salto
  * de línea) para que Markdown los trate como párrafos distintos —
  * si no, la mayoría de visores los junta todos pegados en uno solo.
  */
-export function exportCampaignToMarkdown(
+export function exportAdventureToMarkdown(
   t: Dictionary,
-  campaignName: string,
+  adventureName: string,
   entries: JournalEntry[],
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const lines = sorted.map((e) => formatLine(e));
-  const blocks = [`# ${campaignName}`, `> ${buildCreditLine(t)}`, ...lines];
+  const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
   return blocks.join("\n\n") + "\n";
 }
 
@@ -98,7 +98,7 @@ const LEGACY_SESSION_LINE = /^===\s*(.+?)\s*===$/;
  *  por si el archivo viene de fuera y usa un encabezado Markdown en
  *  vez del marcador de Lonelog para las sesiones. */
 const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
-/** Título H1 (# solo, no ## ni más) — el nombre de campaña a ignorar. */
+/** Título H1 (# solo, no ## ni más) — el nombre de aventura a ignorar. */
 const H1_TITLE_LINE = /^#(?!#)/;
 
 /**
@@ -107,14 +107,14 @@ const H1_TITLE_LINE = /^#(?!#)/;
  * se guarda como nota en vez de descartarse o fallar — igual que
  * Lonelog admite contenido adicional (etiquetas, prosa suelta) sin
  * romper el resto del documento. Las líneas vacías, el título H1
- * Markdown (#, el nombre de campaña) y las citas (>) se ignoran; las
+ * Markdown (#, el nombre de aventura) y las citas (>) se ignoran; las
  * sesiones se reconocen en "=== Título ===" (lo que exportamos) y
  * también en "## Título" al importar, por si el archivo viene de
  * fuera.
  */
 export function parseMarkdownToEntries(
   text: string,
-  campaignId: string,
+  adventureId: string,
   startTimestamp: number,
 ): JournalEntry[] {
   const entries: JournalEntry[] = [];
@@ -161,7 +161,7 @@ export function parseMarkdownToEntries(
       // No hay timestamp real por línea en el texto plano: se generan
       // secuenciales para conservar el orden del archivo al mostrarlo.
       id: `${startTimestamp}-${index}-${Math.random().toString(36).slice(2, 8)}`,
-      campaignId,
+      adventureId,
       timestamp: startTimestamp + index,
       kind,
       text: content,

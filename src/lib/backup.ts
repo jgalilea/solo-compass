@@ -1,28 +1,30 @@
 /**
  * Copia de seguridad completa de la app: historial + diario (todas
- * las campañas y entradas) + ajustes, en un único .json — para no
+ * las aventuras y entradas) + ajustes, en un único .json — para no
  * depender solo del almacenamiento del navegador (ver "Almacenamiento"
  * en el README: todo vive en IndexedDB/localStorage de este
  * dispositivo, sin servidor ni sincronización).
  *
  * Se construye encima de las funciones load/save de cada módulo
  * (history.ts, journal.ts, theme.ts, mode.ts, i18n, oracles.ts,
- * tableFavorites.ts, activeCampaign.ts) en vez de leer/escribir las
+ * tableFavorites.ts, activeAdventure.ts) en vez de leer/escribir las
  * claves de almacenamiento a mano aquí — así no se duplica ninguna
  * lógica de validación/migración que esos módulos ya resuelven.
  */
 
 import { loadHistory, saveHistory, type HistoryEntry } from "./history";
-import { loadCampaigns, saveCampaigns, loadJournalEntries, saveJournalEntries, type Campaign } from "./journal";
+import { loadAdventures, saveAdventures, loadJournalEntries, saveJournalEntries, type Adventure } from "./journal";
 import type { JournalEntry } from "./lonelog";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
 import { loadOracleId, saveOracleId } from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
-import { loadActiveCampaignId, saveActiveCampaignId } from "./activeCampaign";
+import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 
-export const BACKUP_SCHEMA_VERSION = 1;
+// 2: journal.adventures (antes journal.campaigns) — la copia de
+// seguridad es tan nueva que no hace falta migrar copias antiguas.
+export const BACKUP_SCHEMA_VERSION = 2;
 
 export interface BackupPayload {
   app: "solo-compass";
@@ -30,7 +32,7 @@ export interface BackupPayload {
   exportedAt: string;
   history: HistoryEntry[];
   journal: {
-    campaigns: Campaign[];
+    adventures: Adventure[];
     entries: JournalEntry[];
   };
   settings: {
@@ -38,7 +40,7 @@ export interface BackupPayload {
     mode: string;
     locale: string;
     oracleId: string;
-    activeCampaignId: string | null;
+    activeAdventureId: string | null;
     favoriteTableIds: string[];
   };
 }
@@ -46,9 +48,9 @@ export interface BackupPayload {
 export class BackupError extends Error {}
 
 export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
-  const [history, campaigns, entries] = await Promise.all([
+  const [history, adventures, entries] = await Promise.all([
     loadHistory(t),
-    loadCampaigns(t),
+    loadAdventures(t),
     loadJournalEntries(t),
   ]);
   return {
@@ -56,13 +58,13 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
     schemaVersion: BACKUP_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     history,
-    journal: { campaigns, entries },
+    journal: { adventures, entries },
     settings: {
       theme: loadTheme(),
       mode: loadMode(),
       locale: loadLocale(),
       oracleId: loadOracleId(),
-      activeCampaignId: loadActiveCampaignId(),
+      activeAdventureId: loadActiveAdventureId(),
       favoriteTableIds: [...loadFavoriteTableIds()],
     },
   };
@@ -76,7 +78,7 @@ function isBackupPayload(value: unknown): value is BackupPayload {
   if (v.app !== "solo-compass" || typeof v.schemaVersion !== "number") return false;
   if (!Array.isArray(v.history)) return false;
   const journal = v.journal as Record<string, unknown> | undefined;
-  if (!journal || !Array.isArray(journal.campaigns) || !Array.isArray(journal.entries)) {
+  if (!journal || !Array.isArray(journal.adventures) || !Array.isArray(journal.entries)) {
     return false;
   }
   return true;
@@ -102,7 +104,7 @@ export async function restoreBackup(t: Dictionary, text: string): Promise<void> 
 
   await Promise.all([
     saveHistory(t, parsed.history),
-    saveCampaigns(t, parsed.journal.campaigns),
+    saveAdventures(t, parsed.journal.adventures),
     saveJournalEntries(t, parsed.journal.entries),
   ]);
 
@@ -112,8 +114,8 @@ export async function restoreBackup(t: Dictionary, text: string): Promise<void> 
     if (typeof s.mode === "string" && isThemeMode(s.mode)) saveMode(s.mode);
     if (typeof s.locale === "string" && isLocale(s.locale)) saveLocale(s.locale);
     if (typeof s.oracleId === "string") saveOracleId(s.oracleId);
-    if (typeof s.activeCampaignId === "string" || s.activeCampaignId === null) {
-      saveActiveCampaignId((s.activeCampaignId as string | null) ?? null);
+    if (typeof s.activeAdventureId === "string" || s.activeAdventureId === null) {
+      saveActiveAdventureId((s.activeAdventureId as string | null) ?? null);
     }
     if (Array.isArray(s.favoriteTableIds)) {
       saveFavoriteTableIds(new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")));

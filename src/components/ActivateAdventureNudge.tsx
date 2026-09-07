@@ -4,18 +4,18 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { IconChevronRight, IconFeather } from "./icons/Icons";
 
 /**
- * Aviso discreto para Oráculo y Tablas: sin campaña activa, nada
+ * Aviso discreto para Oráculo y Tablas: sin aventura activa, nada
  * indica que el diario existe — este enlace lo hace visible justo
  * donde se tira, sin estorbar (no aparece si ya hay una activa, ni
  * en el resto de pantallas). Autocontenido a propósito, como
- * ActiveCampaignIndicator, para que el sitio de uso sea solo
- * `<ActivateCampaignNudge />`.
+ * ActiveAdventureIndicator, para que el sitio de uso sea solo
+ * `<ActivateAdventureNudge />`.
  */
-export function ActivateCampaignNudge() {
-  const { campaigns, activeCampaignId } = useJournalContext();
+export function ActivateAdventureNudge() {
+  const { adventures, activeAdventureId } = useJournalContext();
   const { t } = useLocaleContext();
 
-  const hasActive = campaigns.some((c) => c.id === activeCampaignId);
+  const hasActive = adventures.some((c) => c.id === activeAdventureId);
   if (hasActive) return null;
 
   return (

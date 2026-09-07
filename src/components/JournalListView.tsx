@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import type { Campaign } from "../lib/journal";
+import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import {
@@ -19,39 +19,39 @@ import {
 } from "./icons/Icons";
 
 /**
- * Lista de campañas del diario. El contenido de cada una (sesiones,
- * composer…) vive en CampaignDetailView (/diario/:campaignId) — así
- * esta pantalla se queda ligera aunque haya muchas campañas, y nunca
+ * Lista de aventuras del diario. El contenido de cada una (sesiones,
+ * composer…) vive en AdventureDetailView (/diario/:adventureId) — así
+ * esta pantalla se queda ligera aunque haya muchas aventuras, y nunca
  * desplaza nada fuera de sitio.
  */
 export function JournalListView() {
   const {
     status,
     error,
-    campaigns,
-    activeCampaignId,
-    setActiveCampaignId,
-    createCampaign,
-    reorderCampaigns,
-    toggleCampaignFavorite,
-    importCampaign,
+    adventures,
+    activeAdventureId,
+    setActiveAdventureId,
+    createAdventure,
+    reorderAdventures,
+    toggleAdventureFavorite,
+    importAdventure,
     retry,
   } = useJournalContext();
   const { t } = useLocaleContext();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
-  const [newCampaignName, setNewCampaignName] = useState("");
-  const [showNewCampaignForm, setShowNewCampaignForm] = useState(false);
+  const [newAdventureName, setNewAdventureName] = useState("");
+  const [showNewAdventureForm, setShowNewAdventureForm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [archivedExpanded, setArchivedExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Orden de visualización manual (drag and drop), solo para
-  // campañas no archivadas. Se sincroniza con `campaigns` pero
+  // aventuras no archivadas. Se sincroniza con `adventures` pero
   // preserva el orden manual — los ids nuevos se añaden al principio.
   const [order, setOrder] = useState<string[]>(() =>
-    campaigns.filter((c) => c.status !== "archived").map((c) => c.id),
+    adventures.filter((c) => c.status !== "archived").map((c) => c.id),
   );
   const orderRef = useRef(order);
   useEffect(() => {
@@ -59,7 +59,7 @@ export function JournalListView() {
   }, [order]);
   useEffect(() => {
     setOrder((prev) => {
-      const ids = campaigns.filter((c) => c.status !== "archived").map((c) => c.id);
+      const ids = adventures.filter((c) => c.status !== "archived").map((c) => c.id);
       const idSet = new Set(ids);
       const kept = prev.filter((id) => idSet.has(id));
       const added = ids.filter((id) => !prev.includes(id));
@@ -67,22 +67,22 @@ export function JournalListView() {
       if (next.length === prev.length && next.every((id, i) => id === prev[i])) return prev;
       return next;
     });
-  }, [campaigns]);
+  }, [adventures]);
 
-  const byId = useMemo(() => new Map(campaigns.map((c) => [c.id, c])), [campaigns]);
+  const byId = useMemo(() => new Map(adventures.map((c) => [c.id, c])), [adventures]);
 
   const query = search.trim().toLowerCase();
-  function matchesQuery(c: Campaign): boolean {
+  function matchesQuery(c: Adventure): boolean {
     return !query || c.name.toLowerCase().includes(query);
   }
 
   const orderedActive = order
     .map((id) => byId.get(id))
-    .filter((c): c is Campaign => !!c && c.status !== "archived" && matchesQuery(c));
+    .filter((c): c is Adventure => !!c && c.status !== "archived" && matchesQuery(c));
   const pinned = orderedActive.filter((c) => c.favorite);
   const rest = orderedActive.filter((c) => !c.favorite);
 
-  const archivedCampaigns = campaigns.filter((c) => c.status === "archived" && matchesQuery(c));
+  const archivedAdventures = adventures.filter((c) => c.status === "archived" && matchesQuery(c));
   const showArchivedContents = archivedExpanded || query !== "";
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -90,7 +90,7 @@ export function JournalListView() {
 
   useEffect(() => {
     if (!draggingId) return;
-    // Una campaña solo cambia de posición dentro de su propio grupo
+    // Una aventura solo cambia de posición dentro de su propio grupo
     // (favoritas / resto) — así "pineadas al principio" es siempre
     // cierto, arrastrar nunca puede sacarla de su grupo.
     const draggingFavorite = byId.get(draggingId)?.favorite ?? false;
@@ -123,7 +123,7 @@ export function JournalListView() {
 
     function handleUp() {
       setDraggingId(null);
-      reorderCampaigns(orderRef.current);
+      reorderAdventures(orderRef.current);
     }
 
     window.addEventListener("pointermove", handleMove);
@@ -134,15 +134,15 @@ export function JournalListView() {
       window.removeEventListener("pointerup", handleUp);
       window.removeEventListener("pointercancel", handleUp);
     };
-  }, [draggingId, byId, reorderCampaigns]);
+  }, [draggingId, byId, reorderAdventures]);
 
-  function handleCreateCampaign() {
-    if (!newCampaignName.trim()) return;
-    const campaign = createCampaign(newCampaignName);
-    setActiveCampaignId(campaign.id);
-    setNewCampaignName("");
-    setShowNewCampaignForm(false);
-    navigate(`/diario/${campaign.id}`);
+  function handleCreateAdventure() {
+    if (!newAdventureName.trim()) return;
+    const adventure = createAdventure(newAdventureName);
+    setActiveAdventureId(adventure.id);
+    setNewAdventureName("");
+    setShowNewAdventureForm(false);
+    navigate(`/diario/${adventure.id}`);
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -152,17 +152,17 @@ export function JournalListView() {
     try {
       const text = await file.text();
       const name = file.name.replace(/\.md$/i, "");
-      const campaign = importCampaign(name, text);
-      setActiveCampaignId(campaign.id);
-      navigate(`/diario/${campaign.id}`);
+      const adventure = importAdventure(name, text);
+      setActiveAdventureId(adventure.id);
+      navigate(`/diario/${adventure.id}`);
       setImportError(null);
     } catch {
       setImportError(t.journal.importError);
     }
   }
 
-  const hasAnyCampaigns = campaigns.length > 0;
-  const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedCampaigns.length > 0;
+  const hasAnyAdventures = adventures.length > 0;
+  const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
@@ -181,7 +181,7 @@ export function JournalListView() {
 
       {status === "ready" && (
         <>
-          {hasAnyCampaigns && (
+          {hasAnyAdventures && (
             <div className="relative flex">
               <IconSearch
                 size={17}
@@ -210,7 +210,7 @@ export function JournalListView() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
-                {t.journal.campaignsHeading}
+                {t.journal.adventuresHeading}
               </h2>
               <button
                 type="button"
@@ -231,16 +231,16 @@ export function JournalListView() {
 
             {importError && <p className="text-sm text-no">{importError}</p>}
 
-            {!hasAnyCampaigns && !showNewCampaignForm && (
+            {!hasAnyAdventures && !showNewAdventureForm && (
               <EmptyState
                 icon={<IconFeather size={24} />}
-                title={t.journal.noCampaignsTitle}
-                description={t.journal.noCampaignsDescription}
+                title={t.journal.noAdventuresTitle}
+                description={t.journal.noAdventuresDescription}
                 compact
               />
             )}
 
-            {hasAnyCampaigns && !hasVisibleResults && (
+            {hasAnyAdventures && !hasVisibleResults && (
               <EmptyState
                 icon={<IconSearch size={22} />}
                 title={t.journal.noSearchResultsTitle}
@@ -251,57 +251,57 @@ export function JournalListView() {
 
             {(pinned.length > 0 || rest.length > 0) && (
               <ul className="flex flex-col gap-2.5">
-                {[...pinned, ...rest].map((campaign) => (
-                  <CampaignRow
-                    key={campaign.id}
-                    campaign={campaign}
-                    isActive={campaign.id === activeCampaignId}
-                    isDragging={draggingId === campaign.id}
+                {[...pinned, ...rest].map((adventure) => (
+                  <AdventureRow
+                    key={adventure.id}
+                    adventure={adventure}
+                    isActive={adventure.id === activeAdventureId}
+                    isDragging={draggingId === adventure.id}
                     rowRef={(el) => {
-                      if (el) rowRefs.current.set(campaign.id, el);
-                      else rowRefs.current.delete(campaign.id);
+                      if (el) rowRefs.current.set(adventure.id, el);
+                      else rowRefs.current.delete(adventure.id);
                     }}
-                    onDragStart={() => setDraggingId(campaign.id)}
-                    onToggleFavorite={() => toggleCampaignFavorite(campaign.id)}
+                    onDragStart={() => setDraggingId(adventure.id)}
+                    onToggleFavorite={() => toggleAdventureFavorite(adventure.id)}
                     t={t}
                   />
                 ))}
               </ul>
             )}
 
-            {showNewCampaignForm ? (
+            {showNewAdventureForm ? (
               <div className="flex items-center gap-2">
                 <input
                   autoFocus
-                  value={newCampaignName}
-                  onChange={(e) => setNewCampaignName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCreateCampaign()}
-                  placeholder={t.journal.newCampaignPlaceholder}
+                  value={newAdventureName}
+                  onChange={(e) => setNewAdventureName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreateAdventure()}
+                  placeholder={t.journal.newAdventurePlaceholder}
                   className={INPUT_CLASS}
                 />
-                <button type="button" onClick={handleCreateCampaign} className={PRIMARY_BUTTON_CLASS}>
+                <button type="button" onClick={handleCreateAdventure} className={PRIMARY_BUTTON_CLASS}>
                   {t.journal.createButton}
                 </button>
               </div>
             ) : (
               <button
                 type="button"
-                onClick={() => setShowNewCampaignForm(true)}
+                onClick={() => setShowNewAdventureForm(true)}
                 className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-3 text-base text-parchment-dim transition hover:border-gold/50 hover:text-gold"
               >
                 <IconPlus size={16} />
-                {t.journal.newCampaign}
+                {t.journal.newAdventure}
               </button>
             )}
 
-            {hasAnyCampaigns && !activeCampaignId && (
+            {hasAnyAdventures && !activeAdventureId && (
               <p className="text-center text-sm text-parchment-dim/70">
-                {t.journal.noActiveCampaignNote}
+                {t.journal.noActiveAdventureNote}
               </p>
             )}
           </section>
 
-          {archivedCampaigns.length > 0 && (
+          {archivedAdventures.length > 0 && (
             <section className="flex flex-col gap-2.5">
               <button
                 type="button"
@@ -314,20 +314,20 @@ export function JournalListView() {
                   className={`shrink-0 transition-transform ${showArchivedContents ? "rotate-90" : ""}`}
                 />
                 {t.journal.archivedHeading}
-                <span className="text-parchment-dim/50">{archivedCampaigns.length}</span>
+                <span className="text-parchment-dim/50">{archivedAdventures.length}</span>
               </button>
               {showArchivedContents && (
                 <ul className="flex flex-col gap-2.5">
-                  {archivedCampaigns.map((campaign) => (
-                    <li key={campaign.id}>
+                  {archivedAdventures.map((adventure) => (
+                    <li key={adventure.id}>
                       <Link
-                        to={`/diario/${campaign.id}`}
+                        to={`/diario/${adventure.id}`}
                         className="flex items-center gap-2 rounded-2xl border border-ink-border bg-ink-800/30 p-4 opacity-70 transition hover:opacity-100"
                       >
                         <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
-                          {campaign.name}
+                          {adventure.name}
                         </span>
-                        <StatusBadge status={campaign.status} t={t} />
+                        <StatusBadge status={adventure.status} t={t} />
                         <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40" />
                       </Link>
                     </li>
@@ -346,7 +346,7 @@ function StatusBadge({
   status,
   t,
 }: {
-  status: Campaign["status"];
+  status: Adventure["status"];
   t: { journal: { statusPaused: string; statusArchived: string } };
 }) {
   if (status === "paused") {
@@ -366,8 +366,8 @@ function StatusBadge({
   return null;
 }
 
-function CampaignRow({
-  campaign,
+function AdventureRow({
+  adventure,
   isActive,
   isDragging,
   rowRef,
@@ -375,7 +375,7 @@ function CampaignRow({
   onToggleFavorite,
   t,
 }: {
-  campaign: Campaign;
+  adventure: Adventure;
   isActive: boolean;
   isDragging: boolean;
   rowRef: (el: HTMLLIElement | null) => void;
@@ -407,23 +407,23 @@ function CampaignRow({
       <button
         type="button"
         onClick={onToggleFavorite}
-        aria-pressed={campaign.favorite}
-        aria-label={campaign.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
+        aria-pressed={adventure.favorite}
+        aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
         className={[
           "-m-1 shrink-0 p-3 transition",
-          campaign.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+          adventure.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
         ].join(" ")}
       >
-        <IconStar size={16} filled={campaign.favorite} />
+        <IconStar size={16} filled={adventure.favorite} />
       </button>
       <Link
-        to={`/diario/${campaign.id}`}
+        to={`/diario/${adventure.id}`}
         className="flex min-w-0 flex-1 items-center gap-2 px-1 py-2.5"
       >
         <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
-          {campaign.name}
+          {adventure.name}
         </span>
-        <StatusBadge status={campaign.status} t={t} />
+        <StatusBadge status={adventure.status} t={t} />
         {isActive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
             <IconCheck size={12} />

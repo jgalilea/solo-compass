@@ -4,7 +4,7 @@ import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, SYMBOL } from "../l
 import { IconChevronRight, IconPencil, IconTrash } from "./icons/Icons";
 
 /**
- * Filas compartidas entre JournalListView y CampaignDetailView (esta
+ * Filas compartidas entre JournalListView y AdventureDetailView (esta
  * última es quien realmente las usa; conviven aquí porque son
  * componentes, no utilidades — ver src/lib/journalUi.ts para esas).
  *

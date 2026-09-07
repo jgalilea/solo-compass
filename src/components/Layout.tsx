@@ -3,13 +3,13 @@ import { IconBook, IconCompass, IconDice, IconFeather, IconScroll } from "./icon
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { AboutDialog } from "./AboutDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { ActiveCampaignIndicator } from "./ActiveCampaignIndicator";
+import { ActiveAdventureIndicator } from "./ActiveAdventureIndicator";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 
 export function Layout() {
   const { t } = useLocaleContext();
-  const { activeCampaignId } = useJournalContext();
+  const { activeAdventureId } = useJournalContext();
   const location = useLocation();
 
   const tabs = [
@@ -21,12 +21,12 @@ export function Layout() {
       isActive: location.pathname.startsWith("/tablas"),
     },
     {
-      // Con campaña activa, el atajo de la barra va directo a ella —
+      // Con aventura activa, el atajo de la barra va directo a ella —
       // la lista sigue accesible desde la flecha "volver" del detalle.
       // El resaltado del propio tab se basa en la sección ("/diario"),
       // no en este destino concreto, para que siga marcado como
-      // activo aunque se navegue a otra campaña desde la lista.
-      to: activeCampaignId ? `/diario/${activeCampaignId}` : "/diario",
+      // activo aunque se navegue a otra aventura desde la lista.
+      to: activeAdventureId ? `/diario/${activeAdventureId}` : "/diario",
       label: t.nav.journal,
       Icon: IconFeather,
       isActive: location.pathname.startsWith("/diario"),
@@ -57,7 +57,7 @@ export function Layout() {
         </div>
       </header>
 
-      <ActiveCampaignIndicator />
+      <ActiveAdventureIndicator />
 
       <main className="flex flex-1 flex-col">
         <Outlet />
