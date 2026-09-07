@@ -5,11 +5,7 @@
  * historial o del propio diario.
  */
 
-// El valor sigue diciendo "active-campaign": es una clave de
-// almacenamiento opaca, invisible para quien usa la app — cambiarla
-// perdería la aventura activa de quien ya la tuviera guardada. Solo
-// se renombra el identificador de JS.
-const STORAGE_KEY = "solo-compass:active-campaign";
+const STORAGE_KEY = "solo-compass:active-adventure";
 
 export function loadActiveAdventureId(): string | null {
   if (typeof window === "undefined") return null;

@@ -25,13 +25,7 @@ export interface Adventure {
 // razonamiento completo). Todas las aventuras y todas las entradas
 // comparten una única clave cada una; se filtran por adventureId en
 // memoria — con los volúmenes reales de un diario de rol, de sobra.
-//
-// El valor de la clave sigue diciendo "campaigns" aunque el código y
-// la interfaz ya dicen "aventuras": es una cadena opaca de
-// almacenamiento, invisible para quien usa la app, y cambiarla
-// dejaría sin encontrar los datos que alguien ya tuviera guardados
-// con el nombre anterior. Solo se renombra el identificador de JS.
-const ADVENTURES_KEY = "solo-compass:journal-campaigns";
+const ADVENTURES_KEY = "solo-compass:journal-adventures";
 const ENTRIES_KEY = "solo-compass:journal-entries";
 
 export class JournalStorageError extends Error {}
@@ -66,15 +60,7 @@ export async function loadJournalEntries(t: Dictionary): Promise<JournalEntry[]>
   if (typeof window === "undefined") return [];
   try {
     const stored = await get<JournalEntry[]>(ENTRIES_KEY);
-    if (!Array.isArray(stored)) return [];
-    // Compatibilidad con entradas guardadas cuando el campo se
-    // llamaba campaignId (antes de que el proyecto pasara a llamar
-    // "aventura" a lo que antes era "campaña") — se adopta el valor
-    // antiguo si falta el nuevo, sin tocar lo demás.
-    return stored.map((e) => {
-      const legacy = e as JournalEntry & { campaignId?: string };
-      return { ...e, adventureId: e.adventureId ?? legacy.campaignId ?? "" };
-    });
+    return Array.isArray(stored) ? stored : [];
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }
