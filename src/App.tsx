@@ -3,7 +3,8 @@ import { Layout } from "./components/Layout";
 import { OracleView } from "./components/OracleView";
 import { TablesView } from "./components/TablesView";
 import { HistoryView } from "./components/HistoryView";
-import { JournalView } from "./components/JournalView";
+import { JournalListView } from "./components/JournalListView";
+import { CampaignDetailView } from "./components/CampaignDetailView";
 import { HistoryProvider } from "./hooks/HistoryContext";
 import { ThemeProvider } from "./hooks/ThemeContext";
 import { ModeProvider } from "./hooks/ModeContext";
@@ -29,7 +30,8 @@ function App() {
                       <Route element={<Layout />}>
                         <Route index element={<OracleView />} />
                         <Route path="tablas" element={<TablesView />} />
-                        <Route path="diario" element={<JournalView />} />
+                        <Route path="diario" element={<JournalListView />} />
+                      <Route path="diario/:campaignId" element={<CampaignDetailView />} />
                         <Route path="historial" element={<HistoryView />} />
                       </Route>
                     </Routes>

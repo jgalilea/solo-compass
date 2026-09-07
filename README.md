@@ -43,7 +43,14 @@ de Graven Utterance (Oliver N), publicado bajo licencia
   campaña activa, las tiradas del oráculo y de las tablas se apuntan
   solas; el oráculo además ofrece un pequeño campo para añadir la
   consecuencia (`=>`) justo después de tirar. Exporta cada campaña a
-  `.md` o importa un diario existente en formato Lonelog.
+  `.md` o importa un diario existente en formato Lonelog. La lista de
+  campañas (`/diario`) y el contenido de cada una (`/diario/:id`) son
+  pantallas separadas, así que las sesiones de la campaña abierta
+  nunca compiten por espacio con la lista aunque haya muchas campañas;
+  la lista tiene buscador, pinea las favoritas arriba y deja pausar o
+  archivar campañas (las archivadas quedan en su propia sección
+  plegada). Un indicador fijo en todas las pantallas recuerda cuál es
+  la campaña activa y lleva directo a ella.
 - **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
   persistidas en IndexedDB (ver "Almacenamiento" más abajo).
 

@@ -8,6 +8,7 @@ import {
   saveCampaigns,
   saveJournalEntries,
   type Campaign,
+  type CampaignStatus,
 } from "../lib/journal";
 import {
   parseMarkdownToEntries,
@@ -31,6 +32,7 @@ interface UseJournalResult {
   deleteCampaign: (id: string) => void;
   reorderCampaigns: (orderedIds: string[]) => void;
   toggleCampaignFavorite: (id: string) => void;
+  setCampaignStatus: (id: string, status: CampaignStatus) => void;
   addEntry: (
     campaignId: string,
     kind: JournalLineKind,
@@ -77,11 +79,6 @@ export function useJournal(): UseJournalResult {
 
   useEffect(() => load(), [load]);
 
-  const setActiveCampaignId = useCallback((id: string | null) => {
-    setActiveCampaignIdState(id);
-    saveActiveCampaignId(id);
-  }, []);
-
   // updateCampaigns/updateEntries siempre parten del estado más
   // reciente (forma funcional de setState), no de "campaigns"/
   // "entries" capturados por closure — así, si addEntry se llama dos
@@ -117,6 +114,22 @@ export function useJournal(): UseJournalResult {
       });
     },
     [t],
+  );
+
+  // Activar una campaña archivada la desarchiva: si estaba guardada
+  // fuera de la lista principal es porque no se estaba usando, y
+  // activarla es justo la señal de que se vuelve a usar.
+  const setActiveCampaignId = useCallback(
+    (id: string | null) => {
+      setActiveCampaignIdState(id);
+      saveActiveCampaignId(id);
+      if (id) {
+        updateCampaigns((prev) =>
+          prev.map((c) => (c.id === id && c.status === "archived" ? { ...c, status: "ongoing" } : c)),
+        );
+      }
+    },
+    [updateCampaigns],
   );
 
   const createCampaignFn = useCallback(
@@ -171,6 +184,20 @@ export function useJournal(): UseJournalResult {
     [activeCampaignId, updateCampaigns, updateEntries, setActiveCampaignId],
   );
 
+  // Archivar la campaña activa la desactiva (una campaña archivada no
+  // puede ser la que recibe el auto-registro).
+  const setCampaignStatus = useCallback(
+    (id: string, status: CampaignStatus) => {
+      updateCampaigns((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status, updatedAt: Date.now() } : c)),
+      );
+      if (status === "archived" && activeCampaignId === id) {
+        setActiveCampaignId(null);
+      }
+    },
+    [activeCampaignId, updateCampaigns, setActiveCampaignId],
+  );
+
   const addEntry = useCallback(
     (campaignId: string, kind: JournalLineKind, text: string, linkedRollId?: string) => {
       const entry: JournalEntry = {
@@ -219,6 +246,7 @@ export function useJournal(): UseJournalResult {
     deleteCampaign,
     reorderCampaigns,
     toggleCampaignFavorite,
+    setCampaignStatus,
     addEntry,
     removeEntry,
     importCampaign,

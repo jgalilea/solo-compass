@@ -2,12 +2,22 @@ import { get, set } from "idb-keyval";
 import type { Dictionary } from "./i18n";
 import type { JournalEntry } from "./lonelog";
 
+/**
+ * "ongoing": en curso, aparece en la lista principal.
+ * "paused": en pausa — solo organizativo, sigue en la lista principal
+ * pero marcada, no afecta a si puede ser la campaña activa.
+ * "archived": fuera de la lista principal (va en su propia sección
+ * plegada), no puede ser la campaña activa — activarla la desarchiva.
+ */
+export type CampaignStatus = "ongoing" | "paused" | "archived";
+
 export interface Campaign {
   id: string;
   name: string;
   createdAt: number;
   updatedAt: number;
   favorite: boolean;
+  status: CampaignStatus;
 }
 
 // Igual que el historial: sin techo natural de tamaño, así que va en
@@ -25,8 +35,13 @@ export async function loadCampaigns(t: Dictionary): Promise<Campaign[]> {
   try {
     const stored = await get<Campaign[]>(CAMPAIGNS_KEY);
     if (!Array.isArray(stored)) return [];
-    // Compatibilidad con campañas guardadas antes de añadir favoritos.
-    return stored.map((c) => ({ ...c, favorite: c.favorite ?? false }));
+    // Compatibilidad con campañas guardadas antes de añadir favoritos
+    // y antes de añadir estado (pausa/archivo).
+    return stored.map((c) => ({
+      ...c,
+      favorite: c.favorite ?? false,
+      status: c.status ?? "ongoing",
+    }));
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }
@@ -69,7 +84,14 @@ function makeId(): string {
 
 export function createCampaign(name: string): Campaign {
   const now = Date.now();
-  return { id: makeId(), name: name.trim(), createdAt: now, updatedAt: now, favorite: false };
+  return {
+    id: makeId(),
+    name: name.trim(),
+    createdAt: now,
+    updatedAt: now,
+    favorite: false,
+    status: "ongoing",
+  };
 }
 
 export function createJournalEntryId(): string {

@@ -264,3 +264,49 @@ export function IconChevronRight(props: IconProps) {
     </svg>
   );
 }
+
+export function IconArrowLeft(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M19 12H5" />
+      <path d="M11 6l-6 6 6 6" />
+    </svg>
+  );
+}
+
+export function IconPause(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M8 5v14" />
+      <path d="M16 5v14" />
+    </svg>
+  );
+}
+
+export function IconPlay(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M7 4.5v15l13-7.5z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconArchive(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 5.5h16v3.5H4z" strokeLinejoin="round" />
+      <path d="M5.5 9v9a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V9" />
+      <path d="M10 13h4" />
+    </svg>
+  );
+}
+
+export function IconArchiveRestore(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 5.5h16v3.5H4z" strokeLinejoin="round" />
+      <path d="M5.5 9v9a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V9" />
+      <path d="M12 16v-4M9.8 13.6l2.2-2.2 2.2 2.2" />
+    </svg>
+  );
+}

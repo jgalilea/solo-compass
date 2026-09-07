@@ -3,6 +3,7 @@ import { IconBook, IconCompass, IconDice, IconFeather, IconScroll } from "./icon
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { AboutDialog } from "./AboutDialog";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ActiveCampaignIndicator } from "./ActiveCampaignIndicator";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 
 export function Layout() {
@@ -32,6 +33,8 @@ export function Layout() {
           </div>
         </div>
       </header>
+
+      <ActiveCampaignIndicator />
 
       <main className="flex flex-1 flex-col">
         <Outlet />
