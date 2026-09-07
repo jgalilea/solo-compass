@@ -173,6 +173,12 @@ export interface Dictionary {
     favoriteRemove: string;
     dragHandle: string;
     toggleSession: string;
+    currentSessionBadge: string;
+    previousSessionsHeading: string;
+    togglePreviousSessions: string;
+    composerShow: string;
+    composerHide: string;
+    composerCollapsedLabel: string;
     searchPlaceholder: string;
     searchLabel: string;
     noSearchResultsTitle: string;

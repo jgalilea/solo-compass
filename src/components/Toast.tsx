@@ -20,7 +20,7 @@ export function Toast({
   return (
     <div
       role="status"
-      className="animate-fade-up fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-sm items-start gap-3 rounded-2xl border border-gold/40 bg-ink-800 p-4 shadow-2xl"
+      className="animate-fade-up fixed inset-x-4 bottom-44 z-50 mx-auto flex max-w-sm items-start gap-3 rounded-2xl border border-gold/40 bg-ink-800 p-4 shadow-2xl"
     >
       <IconDownload size={18} className="mt-0.5 shrink-0 text-gold" />
       <div className="min-w-0 flex-1">

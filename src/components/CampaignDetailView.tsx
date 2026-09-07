@@ -22,6 +22,7 @@ import {
   IconArchiveRestore,
   IconArrowLeft,
   IconCheck,
+  IconChevronRight,
   IconDownload,
   IconFeather,
   IconPause,
@@ -65,10 +66,22 @@ export function CampaignDetailView() {
     const last = groups.findLast((g) => g.sessionEntry);
     return last?.sessionEntry?.id ?? null;
   }, [groups]);
+
+  // La sesión actual (la última creada, o el "prólogo" si aún no hay
+  // ninguna sesión) se pinta siempre primero y siempre expandida —
+  // así nunca hay que bajar entre sesiones ya cerradas para llegar a
+  // ella. El resto vive en "Sesiones anteriores", colapsado.
+  const currentGroupIndex = useMemo(() => {
+    if (lastSessionId) return groups.findIndex((g) => g.sessionEntry?.id === lastSessionId);
+    return groups.length > 0 ? groups.length - 1 : -1;
+  }, [groups, lastSessionId]);
+  const currentGroup = currentGroupIndex >= 0 ? groups[currentGroupIndex] : null;
+  const previousGroups = groups.filter((_, i) => i !== currentGroupIndex);
+
   const [manualOverrides, setManualOverrides] = useState<Map<string, boolean>>(new Map());
 
   function isSessionExpanded(id: string): boolean {
-    return manualOverrides.get(id) ?? id === lastSessionId;
+    return manualOverrides.get(id) ?? false;
   }
 
   function toggleSession(id: string) {
@@ -79,11 +92,13 @@ export function CampaignDetailView() {
     });
   }
 
+  const [previousExpanded, setPreviousExpanded] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
 
+  const [composerExpanded, setComposerExpanded] = useState(true);
   const [composerKind, setComposerKind] = useState<JournalLineKind>("note");
   const [composerText, setComposerText] = useState("");
   const [sessionTitle, setSessionTitle] = useState("");
@@ -292,60 +307,40 @@ export function CampaignDetailView() {
           compact
         />
       ) : (
-        <ul className="flex flex-col gap-2">
-          {groups.map((group, i) =>
-            group.sessionEntry ? (
-              <SessionGroupRow
-                key={group.sessionEntry.id}
-                group={group}
-                expanded={isSessionExpanded(group.sessionEntry.id)}
-                onToggle={() => toggleSession(group.sessionEntry!.id)}
-                onDeleteEntry={removeEntry}
-                deleteLabel={t.journal.deleteEntry}
-                toggleLabel={t.journal.toggleSession}
-              />
+        currentGroup && (
+          <ul className="flex flex-col gap-2">
+            {currentGroup.sessionEntry ? (
+              <li className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
+                    {currentGroup.sessionEntry.text}
+                  </span>
+                  <span className="shrink-0 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gold">
+                    {t.journal.currentSessionBadge}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeEntry(currentGroup.sessionEntry!.id)}
+                    aria-label={t.journal.deleteEntry}
+                    className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
+                  >
+                    <IconTrash size={16} />
+                  </button>
+                </div>
+                <ul className="flex flex-col gap-2 pl-1">
+                  {currentGroup.items.map((entry) => (
+                    <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+                  ))}
+                </ul>
+              </li>
             ) : (
-              <Fragment key={`prologue-${i}`}>
-                {group.items.map((entry) => (
-                  <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
-                ))}
-              </Fragment>
-            ),
-          )}
-        </ul>
+              currentGroup.items.map((entry) => (
+                <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+              ))
+            )}
+          </ul>
+        )
       )}
-
-      <div className="flex flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/50 p-4">
-        <div className="flex flex-wrap gap-1.5">
-          {COMPOSER_KINDS.map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              onClick={() => setComposerKind(kind)}
-              className={[
-                "rounded-lg px-3 py-2 text-sm transition",
-                composerKind === kind
-                  ? "bg-gold text-ink-950 font-medium"
-                  : "text-parchment-dim hover:text-parchment",
-              ].join(" ")}
-            >
-              {kindLabels[kind]}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            value={composerText}
-            onChange={(e) => setComposerText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
-            placeholder={t.journal.addPlaceholder}
-            className={`${INPUT_CLASS} bg-ink-800/70`}
-          />
-          <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
-            {t.journal.addButton}
-          </button>
-        </div>
-      </div>
 
       {showNewSession ? (
         <div className="flex items-center gap-2">
@@ -371,6 +366,105 @@ export function CampaignDetailView() {
           {t.journal.newSessionButton}
         </button>
       )}
+
+      {previousGroups.length > 0 && (
+        <section className="flex flex-col gap-2.5">
+          <button
+            type="button"
+            onClick={() => setPreviousExpanded((v) => !v)}
+            aria-expanded={previousExpanded}
+            aria-label={t.journal.togglePreviousSessions}
+            className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
+          >
+            <IconChevronRight
+              size={14}
+              className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
+            />
+            {t.journal.previousSessionsHeading}
+            <span className="text-parchment-dim/50">{previousGroups.length}</span>
+          </button>
+          {previousExpanded && (
+            <ul className="flex flex-col gap-2">
+              {previousGroups.map((group, i) =>
+                group.sessionEntry ? (
+                  <SessionGroupRow
+                    key={group.sessionEntry.id}
+                    group={group}
+                    expanded={isSessionExpanded(group.sessionEntry.id)}
+                    onToggle={() => toggleSession(group.sessionEntry!.id)}
+                    onDeleteEntry={removeEntry}
+                    deleteLabel={t.journal.deleteEntry}
+                    toggleLabel={t.journal.toggleSession}
+                  />
+                ) : (
+                  <Fragment key={`prologue-${i}`}>
+                    {group.items.map((entry) => (
+                      <EntryRow key={entry.id} entry={entry} onDelete={removeEntry} deleteLabel={t.journal.deleteEntry} />
+                    ))}
+                  </Fragment>
+                ),
+              )}
+            </ul>
+          )}
+        </section>
+      )}
+
+      <div className="mt-auto sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 rounded-t-2xl border-t border-ink-border bg-ink-900/95 px-4 pt-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border">
+        {composerExpanded ? (
+          <div className="flex flex-col gap-3 pb-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-wrap gap-1.5">
+                {COMPOSER_KINDS.map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => setComposerKind(kind)}
+                    className={[
+                      "rounded-lg px-3 py-2 text-sm transition",
+                      composerKind === kind
+                        ? "bg-gold text-ink-950 font-medium"
+                        : "text-parchment-dim hover:text-parchment",
+                    ].join(" ")}
+                  >
+                    {kindLabels[kind]}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setComposerExpanded(false)}
+                aria-label={t.journal.composerHide}
+                className="-m-2 shrink-0 p-2 text-parchment-dim/50 transition hover:text-parchment"
+              >
+                <IconChevronRight size={16} className="rotate-90" />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                value={composerText}
+                onChange={(e) => setComposerText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
+                placeholder={t.journal.addPlaceholder}
+                className={`${INPUT_CLASS} bg-ink-800/70`}
+              />
+              <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
+                {t.journal.addButton}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setComposerExpanded(true)}
+            aria-label={t.journal.composerShow}
+            className="flex w-full items-center justify-center gap-2 pb-3 text-sm text-parchment-dim transition hover:text-gold"
+          >
+            <IconPlus size={15} />
+            {t.journal.composerCollapsedLabel}
+            <IconChevronRight size={14} className="-rotate-90" />
+          </button>
+        )}
+      </div>
 
       {deleting && (
         <ConfirmDialog
