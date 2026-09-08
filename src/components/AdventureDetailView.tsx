@@ -281,13 +281,14 @@ export function AdventureDetailView() {
           aria-label={isActive ? t.journal.unsetActive : t.journal.setActive}
           title={isActive ? t.journal.unsetActive : t.journal.setActive}
           className={[
-            "rounded-xl border p-2.5 transition",
+            "flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition",
             isActive
               ? "border-gold/50 bg-gold/10 text-gold"
               : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
           ].join(" ")}
         >
           {isActive ? <IconCheck size={16} /> : <IconPlay size={16} />}
+          {isActive ? t.journal.activeLabel : t.journal.setActive}
         </button>
 
         <button
