@@ -72,10 +72,17 @@ export function Layout() {
               aria-current={isActive ? "page" : undefined}
               className={[
                 "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] transition",
-                isActive ? "text-gold" : "text-parchment-dim hover:text-parchment",
+                isActive ? "text-gold font-medium" : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
             >
-              <Icon size={18} />
+              <span
+                className={[
+                  "flex items-center justify-center rounded-full px-3 py-1 transition",
+                  isActive ? "bg-gold text-ink-950" : "",
+                ].join(" ")}
+              >
+                <Icon size={18} />
+              </span>
               {label}
             </Link>
           ))}
