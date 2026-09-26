@@ -206,7 +206,7 @@ export function AdventureDetailView() {
   const isPaused = !isArchived && !isActive;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pt-8 pb-3 sm:py-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pt-8 sm:py-12">
       <div className="flex items-center gap-1">
         <Link
           to="/diario"
