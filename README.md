@@ -85,6 +85,22 @@ Aventuras y entradas del diario se guardan en IndexedDB (mismo motivo
 que el historial). Qué aventura está activa es un dato pequeño y se
 queda en `localStorage`.
 
+## Temas visuales
+
+El icono de paleta en la cabecera abre el selector de tema (`ThemeSwitcher`):
+claro/oscuro/automático (este último sigue la preferencia del sistema,
+`prefers-color-scheme`, y se reevalúa en cada momento) y cinco temas —
+Fantasía, Pulp, Moderno, Sci-fi y OSR — cada uno con su propia paleta de
+color y tipografía de display. Modo y tema son independientes y se
+combinan: cada tema define tanto su paleta oscura como su paleta clara
+(`src/index.css`, bloques `:root[data-theme="…"]` y
+`:root[data-theme="…"][data-mode="light"]`). Los componentes nunca usan
+colores sueltos, solo clases de Tailwind que apuntan a esas variables
+(`bg-gold`, `text-parchment`…), así que un tema nuevo es solo CSS. Por
+defecto el modo es oscuro (para no cambiar lo que ya veía quien usaba la
+app antes de que existiera el selector); la elección se guarda en
+`localStorage`, igual que el tema.
+
 ## Idioma
 
 Español e inglés, seleccionable desde el icono de idioma en la cabecera.
