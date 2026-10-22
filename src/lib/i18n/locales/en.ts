@@ -51,7 +51,12 @@ export const en: Dictionary = {
       "Nothing leaves your device: there are no accounts and no server, and this permission doesn't send anything to anyone. You can export a copy or delete everything whenever you want.",
     protectButton: "Protect my data",
     protecting: "Asking for permission…",
-    notNow: "Not now",
+    decline: "No, thanks",
+    declineNote:
+      "This question only shows up once. If you choose “No, thanks” we won't show it again, but you can turn protection on any time from Settings → Your data.",
+    howToRemoveTitle: "How do I remove it?",
+    howToRemove:
+      "For security, a website can ask for this protection but can't remove it: only you can, from your browser's settings. Look for this site's permissions or data and remove persistent storage, or clear the site's data (export a backup first if you don't want to lose it).",
     done: "Got it",
     grantedTitle: "Data protected",
     granted: "Your browser won't delete Solo Compass's data on its own anymore.",
@@ -63,6 +68,13 @@ export const en: Dictionary = {
     learnMore: "What does this mean?",
     backupStillMatters:
       "A backup is still your best safety net: it also covers you if you lose or switch devices.",
+  },
+  update: {
+    title: "A new version of Solo Compass is available",
+    description: "Update to see the latest changes. Everything you've saved stays put.",
+    button: "Update",
+    updating: "Updating…",
+    later: "Later",
   },
   changelog: {
     button: "Chronicle of changes",

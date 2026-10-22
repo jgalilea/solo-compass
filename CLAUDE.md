@@ -80,6 +80,12 @@ No backend; persistence is split by access pattern, not by feature:
   it silently — Firefox shows its own permission prompt — always behind
   the in-app explanation (`StorageProtection.tsx`: a one-time prompt once
   the first adventure exists, plus a status/retry block in Settings).
+- **Updates (service worker)**: `registerType: "prompt"` in
+  `vite.config.ts`, registered from `UpdatePrompt.tsx`. It checks for a new
+  version when the app returns to the foreground and hourly (an installed
+  PWA rarely navigates, which is when browsers check on their own), then
+  shows an "Actualizar" banner instead of reloading by itself (it could
+  drop half-typed text).
 - **Full backup/restore** (`backup.ts`, wired into `SettingsDialog`): exports
   everything above into one `.json`, and can restore it (overwriting
   current data, then reloading the app so every context picks up the

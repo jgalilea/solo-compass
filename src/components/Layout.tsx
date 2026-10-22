@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { IconCompass, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { StorageProtectionPrompt } from "./StorageProtection";
+import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureIndicator } from "./ActiveAdventureIndicator";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
@@ -79,6 +80,7 @@ export function Layout() {
         </div>
       </header>
 
+      <UpdatePrompt />
       <ActiveAdventureIndicator />
       <StorageProtectionPrompt />
 

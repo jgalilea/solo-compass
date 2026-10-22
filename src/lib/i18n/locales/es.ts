@@ -51,7 +51,12 @@ export const es: Dictionary = {
       "Nada sale de tu dispositivo: no hay cuentas ni servidor, y este permiso no envía nada a nadie. Puedes exportar una copia o borrarlo todo cuando quieras.",
     protectButton: "Proteger mis datos",
     protecting: "Pidiendo permiso…",
-    notNow: "Ahora no",
+    decline: "No, gracias",
+    declineNote:
+      "Esta pregunta solo aparece una vez. Si eliges «No, gracias» no volveremos a mostrarla, pero podrás activar la protección cuando quieras desde Ajustes → Tus datos.",
+    howToRemoveTitle: "¿Cómo se quita?",
+    howToRemove:
+      "Por seguridad, una web puede pedir esta protección pero no quitarla: solo tú puedes hacerlo, desde los ajustes de tu navegador. Busca los permisos o los datos de este sitio y quita el almacenamiento persistente, o borra los datos del sitio (exporta antes una copia si no quieres perderlos).",
     done: "Entendido",
     grantedTitle: "Datos protegidos",
     granted: "Tu navegador ya no borrará los datos de Solo Compass por su cuenta.",
@@ -63,6 +68,13 @@ export const es: Dictionary = {
     learnMore: "¿Qué significa esto?",
     backupStillMatters:
       "La copia de seguridad sigue siendo tu mejor red de seguridad: también te cubre si pierdes o cambias de dispositivo.",
+  },
+  update: {
+    title: "Hay una versión nueva de Solo Compass",
+    description: "Actualiza para ver los últimos cambios. Todo lo que tienes guardado se mantiene.",
+    button: "Actualizar",
+    updating: "Actualizando…",
+    later: "Más tarde",
   },
   changelog: {
     button: "Crónica de cambios",

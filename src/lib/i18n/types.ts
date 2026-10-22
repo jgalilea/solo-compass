@@ -60,7 +60,10 @@ export interface Dictionary {
     ownership: string;
     protectButton: string;
     protecting: string;
-    notNow: string;
+    decline: string;
+    declineNote: string;
+    howToRemoveTitle: string;
+    howToRemove: string;
     done: string;
     grantedTitle: string;
     granted: string;
@@ -70,6 +73,13 @@ export interface Dictionary {
     statusUnprotected: string;
     learnMore: string;
     backupStillMatters: string;
+  };
+  update: {
+    title: string;
+    description: string;
+    button: string;
+    updating: string;
+    later: string;
   };
   changelog: {
     button: string;
