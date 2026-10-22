@@ -36,7 +36,7 @@ export const en: Dictionary = {
     sectionTitle: "Your data",
     promptTitle: "Protect your journal",
     promptIntro:
-      "Before you carry on, a bit of upkeep between sessions: a way to look after what you've already written.",
+      "A short break between sessions to keep what you've written safe.",
     whatTitle: "What is this?",
     what:
       "Solo Compass has no server: your adventures, rolls and settings are saved only on this device, inside the browser. If the device runs low on space, or you don't open the app for a long time, some browsers may delete that data on their own to free up room.",
@@ -45,7 +45,7 @@ export const en: Dictionary = {
       "If you allow it, the browser marks Solo Compass's data as important and won't delete it on its own anymore. It would only go away if you decide so (for example, by clearing the site's data).",
     howTitle: "How does it work?",
     how:
-      "It's a standard browser permission. Some browsers, like Firefox, will show their own prompt so you can confirm it: that's normal and it comes from here. Others, like Chrome or Safari, decide on their own without asking, often based on whether you've installed the app or use it often.",
+      "It's a standard browser permission. Some browsers, like Firefox, will show their own prompt so you can confirm it: that's normal, this app is the one asking. Others, like Chrome or Safari, decide on their own without asking, often based on whether you've installed the app or use it often.",
     ownershipTitle: "Your data is always yours",
     ownership:
       "Nothing leaves your device: there are no accounts and no server, and this permission doesn't send anything to anyone. You can export a copy or delete everything whenever you want.",
@@ -53,14 +53,14 @@ export const en: Dictionary = {
     protecting: "Asking for permission…",
     decline: "No, thanks",
     declineNote:
-      "This question only shows up once. If you choose “No, thanks” we won't show it again, but you can turn protection on any time from Settings → Your data.",
+      "If you choose “No, thanks” we won't ask again, but you can turn protection on any time from Settings → Your data.",
     howToRemoveTitle: "How do I remove it?",
     howToRemove:
       "For security, a website can ask for this protection but can't remove it: only you can, from your browser's settings. Look for this site's permissions or data and remove persistent storage, or clear the site's data (export a backup first if you don't want to lose it).",
     done: "Got it",
     grantedTitle: "Data protected",
     granted: "Your browser won't delete Solo Compass's data on its own anymore.",
-    deniedTitle: "Your browser hasn't granted it for now",
+    deniedTitle: "Your browser hasn't granted it yet",
     denied:
       "The browser decides this itself, sometimes based on how much you use the app or whether you install it on your home screen. You can try again any time from Settings → Your data.",
     deniedInSettings:
@@ -69,21 +69,27 @@ export const en: Dictionary = {
     statusUnprotected: "Not protected: the browser could delete them if it needs space.",
     learnMore: "What does this mean?",
     backupStillMatters:
-      "A backup is still your best safety net: it also covers you if you lose or switch devices.",
+      "Even so, a backup is your best lifeline: it also covers you if you lose your device or switch to a new one.",
   },
   update: {
-    title: "A new version of Solo Compass is available",
-    description: "Update to see the latest changes. Everything you've saved stays put.",
+    title: "A new version of Solo Compass has arrived",
+    description: "Update to see the latest changes. Everything you've saved stays safe.",
     button: "Update",
     updating: "Updating…",
     later: "Later",
   },
   changelog: {
     button: "Chronicle of changes",
-    buttonHint: "What's new in each version, for the curious.",
+    buttonHint: "What changed in each version.",
     title: "Chronicle of changes",
     intro: "The deeds of Solo Compass, told around the campfire.",
     latestBadge: "Latest",
+  },
+  support: {
+    title: "Support the project",
+    description:
+      "Solo Compass is free and always will be. If it keeps you company at the table, you can buy the party a round at the tavern.",
+    button: "Support on Ko-fi",
   },
   themeSwitcher: {
     triggerLabel: "Change visual theme",
@@ -91,7 +97,7 @@ export const en: Dictionary = {
   },
   theme: {
     fantasia: { name: "Fantasy", tagline: "Dungeons, dragons, and old gold." },
-    pulp: { name: "Pulp", tagline: "Tabloid headline and a secret cult." },
+    pulp: { name: "Pulp", tagline: "Lurid headlines and secret cults." },
     moderno: { name: "Modern", tagline: "Clean, neutral, no frills." },
     scifi: { name: "Sci-fi", tagline: "Terminal, code, and green neon." },
     osr: { name: "OSR", tagline: "Ink, bone, and dried blood." },
@@ -135,18 +141,18 @@ export const en: Dictionary = {
   oracleSwitcher: {
     triggerLabel: "Change oracle",
     dialogTitle: "Oracle",
-    moreComingSoon: "More oracles are coming soon.",
+    moreComingSoon: "More oracles are on the way.",
   },
   oracle: {
     title: "Oracle",
     questionLabel: "Question for the oracle",
     questionPlaceholder: "Does Lydia make it over the fence before they catch her?",
     rollButton: "Roll the dice",
-    emptyTitle: "You haven't asked anything yet",
+    emptyTitle: "The oracle awaits your question",
     emptyDescription: "Write a question and roll the dice.",
     vs: "vs",
     contradictionExplanation:
-      "Some premise of the question is wrong. Think about what you're taking for granted and rephrase the question.",
+      "The question rests on a false premise. Check what you're taking for granted and rephrase it.",
     consequencePlaceholder: "What happens? Goes in the journal.",
     consequenceSaved: "Logged in “{name}”",
     consequenceSavedNoAdventure: "Logged in the journal",
@@ -168,12 +174,12 @@ export const en: Dictionary = {
     contradiccion: "Contradiction",
   },
   qualifier: {
-    y: "and more",
+    y: "and",
     pero: "but",
   },
   die: {
     ariaLabel: "{color} die showing {value}",
-    color: { blanco: "White", negro: "black" },
+    color: { blanco: "white", negro: "black" },
   },
   tables: {
     title: "Meaning tables",
@@ -216,14 +222,14 @@ export const en: Dictionary = {
         "Something valuable is in plain sight, but guarded.",
         "The ground becomes dangerous.",
         "A creature reacts to your presence.",
-        "Things calm down: a short breather.",
+        "Things settle down: a short breather.",
         "A message or a signal arrives from afar.",
         "A faction makes a move.",
         "Something runs out: light, food, time or patience.",
         "Someone switches sides.",
         "An object reveals an unexpected use.",
         "You're mistaken for someone else.",
-        "A random accident complicates things.",
+        "A mishap complicates things.",
         "A secret of this place is uncovered.",
         "An old debt or promise resurfaces.",
         "Something is following you at a distance.",
@@ -231,10 +237,10 @@ export const en: Dictionary = {
         "A stroke of luck… that draws attention.",
         "A distant threat draws closer.",
         "Someone asks for something in return for their help.",
-        "An ominous sign foreshadows trouble.",
+        "An ill omen foreshadows trouble.",
         "What you're looking for is somewhere else.",
         "The plan works… too well.",
-        "Dramatic twist: the scene changes completely.",
+        "Plot twist: the scene turns on its head.",
       ],
       accionPnj: [
         "Flees or hides.",
@@ -295,7 +301,7 @@ export const en: Dictionary = {
   history: {
     title: "History",
     subtitle: "All your rolls, with or without an active adventure.",
-    swipeHint: "Swipe a roll right to highlight it, or left to delete it.",
+    swipeHint: "Swipe a roll right to favorite it, or left to delete it.",
     backToOracle: "Back to the oracle",
     clearAll: "Clear all",
     filterAll: "All",
@@ -306,7 +312,7 @@ export const en: Dictionary = {
     loadErrorTitle: "Couldn't load the history",
     emptyTitle: "No rolls yet",
     emptyDescription:
-      "Consult the oracle or roll on a table and it'll show up here, saved on this device.",
+      "Consult the oracle or roll on a table: every roll ends up here, saved on this device.",
     emptyFavoritesTitle: "You haven't favorited any rolls yet",
     emptyFavoritesDescription: "Tap the star on a roll to mark it as a favorite.",
     emptyFilterTitle: "No results for this filter",
@@ -348,10 +354,10 @@ export const en: Dictionary = {
     setActive: "Activate",
     unsetActive: "Deactivate",
     activeLabel: "Active",
-    activeAdventureNote: "Logging to “{name}.”",
+    activeAdventureNote: "Logging to “{name}”.",
     noActiveAdventureNote: "No active adventure: rolls aren't being logged anywhere.",
-    activateHint: "Activate it so oracle and table rolls log here on their own.",
-    activateNudge: "Activate an adventure in the journal to log this on its own",
+    activateHint: "Activate it so oracle and table rolls get logged here automatically.",
+    activateNudge: "Activate an adventure in the journal to log this automatically",
     goToActiveAdventure: "Go to the active adventure",
     favoriteAdd: "Mark adventure as favorite",
     favoriteRemove: "Remove adventure from favorites",
@@ -367,7 +373,7 @@ export const en: Dictionary = {
     searchPlaceholder: "Search adventures…",
     searchLabel: "Search adventures",
     noSearchResultsTitle: "No results",
-    noSearchResultsDescription: "No adventure matches “{query}.”",
+    noSearchResultsDescription: "No adventure matches “{query}”.",
     backToList: "Back to journal",
     statusPaused: "Paused",
     statusArchived: "Archived",
@@ -415,9 +421,9 @@ export const en: Dictionary = {
     lonelogCreditLine: "Logged with {app} in {lonelog} notation (CC BY-SA 4.0).",
   },
   error: {
-    boundaryTitle: "Something broke in the app",
+    boundaryTitle: "Critical fumble! Something broke in the app",
     boundaryDescription:
-      "An unexpected error occurred. You can reload the page; your saved history won't be lost.",
+      "An unexpected error occurred. You can reload the page; nothing you've saved will be lost.",
     reload: "Reload",
   },
   dateLocale: "en-US",
