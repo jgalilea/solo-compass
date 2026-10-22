@@ -63,6 +63,8 @@ export const en: Dictionary = {
     deniedTitle: "Your browser hasn't granted it for now",
     denied:
       "The browser decides this itself, sometimes based on how much you use the app or whether you install it on your home screen. You can try again any time from Settings → Your data.",
+    deniedInSettings:
+      "It's not an app error: Chrome, Edge and Safari don't ask, they decide on their own based on how “important” the site seems to them (whether it's installed or bookmarked, or how much you use it). Sometimes they take a while to grant it even when the app is installed. You can tap the button again later; meanwhile, your data is still here and a backup has you covered.",
     statusProtected: "Protected: the browser won't delete them on its own.",
     statusUnprotected: "Not protected: the browser could delete them if it needs space.",
     learnMore: "What does this mean?",

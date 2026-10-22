@@ -69,6 +69,7 @@ export interface Dictionary {
     granted: string;
     deniedTitle: string;
     denied: string;
+    deniedInSettings: string;
     statusProtected: string;
     statusUnprotected: string;
     learnMore: string;

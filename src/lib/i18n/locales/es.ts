@@ -63,6 +63,8 @@ export const es: Dictionary = {
     deniedTitle: "Tu navegador no lo ha concedido por ahora",
     denied:
       "Lo decide el propio navegador, a veces según cuánto uses la app o si la instalas en tu pantalla de inicio. Puedes volver a intentarlo cuando quieras desde Ajustes → Tus datos.",
+    deniedInSettings:
+      "No es un error de la app: Chrome, Edge y Safari no preguntan, deciden solos según lo «importante» que les parezca la web (si está instalada o en marcadores, o cuánto la usas). A veces tardan en concederlo aunque la app esté instalada. Puedes volver a pulsar el botón más adelante; mientras tanto, tus datos siguen aquí y la copia de seguridad te cubre.",
     statusProtected: "Protegidos: el navegador no los borrará por su cuenta.",
     statusUnprotected: "Sin proteger: el navegador podría borrarlos si necesita espacio.",
     learnMore: "¿Qué significa esto?",
