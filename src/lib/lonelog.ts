@@ -60,7 +60,7 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
 
 export const LONELOG_URL = "https://lonelog.itch.io/lonelog";
 export const LONELOG_LICENSE_URL = "https://creativecommons.org/licenses/by-sa/4.0/";
-export const APP_URL = "https://jagalile.github.io/solo-compass/";
+export const APP_URL = "https://jgalilea.github.io/solo-compass/";
 
 /** Crédito con enlaces Markdown reales (no solo texto plano con la URL). */
 export function buildCreditLine(t: Dictionary): string {
