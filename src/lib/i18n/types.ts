@@ -89,6 +89,11 @@ export interface Dictionary {
     intro: string;
     latestBadge: string;
   };
+  support: {
+    title: string;
+    description: string;
+    button: string;
+  };
   themeSwitcher: {
     triggerLabel: string;
     dialogTitle: string;

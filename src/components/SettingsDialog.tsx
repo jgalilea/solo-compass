@@ -7,6 +7,7 @@ import {
   IconDice,
   IconDownload,
   IconExternalLink,
+  IconHeart,
   IconNote,
   IconQuestion,
   IconSession,
@@ -27,6 +28,8 @@ import { ChangelogDialog } from "./ChangelogDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
 import { Modal } from "./Modal";
+
+const KOFI_URL = "https://ko-fi.com/jgalilea";
 
 /**
  * Un único punto de entrada para todo lo que no es jugar: apariencia,
@@ -309,6 +312,8 @@ function AboutSettings() {
 
       <ChangelogDialog />
 
+      <SupportCard />
+
       <Credit
         label={t.about.oracleUsedBy}
         name={oracle.name}
@@ -342,6 +347,33 @@ function AboutSettings() {
         </div>
       </Credit>
     </>
+  );
+}
+
+/**
+ * Un enlace normal a Ko-fi, no su widget: el widget carga un script de
+ * terceros en cada visita (y aquí nada sale del dispositivo), no
+ * funciona sin conexión ni respeta los temas.
+ */
+function SupportCard() {
+  const { t } = useLocaleContext();
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="flex items-center gap-1.5 font-display text-base text-parchment">
+        <IconHeart size={18} className="shrink-0 text-gold" />
+        {t.support.title}
+      </p>
+      <p className="mt-1 text-sm text-parchment-dim">{t.support.description}</p>
+      <a
+        href={KOFI_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
+      >
+        {t.support.button}
+        <IconExternalLink size={14} />
+      </a>
+    </div>
   );
 }
 

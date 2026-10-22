@@ -36,7 +36,7 @@ export const es: Dictionary = {
     sectionTitle: "Tus datos",
     promptTitle: "Protege tu diario",
     promptIntro:
-      "Antes de seguir, un momento de mantenimiento entre sesiones: así cuidas lo que ya has escrito.",
+      "Una pausa entre sesiones para poner a salvo lo que llevas escrito.",
     whatTitle: "¿Qué es esto?",
     what:
       "Solo Compass no tiene servidor: tus aventuras, tiradas y ajustes se guardan solo en este dispositivo, dentro del navegador. Si el dispositivo se queda sin espacio, o pasas mucho tiempo sin abrir la app, algunos navegadores pueden borrar esos datos por su cuenta para hacer sitio.",
@@ -45,7 +45,7 @@ export const es: Dictionary = {
       "Si das permiso, el navegador marca los datos de Solo Compass como importantes y ya no los borrará por su cuenta. Solo desaparecerían si tú lo decides (por ejemplo, borrando los datos del sitio).",
     howTitle: "¿Cómo funciona?",
     how:
-      "Es un permiso estándar de los navegadores. Algunos, como Firefox, te mostrarán su propio aviso para que lo confirmes: es normal y viene de aquí. Otros, como Chrome o Safari, lo deciden solos sin preguntar, a menudo según si has instalado la app o la usas con frecuencia.",
+      "Es un permiso estándar de los navegadores. Algunos, como Firefox, te mostrarán su propio aviso para que lo confirmes: es normal, lo pide esta app. Otros, como Chrome o Safari, lo deciden solos sin preguntar, a menudo según si has instalado la app o la usas con frecuencia.",
     ownershipTitle: "Tus datos son siempre tuyos",
     ownership:
       "Nada sale de tu dispositivo: no hay cuentas ni servidor, y este permiso no envía nada a nadie. Puedes exportar una copia o borrarlo todo cuando quieras.",
@@ -53,14 +53,14 @@ export const es: Dictionary = {
     protecting: "Pidiendo permiso…",
     decline: "No, gracias",
     declineNote:
-      "Esta pregunta solo aparece una vez. Si eliges «No, gracias» no volveremos a mostrarla, pero podrás activar la protección cuando quieras desde Ajustes → Tus datos.",
+      "Si eliges «No, gracias» no volveremos a preguntarte, pero podrás activar la protección cuando quieras desde Ajustes → Tus datos.",
     howToRemoveTitle: "¿Cómo se quita?",
     howToRemove:
       "Por seguridad, una web puede pedir esta protección pero no quitarla: solo tú puedes hacerlo, desde los ajustes de tu navegador. Busca los permisos o los datos de este sitio y quita el almacenamiento persistente, o borra los datos del sitio (exporta antes una copia si no quieres perderlos).",
     done: "Entendido",
     grantedTitle: "Datos protegidos",
     granted: "Tu navegador ya no borrará los datos de Solo Compass por su cuenta.",
-    deniedTitle: "Tu navegador no lo ha concedido por ahora",
+    deniedTitle: "Tu navegador aún no lo ha concedido",
     denied:
       "Lo decide el propio navegador, a veces según cuánto uses la app o si la instalas en tu pantalla de inicio. Puedes volver a intentarlo cuando quieras desde Ajustes → Tus datos.",
     deniedInSettings:
@@ -69,21 +69,27 @@ export const es: Dictionary = {
     statusUnprotected: "Sin proteger: el navegador podría borrarlos si necesita espacio.",
     learnMore: "¿Qué significa esto?",
     backupStillMatters:
-      "La copia de seguridad sigue siendo tu mejor red de seguridad: también te cubre si pierdes o cambias de dispositivo.",
+      "Aun así, la copia de seguridad es tu mejor salvavidas: te cubre también si pierdes el dispositivo o lo cambias por otro.",
   },
   update: {
-    title: "Hay una versión nueva de Solo Compass",
-    description: "Actualiza para ver los últimos cambios. Todo lo que tienes guardado se mantiene.",
+    title: "Ha llegado una versión nueva de Solo Compass",
+    description: "Actualiza para ver los últimos cambios. Todo lo que tienes guardado sigue a salvo.",
     button: "Actualizar",
     updating: "Actualizando…",
     later: "Más tarde",
   },
   changelog: {
     button: "Crónica de cambios",
-    buttonHint: "Lo nuevo de cada versión, para los más curiosos.",
+    buttonHint: "Lo que ha cambiado en cada versión.",
     title: "Crónica de cambios",
     intro: "Las andanzas de Solo Compass, contadas junto a la hoguera.",
     latestBadge: "Lo último",
+  },
+  support: {
+    title: "Apoya el proyecto",
+    description:
+      "Solo Compass es gratis y lo seguirá siendo. Si te acompaña en tus partidas, puedes invitar a una ronda en la taberna.",
+    button: "Apoyar en Ko-fi",
   },
   themeSwitcher: {
     triggerLabel: "Cambiar tema visual",
@@ -91,7 +97,7 @@ export const es: Dictionary = {
   },
   theme: {
     fantasia: { name: "Fantasía", tagline: "Mazmorras, dragones y oro viejo." },
-    pulp: { name: "Pulp", tagline: "Titular de periódico y culto secreto." },
+    pulp: { name: "Pulp", tagline: "Prensa amarilla y cultos secretos." },
     moderno: { name: "Moderno", tagline: "Limpio, neutro, sin adornos." },
     scifi: { name: "Sci-fi", tagline: "Terminal, código y neón verde." },
     osr: { name: "OSR", tagline: "Tinta, hueso y sangre seca." },
@@ -130,12 +136,12 @@ export const es: Dictionary = {
       "Sustituirá todo el historial, diario y ajustes actuales de este dispositivo por los de la copia. No se puede deshacer.",
     importAllConfirmButton: "Restaurar",
     importAllError: "No se pudo leer el archivo. ¿Es una copia de seguridad de Solo Compass válida?",
-    importAllSuccessReloading: "Restaurado. Reiniciando…",
+    importAllSuccessReloading: "Copia restaurada. Recargando…",
   },
   oracleSwitcher: {
     triggerLabel: "Cambiar oráculo",
     dialogTitle: "Oráculo",
-    moreComingSoon: "Habrá más oráculos disponibles próximamente.",
+    moreComingSoon: "Pronto llegarán más oráculos.",
   },
   oracle: {
     title: "Oráculo",
@@ -143,11 +149,11 @@ export const es: Dictionary = {
     questionPlaceholder:
       "¿Consigue Lydia saltar la valla antes de que la alcancen?",
     rollButton: "Lanzar los dados",
-    emptyTitle: "Aún no has preguntado nada",
+    emptyTitle: "El oráculo espera tu pregunta",
     emptyDescription: "Escribe una pregunta y lanza los dados.",
     vs: "vs",
     contradictionExplanation:
-      "Alguna premisa de la pregunta es errónea. Revisa qué estás dando por sentado y replantea la pregunta.",
+      "La pregunta parte de una premisa falsa. Revisa qué estás dando por sentado y replantéala.",
     consequencePlaceholder: "¿Qué pasa? Se apunta en el diario.",
     consequenceSaved: "Apuntado en «{name}»",
     consequenceSavedNoAdventure: "Apuntado en el diario",
@@ -217,14 +223,14 @@ export const es: Dictionary = {
         "Algo valioso está a la vista, pero vigilado.",
         "El terreno se vuelve peligroso.",
         "Una criatura reacciona a tu presencia.",
-        "Las cosas se calman: un respiro breve.",
+        "Las aguas se calman: un breve respiro.",
         "Llega un mensaje o una señal desde lejos.",
         "Una facción mueve ficha.",
         "Se agota algo: luz, comida, tiempo o paciencia.",
         "Alguien cambia de bando.",
         "Un objeto revela un uso inesperado.",
         "Te confunden con otra persona.",
-        "Un accidente fortuito complica las cosas.",
+        "Un percance complica las cosas.",
         "Se descubre un secreto del lugar.",
         "Resurge una deuda o una promesa pendiente.",
         "Algo te sigue a distancia.",
@@ -232,10 +238,10 @@ export const es: Dictionary = {
         "Un golpe de suerte… que llama la atención.",
         "Una amenaza lejana se acerca.",
         "Alguien pide algo a cambio de su ayuda.",
-        "Una señal ominosa anticipa problemas.",
+        "Un mal presagio anuncia problemas.",
         "Lo que buscas está en otra parte.",
         "El plan funciona… demasiado bien.",
-        "Giro dramático: la escena cambia por completo.",
+        "Giro de guion: la escena da un vuelco.",
       ],
       accionPnj: [
         "Huye o se esconde.",
@@ -296,7 +302,7 @@ export const es: Dictionary = {
   history: {
     title: "Historial",
     subtitle: "Todas tus tiradas, con o sin aventura activa.",
-    swipeHint: "Desliza una tirada a la derecha para destacarla o a la izquierda para borrarla.",
+    swipeHint: "Desliza una tirada a la derecha para marcarla como favorita o a la izquierda para borrarla.",
     backToOracle: "Volver al oráculo",
     clearAll: "Borrar todo",
     filterAll: "Todo",
@@ -307,14 +313,14 @@ export const es: Dictionary = {
     loadErrorTitle: "No se pudo cargar el historial",
     emptyTitle: "Todavía no hay tiradas",
     emptyDescription:
-      "Consulta el oráculo o tira en una tabla y aparecerá aquí, guardado en este dispositivo.",
-    emptyFavoritesTitle: "Aún no has destacado ninguna tirada",
+      "Consulta el oráculo o tira en una tabla: cada tirada quedará aquí, guardada en este dispositivo.",
+    emptyFavoritesTitle: "Aún no tienes tiradas favoritas",
     emptyFavoritesDescription:
       "Toca la estrella de una tirada para marcarla como favorita.",
     emptyFilterTitle: "Sin resultados para este filtro",
     kindOracle: "Oráculo",
-    favoriteAdd: "Marcar como destacada",
-    favoriteRemove: "Quitar de destacadas",
+    favoriteAdd: "Marcar como favorita",
+    favoriteRemove: "Quitar de favoritas",
     deleteEntry: "Eliminar entrada",
     rollLabel: "Tirada: {rolls} → {total}",
     clearConfirmTitle: "¿Borrar todo el historial?",
@@ -356,7 +362,7 @@ export const es: Dictionary = {
       "Sin aventura activa: las tiradas no se registran en ningún diario.",
     activateHint:
       "Actívala para que las tiradas del oráculo y las tablas se registren aquí solas.",
-    activateNudge: "Activa una aventura en el diario para registrar esto solo",
+    activateNudge: "Activa una aventura en el diario para que esto se apunte solo",
     goToActiveAdventure: "Ir a la aventura activa",
     favoriteAdd: "Marcar aventura como favorita",
     favoriteRemove: "Quitar aventura de favoritas",
@@ -420,9 +426,9 @@ export const es: Dictionary = {
     lonelogCreditLine: "Registrado con {app} en notación {lonelog} (CC BY-SA 4.0).",
   },
   error: {
-    boundaryTitle: "Algo se ha roto en la app",
+    boundaryTitle: "¡Pifia! Algo se ha roto en la app",
     boundaryDescription:
-      "Ha ocurrido un error inesperado. Puedes recargar la página; tu historial guardado no se pierde.",
+      "Ha ocurrido un error inesperado. Puedes recargar la página; lo que tienes guardado no se pierde.",
     reload: "Recargar",
   },
   dateLocale: "es-ES",

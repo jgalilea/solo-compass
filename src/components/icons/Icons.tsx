@@ -23,6 +23,7 @@ import {
   EllipsisHorizontalIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
+  HeartIcon,
   InformationCircleIcon,
   LanguageIcon,
   ListBulletIcon,
@@ -144,6 +145,9 @@ export function IconCheckCircle(props: IconProps) {
 }
 export function IconInfo(props: IconProps) {
   return <HeroIcon icon={InformationCircleIcon} {...props} />;
+}
+export function IconHeart(props: IconProps) {
+  return <HeroIcon icon={HeartIcon} {...props} />;
 }
 export function IconExternalLink(props: IconProps) {
   return <HeroIcon icon={ArrowTopRightOnSquareIcon} {...props} />;
