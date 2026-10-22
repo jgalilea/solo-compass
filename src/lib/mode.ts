@@ -24,12 +24,6 @@ export function systemPrefersDark(): boolean {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-/** "auto" se resuelve contra la preferencia del sistema en cada momento. */
-export function resolveMode(mode: ThemeMode): "light" | "dark" {
-  if (mode === "auto") return systemPrefersDark() ? "dark" : "light";
-  return mode;
-}
-
 export function loadMode(): ThemeMode {
   if (typeof window === "undefined") return DEFAULT_MODE;
   try {

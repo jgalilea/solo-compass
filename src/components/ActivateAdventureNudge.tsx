@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { IconChevronRight, IconFeather } from "./icons/Icons";
+import { IconChevronRight, IconJournal } from "./icons/Icons";
 
 /**
  * Aviso discreto para Oráculo y Tablas: sin aventura activa, nada
@@ -23,7 +23,7 @@ export function ActivateAdventureNudge() {
       to="/diario"
       className="flex items-center justify-center gap-1.5 text-center text-xs text-parchment-dim/70 transition hover:text-gold"
     >
-      <IconFeather size={12} className="shrink-0" />
+      <IconJournal size={12} className="shrink-0" />
       {t.journal.activateNudge}
       <IconChevronRight size={12} className="shrink-0" />
     </Link>

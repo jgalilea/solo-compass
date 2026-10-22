@@ -27,10 +27,11 @@ export function useHistory(): UseHistoryResult {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Lectura de IndexedDB. No toca "loading" por sí misma: el estado
+  // inicial ya es "loading", y al reintentar lo pone retry() (un
+  // evento), así el efecto de montaje no hace setState síncrono.
   const load = useCallback(() => {
     let cancelled = false;
-    setStatus("loading");
-    setError(null);
     // IndexedDB es asíncrono de verdad (a diferencia del localStorage
     // de antes), así que ya no hace falta simular el estado de carga
     // con un setTimeout: la propia lectura tarda lo suyo.
@@ -53,6 +54,12 @@ export function useHistory(): UseHistoryResult {
   }, [t]);
 
   useEffect(() => load(), [load]);
+
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setError(null);
+    load();
+  }, [load]);
 
   // Forma funcional de setState (parte siempre del estado más
   // reciente, no de "entries" capturado por closure): si addEntry se
@@ -124,6 +131,6 @@ export function useHistory(): UseHistoryResult {
     removeEntry,
     toggleFavorite,
     clear,
-    retry: load,
+    retry,
   };
 }

@@ -1,8 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { IconBook, IconCompass, IconDice, IconFeather, IconScroll } from "./icons/Icons";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-import { AboutDialog } from "./AboutDialog";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+import { IconCompass, IconJournal, IconOracle, IconTable } from "./icons/Icons";
+import { SettingsDialog } from "./SettingsDialog";
+import { StorageProtectionPrompt } from "./StorageProtection";
 import { ActiveAdventureIndicator } from "./ActiveAdventureIndicator";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
@@ -12,12 +11,20 @@ export function Layout() {
   const { activeAdventureId } = useJournalContext();
   const location = useLocation();
 
+  // Tres secciones: el historial completo ya no ocupa pestaña propia —
+  // se llega desde "Últimas tiradas" en el oráculo (y cuenta como parte
+  // de esa sección a efectos de resaltado).
   const tabs = [
-    { to: "/", label: t.nav.oracle, Icon: IconDice, isActive: location.pathname === "/" },
+    {
+      to: "/",
+      label: t.nav.oracle,
+      Icon: IconOracle,
+      isActive: location.pathname === "/" || location.pathname.startsWith("/historial"),
+    },
     {
       to: "/tablas",
       label: t.nav.tables,
-      Icon: IconBook,
+      Icon: IconTable,
       isActive: location.pathname.startsWith("/tablas"),
     },
     {
@@ -28,43 +35,59 @@ export function Layout() {
       // activo aunque se navegue a otra aventura desde la lista.
       to: activeAdventureId ? `/diario/${activeAdventureId}` : "/diario",
       label: t.nav.journal,
-      Icon: IconFeather,
+      Icon: IconJournal,
       isActive: location.pathname.startsWith("/diario"),
-    },
-    {
-      to: "/historial",
-      label: t.nav.history,
-      Icon: IconScroll,
-      isActive: location.pathname.startsWith("/historial"),
     },
   ];
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-ink-border/70 px-4 py-3.5">
-        <div className="mx-auto flex max-w-xl items-center justify-between text-parchment">
+      {/* En escritorio (lg+) la navegación sube a la cabecera, que se
+          queda fija arriba; la barra inferior es solo para móvil/tablet,
+          donde queda al alcance del pulgar. Fondo opaco y sin
+          backdrop-blur a propósito: un backdrop-filter convierte la
+          cabecera en el bloque contenedor de sus hijos `fixed`, y los
+          diálogos que viven dentro (Acerca de, idioma, tema) quedarían
+          recortados a su altura. */}
+      <header className="border-b border-ink-border/70 px-4 py-3.5 lg:sticky lg:top-0 lg:z-40 lg:bg-ink-950 lg:py-2.5">
+        <div className="mx-auto flex max-w-xl items-center justify-between gap-6 text-parchment sm:px-4 md:max-w-3xl lg:max-w-6xl">
           <div className="flex items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
             <span className="font-display text-xl tracking-wide">
               {t.header.appName}
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <AboutDialog />
-            <LanguageSwitcher />
-            <ThemeSwitcher />
-          </div>
+          <nav className="hidden gap-1 lg:flex">
+            {tabs.map(({ to, label, Icon, isActive }) => (
+              <Link
+                key={label}
+                to={to}
+                aria-current={isActive ? "page" : undefined}
+                className={[
+                  "flex items-center gap-2 rounded-full px-4 py-2 text-sm transition",
+                  isActive
+                    ? "bg-gold font-medium text-ink-950"
+                    : "text-parchment-dim hover:bg-ink-800/60 hover:text-parchment",
+                ].join(" ")}
+              >
+                <Icon size={17} />
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <SettingsDialog />
         </div>
       </header>
 
       <ActiveAdventureIndicator />
+      <StorageProtectionPrompt />
 
       <main className="flex flex-1 flex-col">
         <Outlet />
       </main>
 
-      <nav className="sticky bottom-0 z-40 border-t border-ink-border bg-ink-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-xl">
+      <nav className="sticky bottom-0 z-40 border-t lg:hidden border-ink-border bg-ink-950/90 backdrop-blur">
+        <div className="mx-auto flex max-w-xl md:max-w-3xl">
           {tabs.map(({ to, label, Icon, isActive }) => (
             <Link
               key={label}

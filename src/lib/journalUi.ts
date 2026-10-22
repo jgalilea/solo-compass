@@ -1,4 +1,5 @@
 import type { JournalEntry, JournalLineKind } from "./lonelog";
+import type { Answer } from "./oracle";
 
 /**
  * Constantes de estilo y utilidades compartidas por JournalListView y
@@ -70,4 +71,75 @@ export function groupBySession(sortedEntries: JournalEntry[]): EntryGroup[] {
   }
   groups.push(current);
   return groups.filter((g) => g.sessionEntry !== null || g.items.length > 0);
+}
+
+/**
+ * Agrupa las entradas de una sesión en bloques para pintarlas: una
+ * pregunta, la tirada que la responde y las consecuencias que vienen
+ * justo detrás van juntas; el resto (notas, acciones…) va suelto.
+ * Se agrupa por posición (no solo por linkedRollId) para que también
+ * funcione con diarios importados, que no traen enlaces.
+ */
+export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
+  const blocks: JournalEntry[][] = [];
+  let open: JournalEntry[] | null = null;
+
+  for (const entry of items) {
+    const hasRoll = open?.some((e) => e.kind === "roll") ?? false;
+    const question = open?.find((e) => e.kind === "question");
+
+    if (entry.kind === "question") {
+      open = [entry];
+      blocks.push(open);
+    } else if (
+      entry.kind === "roll" &&
+      open &&
+      question &&
+      !hasRoll &&
+      question.linkedRollId === entry.linkedRollId
+    ) {
+      open.push(entry);
+    } else if (entry.kind === "roll") {
+      open = [entry];
+      blocks.push(open);
+    } else if (entry.kind === "consequence" && open) {
+      open.push(entry);
+    } else {
+      open = null;
+      blocks.push([entry]);
+    }
+  }
+  return blocks;
+}
+
+// Palabras de respuesta del oráculo en cualquiera de los idiomas de
+// la app, para reconocerla en tiradas sin enlace al historial (p. ej.
+// importadas, o si se borró el historial).
+// (Sin \b: no reconoce el final de palabra tras una letra acentuada
+// como la "í" de "Sí"; se usa un lookahead Unicode en su lugar.)
+const ANSWER_PATTERNS: [Answer, RegExp][] = [
+  ["contradiccion", /^(contradicci[oó]n|contradiction)(?!\p{L})/iu],
+  ["si", /^(s[ií]|yes)(?!\p{L})/iu],
+  ["no", /^no(?!\p{L})/iu],
+];
+
+/**
+ * Separa el texto de una tirada ("Recluse — blanco 3 / negro 5 -> No")
+ * en el detalle de los dados y el resultado. Si el detalle tiene la
+ * forma de una tirada de oráculo, intenta reconocer la respuesta.
+ */
+export function splitRollText(text: string): {
+  detail: string;
+  result: string | null;
+  answer: Answer | undefined;
+} {
+  const i = text.lastIndexOf("->");
+  if (i < 0) return { detail: text, result: null, answer: undefined };
+  const detail = text.slice(0, i).trim();
+  const result = text.slice(i + 2).trim();
+  const looksLikeOracle = /—.*\d+\s*\/.*\d+/.test(detail);
+  const answer = looksLikeOracle
+    ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
+    : undefined;
+  return { detail, result, answer };
 }

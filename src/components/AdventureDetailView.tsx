@@ -1,23 +1,23 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown } from "../lib/lonelog";
+import { ActionMenu } from "./ActionMenu";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { DiceRoller } from "./DiceRoller";
+import { JournalComposer } from "./JournalComposer";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
-import { EntryRow, SessionGroupRow } from "./journalShared";
+import { EntryList, SessionGroupRow, type EntryActions } from "./journalShared";
 import {
-  COMPOSER_KINDS,
   downloadTextFile,
   groupBySession,
   INPUT_CLASS,
   PRIMARY_BUTTON_CLASS,
   sanitizeFilename,
   SECONDARY_BUTTON_CLASS,
-  type ComposerKind,
 } from "../lib/journalUi";
 import {
   IconArchive,
@@ -26,7 +26,7 @@ import {
   IconCheck,
   IconChevronRight,
   IconDownload,
-  IconFeather,
+  IconJournal,
   IconPencil,
   IconPlay,
   IconPlus,
@@ -52,6 +52,7 @@ export function AdventureDetailView() {
     removeEntry,
     editEntry,
   } = useJournalContext();
+  const { entries: historyEntries } = useHistoryContext();
 
   const adventure = adventures.find((c) => c.id === adventureId) ?? null;
   const isActive = adventureId === activeAdventureId;
@@ -105,33 +106,41 @@ export function AdventureDetailView() {
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
 
-  const [composerExpanded, setComposerExpanded] = useState(true);
-  const [composerKind, setComposerKind] = useState<ComposerKind>("note");
-  const [composerText, setComposerText] = useState("");
   const [sessionTitle, setSessionTitle] = useState("");
   const [showNewSession, setShowNewSession] = useState(false);
 
-  const kindLabels: Record<ComposerKind, string> = {
-    action: t.journal.kindAction,
-    roll: t.journal.kindRoll,
-    consequence: t.journal.kindConsequence,
-    note: t.journal.kindNote,
+  // Respuesta del oráculo de cada tirada enlazada, para pintarla con
+  // su color en el diario (Sí/No/Contradicción).
+  const answersByRollId = useMemo(() => {
+    const map = new Map<string, (typeof historyEntries)[number] & { kind: "oraculo" }>();
+    for (const h of historyEntries) if (h.kind === "oraculo") map.set(h.id, h);
+    return map;
+  }, [historyEntries]);
+
+  const entryActions: EntryActions = {
+    onDelete: removeEntry,
+    onEdit: editEntry,
+    editingId: editingEntryId,
+    onStartEdit: setEditingEntryId,
+    onStopEdit: () => setEditingEntryId(null),
+    answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
   };
 
-  // Una línea de contexto bajo los botones para que quede claro qué
-  // es cada tipo sin añadir pasos — sobre todo "Tirada", que se
-  // confunde fácil con las tiradas del oráculo/tablas (esas ya se
-  // registran solas; esta es para las de tu propio sistema).
-  const kindHints: Record<ComposerKind, string> = {
-    action: t.journal.composerHintAction,
-    roll: t.journal.composerHintRoll,
-    consequence: t.journal.composerHintConsequence,
-    note: t.journal.composerHintNote,
-  };
+  // Al apuntar algo desde el panel de abajo, se baja hasta ello para
+  // que se vea el resultado (si no, en móvil queda tapado por el panel).
+  // Es un ref (no estado): solo marca que la próxima entrada nueva
+  // viene del panel, sin provocar un render extra.
+  const listEndRef = useRef<HTMLDivElement>(null);
+  const scrollPendingRef = useRef(false);
+  useEffect(() => {
+    if (!scrollPendingRef.current) return;
+    scrollPendingRef.current = false;
+    listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [adventureEntries.length]);
 
   if (status === "loading") {
     return (
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-8 sm:py-12">
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-8 sm:py-12 md:max-w-3xl">
         <LoadingState label={t.journal.loading} />
       </div>
     );
@@ -142,9 +151,9 @@ export function AdventureDetailView() {
     // abierta en otra pestaña) — de vuelta a la lista en vez de
     // enseñar una pantalla rota.
     return (
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-8 text-center sm:py-12">
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-8 text-center sm:py-12 md:max-w-3xl">
         <EmptyState
-          icon={<IconFeather size={24} />}
+          icon={<IconJournal size={24} />}
           title={t.journal.noAdventuresTitle}
           action={
             <Link to="/diario" className={PRIMARY_BUTTON_CLASS}>
@@ -164,19 +173,6 @@ export function AdventureDetailView() {
   function commitRename() {
     if (renameValue.trim()) renameAdventure(adventure!.id, renameValue);
     setRenaming(false);
-  }
-
-  function handleAddEntry() {
-    if (!composerText.trim()) return;
-    addEntry(adventure!.id, composerKind, composerText.trim());
-    setComposerText("");
-  }
-
-  // Encadena tiradas del roller genérico al texto ya escrito (p. ej.
-  // "Ataque al orco" + tocar d20 -> "Ataque al orco d20 -> 14"), en
-  // vez de sustituirlo, para poder ir añadiendo contexto y dados.
-  function handleDiceRoll(text: string) {
-    setComposerText((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
   }
 
   function handleAddSession() {
@@ -206,7 +202,7 @@ export function AdventureDetailView() {
   const isPaused = !isArchived && !isActive;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pt-8 sm:py-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pt-8 sm:py-12 md:max-w-3xl lg:pb-0">
       <div className="flex items-center gap-1">
         <Link
           to="/diario"
@@ -221,7 +217,10 @@ export function AdventureDetailView() {
               autoFocus
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && commitRename()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitRename();
+                if (e.key === "Escape") setRenaming(false);
+              }}
               placeholder={t.journal.renameAdventurePlaceholder}
               className={INPUT_CLASS}
             />
@@ -240,40 +239,38 @@ export function AdventureDetailView() {
               aria-pressed={adventure.favorite}
               aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
               className={[
-                "-m-2 shrink-0 p-2 transition",
-                adventure.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+                "-m-1 shrink-0 p-1.5 transition",
+                adventure.favorite ? "text-gold" : "text-parchment-dim/50 hover:text-gold",
               ].join(" ")}
             >
-              <IconStar size={19} filled={adventure.favorite} />
+              <IconStar size={20} filled={adventure.favorite} />
             </button>
-            <button
-              type="button"
-              onClick={startRename}
-              aria-label={t.journal.renameAdventure}
-              className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-gold"
-            >
-              <IconPencil size={19} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleting(true)}
-              aria-label={t.journal.deleteAdventure}
-              title={t.journal.deleteAdventure}
-              className="-m-2 shrink-0 p-2 text-parchment-dim/60 transition hover:text-no"
-            >
-              <IconTrash size={19} />
-            </button>
+            {/* Acciones poco frecuentes agrupadas, para que la cabecera
+                no compita con lo que se usa al jugar. */}
+            <ActionMenu
+              label={t.journal.moreActions}
+              items={[
+                { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
+                { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
+                isArchived
+                  ? {
+                      label: t.journal.unarchiveAdventure,
+                      Icon: IconArchiveRestore,
+                      onSelect: () => setAdventureStatus(adventure.id, "ongoing"),
+                    }
+                  : {
+                      label: t.journal.archiveAdventure,
+                      Icon: IconArchive,
+                      onSelect: () => setAdventureStatus(adventure.id, "archived"),
+                    },
+                { label: t.journal.deleteAdventure, Icon: IconTrash, onSelect: () => setDeleting(true), danger: true },
+              ]}
+            />
           </>
         )}
       </div>
 
-      {(isPaused || isArchived) && (
-        <span className="-mt-3 w-fit rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-          {isArchived ? t.journal.statusArchived : t.journal.statusPaused}
-        </span>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <button
           type="button"
           onClick={() => setActiveAdventureId(isActive ? null : adventure.id)}
@@ -281,7 +278,7 @@ export function AdventureDetailView() {
           aria-label={isActive ? t.journal.unsetActive : t.journal.setActive}
           title={isActive ? t.journal.unsetActive : t.journal.setActive}
           className={[
-            "flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition",
+            "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition",
             isActive
               ? "border-gold/50 bg-gold/10 text-gold"
               : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
@@ -290,40 +287,21 @@ export function AdventureDetailView() {
           {isActive ? <IconCheck size={16} /> : <IconPlay size={16} />}
           {isActive ? t.journal.activeLabel : t.journal.setActive}
         </button>
-
-        <button
-          type="button"
-          onClick={() => setAdventureStatus(adventure.id, isArchived ? "ongoing" : "archived")}
-          aria-label={isArchived ? t.journal.unarchiveAdventure : t.journal.archiveAdventure}
-          title={isArchived ? t.journal.unarchiveAdventure : t.journal.archiveAdventure}
-          className="rounded-xl border border-ink-border p-2.5 text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-        >
-          {isArchived ? <IconArchiveRestore size={16} /> : <IconArchive size={16} />}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleExport}
-          className="ml-auto flex items-center gap-2 rounded-xl border border-ink-border px-3.5 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-        >
-          <IconDownload size={15} />
-          {t.journal.exportButton}
-        </button>
-      </div>
-
-      {isActive ? (
-        <p className="-mt-2 text-sm text-gold/80">
-          {interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
+        {(isPaused || isArchived) && (
+          <span className="rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            {isArchived ? t.journal.statusArchived : t.journal.statusPaused}
+          </span>
+        )}
+        <p className={`min-w-0 basis-full text-sm sm:basis-auto sm:flex-1 ${isActive ? "text-gold/80" : "text-parchment-dim/70"}`}>
+          {isActive
+            ? interpolate(t.journal.activeAdventureNote, { name: adventure.name })
+            : !isArchived && t.journal.activateHint}
         </p>
-      ) : (
-        !isArchived && (
-          <p className="-mt-2 text-sm text-parchment-dim/70">{t.journal.activateHint}</p>
-        )
-      )}
+      </div>
 
       {adventureEntries.length === 0 ? (
         <EmptyState
-          icon={<IconFeather size={20} />}
+          icon={<IconJournal size={22} />}
           title={t.journal.noEntriesTitle}
           description={t.journal.noEntriesDescription}
           compact
@@ -350,7 +328,7 @@ export function AdventureDetailView() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
+                  <div className="group flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
                     <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
                       {currentGroup.sessionEntry.text}
                     </span>
@@ -364,7 +342,7 @@ export function AdventureDetailView() {
                         setEditingEntryId(currentGroup.sessionEntry!.id);
                       }}
                       aria-label={t.journal.editEntry}
-                      className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-gold"
+                      className="-m-1 shrink-0 p-1.5 text-parchment-dim/50 transition hover:text-gold"
                     >
                       <IconPencil size={15} />
                     </button>
@@ -372,48 +350,23 @@ export function AdventureDetailView() {
                       type="button"
                       onClick={() => removeEntry(currentGroup.sessionEntry!.id)}
                       aria-label={t.journal.deleteEntry}
-                      className="-m-2 shrink-0 p-2 text-parchment-dim/40 transition hover:text-no"
+                      className="-m-1 shrink-0 p-1.5 text-parchment-dim/50 transition hover:text-no"
                     >
-                      <IconTrash size={16} />
+                      <IconTrash size={15} />
                     </button>
                   </div>
                 )}
                 <ul className="flex flex-col gap-2 pl-1">
-                  {currentGroup.items.map((entry) => (
-                    <EntryRow
-                      key={entry.id}
-                      entry={entry}
-                      onDelete={removeEntry}
-                      onEdit={editEntry}
-                      deleteLabel={t.journal.deleteEntry}
-                      editLabel={t.journal.editEntry}
-                      saveLabel={t.common.save}
-                      editingId={editingEntryId}
-                      onStartEdit={setEditingEntryId}
-                      onStopEdit={() => setEditingEntryId(null)}
-                    />
-                  ))}
+                  <EntryList items={currentGroup.items} actions={entryActions} />
                 </ul>
               </li>
             ) : (
-              currentGroup.items.map((entry) => (
-                <EntryRow
-                  key={entry.id}
-                  entry={entry}
-                  onDelete={removeEntry}
-                  onEdit={editEntry}
-                  deleteLabel={t.journal.deleteEntry}
-                  editLabel={t.journal.editEntry}
-                  saveLabel={t.common.save}
-                  editingId={editingEntryId}
-                  onStartEdit={setEditingEntryId}
-                  onStopEdit={() => setEditingEntryId(null)}
-                />
-              ))
+              <EntryList items={currentGroup.items} actions={entryActions} />
             )}
           </ul>
         )
       )}
+      <div ref={listEndRef} className="-mt-5 scroll-mb-[15rem] lg:scroll-mb-[13rem]" />
 
       {showNewSession ? (
         <div className="flex items-center gap-2">
@@ -421,7 +374,10 @@ export function AdventureDetailView() {
             autoFocus
             value={sessionTitle}
             onChange={(e) => setSessionTitle(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddSession()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAddSession();
+              if (e.key === "Escape") setShowNewSession(false);
+            }}
             placeholder={t.journal.newSessionPlaceholder}
             className={INPUT_CLASS}
           />
@@ -465,32 +421,12 @@ export function AdventureDetailView() {
                     group={group}
                     expanded={isSessionExpanded(group.sessionEntry.id)}
                     onToggle={() => toggleSession(group.sessionEntry!.id)}
-                    onDeleteEntry={removeEntry}
-                    onEditEntry={editEntry}
-                    deleteLabel={t.journal.deleteEntry}
-                    editLabel={t.journal.editEntry}
-                    saveLabel={t.common.save}
                     toggleLabel={t.journal.toggleSession}
-                    editingId={editingEntryId}
-                    onStartEdit={setEditingEntryId}
-                    onStopEdit={() => setEditingEntryId(null)}
+                    actions={entryActions}
                   />
                 ) : (
                   <Fragment key={`prologue-${i}`}>
-                    {group.items.map((entry) => (
-                      <EntryRow
-                        key={entry.id}
-                        entry={entry}
-                        onDelete={removeEntry}
-                        onEdit={editEntry}
-                        deleteLabel={t.journal.deleteEntry}
-                        editLabel={t.journal.editEntry}
-                        saveLabel={t.common.save}
-                        editingId={editingEntryId}
-                        onStartEdit={setEditingEntryId}
-                        onStopEdit={() => setEditingEntryId(null)}
-                      />
-                    ))}
+                    <EntryList items={group.items} actions={entryActions} />
                   </Fragment>
                 ),
               )}
@@ -499,66 +435,9 @@ export function AdventureDetailView() {
         </section>
       )}
 
-      <div className="mt-auto sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 rounded-t-2xl border-t border-ink-border bg-ink-900/95 px-4 pt-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border">
-        {composerExpanded ? (
-          <div className="flex flex-col gap-3 pb-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-wrap gap-1.5">
-                {COMPOSER_KINDS.map((kind) => (
-                  <button
-                    key={kind}
-                    type="button"
-                    onClick={() => setComposerKind(kind)}
-                    className={[
-                      "rounded-lg px-3 py-2 text-sm transition",
-                      composerKind === kind
-                        ? "bg-gold text-ink-950 font-medium"
-                        : "text-parchment-dim hover:text-parchment",
-                    ].join(" ")}
-                  >
-                    {kindLabels[kind]}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setComposerExpanded(false)}
-                aria-label={t.journal.composerHide}
-                className="-m-2 shrink-0 p-2 text-parchment-dim/50 transition hover:text-parchment"
-              >
-                <IconChevronRight size={16} className="rotate-90" />
-              </button>
-            </div>
-            <p className="-mt-1 text-xs text-parchment-dim/70">{kindHints[composerKind]}</p>
-            {composerKind === "roll" && (
-              <DiceRoller onRoll={handleDiceRoll} ariaLabel={t.journal.diceRollerLabel} />
-            )}
-            <div className="flex items-center gap-2">
-              <input
-                value={composerText}
-                onChange={(e) => setComposerText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddEntry()}
-                placeholder={t.journal.addPlaceholder}
-                className={`${INPUT_CLASS} bg-ink-800/70`}
-              />
-              <button type="button" onClick={handleAddEntry} className={PRIMARY_BUTTON_CLASS}>
-                {t.journal.addButton}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setComposerExpanded(true)}
-            aria-label={t.journal.composerShow}
-            className="flex w-full items-center justify-center gap-2 pb-3 text-sm text-parchment-dim transition hover:text-gold"
-          >
-            <IconPlus size={15} />
-            {t.journal.composerCollapsedLabel}
-            <IconChevronRight size={14} className="-rotate-90" />
-          </button>
-        )}
-      </div>
+      <JournalComposer adventureId={adventure.id} onLogged={() => {
+          scrollPendingRef.current = true;
+        }} />
 
       {deleting && (
         <ConfirmDialog
