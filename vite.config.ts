@@ -13,7 +13,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",
+      // "prompt": la versión nueva espera hasta que la persona pulsa
+      // "Actualizar" en el aviso de la app (UpdatePrompt), en vez de
+      // recargar sola y arriesgarse a perder algo a medio escribir.
+      // El registro lo hace UpdatePrompt (virtual:pwa-register/react),
+      // que además busca actualizaciones al volver a la app: instalada,
+      // casi nunca se navega de nuevo, que es cuando el navegador mira.
+      registerType: "prompt",
+      injectRegister: false,
       includeAssets: ["favicon.svg"],
       manifest: {
         id: base,

@@ -128,6 +128,9 @@ export function StorageProtectionPrompt() {
           <>
             <p className="text-sm text-parchment/90">{t.storage.promptIntro}</p>
             <StorageExplanation />
+            <p className="rounded-xl border border-ink-border bg-ink-900/60 p-3 text-xs text-parchment-dim">
+              {t.storage.declineNote}
+            </p>
           </>
         )}
       </div>
@@ -148,7 +151,7 @@ export function StorageProtectionPrompt() {
               onClick={close}
               className="rounded-xl px-4 py-2.5 text-sm text-parchment-dim transition hover:text-parchment"
             >
-              {t.storage.notNow}
+              {t.storage.decline}
             </button>
             <button
               type="button"
@@ -198,7 +201,7 @@ export function StorageProtectionSettings() {
         </p>
       </div>
 
-      {!isProtected && !result && (
+      {!isProtected && (
         <button
           type="button"
           onClick={protect}
@@ -220,7 +223,17 @@ export function StorageProtectionSettings() {
         <IconChevronRight size={14} className={`transition-transform ${expanded ? "rotate-90" : ""}`} />
         {t.storage.learnMore}
       </button>
-      {expanded && <StorageExplanation />}
+      {expanded && (
+        <>
+          <StorageExplanation />
+          {isProtected && (
+            <div>
+              <p className="text-sm font-medium text-parchment">{t.storage.howToRemoveTitle}</p>
+              <p className="mt-0.5 text-sm text-parchment-dim">{t.storage.howToRemove}</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

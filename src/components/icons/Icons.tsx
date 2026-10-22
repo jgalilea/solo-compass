@@ -211,3 +211,7 @@ export function IconShieldAlert(props: IconProps) {
 export function IconChronicle(props: IconProps) {
   return <HeroIcon icon={NewspaperIcon} {...props} />;
 }
+
+export function IconSparkles(props: IconProps) {
+  return <HeroIcon icon={SparklesIcon} {...props} />;
+}
