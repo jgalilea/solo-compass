@@ -39,6 +39,45 @@ export interface Dictionary {
     dialogTitle: string;
     names: Record<Locale, string>;
   };
+  settings: {
+    triggerLabel: string;
+    title: string;
+    appearanceHeading: string;
+    languageHeading: string;
+    aboutHeading: string;
+  };
+  storage: {
+    sectionTitle: string;
+    promptTitle: string;
+    promptIntro: string;
+    whatTitle: string;
+    what: string;
+    benefitTitle: string;
+    benefit: string;
+    howTitle: string;
+    how: string;
+    ownershipTitle: string;
+    ownership: string;
+    protectButton: string;
+    protecting: string;
+    notNow: string;
+    done: string;
+    grantedTitle: string;
+    granted: string;
+    deniedTitle: string;
+    denied: string;
+    statusProtected: string;
+    statusUnprotected: string;
+    learnMore: string;
+    backupStillMatters: string;
+  };
+  changelog: {
+    button: string;
+    buttonHint: string;
+    title: string;
+    intro: string;
+    latestBadge: string;
+  };
   themeSwitcher: {
     triggerLabel: string;
     dialogTitle: string;
@@ -63,6 +102,8 @@ export interface Dictionary {
     legendRoll: string;
     legendConsequence: string;
     legendNote: string;
+    legendSession: string;
+    legendIntro: string;
     dataSectionTitle: string;
     dataSectionDescription: string;
     exportAllButton: string;
@@ -89,6 +130,11 @@ export interface Dictionary {
     vs: string;
     contradictionExplanation: string;
     consequencePlaceholder: string;
+    consequenceSaved: string;
+    consequenceSavedNoAdventure: string;
+    enterHint: string;
+    recentHeading: string;
+    viewAllHistory: string;
   };
   likelihood: Record<Likelihood, string>;
   likelihoodGroupLabel: string;
@@ -118,7 +164,13 @@ export interface Dictionary {
     allResultsDialogLabel: string;
     genericGame: string;
     noEntryFallback: string;
-    placeholderEntry: string;
+    resultPanelHeading: string;
+    resultPanelEmpty: string;
+    entries: {
+      eventoAleatorio: string[];
+      accionPnj: string[];
+      descriptorEscena: string[];
+    };
     names: {
       eventoAleatorio: string;
       accionPnj: string;
@@ -133,6 +185,8 @@ export interface Dictionary {
   history: {
     title: string;
     subtitle: string;
+    swipeHint: string;
+    backToOracle: string;
     clearAll: string;
     filterAll: string;
     filterOracle: string;
@@ -216,6 +270,13 @@ export interface Dictionary {
     kindRoll: string;
     kindConsequence: string;
     kindNote: string;
+    kindSession: string;
+    toolOracle: string;
+    toolTable: string;
+    toolOracleTitle: string;
+    toolTableTitle: string;
+    toolTableHint: string;
+    moreActions: string;
     composerHintAction: string;
     composerHintRoll: string;
     composerHintConsequence: string;

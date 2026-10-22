@@ -55,10 +55,11 @@ export function useJournal(): UseJournalResult {
     () => loadActiveAdventureId(),
   );
 
+  // Lectura de IndexedDB. No toca "loading" por sí misma: el estado
+  // inicial ya es "loading", y al reintentar lo pone retry() (un
+  // evento), así el efecto de montaje no hace setState síncrono.
   const load = useCallback(() => {
     let cancelled = false;
-    setStatus("loading");
-    setError(null);
     Promise.all([loadAdventures(t), loadJournalEntries(t)])
       .then(([loadedAdventures, loadedEntries]) => {
         if (cancelled) return;
@@ -79,6 +80,12 @@ export function useJournal(): UseJournalResult {
   }, [t]);
 
   useEffect(() => load(), [load]);
+
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setError(null);
+    load();
+  }, [load]);
 
   // updateAdventures/updateEntries siempre parten del estado más
   // reciente (forma funcional de setState), no de "adventures"/
@@ -261,6 +268,6 @@ export function useJournal(): UseJournalResult {
     removeEntry,
     editEntry,
     importAdventure,
-    retry: load,
+    retry,
   };
 }

@@ -1,5 +1,5 @@
 import { Component, type ContextType, type ErrorInfo, type ReactNode } from "react";
-import { IconAlertOctagon } from "./icons/Icons";
+import { IconAlertCircle } from "./icons/Icons";
 import { LocaleContext } from "../hooks/localeContextInstance";
 import { DICTIONARIES, DEFAULT_LOCALE } from "../lib/i18n";
 
@@ -33,7 +33,7 @@ export class AppErrorBoundary extends Component<Props, State> {
       const t = this.context?.t ?? DICTIONARIES[DEFAULT_LOCALE];
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-          <IconAlertOctagon size={32} className="text-no" />
+          <IconAlertCircle size={32} className="text-no" />
           <h1 className="font-display text-xl text-parchment">
             {t.error.boundaryTitle}
           </h1>

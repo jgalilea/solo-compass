@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
-import { IconScroll, IconTrash } from "./icons/Icons";
+import { IconArrowLeft, IconHistory, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
 import type { Dictionary } from "../lib/i18n";
 
@@ -44,19 +45,34 @@ export function HistoryView() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-            {t.history.title}
-          </h1>
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-6xl">
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1">
+            <Link
+              to="/"
+              aria-label={t.history.backToOracle}
+              title={t.history.backToOracle}
+              className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
+            >
+              <IconArrowLeft size={20} />
+            </Link>
+            <h1 className="font-display text-3xl text-parchment sm:text-4xl">
+              {t.history.title}
+            </h1>
+          </div>
           <p className="mt-1 text-sm text-parchment-dim">{t.history.subtitle}</p>
+          {/* Los gestos solo existen en pantallas táctiles; con ratón ya
+              están los iconos de estrella y papelera de cada tirada. */}
+          <p className="mt-1 hidden text-xs text-parchment-dim/70 pointer-coarse:block">
+            {t.history.swipeHint}
+          </p>
         </div>
         {entries.length > 0 && (
           <button
             type="button"
             onClick={() => setConfirmingClear(true)}
-            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
+            className="mt-1.5 flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
           >
             <IconTrash size={14} />
             {t.history.clearAll}
@@ -65,7 +81,7 @@ export function HistoryView() {
       </header>
 
       {status === "ready" && entries.length > 0 && (
-        <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs">
+        <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl">
           {filters.map(([key, label]) => (
             <button
               key={key}
@@ -96,7 +112,7 @@ export function HistoryView() {
 
       {status === "ready" && entries.length === 0 && (
         <EmptyState
-          icon={<IconScroll size={28} />}
+          icon={<IconHistory size={28} />}
           title={t.history.emptyTitle}
           description={t.history.emptyDescription}
         />
@@ -116,7 +132,7 @@ export function HistoryView() {
       )}
 
       {status === "ready" && filtered.length > 0 && (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((entry) => (
             <li key={entry.id}>
               <HistoryEntryCard

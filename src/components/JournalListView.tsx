@@ -10,7 +10,7 @@ import {
   IconCheck,
   IconChevronRight,
   IconClose,
-  IconFeather,
+  IconJournal,
   IconGripVertical,
   IconPlus,
   IconSearch,
@@ -47,27 +47,17 @@ export function JournalListView() {
   const [archivedExpanded, setArchivedExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Orden de visualización manual (drag and drop), solo para
-  // aventuras no archivadas. Se sincroniza con `adventures` pero
-  // preserva el orden manual — los ids nuevos se añaden al principio.
-  const [order, setOrder] = useState<string[]>(() =>
-    adventures.filter((c) => c.status !== "archived").map((c) => c.id),
+  // Orden de visualización (solo aventuras no archivadas): sale
+  // directamente del orden guardado de `adventures` (las nuevas ya se
+  // crean al principio y reorderAdventures lo persiste). Mientras se
+  // arrastra se usa un orden provisional, que se guarda al soltar.
+  const savedOrder = useMemo(
+    () => adventures.filter((c) => c.status !== "archived").map((c) => c.id),
+    [adventures],
   );
+  const [dragOrder, setDragOrder] = useState<string[] | null>(null);
+  const order = dragOrder ?? savedOrder;
   const orderRef = useRef(order);
-  useEffect(() => {
-    orderRef.current = order;
-  }, [order]);
-  useEffect(() => {
-    setOrder((prev) => {
-      const ids = adventures.filter((c) => c.status !== "archived").map((c) => c.id);
-      const idSet = new Set(ids);
-      const kept = prev.filter((id) => idSet.has(id));
-      const added = ids.filter((id) => !prev.includes(id));
-      const next = [...added, ...kept];
-      if (next.length === prev.length && next.every((id, i) => id === prev[i])) return prev;
-      return next;
-    });
-  }, [adventures]);
 
   const byId = useMemo(() => new Map(adventures.map((c) => [c.id, c])), [adventures]);
 
@@ -116,7 +106,7 @@ export function JournalListView() {
           next.splice(from, 1);
           next.splice(to, 0, draggingId as string);
           orderRef.current = next;
-          setOrder(next);
+          setDragOrder(next);
         }
       }
     }
@@ -124,6 +114,7 @@ export function JournalListView() {
     function handleUp() {
       setDraggingId(null);
       reorderAdventures(orderRef.current);
+      setDragOrder(null);
     }
 
     window.addEventListener("pointermove", handleMove);
@@ -165,7 +156,7 @@ export function JournalListView() {
   const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
           {t.journal.title}
@@ -233,7 +224,7 @@ export function JournalListView() {
 
             {!hasAnyAdventures && !showNewAdventureForm && (
               <EmptyState
-                icon={<IconFeather size={24} />}
+                icon={<IconJournal size={24} />}
                 title={t.journal.noAdventuresTitle}
                 description={t.journal.noAdventuresDescription}
                 compact
@@ -261,7 +252,10 @@ export function JournalListView() {
                       if (el) rowRefs.current.set(adventure.id, el);
                       else rowRefs.current.delete(adventure.id);
                     }}
-                    onDragStart={() => setDraggingId(adventure.id)}
+                    onDragStart={() => {
+                      orderRef.current = order;
+                      setDraggingId(adventure.id);
+                    }}
                     onToggleFavorite={() => toggleAdventureFavorite(adventure.id)}
                     t={t}
                   />

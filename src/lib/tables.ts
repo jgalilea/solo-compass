@@ -1,15 +1,18 @@
 /**
  * Tablas de significado.
  *
- * El contenido es un marcador de posición: la estructura ya soporta
- * dados d6, d66 (dos d6 leídos como decenas/unidades) y d20, para que
- * más adelante solo haga falta sustituir el texto de cada entrada.
- * El nombre, la descripción y el nombre del juego son bilingües y
- * viven en el diccionario de idioma (getMeaningTables los combina con
- * los datos estructurales de aquí).
+ * Contenido original y genérico (escrito para Solo Compass, sin
+ * copiar tablas de ningún juego con licencia), pensado para servir en
+ * cualquier ambientación. La estructura soporta d6, d66 (dos d6
+ * leídos como decenas/unidades) y d20: añadir una tabla es solo
+ * añadir datos aquí y sus textos en el diccionario.
+ * Los textos (nombre, descripción y entradas) son bilingües y viven
+ * en el diccionario; getMeaningTables los combina con los datos
+ * estructurales de aquí. Las entradas se listan en orden: la primera
+ * corresponde al valor más bajo del dado.
  */
 
-import { interpolate, type Dictionary } from "./i18n";
+import type { Dictionary } from "./i18n";
 
 export type DiceType = "d6" | "d66" | "d20";
 
@@ -34,79 +37,59 @@ export interface MeaningTable {
   entries: TableEntry[];
 }
 
-function placeholderEntries(
-  t: Dictionary,
-  name: string,
-  count: number,
-): TableEntry[] {
-  return Array.from({ length: count }, (_, i) => ({
-    range: [i + 1, i + 1] as [number, number],
-    text: interpolate(t.tables.placeholderEntry, { name, n: i + 1 }),
-  }));
-}
+type TableKey = keyof Dictionary["tables"]["entries"];
 
-function placeholderD66(t: Dictionary, name: string): TableEntry[] {
-  const entries: TableEntry[] = [];
-  for (let tens = 1; tens <= 6; tens++) {
-    for (let ones = 1; ones <= 6; ones++) {
-      const value = tens * 10 + ones;
-      entries.push({
-        range: [value, value],
-        text: interpolate(t.tables.placeholderEntry, { name, n: value }),
-      });
+/** Valores posibles de cada dado, en orden (d66: 11–16, 21–26 … 61–66). */
+function diceValues(dice: DiceType): number[] {
+  if (dice === "d66") {
+    const values: number[] = [];
+    for (let tens = 1; tens <= 6; tens++) {
+      for (let ones = 1; ones <= 6; ones++) values.push(tens * 10 + ones);
     }
+    return values;
   }
-  return entries;
+  return Array.from({ length: diceMax(dice) }, (_, i) => i + 1);
 }
 
-// Datos estructurales (locale-independientes) de las tablas de
-// ejemplo. El indicativo de juego + enlace son de muestra, para
-// mostrar cómo se ve la función con y sin enlace — se sustituirán
-// por los datos reales más adelante.
+// Datos estructurales (independientes del idioma) de cada tabla.
 const TABLE_STRUCTURE: {
   id: string;
   dice: DiceType;
   gameName: (t: Dictionary) => string;
   gameUrl?: string;
-  nameKey: keyof Dictionary["tables"]["names"];
-  descriptionKey: keyof Dictionary["tables"]["descriptions"];
+  key: TableKey;
 }[] = [
   {
     id: "evento-aleatorio",
     dice: "d66",
-    gameName: () => "Ironsworn",
-    gameUrl: "https://ironswornrpg.com",
-    nameKey: "eventoAleatorio",
-    descriptionKey: "eventoAleatorio",
+    gameName: (t) => t.tables.genericGame,
+    key: "eventoAleatorio",
   },
   {
     id: "accion-pnj",
     dice: "d20",
-    gameName: () => "Mörk Borg",
-    gameUrl: "https://morkborg.com",
-    nameKey: "accionPnj",
-    descriptionKey: "accionPnj",
+    gameName: (t) => t.tables.genericGame,
+    key: "accionPnj",
   },
   {
     id: "descriptor-escena",
-    dice: "d6",
+    dice: "d20",
     gameName: (t) => t.tables.genericGame,
-    nameKey: "descriptorEscena",
-    descriptionKey: "descriptorEscena",
+    key: "descriptorEscena",
   },
 ];
 
 export function getMeaningTables(t: Dictionary): MeaningTable[] {
   return TABLE_STRUCTURE.map((s) => {
-    const name = t.tables.names[s.nameKey];
-    const entries =
-      s.dice === "d66"
-        ? placeholderD66(t, name)
-        : placeholderEntries(t, name, diceMax(s.dice));
+    const texts = t.tables.entries[s.key];
+    const entries = diceValues(s.dice).map((value, i) => ({
+      range: [value, value] as [number, number],
+      text: texts[i] ?? t.tables.noEntryFallback,
+    }));
     return {
       id: s.id,
-      name,
-      description: t.tables.descriptions[s.descriptionKey],
+      name: t.tables.names[s.key],
+      description: t.tables.descriptions[s.key],
       dice: s.dice,
       game: { name: s.gameName(t), url: s.gameUrl },
       entries,
