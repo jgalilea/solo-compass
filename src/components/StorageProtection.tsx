@@ -54,7 +54,14 @@ function StorageExplanation() {
   );
 }
 
-function RequestResultNote({ result }: { result: Exclude<RequestResult, null> }) {
+function RequestResultNote({
+  result,
+  inSettings = false,
+}: {
+  result: Exclude<RequestResult, null>;
+  /** En Ajustes no tiene sentido decir "inténtalo desde Ajustes". */
+  inSettings?: boolean;
+}) {
   const { t } = useLocaleContext();
   const granted = result === "granted";
   return (
@@ -75,7 +82,7 @@ function RequestResultNote({ result }: { result: Exclude<RequestResult, null> })
           {granted ? t.storage.grantedTitle : t.storage.deniedTitle}
         </p>
         <p className="mt-0.5 text-sm text-parchment-dim">
-          {granted ? t.storage.granted : t.storage.denied}
+          {granted ? t.storage.granted : inSettings ? t.storage.deniedInSettings : t.storage.denied}
         </p>
       </div>
     </div>
@@ -212,7 +219,7 @@ export function StorageProtectionSettings() {
           {requesting ? t.storage.protecting : t.storage.protectButton}
         </button>
       )}
-      {result === "denied" && <RequestResultNote result={result} />}
+      {result === "denied" && <RequestResultNote result={result} inSettings />}
 
       <button
         type="button"
