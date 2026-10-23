@@ -172,3 +172,14 @@ descarga un único `.json` con historial + diario + ajustes
 (`src/lib/backup.ts`), y **restaurar copia** lo vuelve a cargar entero
 (sustituyendo lo que hubiera, previa confirmación) recargando la app al
 terminar para que todos los contextos reflejen los datos restaurados.
+
+## Licencia
+
+El código de Solo Compass se publica bajo la
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). Puedes
+usarlo, estudiarlo, modificarlo y redistribuirlo; si publicas una
+versión modificada (también si solo la sirves como web), debes ofrecer
+su código fuente bajo la misma licencia.
+
+El oráculo Recluse (CC BY 4.0) y la notación Lonelog (CC BY-SA 4.0)
+mantienen sus propias licencias y créditos, indicados más arriba.

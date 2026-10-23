@@ -47,15 +47,32 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
   consequence: "=> ",
 };
 
+/**
+ * Una nota cuyo texto empieza como un símbolo de Lonelog (o como un
+ * título/cita de Markdown) se leería al importar como otra cosa: se
+ * escapa con "\\", que además es el escape estándar de Markdown y no
+ * se ve al renderizar.
+ */
+const NEEDS_ESCAPE = /^(@|\?|d:|=>|===|#|>|\\)/;
+
+/**
+ * Las entradas pueden tener varias líneas (el editor lo permite). Las
+ * líneas de continuación se exportan sangradas con dos espacios: en
+ * Markdown siguen siendo el mismo párrafo, y al importar la sangría
+ * indica que pertenecen a la entrada anterior aunque empiecen por un
+ * símbolo. Las líneas en blanco intermedias se conservan.
+ */
 export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
-  switch (entry.kind) {
-    case "session":
-      return `=== ${entry.text} ===`;
-    case "note":
-      return entry.text;
-    default:
-      return `${PREFIX[entry.kind]}${entry.text}`;
+  if (entry.kind === "session") {
+    // El título de sesión es una sola línea por definición.
+    return `=== ${entry.text.replace(/\s*\n\s*/g, " ")} ===`;
   }
+  const [first, ...rest] = entry.text.split(/\r?\n/);
+  const head =
+    entry.kind === "note"
+      ? NEEDS_ESCAPE.test(first) ? `\\${first}` : first
+      : `${PREFIX[entry.kind]}${first}`;
+  return [head, ...rest.map((line) => (line.trim() ? `  ${line}` : ""))].join("\n");
 }
 
 export const LONELOG_URL = "https://lonelog.itch.io/lonelog";
@@ -89,6 +106,8 @@ export function exportAdventureToMarkdown(
 }
 
 const ROLL_PREFIX = /^d:\s?/;
+/** Una línea sangrada continúa la entrada anterior (ver formatLine). */
+const CONTINUATION_LINE = /^[ \t]+\S/;
 const ACTION_PREFIX = /^@\s?/;
 const QUESTION_PREFIX = /^\?\s?/;
 const CONSEQUENCE_PREFIX = /^=>\s?/;
@@ -106,11 +125,15 @@ const H1_TITLE_LINE = /^#(?!#)/;
  * permisivo: cualquier línea que no encaje con un símbolo reconocido
  * se guarda como nota en vez de descartarse o fallar — igual que
  * Lonelog admite contenido adicional (etiquetas, prosa suelta) sin
- * romper el resto del documento. Las líneas vacías, el título H1
- * Markdown (#, el nombre de aventura) y las citas (>) se ignoran; las
- * sesiones se reconocen en "=== Título ===" (lo que exportamos) y
- * también en "## Título" al importar, por si el archivo viene de
- * fuera.
+ * romper el resto del documento.
+ *
+ * - La cabecera (el título H1 con el nombre de la aventura y las citas
+ *   ">" que lo siguen, como nuestro crédito) se ignora solo al
+ *   principio: más abajo, "#pista" o "> una cita" son notas.
+ * - Las sesiones se reconocen en "=== Título ===" (lo que exportamos) y
+ *   también en "## Título", por si el archivo viene de fuera.
+ * - Una línea sangrada continúa la entrada anterior (entradas de varias
+ *   líneas); "\\" al inicio escapa una nota que empieza por un símbolo.
  */
 export function parseMarkdownToEntries(
   text: string,
@@ -121,20 +144,46 @@ export function parseMarkdownToEntries(
   // Quita un posible BOM inicial (lo añade nuestra propia exportación
   // para que los visores externos detecten bien el UTF-8) para que no
   // se cuele en la primera línea y la deje sin reconocer.
-  const lines = text.replace(/^﻿/, "").split(/\r?\n/);
-  let index = 0;
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+  let inHeader = true;
+  let seenTitle = false;
+  // Líneas en blanco desde la última línea de la entrada anterior, para
+  // conservarlas si lo que sigue es una continuación.
+  let pendingBlankLines = 0;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
-    if (!line) continue;
-    if (H1_TITLE_LINE.test(line) || line.startsWith(">")) continue;
+    if (!line) {
+      pendingBlankLines += 1;
+      continue;
+    }
+
+    const previous = entries[entries.length - 1];
+    if (previous && previous.kind !== "session" && CONTINUATION_LINE.test(rawLine)) {
+      previous.text += "\n".repeat(pendingBlankLines + 1) + line;
+      pendingBlankLines = 0;
+      continue;
+    }
+    pendingBlankLines = 0;
+
+    if (inHeader) {
+      if (!seenTitle && H1_TITLE_LINE.test(line)) {
+        seenTitle = true;
+        continue;
+      }
+      if (line.startsWith(">")) continue;
+      inHeader = false;
+    }
 
     const h2Match = line.match(H2_SESSION_LINE);
     const legacySessionMatch = line.match(LEGACY_SESSION_LINE);
     let kind: JournalLineKind;
     let content: string;
 
-    if (h2Match) {
+    if (line.startsWith("\\")) {
+      kind = "note";
+      content = line.slice(1);
+    } else if (h2Match) {
       kind = "session";
       content = h2Match[1];
     } else if (legacySessionMatch) {
@@ -157,6 +206,7 @@ export function parseMarkdownToEntries(
       content = line;
     }
 
+    const index = entries.length;
     entries.push({
       // No hay timestamp real por línea en el texto plano: se generan
       // secuenciales para conservar el orden del archivo al mostrarlo.
@@ -166,7 +216,6 @@ export function parseMarkdownToEntries(
       kind,
       text: content,
     });
-    index += 1;
   }
 
   return entries;

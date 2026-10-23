@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { diceMax, getMeaningTables, type MeaningTable } from "../lib/tables";
+import { getMeaningTables, type MeaningTable } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import type { TableRollEntry } from "../lib/history";
 import { useJournalContext } from "../hooks/useJournalContext";
@@ -349,7 +349,10 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
       >
         <IconList size={14} />
         {t.tables.viewResultsHint}
-        <span className="text-parchment-dim/60">· 1–{diceMax(table.dice)}</span>
+        {/* Rango real de la tabla: un d66 va de 11 a 66, no de 1 a 66. */}
+        <span className="text-parchment-dim/60">
+          · {table.entries[0]?.range[0]}–{table.entries.at(-1)?.range[1]}
+        </span>
       </button>
 
       {open && (

@@ -90,6 +90,7 @@ export const en: Dictionary = {
     description:
       "Solo Compass is free and always will be. If it keeps you company at the table, you can buy the party a round at the tavern.",
     button: "Support on Ko-fi",
+    headerLink: "Support",
   },
   themeSwitcher: {
     triggerLabel: "Change visual theme",
