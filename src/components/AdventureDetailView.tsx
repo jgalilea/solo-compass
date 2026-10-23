@@ -131,11 +131,20 @@ export function AdventureDetailView() {
   // Es un ref (no estado): solo marca que la próxima entrada nueva
   // viene del panel, sin provocar un render extra.
   const listEndRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
   const scrollPendingRef = useRef(false);
   useEffect(() => {
     if (!scrollPendingRef.current) return;
     scrollPendingRef.current = false;
-    listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const end = listEndRef.current;
+    if (!end) return;
+    // El panel cambia de alto según el modo (los dados de "Tirada", una
+    // pista de dos líneas…), así que se mide en cada vez en lugar de
+    // usar un margen fijo: con uno fijo, la entrada recién apuntada
+    // quedaba a veces tapada justo por la parte que importa.
+    const visibleBottom = composerRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+    const delta = end.getBoundingClientRect().top - (visibleBottom - 12);
+    window.scrollBy({ top: delta, behavior: "smooth" });
   }, [adventureEntries.length]);
 
   if (status === "loading") {
@@ -366,7 +375,7 @@ export function AdventureDetailView() {
           </ul>
         )
       )}
-      <div ref={listEndRef} className="-mt-5 scroll-mb-[15rem] lg:scroll-mb-[13rem]" />
+      <div ref={listEndRef} className="-mt-5" />
 
       {showNewSession ? (
         <div className="flex items-center gap-2">
@@ -435,7 +444,7 @@ export function AdventureDetailView() {
         </section>
       )}
 
-      <JournalComposer adventureId={adventure.id} onLogged={() => {
+      <JournalComposer ref={composerRef} adventureId={adventure.id} onLogged={() => {
           scrollPendingRef.current = true;
         }} />
 

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ComponentType } from "react";
+import { useMemo, useRef, useState, type ComponentType, type Ref } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
@@ -27,9 +27,12 @@ type Panel = "oracle" | "table" | null;
  * siguiente que se suele apuntar.
  */
 export function JournalComposer({
+  ref,
   adventureId,
   onLogged,
 }: {
+  /** El diario lo mide para no dejar lo recién apuntado debajo del panel. */
+  ref?: Ref<HTMLDivElement>;
   adventureId: string;
   /** Avisa de que se ha añadido algo, para que el diario baje hasta ello. */
   onLogged: () => void;
@@ -92,7 +95,7 @@ export function JournalComposer({
   }
 
   return (
-    <div className="sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto rounded-t-2xl border-t border-ink-border bg-ink-900/95 px-4 pt-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:rounded-b-none lg:border-b-0 lg:pb-2">
+    <div ref={ref} className="sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto rounded-t-2xl border-t border-ink-border bg-ink-900/95 px-4 pt-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:rounded-b-none lg:border-b-0 lg:pb-2">
       {!expanded ? (
         <button
           type="button"

@@ -93,6 +93,7 @@ export interface Dictionary {
     title: string;
     description: string;
     button: string;
+    headerLink: string;
   };
   themeSwitcher: {
     triggerLabel: string;

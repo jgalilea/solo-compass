@@ -90,6 +90,7 @@ export const es: Dictionary = {
     description:
       "Solo Compass es gratis y lo seguirá siendo. Si te acompaña en tus partidas, puedes invitar a una ronda en la taberna.",
     button: "Apoyar en Ko-fi",
+    headerLink: "Apoyar",
   },
   themeSwitcher: {
     triggerLabel: "Cambiar tema visual",

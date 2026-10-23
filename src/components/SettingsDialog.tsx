@@ -28,8 +28,7 @@ import { ChangelogDialog } from "./ChangelogDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
 import { Modal } from "./Modal";
-
-const KOFI_URL = "https://ko-fi.com/jgalilea";
+import { KOFI_URL } from "../lib/support";
 
 /**
  * Un único punto de entrada para todo lo que no es jugar: apariencia,

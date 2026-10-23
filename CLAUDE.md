@@ -18,10 +18,15 @@ npm run dev      # dev server (vite)
 npm run build    # tsc -b && vite build -> dist/
 npm run preview  # serve the production build
 npm run lint      # oxlint
+npm test          # vitest (unit tests de src/lib)
 npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see Deploy)
 ```
 
-There is no test suite/framework configured in this repo.
+Tests are Vitest unit tests next to the module they cover
+(`src/lib/*.test.ts`): oracle mechanics, Lonelog export/import, journal
+grouping and table data integrity. No component/DOM tests. The deploy
+workflow runs `npm test` before building, so a failing test blocks the
+publish.
 
 ## Deploy
 
@@ -188,6 +193,12 @@ Only one adventure can be "active" at a time (tracked by id in
 it's purely a derived display: any non-archived adventure that isn't the
 current active one renders as paused. Don't add a `paused` field to the
 adventure model; derive it the same way the existing views do.
+
+## Roadmap
+
+`docs/ROADMAP.md` is the internal roadmap (not shown in the app): planned
+features, license research for new oracles/tables, known bugs and UI
+review findings. Update it when an item ships or priorities change.
 
 ## Changelog
 
