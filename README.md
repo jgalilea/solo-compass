@@ -1,185 +1,160 @@
-# Solo Compass
+<div align="center">
+  <img src="public/favicon.svg" alt="Solo Compass logo, a four-point compass rose" width="88">
+  <h1>Solo Compass</h1>
+  <p><strong>A yes/no oracle, meaning tables and a session journal for solo tabletop RPGs, in one app that works offline.</strong></p>
+  <p>
+    <a href="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml/badge.svg"></a>
+    <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/jgalilea/solo-compass"></a>
+  </p>
+  <p><a href="https://jgalilea.github.io/solo-compass/"><strong>Open the app</strong></a> · <a href="#how-to-play">How to play</a> · <a href="#your-data">Your data</a> · <a href="#development">Development</a></p>
+</div>
 
-Compañero de mesa para partidas de rol en solitario: oráculo de sí/no,
-tablas de significado y un historial de todo lo que has lanzado.
-Funciona en el navegador, se puede instalar como PWA y no necesita
-conexión ni servidor: todo se guarda en tu dispositivo.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workspace-dark.png">
+  <img src="docs/screenshots/workspace-light.png" alt="An adventure open on desktop: a session index on the left, the journal with actions, oracle questions, rolls and consequences in the middle, and the oracle, tables and dice on the right">
+</picture>
 
-## Oráculos
+## Why Solo Compass
 
-El badge junto al título "Oráculo" es un selector (`src/lib/oracles.ts`
-+ `OracleSwitcher`): de momento solo hay uno registrado, pero la
-estructura ya soporta añadir más (cada uno con su propio nombre, autor,
-licencia y enlace) sin tocar el resto de la app. Cuando llegue un
-segundo oráculo con reglas propias, `OracleView` pasará a despachar
-según el id seleccionado; hoy la mecánica de tirada sigue siendo
-específica de Recluse.
+Playing an RPG on your own means being both the player and the game master. You ask the oracle, roll on a table for inspiration, and write down what happened. Doing that with paper, dice and a notes app means lots of switching back and forth. Solo Compass puts all three on one screen and keeps the log for you.
 
-### Recluse
+- **Ask, roll, write, all in one place.** Every oracle answer and table roll goes straight into the journal of the active adventure. After a roll, the composer switches to "Consequence" so you can write what it means.
+- **A real oracle, not a coin flip.** Solo Compass uses [Recluse](https://gravenutterance.itch.io/recluse). Answers have shades ("yes, but…", "no, and…") and contradictions that tell you the question itself was wrong. You can make an event more or less likely.
+- **Plain-text journals you own.** Adventures are stored in [Lonelog](https://lonelog.itch.io/lonelog), an open notation for solo play. You can export any adventure as a `.md` file that other Lonelog tools can read, or import one you already have.
+- **Works on a phone at the table and on a big screen at your desk.** On a phone the journal is clear of clutter, with the tools in a sheet. On desktop, an adventure becomes a workspace with a session index and a game-table panel.
+- **Offline and installable.** It's a PWA: install it from the browser, and it keeps working without a connection.
+- **No account and no server.** Everything stays in your browser. The app makes no network requests, has no analytics and needs no sign-up.
+- **Five looks, light or dark.** Fantasy, Pulp, Modern, Sci-fi and OSR, each with its own palette and display font.
+- **English and Spanish.** The app follows your browser's language by default, and you can switch it in Settings.
 
-Implementa el oráculo [**Recluse**](https://gravenutterance.itch.io/recluse)
-de Graven Utterance (Oliver N), publicado bajo licencia
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/):
+## Getting started
 
-- Se lanza un dado blanco y uno negro. Blanco más alto → **Sí**. Negro más
-  alto → **No**.
-- Si ambos dados comparados son bajos (≤3) la respuesta lleva un **"pero"**;
-  si ambos son altos (≥4), lleva un **"y"**.
-- Si empatan, hay una **contradicción**: alguna premisa de la pregunta es
-  errónea y toca replantearla.
-- Para sucesos más o menos probables se añaden dados extra del color
-  favorecido, quedándose solo con el más alto de ese color.
+There's nothing to install. Open **<https://jgalilea.github.io/solo-compass/>** in any modern browser.
 
-## Vistas
+To use it like an app (its own icon, full screen, offline), install it from the browser:
 
-- **Oráculo** (principal): pregunta, probabilidad y lanzamiento.
-- **Tablas**: tablas de significado con contenido de ejemplo — la
-  estructura ya soporta d6, d66 y d20, un indicativo de juego/sistema con
-  enlace opcional (`game`), favoritas y buscador; solo hay que sustituir el
-  texto de cada entrada (y el `game` real) en `src/lib/tables.ts`. El botón
-  con el tipo de dado abre la lista completa de resultados posibles.
-- **Diario**: aventuras con un registro narrativo en notación
-  [Lonelog](https://lonelog.itch.io/lonelog) (ver más abajo). Con una
-  aventura activa, las tiradas del oráculo y de las tablas se apuntan
-  solas; el oráculo además ofrece un pequeño campo para añadir la
-  consecuencia (`=>`) justo después de tirar. Exporta cada aventura a
-  `.md` o importa un diario existente en formato Lonelog. La lista de
-  aventuras (`/diario`) y el contenido de cada una (`/diario/:id`) son
-  pantallas separadas, así que las sesiones de la aventura abierta
-  nunca compiten por espacio con la lista aunque haya muchas aventuras;
-  la lista tiene buscador, pinea las favoritas arriba y deja archivar
-  aventuras (las archivadas quedan en su propia sección plegada). Solo
-  una aventura puede estar activa a la vez; el resto se ven como
-  "pausadas" — no es un estado que se guarde, es solo cómo se ve
-  cualquier aventura en curso que no es la activa ahora mismo. Un
-  indicador fijo en todas las pantallas recuerda cuál es la aventura
-  activa y lleva directo a ella. El formulario manual solo
-  ofrece Acción/Tirada/Consecuencia/Nota (no Pregunta, que ya cubre el
-  oráculo del todo); al elegir "Tirada" aparece un roller de dados
-  genérico (d4–d20, d% y 4dF, `src/lib/dice.ts`) para tiradas de tu
-  propio sistema, agnóstico de reglas. Cualquier entrada (o el título
-  de una sesión) se puede editar después de creada, no solo borrar.
-- **Historial**: todas las tiradas (oráculo y tablas), con filtro y borrado,
-  persistidas en IndexedDB (ver "Almacenamiento" más abajo).
+- **Android / Chrome / Edge:** open the browser menu and choose *Install app* (or *Add to Home screen*).
+- **iPhone / iPad (Safari):** tap *Share*, then *Add to Home Screen*.
 
-## Diario y notación Lonelog
+When a new version is out, the app shows an **Update** banner. It never reloads on its own, so nothing you're halfway through typing is lost.
 
-[Lonelog](https://lonelog.itch.io/lonelog) (Roberto Bisceglie, CC BY-SA
-4.0) es un estándar abierto de texto plano para registrar sesiones de
-rol en solitario, con cinco símbolos: `@` acción, `?` pregunta, `d:`
-tirada (con el resultado inline vía `->`), `=>` consecuencia, y
-`=== Título ===` para secciones. `src/lib/lonelog.ts` implementa el
-formateo y el parseo en los dos sentidos:
+New to solo play? Open **Journal**. While it's empty, it offers a short **sample adventure**, "The Crossroads Inn": two finished sessions that show what a game looks like in the log. You can keep playing it or delete it from its `⋯` menu.
 
-- **Exportar** (`exportAdventureToMarkdown`) genera un `.md` con esas
-  líneas más un crédito visible a Lonelog y a la app — un archivo
-  válido para cualquier herramienta compatible (p. ej. el plugin de
-  Obsidian), no solo para esta app.
-- **Importar** (`parseMarkdownToEntries`) es deliberadamente permisivo:
-  cualquier línea que no encaje con un símbolo reconocido (prosa
-  suelta, etiquetas `[N:...]` de PNJ/lugar/reloj que Lonelog admite
-  pero que esta app aún no interpreta) se guarda como nota en vez de
-  romper la importación.
+## How to play
 
-Aventuras y entradas del diario se guardan en IndexedDB (mismo motivo
-que el historial). Qué aventura está activa es un dato pequeño y se
-queda en `localStorage`.
+### Oracle
 
-## Temas visuales
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/oracle-dark.png">
+  <img src="docs/screenshots/oracle-light.png" alt="The oracle screen: the question 'Is the miller hiding something about the box?' with Likely selected, two white dice against one black die, and the answer No">
+</picture>
 
-El icono de paleta en la cabecera abre el selector de tema (`ThemeSwitcher`):
-claro/oscuro/automático (este último sigue la preferencia del sistema,
-`prefers-color-scheme`, y se reevalúa en cada momento) y cinco temas —
-Fantasía, Pulp, Moderno, Sci-fi y OSR — cada uno con su propia paleta de
-color y tipografía de display. Modo y tema son independientes y se
-combinan: cada tema define tanto su paleta oscura como su paleta clara
-(`src/index.css`, bloques `:root[data-theme="…"]` y
-`:root[data-theme="…"][data-mode="light"]`). Los componentes nunca usan
-colores sueltos, solo clases de Tailwind que apuntan a esas variables
-(`bg-gold`, `text-parchment`…), así que un tema nuevo es solo CSS. Por
-defecto el modo es oscuro (para no cambiar lo que ya veía quien usaba la
-app antes de que existiera el selector); la elección se guarda en
-`localStorage`, igual que el tema.
+Type a yes/no question, pick how likely it is, and roll. The **Recluse** rules (by Graven Utterance, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)) work like this:
 
-## Idioma
+| Dice | Answer |
+|---|---|
+| White die higher | **Yes** |
+| Black die higher | **No** |
+| Both dice 3 or lower | adds **"…but"** |
+| Both dice 4 or higher | adds **"…and"** |
+| A tie | **Contradiction**: something in the question is wrong, so rethink it |
 
-Español e inglés, seleccionable desde el icono de idioma en la cabecera.
-Por defecto se usa el idioma del navegador (español si empieza por "es",
-inglés para cualquier otro caso); la elección manual se guarda en
-`localStorage` y tiene prioridad sobre la detección. Los textos viven en
-`src/lib/i18n/locales/{es,en}.ts`, con el mismo `Dictionary` tipado para
-ambos (TypeScript avisa si falta una clave en alguno de los dos).
+*Likely* and *Unlikely* add a second die of the favoured colour, and *Very likely* and *Very unlikely* add two. Only the highest die of each colour counts.
 
-## Stack
+When an adventure is active, the question and answer go into its journal, and a small field lets you add the consequence right away. Every roll is also kept in **History**, which you reach from "Recent rolls". There you can filter by oracle, tables or favourites, mark rolls as favourites or delete them.
 
-TypeScript, React, React Router (`HashRouter`, compatible con GitHub
-Pages sin configuración de servidor), Tailwind CSS v4 y Vite, con
-`vite-plugin-pwa` para el soporte offline/instalable.
+### Meaning tables
 
-## Desarrollo
+Roll for inspiration when a yes or no isn't enough. There are three original tables: **Random event** (d66), **NPC action** (d20) and **Scene descriptor** (d20). You can search them, star your favourites, and open the full list of results for any table.
+
+### Journal
+
+Create adventures, split them into sessions, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
+
+- Only one adventure is **active** at a time. Rolls go there, and the chip in the header shows which one it is from every screen.
+- Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, and 4dF for Fate/Fudge. This lets you log rolls from your own system without leaving the app.
+- Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
+- **Export** an adventure as Lonelog Markdown, or **import** a `.md` journal. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
+
+<p align="center">
+  <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with the one-row composer; and the meaning tables list" width="860">
+</p>
+
+### Themes and language
+
+<p align="center">
+  <img src="docs/screenshots/themes.png" alt="The same journal in the five themes: Fantasy, Pulp, Modern, Sci-fi and OSR" width="860">
+</p>
+
+In **Settings** (the gear icon) you can choose the theme, light, dark or automatic mode, and the language. These choices are saved on your device.
+
+### Keyboard shortcuts (desktop)
+
+Shortcuts work whenever you aren't typing in a field. Press <kbd>?</kbd> to see the list in Settings.
+
+| Key | Action |
+|---|---|
+| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> | Oracle, Tables, Journal (or the active adventure) |
+| <kbd>H</kbd> | Roll history |
+| <kbd>/</kbd> | Write: the question, search or journal field, depending on the screen |
+| <kbd>O</kbd> <kbd>T</kbd> <kbd>D</kbd> | Game-table oracle, tables, dice |
+| <kbd>Esc</kbd> | Leave the current field so shortcuts work again |
+| <kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd> | Add the journal entry / new line |
+| <kbd>?</kbd> | Show the shortcut list |
+
+## Your data
+
+Solo Compass has no server. Your adventures, rolls and settings are stored only in this browser on this device: the journal and history in IndexedDB, small settings in `localStorage`. Nothing syncs between devices or browsers.
+
+There are three ways to keep your data safe, all in **Settings**:
+
+- **Backup:** *Export everything* downloads a single `.json` file with your journal, history and settings. *Restore* loads such a file and replaces what's currently on the device (it asks first).
+- **Storage protection:** asks the browser not to clear the app's data when space runs low. It's only requested when you press the button, because some browsers show their own permission prompt.
+- **Backup reminder:** a small dot appears on the Settings button only when you've written 10 or more entries since your last backup and it's been at least 14 days. There are no pop-ups.
+
+Clearing the site's data in your browser deletes everything, so export a backup first.
+
+## Development
+
+You need Node.js 22 (the version CI uses) and npm.
 
 ```bash
+git clone https://github.com/jgalilea/solo-compass.git
+cd solo-compass
 npm install
-npm run dev      # servidor de desarrollo
-npm run build    # compila a dist/
-npm run preview  # sirve el build de producción
-npm run lint      # oxlint
+npm run dev       # dev server at http://localhost:5173/solo-compass/
 ```
 
-## Despliegue en GitHub Pages
+| Command | What it does |
+|---|---|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm test` | Vitest unit tests for `src/lib` (oracle, Lonelog import/export, journal grouping, tables, sample adventure, backup reminder) |
+| `npm run lint` | oxlint |
 
-El repo incluye un workflow (`.github/workflows/deploy.yml`) que compila y
-publica `dist/` en GitHub Pages en cada push a `main` mediante
-`actions/deploy-pages`.
+The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, and [Tabler Icons](https://tabler.io/icons).
 
-Pasos únicos en GitHub, en **Settings → Pages**:
+The UI text lives in `src/lib/i18n/locales/{es,en}.ts`, which share one typed `Dictionary`, so TypeScript flags a missing key. The code comments and commit messages are in Spanish. [`CLAUDE.md`](CLAUDE.md) describes the architecture in more depth: state, storage, theming and responsive layout.
 
-1. En "Build and deployment", selecciona **Source: GitHub Actions**.
-2. Haz push a `main`; el workflow se encarga del resto.
+### Deploying
 
-La app quedará publicada en `https://<usuario>.github.io/solo-compass/`.
+Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It installs dependencies, runs the tests, builds the app and publishes `dist/` to GitHub Pages; a failing test stops the deploy. To set this up on a fork:
 
-Si `base` en `vite.config.ts` no coincide con el nombre real del
-repositorio, actualízalo antes de desplegar.
+1. In **Settings → Pages**, set **Source** to **GitHub Actions**.
+2. If your repository isn't called `solo-compass`, change `base` in `vite.config.ts` to match.
 
-Alternativa manual (sin Actions): `npm run deploy`, que compila y publica
-`dist/` en la rama `gh-pages` usando el paquete `gh-pages`.
+`npm run deploy` publishes `dist/` to a `gh-pages` branch by hand instead. You don't need it if you use the workflow.
 
-## Almacenamiento
+## Credits and license
 
-Todo vive en el navegador, sin backend ni sincronización — borrar los
-datos del sitio o cambiar de navegador/dispositivo empieza de cero.
+- **Recluse** oracle by Graven Utterance (Oliver N), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://gravenutterance.itch.io/recluse>
+- **Lonelog** notation by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://lonelog.itch.io/lonelog>
+- **Tabler Icons**, MIT.
+- The meaning tables are original and written for this app.
 
-- **Historial** (`src/lib/history.ts`): en **IndexedDB** vía
-  [`idb-keyval`](https://github.com/jakearchibald/idb-keyval), porque no
-  tiene techo natural de tamaño y `localStorage` está limitado a ~5 MiB
-  por origen — compartidos, además, con cualquier otra app en el mismo
-  dominio (`usuario.github.io` es un origen único para todos los
-  proyectos que cuelgan de ahí, con o sin ruta distinta). Si ya había
-  historial guardado en `localStorage` de una versión anterior, se migra
-  una vez sola a IndexedDB de forma automática y transparente.
-- **Diario** (`src/lib/journal.ts`): aventuras y entradas también en
-  IndexedDB, mismo motivo que el historial.
-- **Tema, modo claro/oscuro, idioma, oráculo, tablas favoritas y
-  aventura activa**: siguen en `localStorage`, por ser datos minúsculos
-  y de lectura síncrona (el tema y el modo, en concreto, se leen antes
-  del primer pintado para evitar parpadeos, algo que IndexedDB no
-  permite al ser siempre asíncrono).
+The Solo Compass code is released under the [GNU Affero General Public License v3.0](LICENSE). You can use, study, change and share it. If you publish a modified version, including running it as a website, you must offer its source code under the same license.
 
-Como todo vive solo en el dispositivo, "Acerca de" (icono ⓘ del
-encabezado) incluye una copia de seguridad completa: **exportar todo**
-descarga un único `.json` con historial + diario + ajustes
-(`src/lib/backup.ts`), y **restaurar copia** lo vuelve a cargar entero
-(sustituyendo lo que hubiera, previa confirmación) recargando la app al
-terminar para que todos los contextos reflejen los datos restaurados.
+If Solo Compass is useful at your table, you can [support it on Ko-fi](https://ko-fi.com/jgalilea).
 
-## Licencia
-
-El código de Solo Compass se publica bajo la
-[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). Puedes
-usarlo, estudiarlo, modificarlo y redistribuirlo; si publicas una
-versión modificada (también si solo la sirves como web), debes ofrecer
-su código fuente bajo la misma licencia.
-
-El oráculo Recluse (CC BY 4.0) y la notación Lonelog (CC BY-SA 4.0)
-mantienen sus propias licencias y créditos, indicados más arriba.
+<sub>The screenshots show the built-in sample adventure; every name and event in it is fictional.</sub>
