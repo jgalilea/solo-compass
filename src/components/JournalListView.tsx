@@ -156,7 +156,7 @@ export function JournalListView() {
   const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-6xl 2xl:max-w-7xl">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
           {t.journal.title}
@@ -241,7 +241,7 @@ export function JournalListView() {
             )}
 
             {(pinned.length > 0 || rest.length > 0) && (
-              <ul className="flex flex-col gap-2.5">
+              <ul className="grid gap-2.5 lg:grid-cols-2">
                 {[...pinned, ...rest].map((adventure) => (
                   <AdventureRow
                     key={adventure.id}
@@ -311,7 +311,7 @@ export function JournalListView() {
                 <span className="text-parchment-dim/50">{archivedAdventures.length}</span>
               </button>
               {showArchivedContents && (
-                <ul className="flex flex-col gap-2.5">
+                <ul className="grid gap-2.5 lg:grid-cols-2">
                   {archivedAdventures.map((adventure) => (
                     <li key={adventure.id}>
                       <Link

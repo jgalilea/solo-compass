@@ -8,6 +8,7 @@ import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import {
   IconAction,
+  IconChevronUpDown,
   IconClose,
   IconConsequence,
   IconDice,
@@ -132,7 +133,7 @@ export function JournalComposer({
     <div
       ref={ref}
       data-composer
-      className="group/composer sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
+      className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
       <div className="flex items-center gap-1.5">
         {/* Al escribir en un móvil estrecho se pliegan, para dejar el
@@ -279,14 +280,19 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
         title={current.label}
         aria-haspopup="menu"
         aria-expanded={open}
+        // Con borde y flecha para que se lea como un desplegable: sin
+        // ellos parecía una etiqueta y no se encontraba "Nueva sesión".
         className={[
-          "flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm transition",
-          open ? "bg-ink-700 text-parchment" : "text-gold hover:bg-ink-700/60",
+          "flex h-9 items-center gap-1 rounded-lg border pl-2 pr-1.5 text-sm transition",
+          open
+            ? "border-gold/60 bg-ink-700 text-parchment"
+            : "border-ink-border bg-ink-900/50 text-gold hover:border-gold/50 hover:bg-ink-700/60",
         ].join(" ")}
       >
         <CurrentIcon size={18} />
         {/* El nombre solo cabe a partir de tablet; en móvil basta el icono. */}
-        <span className="hidden font-medium sm:inline">{current.label}</span>
+        <span className="ml-0.5 hidden font-medium sm:inline">{current.label}</span>
+        <IconChevronUpDown size={14} className="text-parchment-dim" />
       </button>
 
       {open && (

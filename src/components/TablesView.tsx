@@ -104,7 +104,7 @@ export function TablesView() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-6xl">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
           {t.tables.title}
@@ -113,7 +113,7 @@ export function TablesView() {
       </header>
 
 
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-12">
         <div className="flex flex-col gap-6">
           <label className="relative block">
             <IconSearch
@@ -146,7 +146,7 @@ export function TablesView() {
                     <IconStar size={13} filled className="text-gold" />
                     {t.tables.favoritesHeading}
                   </h2>
-                  <ul className="flex flex-col gap-3">{favoriteTables.map(renderRow)}</ul>
+                  <ul className="grid gap-3 2xl:grid-cols-2">{favoriteTables.map(renderRow)}</ul>
                 </section>
               )}
 
@@ -157,7 +157,7 @@ export function TablesView() {
                       {t.tables.allHeading}
                     </h2>
                   )}
-                  <ul className="flex flex-col gap-3">{otherTables.map(renderRow)}</ul>
+                  <ul className="grid gap-3 2xl:grid-cols-2">{otherTables.map(renderRow)}</ul>
                 </section>
               )}
             </>

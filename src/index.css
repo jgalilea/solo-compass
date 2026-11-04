@@ -59,6 +59,12 @@
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
+  /* Alto de la barra inferior de móvil/tablet (sin la zona segura). Lo
+     que se apoya encima (composer del diario, avisos) se coloca con
+     este mismo valor: si no coinciden, el composer se mete por debajo
+     de la barra y "cambia de tamaño" al llegar al final del scroll. */
+  --spacing-nav: 3.75rem;
+
   --color-ink-950: #0b0c10;
   --color-ink-900: #101218;
   --color-ink-800: #14161c;

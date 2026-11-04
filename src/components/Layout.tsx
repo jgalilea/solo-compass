@@ -61,8 +61,11 @@ export function Layout() {
           recortados a su altura. */}
       {/* En escritorio mide exactamente 3.5rem (h-14): las columnas fijas
           del diario (top-14) se colocan justo debajo. */}
+      {/* Tres columnas en escritorio (1fr · auto · 1fr): las pestañas
+          quedan siempre centradas y nada se mueve cuando el chip de la
+          aventura aparece o desaparece según la pantalla. */}
       <header className="border-b border-ink-border/70 px-4 py-3 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0">
-        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:max-w-7xl lg:gap-6">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[1fr_auto_1fr] lg:gap-6 2xl:max-w-[110rem]">
           <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
             {/* En los móviles más estrechos solo el logo, para que quepa el chip. */}
@@ -88,7 +91,7 @@ export function Layout() {
               </Link>
             ))}
           </nav>
-          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+          <div className="flex min-w-0 items-center justify-end gap-3 lg:gap-4">
             <ActiveAdventureChip />
             {/* Solo en escritorio, donde sobra sitio en la cabecera; en
                 móvil/tablet el apoyo vive en Ajustes → Acerca de. */}
@@ -114,14 +117,15 @@ export function Layout() {
       </main>
 
       <nav className="sticky bottom-0 z-40 border-t lg:hidden border-ink-border bg-ink-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-xl md:max-w-3xl">
+        {/* Alto fijo (ver --spacing-nav en index.css; -1px del borde). */}
+        <div className="mx-auto flex h-[calc(var(--spacing-nav)-1px)] max-w-xl md:max-w-3xl">
           {tabs.map(({ to, label, Icon, isActive }) => (
             <Link
               key={label}
               to={to}
               aria-current={isActive ? "page" : undefined}
               className={[
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] transition",
+                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition",
                 isActive ? "text-gold font-medium" : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
             >

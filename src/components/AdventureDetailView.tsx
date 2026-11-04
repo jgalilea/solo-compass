@@ -263,9 +263,13 @@ export function AdventureDetailView() {
 
   const isArchived = adventure.status === "archived";
 
+  // Sin sesiones no hay índice: el diario ocupa también su columna en
+  // vez de dejar un hueco vacío a la izquierda.
+  const hasSessionIndex = groups.some((g) => g.sessionEntry);
+
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[13rem_minmax(0,1fr)_21rem]">
-      {groups.some((g) => g.sessionEntry) && (
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[13rem_minmax(0,1fr)_21rem] 2xl:max-w-[110rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem] 2xl:gap-12">
+      {hasSessionIndex && (
         <SessionIndex
           groups={groups}
           onJump={jumpToSession}
@@ -273,7 +277,9 @@ export function AdventureDetailView() {
         />
       )}
 
-      <div className="flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] xl:col-start-2">
+      <div
+        className={`flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] ${hasSessionIndex ? "xl:col-start-2" : "xl:col-span-2"}`}
+      >
         <div className="relative flex items-center gap-2">
           <Link
             to="/diario"

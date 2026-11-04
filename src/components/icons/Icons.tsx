@@ -1,66 +1,29 @@
-import type { ComponentType, SVGProps } from "react";
-import {
-  ArchiveBoxIcon,
-  ArrowDownTrayIcon,
-  ArrowLeftIcon,
-  ArrowsRightLeftIcon,
-  ArrowTopRightOnSquareIcon,
-  ArrowTurnDownRightIcon,
-  ArrowUpTrayIcon,
-  ArrowUturnLeftIcon,
-  Bars2Icon,
-  BoltIcon,
-  BookmarkIcon,
-  BookOpenIcon,
-  ChatBubbleBottomCenterTextIcon,
-  CheckCircleIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ClockIcon,
-  Cog6ToothIcon,
-  CubeIcon,
-  EllipsisHorizontalIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-  HeartIcon,
-  InformationCircleIcon,
-  LanguageIcon,
-  ListBulletIcon,
-  MagnifyingGlassIcon,
-  NewspaperIcon,
-  PaperAirplaneIcon,
-  PauseIcon,
-  PencilIcon,
-  PlayIcon,
-  PlusIcon,
-  QuestionMarkCircleIcon,
-  ShieldCheckIcon,
-  ShieldExclamationIcon,
-  SparklesIcon,
-  StarIcon,
-  SwatchIcon,
-  TableCellsIcon,
-  TrashIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
+import type { SVGProps } from "react";
+import * as Tabler from "@tabler/icons-react";
 
 /**
- * Iconos de la app: Heroicons (outline, 24px), envueltos para
- * mantener una API única (`size` en px, heredan color con
- * currentColor para tintarse con Tailwind). Si hace falta uno nuevo,
- * se elige el Heroicon más cercano y se añade aquí — no se dibujan
- * SVG a mano. La única excepción es el logo (IconCompass).
+ * Iconos de la app: Tabler Icons (MIT), envueltos para mantener una API
+ * única (`size` en px, heredan color con currentColor para tintarse con
+ * Tailwind). Las pantallas solo importan de aquí, así que cambiar un
+ * icono es cambiar una línea. Si hace falta uno nuevo, se elige el
+ * Tabler más cercano (https://tabler.io/icons) y se añade aquí — no se
+ * dibujan SVG a mano. La única excepción es el logo (IconCompass).
  */
 
-type IconProps = SVGProps<SVGSVGElement> & { size?: number };
+type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number };
 
-function HeroIcon({ icon: Icon, size = 20, ...rest }: IconProps & { icon: ComponentType<SVGProps<SVGSVGElement>> }) {
-  return <Icon width={size} height={size} aria-hidden {...rest} />;
+// Trazo algo más fino que el de serie (2): con 2 pesaban demasiado al
+// lado del texto en los tamaños pequeños de la app.
+function TablerIcon({ icon: Icon, size = 20, strokeWidth = 1.75, ...rest }: IconProps & { icon: Tabler.Icon }) {
+  return <Icon size={size} stroke={strokeWidth} aria-hidden {...rest} />;
 }
 
-/** Logo de la app (no es un Heroicon: es la marca). */
+/**
+ * Logo de la app (no es de Tabler: es la marca). Rosa de los vientos
+ * de cuatro puntas con una cara de cada punta rellena; es el mismo
+ * dibujo que el icono instalado y el favicon (public/), para que la
+ * marca se reconozca igual dentro y fuera de la app.
+ */
 export function IconCompass({ size = 20, ...rest }: IconProps) {
   return (
     <svg
@@ -69,157 +32,172 @@ export function IconCompass({ size = 20, ...rest }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
       {...rest}
     >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M15 9l-2 6-4 1.5L10.5 10.5z" />
+      <circle cx="12" cy="12" r="9.25" strokeWidth={1.5} />
+      <path
+        d="M12 4.25L13.75 10.25L19.75 12L13.75 13.75L12 19.75L10.25 13.75L4.25 12L10.25 10.25Z"
+        strokeWidth={0.9}
+      />
+      <path
+        d="M12 4.25L13.75 10.25L12 12ZM19.75 12L13.75 13.75L12 12ZM12 19.75L10.25 13.75L12 12ZM4.25 12L10.25 10.25L12 12Z"
+        fill="currentColor"
+        strokeWidth={0.9}
+      />
     </svg>
   );
 }
 
 export function IconStar({ filled = false, ...props }: IconProps & { filled?: boolean }) {
-  return <HeroIcon icon={filled ? StarSolidIcon : StarIcon} {...props} />;
+  return <TablerIcon icon={filled ? Tabler.IconStarFilled : Tabler.IconStar} {...props} />;
 }
 
 // Secciones
+// El oráculo: una bola de cristal.
 export function IconOracle(props: IconProps) {
-  return <HeroIcon icon={SparklesIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconCrystalBall} {...props} />;
 }
+// Una tabla de sentido es una lista numerada que se tira con un dado.
 export function IconTable(props: IconProps) {
-  return <HeroIcon icon={TableCellsIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconListNumbers} {...props} />;
 }
 export function IconJournal(props: IconProps) {
-  return <HeroIcon icon={BookOpenIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconBook} {...props} />;
 }
 export function IconHistory(props: IconProps) {
-  return <HeroIcon icon={ClockIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconHistory} {...props} />;
 }
 export function IconSettings(props: IconProps) {
-  return <HeroIcon icon={Cog6ToothIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconSettings} {...props} />;
 }
 
 // Tipos de entrada del diario (equivalen a los símbolos de Lonelog)
 export function IconQuestion(props: IconProps) {
-  return <HeroIcon icon={QuestionMarkCircleIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
 }
 export function IconDice(props: IconProps) {
-  return <HeroIcon icon={CubeIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconDice5} {...props} />;
 }
 export function IconAction(props: IconProps) {
-  return <HeroIcon icon={BoltIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconSword} {...props} />;
 }
 export function IconConsequence(props: IconProps) {
-  return <HeroIcon icon={ArrowTurnDownRightIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconCornerDownRight} {...props} />;
 }
+// Escrito a pluma: narración libre.
 export function IconNote(props: IconProps) {
-  return <HeroIcon icon={ChatBubbleBottomCenterTextIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconFeather} {...props} />;
 }
 export function IconSession(props: IconProps) {
-  return <HeroIcon icon={BookmarkIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconBookmark} {...props} />;
 }
 
 // Acciones y estados
 export function IconAlertTriangle(props: IconProps) {
-  return <HeroIcon icon={ExclamationTriangleIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconAlertTriangle} {...props} />;
 }
 export function IconAlertCircle(props: IconProps) {
-  return <HeroIcon icon={ExclamationCircleIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconAlertCircle} {...props} />;
 }
 export function IconTrash(props: IconProps) {
-  return <HeroIcon icon={TrashIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconTrash} {...props} />;
 }
 export function IconClose(props: IconProps) {
-  return <HeroIcon icon={XMarkIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconX} {...props} />;
 }
 export function IconPalette(props: IconProps) {
-  return <HeroIcon icon={SwatchIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconPalette} {...props} />;
 }
 export function IconCheck(props: IconProps) {
-  return <HeroIcon icon={CheckIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconCheck} {...props} />;
 }
 export function IconCheckCircle(props: IconProps) {
-  return <HeroIcon icon={CheckCircleIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconCircleCheck} {...props} />;
 }
 export function IconInfo(props: IconProps) {
-  return <HeroIcon icon={InformationCircleIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconInfoCircle} {...props} />;
 }
 export function IconHeart(props: IconProps) {
-  return <HeroIcon icon={HeartIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconHeart} {...props} />;
 }
 export function IconExternalLink(props: IconProps) {
-  return <HeroIcon icon={ArrowTopRightOnSquareIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconExternalLink} {...props} />;
 }
 export function IconSearch(props: IconProps) {
-  return <HeroIcon icon={MagnifyingGlassIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconSearch} {...props} />;
 }
 export function IconList(props: IconProps) {
-  return <HeroIcon icon={ListBulletIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconList} {...props} />;
 }
 export function IconLanguage(props: IconProps) {
-  return <HeroIcon icon={LanguageIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconLanguage} {...props} />;
 }
 export function IconSwap(props: IconProps) {
-  return <HeroIcon icon={ArrowsRightLeftIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconArrowsLeftRight} {...props} />;
 }
 export function IconDownload(props: IconProps) {
-  return <HeroIcon icon={ArrowDownTrayIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconDownload} {...props} />;
 }
 export function IconUpload(props: IconProps) {
-  return <HeroIcon icon={ArrowUpTrayIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconUpload} {...props} />;
 }
 export function IconPlus(props: IconProps) {
-  return <HeroIcon icon={PlusIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconPlus} {...props} />;
 }
 export function IconPencil(props: IconProps) {
-  return <HeroIcon icon={PencilIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconPencil} {...props} />;
 }
 export function IconGripVertical(props: IconProps) {
-  return <HeroIcon icon={Bars2Icon} {...props} />;
+  return <TablerIcon icon={Tabler.IconGripVertical} {...props} />;
 }
 export function IconChevronRight(props: IconProps) {
-  return <HeroIcon icon={ChevronRightIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconChevronRight} {...props} />;
+}
+export function IconChevronUpDown(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSelector} {...props} />;
+}
+export function IconMinus(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMinus} {...props} />;
+}
+export function IconEquals(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconEqual} {...props} />;
 }
 export function IconChevronDown(props: IconProps) {
-  return <HeroIcon icon={ChevronDownIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconChevronDown} {...props} />;
 }
 export function IconArrowLeft(props: IconProps) {
-  return <HeroIcon icon={ArrowLeftIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconArrowLeft} {...props} />;
 }
 export function IconPause(props: IconProps) {
-  return <HeroIcon icon={PauseIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconPlayerPause} {...props} />;
 }
 export function IconPlay(props: IconProps) {
-  return <HeroIcon icon={PlayIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconPlayerPlay} {...props} />;
 }
 export function IconArchive(props: IconProps) {
-  return <HeroIcon icon={ArchiveBoxIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconArchive} {...props} />;
 }
 export function IconArchiveRestore(props: IconProps) {
-  return <HeroIcon icon={ArrowUturnLeftIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconArrowBackUp} {...props} />;
 }
 export function IconSend(props: IconProps) {
-  return <HeroIcon icon={PaperAirplaneIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconSend} {...props} />;
 }
 export function IconMore(props: IconProps) {
-  return <HeroIcon icon={EllipsisHorizontalIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconDots} {...props} />;
 }
-
 export function IconShieldCheck(props: IconProps) {
-  return <HeroIcon icon={ShieldCheckIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconShieldCheck} {...props} />;
 }
-
 export function IconShieldAlert(props: IconProps) {
-  return <HeroIcon icon={ShieldExclamationIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconShieldExclamation} {...props} />;
 }
-
+// La crónica de cambios: un pergamino.
 export function IconChronicle(props: IconProps) {
-  return <HeroIcon icon={NewspaperIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconScript} {...props} />;
 }
-
 export function IconSparkles(props: IconProps) {
-  return <HeroIcon icon={SparklesIcon} {...props} />;
+  return <TablerIcon icon={Tabler.IconSparkles} {...props} />;
 }

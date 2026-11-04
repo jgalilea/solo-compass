@@ -36,6 +36,17 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   - Sesiones en orden cronológico: anteriores plegadas arriba, la actual
     abajo con su título fijo al hacer scroll.
   - Lápiz y papelera solo al tocar una entrada (o al pasar el ratón).
+  - Selector de tipo con borde y flecha (se leía como etiqueta); escala
+    de probabilidad con iconos (el "+" de algunos temas parecía una
+    cruz); barra inferior de alto fijo (el composer se metía 7,5 px
+    debajo y "cambiaba de tamaño" al hacer scroll).
+  - Cabecera de escritorio en rejilla: las pestañas no se mueven con el
+    chip de la aventura. Pantallas 2xl más anchas (110rem).
+  - Iconos: de Heroicons a Tabler Icons (MIT) en toda la app, con
+    motivos de rol donde tocan (oráculo: bola de cristal; acción:
+    espada; nota: pluma; dados: dado; crónica: pergamino). Logo nuevo
+    (rosa de los vientos), igual en la app, favicon e iconos de
+    instalación.
   - Borrar entradas del diario y tiradas del historial se deshace desde
     un aviso, sin diálogo (punto 3).
   - "Protege tu diario" deja de aparecer por su cuenta (antes, un

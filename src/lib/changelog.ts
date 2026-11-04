@@ -34,6 +34,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "El lápiz y la papelera solo aparecen al tocar una entrada, y si borras algo por error puedes deshacerlo al momento.",
           "Varias tiradas de dados en una misma entrada se ven una a una, cada una con su dado.",
           "El aviso para proteger tu diario ya no te interrumpe: lo tienes en Ajustes, cuando quieras.",
+          "Estrenamos emblema: una rosa de los vientos, la misma en la app y en el icono de tu pantalla de inicio. Y los iconos se visten para la partida: bola de cristal para el oráculo, espada para tus acciones, pluma para tus notas y dados de verdad.",
+          "En pantallas muy anchas la mesa se extiende: más tablas, más tiradas y más diario a la vista.",
         ],
       },
       en: {
@@ -50,6 +52,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "The pencil and the bin only appear when you tap an entry, and if you delete something by mistake you can undo it right away.",
           "Several dice rolls in one entry show one by one, each with its die.",
           "The reminder to protect your journal no longer interrupts you: it's in Settings, whenever you want it.",
+          "A new emblem: a compass rose, the same inside the app and on your home screen icon. And the icons dress up for the game: a crystal ball for the oracle, a sword for your actions, a quill for your notes and real dice.",
+          "On very wide screens the table spreads out: more tables, more rolls and more journal in view.",
         ],
       },
     },

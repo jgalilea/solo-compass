@@ -135,7 +135,7 @@ any roll the composer switches to "Consecuencia").
 ### Journal rendering (`src/components/journalShared.tsx`)
 
 Lonelog is the export format, not the on-screen view: entries render with
-a Heroicon per kind, and `buildEntryBlocks` (`src/lib/journalUi.ts`) groups
+an icon per kind, and `buildEntryBlocks` (`src/lib/journalUi.ts`) groups
 a question + its roll + the following consequences into one card.
 Oracle answers are colored using the linked history entry, falling back to
 parsing the roll text (`splitRollText`) for imported journals.
@@ -160,9 +160,14 @@ value in order). Adding a table is a data change, not a structural one.
 
 ### Icons and dialogs
 
-Icons are Heroicons (`@heroicons/react`, outline 24), wrapped in
+Icons are Tabler Icons (`@tabler/icons-react`, MIT, outline, stroke 1.75), wrapped in
 `src/components/icons/Icons.tsx` with a `size` prop; pick the closest
-Heroicon instead of drawing SVG (only the compass logo is custom). Every
+Tabler icon instead of drawing SVG or adding another icon set (only the
+compass logo is custom). Screens import only from `Icons.tsx`. The
+logo (`IconCompass`, a four-point compass rose) is the same drawing as
+`public/favicon.svg` and the PWA icons in `public/icons/`; change them
+together. Don't write symbols like "+"/"−" as text in UI controls: some
+theme display fonts draw "+" as a cross — use the icon. Every
 dialog uses `Modal` (portal to `<body>`, closes on Esc and backdrop click):
 the sticky desktop header would otherwise clip or cover dialogs rendered
 inside it (`backdrop-filter`/z-index stacking).
@@ -170,11 +175,17 @@ inside it (`backdrop-filter`/z-index stacking).
 ### Responsive
 
 Mobile-first; `md` widens content, `lg` (desktop) moves the nav into a
-sticky header (exactly `h-14`; sticky columns below it use `top-14`),
+sticky header (exactly `h-14`; sticky columns below it use `top-14`; a
+`1fr auto 1fr` grid so the tabs never shift when the adventure chip
+appears),
 hides the bottom bar and uses two columns where it helps (oracle
 form/result, tables list/result panel). An adventure becomes a workspace:
 journal + game table panel at `lg`, plus a session index on the left at
-`xl` (below `xl` the same index is a dropdown in the adventure header). Keep the journal free of fixed chrome on phones (one-row composer,
+`xl` (below `xl` the same index is a dropdown in the adventure header).
+`2xl` widens the main pages to `max-w-[110rem]` (more columns, not
+longer lines). The mobile bottom nav has a fixed height
+(`--spacing-nav` in `index.css`); anything resting on it (composer,
+toasts) offsets by that same variable. Keep the journal free of fixed chrome on phones (one-row composer,
 tools in sheets, entry buttons only on tap/hover). Components that live
 both in a wide page and in the narrow desktop panel (e.g.
 `LikelihoodPicker`) adapt with container queries (`@container`/`@md:`),

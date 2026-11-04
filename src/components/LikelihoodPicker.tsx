@@ -1,5 +1,6 @@
 import type { Likelihood } from "../lib/oracle";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { IconEquals, IconMinus, IconPlus } from "./icons/Icons";
 
 const ORDER: Likelihood[] = [
   "muy-improbable",
@@ -14,13 +15,26 @@ const ORDER: Likelihood[] = [
 // debajo el nombre de la opción elegida. Depende del ancho del propio
 // selector (container query), no de la pantalla: en escritorio también
 // vive en la columna estrecha de la mesa de juego.
-const SHORT: Record<Likelihood, string> = {
-  "muy-improbable": "−−",
-  improbable: "−",
-  equilibrado: "=",
-  probable: "+",
-  "muy-probable": "++",
+// La escala va con iconos, no con "+"/"−" escritos: las tipografías de
+// algunos temas (OSR, fantasía) dibujan el "+" como una cruz.
+const SHORT: Record<Likelihood, { Icon: typeof IconPlus; count: number }> = {
+  "muy-improbable": { Icon: IconMinus, count: 2 },
+  improbable: { Icon: IconMinus, count: 1 },
+  equilibrado: { Icon: IconEquals, count: 1 },
+  probable: { Icon: IconPlus, count: 1 },
+  "muy-probable": { Icon: IconPlus, count: 2 },
 };
+
+function ShortScale({ option }: { option: Likelihood }) {
+  const { Icon, count } = SHORT[option];
+  return (
+    <span aria-hidden className="flex items-center justify-center -space-x-0.5 @md:hidden">
+      {Array.from({ length: count }, (_, i) => (
+        <Icon key={i} size={15} strokeWidth={2.25} />
+      ))}
+    </span>
+  );
+}
 
 export function LikelihoodPicker({
   value,
@@ -49,16 +63,14 @@ export function LikelihoodPicker({
               aria-label={t.likelihood[option]}
               onClick={() => onChange(option)}
               className={[
-                "rounded-xl px-1 py-2 font-medium leading-tight transition",
+                "flex min-h-9 items-center justify-center rounded-xl px-1 py-2 font-medium leading-tight transition",
                 active
                   ? "bg-gold text-ink-950 shadow-sm"
                   : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
               title={t.likelihood[option]}
             >
-              <span aria-hidden className="text-base @md:hidden">
-                {SHORT[option]}
-              </span>
+              <ShortScale option={option} />
               <span aria-hidden className="hidden text-xs @md:inline">
                 {t.likelihood[option]}
               </span>

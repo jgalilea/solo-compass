@@ -32,7 +32,7 @@ export function Toast({
   return (
     <div
       role="status"
-      className="animate-fade-up fixed inset-x-4 bottom-[calc(8.25rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-gold/40 bg-ink-800 py-3 pl-4 pr-3 shadow-2xl lg:bottom-24"
+      className="animate-fade-up fixed inset-x-4 bottom-[calc(var(--spacing-nav)+5rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-gold/40 bg-ink-800 py-3 pl-4 pr-3 shadow-2xl lg:bottom-24"
     >
       <Icon size={18} className="shrink-0 text-gold" />
       <div className="min-w-0 flex-1">
