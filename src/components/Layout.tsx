@@ -2,9 +2,8 @@ import { useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { IconCompass, IconHeart, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
-import { StorageProtectionPrompt } from "./StorageProtection";
 import { UpdatePrompt } from "./UpdatePrompt";
-import { ActiveAdventureIndicator } from "./ActiveAdventureIndicator";
+import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { KOFI_URL } from "../lib/support";
@@ -60,11 +59,14 @@ export function Layout() {
           cabecera en el bloque contenedor de sus hijos `fixed`, y los
           diálogos que viven dentro (Acerca de, idioma, tema) quedarían
           recortados a su altura. */}
-      <header className="border-b border-ink-border/70 px-4 py-3.5 lg:sticky lg:top-0 lg:z-40 lg:bg-ink-950 lg:py-2.5">
-        <div className="mx-auto flex max-w-xl items-center justify-between gap-6 text-parchment sm:px-4 md:max-w-3xl lg:max-w-6xl">
-          <div className="flex items-center gap-2.5">
+      {/* En escritorio mide exactamente 3.5rem (h-14): las columnas fijas
+          del diario (top-14) se colocan justo debajo. */}
+      <header className="border-b border-ink-border/70 px-4 py-3 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:max-w-7xl lg:gap-6">
+          <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
-            <span className="font-display text-xl tracking-wide">
+            {/* En los móviles más estrechos solo el logo, para que quepa el chip. */}
+            <span className="hidden font-display text-xl tracking-wide min-[380px]:inline">
               {t.header.appName}
             </span>
           </div>
@@ -86,7 +88,8 @@ export function Layout() {
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+            <ActiveAdventureChip />
             {/* Solo en escritorio, donde sobra sitio en la cabecera; en
                 móvil/tablet el apoyo vive en Ajustes → Acerca de. */}
             <a
@@ -105,8 +108,6 @@ export function Layout() {
       </header>
 
       <UpdatePrompt />
-      <ActiveAdventureIndicator />
-      <StorageProtectionPrompt />
 
       <main className="flex flex-1 flex-col">
         <Outlet />

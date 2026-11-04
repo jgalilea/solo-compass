@@ -1,7 +1,7 @@
 import { useState, type ComponentType } from "react";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
 import type { Answer } from "../lib/oracle";
-import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollText } from "../lib/journalUi";
+import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import {
   IconAction,
@@ -24,6 +24,11 @@ import {
  * cada fila: así abrir una cierra cualquier otra que estuviera
  * abierta, en vez de permitir varios formularios a la vez.
  *
+ * Lápiz y papelera no ocupan sitio fijo en cada línea: con ratón salen
+ * al pasar por encima, y en táctil al tocar la entrada (selectedId,
+ * también en el padre). Flotan sobre la esquina en vez de reservar un
+ * hueco, para que el texto no cambie de ancho al aparecer.
+ *
  * Lonelog es el formato de exportación, no la vista: aquí cada tipo
  * se pinta con su icono (el símbolo solo aparece al exportar), y una
  * pregunta + su tirada + sus consecuencias se agrupan en un bloque.
@@ -35,6 +40,8 @@ export interface EntryActions {
   editingId: string | null;
   onStartEdit: (id: string) => void;
   onStopEdit: () => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
   /** Respuesta del oráculo de una tirada enlazada, si se conoce (vía historial). */
   answerFor: (rollId: string | undefined) => Answer | undefined;
 }
@@ -106,7 +113,7 @@ export function SessionGroupRow({
   }
 
   return (
-    <li className="flex flex-col gap-2">
+    <li id={`session-${session.id}`} className="flex scroll-mt-16 flex-col gap-2">
       {editing ? (
         <div className="flex items-center gap-2 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-2.5">
           <input
@@ -124,10 +131,13 @@ export function SessionGroupRow({
           </button>
         </div>
       ) : (
-        <div className="group flex items-center gap-1 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3">
+        <div data-entry className="group relative flex items-center gap-1 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3">
           <button
             type="button"
-            onClick={onToggle}
+            onClick={() => {
+              onToggle();
+              actions.onSelect(expanded ? null : session.id);
+            }}
             aria-expanded={expanded}
             aria-label={toggleLabel}
             className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
@@ -141,7 +151,10 @@ export function SessionGroupRow({
             </span>
             <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
           </button>
+          {/* Al desplegarla con un toque queda seleccionada: así sus
+              botones también se alcanzan en táctil. */}
           <LineButtons
+            visible={actions.selectedId === session.id}
             onEdit={() => {
               setValue(session.text);
               actions.onStartEdit(session.id);
@@ -211,13 +224,22 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     );
   }
 
+  const selected = actions.selectedId === entry.id;
   return (
-    <div className="group flex items-start gap-2.5">
+    <div
+      data-entry
+      onClick={() => actions.onSelect(selected ? null : entry.id)}
+      className={[
+        "group relative -mx-2 -my-1 flex items-start gap-2.5 rounded-lg px-2 py-1 transition-colors",
+        selected ? "bg-ink-700/40" : "",
+      ].join(" ")}
+    >
       {icon}
       <div className="min-w-0 flex-1">
         <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} />
       </div>
       <LineButtons
+        visible={selected}
         onEdit={() => {
           setValue(entry.text);
           actions.onStartEdit(entry.id);
@@ -234,6 +256,27 @@ function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer |
   }
 
   if (entry.kind === "roll") {
+    // Varios dados en una entrada: cada resultado con su dado, no solo
+    // el último destacado y los demás mezclados en el detalle.
+    const series = splitRollSeries(entry.text);
+    if (series) {
+      return (
+        <div className="flex flex-col gap-1.5">
+          {series.label && <p className="text-xs text-parchment-dim">{series.label}</p>}
+          <ul className="flex flex-wrap gap-1.5">
+            {series.rolls.map((roll, i) => (
+              <li
+                key={i}
+                className="flex min-w-11 flex-col items-center rounded-lg border border-ink-border px-2 py-1"
+              >
+                <span className="text-[0.65rem] leading-tight text-parchment-dim">{roll.die}</span>
+                <RollResult result={roll.result} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
     const { detail, result, answer: parsedAnswer } = splitRollText(entry.text);
     const knownAnswer = answer ?? parsedAnswer;
     if (result === null) {
@@ -267,17 +310,43 @@ function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer |
   );
 }
 
-function LineButtons({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
-  const { t } = useLocaleContext();
-  // Con ratón aparecen al pasar por encima (menos ruido en bloques de
-  // varias líneas); en táctil no hay hover, así que siempre se ven.
+/** "+1 (+ 0 − +)" de 4dF: el total grande y las caras en pequeño debajo. */
+function RollResult({ result }: { result: string }) {
+  const faces = result.match(/^(\S+)\s+\((.+)\)$/);
   return (
-    <div className="-my-1 flex shrink-0 items-center transition pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:opacity-100">
+    <>
+      <span className="text-base font-medium leading-tight text-parchment">{faces ? faces[1] : result}</span>
+      {faces && <span className="text-[0.65rem] leading-tight text-parchment-dim">{faces[2]}</span>}
+    </>
+  );
+}
+
+export function LineButtons({
+  visible,
+  onEdit,
+  onDelete,
+}: {
+  /** Seleccionada con un toque (táctil); con ratón salen también al pasar por encima. */
+  visible: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { t } = useLocaleContext();
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={[
+        "absolute right-1 top-1/2 flex -translate-y-1/2 items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
+        visible
+          ? "opacity-100"
+          : "pointer-events-none opacity-0 pointer-fine:group-hover:pointer-events-auto pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:pointer-events-auto pointer-fine:focus-within:opacity-100",
+      ].join(" ")}
+    >
       <button
         type="button"
         onClick={onEdit}
         aria-label={t.journal.editEntry}
-        className="p-1.5 text-parchment-dim/50 transition hover:text-gold"
+        className="p-2 text-parchment-dim transition hover:text-gold"
       >
         <IconPencil size={15} />
       </button>
@@ -285,7 +354,7 @@ function LineButtons({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =>
         type="button"
         onClick={onDelete}
         aria-label={t.journal.deleteEntry}
-        className="p-1.5 text-parchment-dim/50 transition hover:text-no"
+        className="p-2 text-parchment-dim transition hover:text-no"
       >
         <IconTrash size={15} />
       </button>

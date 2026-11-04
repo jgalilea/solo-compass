@@ -24,6 +24,9 @@ export type ComposerKind = Exclude<JournalLineKind, "session" | "question">;
 
 export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "roll", "consequence"];
 
+/** Lo que se puede elegir en el composer: los tipos de entrada y abrir sesión. */
+export type ComposerMode = ComposerKind | "session";
+
 export const SYMBOL: Record<JournalLineKind, string> = {
   action: "@",
   question: "?",
@@ -142,4 +145,34 @@ export function splitRollText(text: string): {
     ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
     : undefined;
   return { detail, result, answer };
+}
+
+/** Un dado del roller genérico: "d10", "2d6", "d%", "4dF". */
+const DIE = String.raw`\d*d(?:\d+|%|F)`;
+const ROLL_SEGMENT = new RegExp(
+  String.raw`(${DIE})\s*->\s*(.+?)(?=\s*,?\s+${DIE}\s*->|\s*$)`,
+  "g",
+);
+
+/**
+ * Reconoce varias tiradas encadenadas en una sola entrada ("d10 -> 9,
+ * d10 -> 5", o con espacios en vez de comas como se guardaban antes),
+ * con un texto opcional delante ("Ataque d20 -> 14, d8 -> 3"). Devuelve
+ * null si hay menos de dos o si sobra texto que no encaja, para que
+ * esa entrada se muestre como una tirada normal (splitRollText).
+ */
+export function splitRollSeries(
+  text: string,
+): { label: string; rolls: { die: string; result: string }[] } | null {
+  const first = text.search(new RegExp(String.raw`(^|\s)${DIE}\s*->`));
+  if (first < 0) return null;
+  const label = text.slice(0, first).trim().replace(/,$/, "");
+  const rest = text.slice(first).trim();
+  const rolls: { die: string; result: string }[] = [];
+  for (const m of rest.matchAll(ROLL_SEGMENT)) {
+    rolls.push({ die: m[1], result: m[2].trim() });
+  }
+  const leftover = rest.replace(ROLL_SEGMENT, "").replace(/[\s,]/g, "");
+  if (rolls.length < 2 || leftover) return null;
+  return { label, rolls };
 }

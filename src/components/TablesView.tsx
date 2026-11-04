@@ -7,7 +7,6 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
-import { ActivateAdventureNudge } from "./ActivateAdventureNudge";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
 import {
@@ -113,7 +112,6 @@ export function TablesView() {
         <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
       </header>
 
-      <ActivateAdventureNudge />
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8">
         <div className="flex flex-col gap-6">
@@ -238,10 +236,6 @@ function TableRow({
             </button>
           </div>
           <p className="mt-0.5 text-sm text-parchment-dim">{table.description}</p>
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-            <GameBadge table={table} />
-            <TableEntriesButton table={table} />
-          </div>
         </div>
         <button
           type="button"
@@ -252,6 +246,12 @@ function TableRow({
           <IconDice size={17} className={rolling ? "animate-spin" : ""} />
           {interpolate(t.tables.rollButton, { dice: table.dice })}
         </button>
+      </div>
+      {/* A todo el ancho de la tarjeta, no bajo la descripción: si no, que
+          quepa en una línea dependía de lo largo que fuera el rango. */}
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+        <GameBadge table={table} />
+        <TableEntriesButton table={table} />
       </div>
 
       {last && (

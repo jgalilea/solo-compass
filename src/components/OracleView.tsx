@@ -7,7 +7,6 @@ import { interpolate } from "../lib/i18n";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { OracleSwitcher } from "./OracleSwitcher";
-import { ActivateAdventureNudge } from "./ActivateAdventureNudge";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
 import { EmptyState } from "./StateViews";
@@ -48,8 +47,6 @@ export function OracleView() {
           <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.oracle.title}</h1>
           <OracleSwitcher />
         </header>
-
-        <ActivateAdventureNudge />
 
         <form
           className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5 sm:p-6"

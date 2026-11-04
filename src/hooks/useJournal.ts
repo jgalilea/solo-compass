@@ -40,6 +40,8 @@ interface UseJournalResult {
     linkedRollId?: string,
   ) => void;
   removeEntry: (id: string) => void;
+  /** Vuelve a poner una entrada borrada (Deshacer), con su id y fecha originales. */
+  restoreEntry: (entry: JournalEntry) => void;
   editEntry: (id: string, text: string) => void;
   importAdventure: (name: string, markdownText: string) => Adventure;
   retry: () => void;
@@ -233,6 +235,13 @@ export function useJournal(): UseJournalResult {
     [updateEntries],
   );
 
+  const restoreEntry = useCallback(
+    (entry: JournalEntry) => {
+      updateEntries((prev) => (prev.some((e) => e.id === entry.id) ? prev : [...prev, entry]));
+    },
+    [updateEntries],
+  );
+
   const editEntry = useCallback(
     (id: string, text: string) => {
       updateEntries((prev) => prev.map((e) => (e.id === id ? { ...e, text } : e)));
@@ -266,6 +275,7 @@ export function useJournal(): UseJournalResult {
     setAdventureStatus,
     addEntry,
     removeEntry,
+    restoreEntry,
     editEntry,
     importAdventure,
     retry,

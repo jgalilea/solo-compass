@@ -5,7 +5,7 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-10-22.
+Última revisión: 2026-11-03.
 
 ## Hecho recientemente
 
@@ -16,6 +16,32 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   la cabecera de escritorio.
 - Arreglos de la revisión de interfaz (ver punto 6) y de la
   importación de Lonelog (ver punto 7).
+- Rediseño del diario, primero para móvil y luego para pantallas
+  grandes (ver punto 6):
+  - Composer en una sola fila (unos 67 px frente a 260): herramientas
+    (oráculo, tabla, dados) en una hoja inferior con pestañas (también en
+    tablet, más ancha y con las tablas en dos columnas), el tipo de
+    entrada como chip con menú (incluye "Nueva sesión") y enviar.
+  - El texto del composer admite varias líneas y crece solo: Intro envía
+    y Mayús+Intro salta de línea con teclado físico; en táctil Intro
+    salta de línea y se envía con el botón.
+  - Escritorio: espacio de trabajo con el diario en el centro, la mesa
+    de juego fija a la derecha (lg) y el índice de sesiones a la
+    izquierda (xl). Por debajo de xl, el índice es un desplegable en la
+    cabecera de la aventura.
+  - Cabecera de la aventura en una línea; favorita, desactivar y lo poco
+    frecuente, al menú "⋯".
+  - Chip global en la cabecera con la aventura activa (sustituye a las
+    franjas "Registrando en…" y "Activa una aventura…").
+  - Sesiones en orden cronológico: anteriores plegadas arriba, la actual
+    abajo con su título fijo al hacer scroll.
+  - Lápiz y papelera solo al tocar una entrada (o al pasar el ratón).
+  - Borrar entradas del diario y tiradas del historial se deshace desde
+    un aviso, sin diálogo (punto 3).
+  - "Protege tu diario" deja de aparecer por su cuenta (antes, un
+    diálogo al crear la primera aventura): queda solo en Ajustes.
+  - Dados propios: varias tiradas en una entrada se ven una por una, con
+    su dado; los dados del composer se acumulan y se apuntan juntos.
 
 ---
 
@@ -45,9 +71,10 @@ Propuesta:
   diario (la última mención manda), no guardarlos aparte. Así el `.md`
   sigue siendo la única fuente de verdad y la importación los recupera
   gratis.
-- **UI**: panel "Reparto y tramas" por aventura. En escritorio, columna
-  a la derecha del diario (ahora hay mucho espacio vacío a los lados);
-  en móvil, una pestaña o hoja dentro de la aventura.
+- **UI**: panel "Reparto y tramas" por aventura. En escritorio, en la
+  columna izquierda (xl), debajo del índice de sesiones — la derecha ya
+  es la mesa de juego; en lg, quizá como pestaña de esa mesa. En móvil,
+  una hoja más del composer (como oráculo/tabla/dados).
 - **Escritura**: chips en el composer para insertar una etiqueta sin
   saber la sintaxis (p. ej. "+ PNJ" → autocompletar nombres ya usados).
 - **Relojes**: botones −/+ que añaden una entrada `[Reloj:Nombre x/y]`
@@ -69,12 +96,15 @@ Propuesta:
 - Que las tablas del usuario sean suyas: la app no las publica en
   ningún sitio.
 
-## 3. Deshacer en vez de confirmar (P2)
+## 3. Deshacer en vez de confirmar — HECHO (2026-11-03)
 
-Hoy borrar una entrada o una tirada pide confirmación en un diálogo:
-corta el ritmo en partida.
+Hecho para las entradas del diario (antes se borraban sin confirmación
+ni forma de recuperarlas) y para las tiradas del historial (antes, un
+diálogo). Aviso de 6 s; uno nuevo sustituye al anterior. Se reinserta la
+misma entrada (mismo id y timestamp). Queda por ver en uso real si 6 s
+es mucho.
 
-Propuesta:
+Lo que se decidió:
 
 - Borrar al momento y mostrar un aviso pequeño: "Entrada eliminada ·
   **Deshacer**", unos 5 s, sin bloquear nada y encima del composer.
@@ -154,31 +184,21 @@ errores de consola.
   se abría a media lista). Ahora cada pantalla empieza arriba.
 - Las tablas d66 decían "1–66"; ahora muestran el rango real (11–66).
 
+**Corregido en el rediseño del 2026-11-03** (detalle en "Hecho
+recientemente"): composer que ocupaba un 39–69 % de la pantalla del
+móvil, aviso de protección al crear la primera aventura, lápiz y
+papelera siempre visibles en táctil, "Registrando en «…»" repetido,
+sesiones anteriores debajo de la actual y laterales vacíos en
+escritorio. Comprobado jugando en iPhone SE, iPhone 13, tablet (820 px),
+1100 px y 1440 px: lo recién apuntado nunca queda tapado, sin desbordes
+ni errores de consola.
+
 **Pendiente:**
 
-- **P1 · El composer ocupa demasiado en móvil**: un 39–53 % de la
-  pantalla en un iPhone 13 y hasta un 69 % en un iPhone SE (modo
-  Tirada), más la barra de navegación. Ideas: tipos y herramientas en
-  una sola fila, pista como placeholder en vez de línea aparte, dados
-  en una fila con scroll horizontal, y plegarlo solo al hacer scroll
-  hacia arriba en el diario.
-- **P2 · Aviso de "Protege tu diario" justo al crear la primera
-  aventura**: interrumpe el primer momento de juego. Mejor tras unas
-  cuantas entradas o al cerrar la primera sesión.
-- **P2 · Lápiz y papelera siempre visibles en táctil**: dos iconos por
-  línea, mucho ruido. Opciones: deslizar como en el historial, pulsación
-  larga o un único "…" por tarjeta.
-- **P2 · "Registrando en «…»" en el detalle de la aventura** repite el
-  título justo encima; con la pastilla "Activa" basta.
-- **P2 · Orden de las sesiones**: las anteriores aparecen *debajo* de la
-  actual (y de "Nueva sesión"), al revés que un libro. Valorar ponerlas
-  arriba, plegadas.
-- **P3 · Escritorio**: el diario usa una sola columna estrecha y deja
-  los laterales vacíos; sitio natural para el panel del punto 1.
 - **P3 · Detalles**: placeholder del oráculo cortado en móvil (usar uno
   más corto); "CONTRADICCIÓN" deja poco sitio a la pregunta en "Últimas
   tiradas"; el aviso "Activa una aventura…" deja una palabra huérfana
-  en móvil; las preguntas largas en mayúsculas en la tarjeta de
+  en móvil (ya no existe: lo sustituye el chip de la cabecera); las preguntas largas en mayúsculas en la tarjeta de
   resultado se leen mal.
 
 ## 7. Compatibilidad con Lonelog

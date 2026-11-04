@@ -1,302 +1,329 @@
-import { useMemo, useRef, useState, type ComponentType, type Ref } from "react";
+import { useLayoutEffect, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
+import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { usePlayActions } from "../hooks/usePlayActions";
-import type { Likelihood } from "../lib/oracle";
-import { getMeaningTables, type MeaningTable } from "../lib/tables";
-import { loadFavoriteTableIds } from "../lib/tableFavorites";
-import { COMPOSER_KINDS, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type ComposerKind } from "../lib/journalUi";
-import { DiceRoller } from "./DiceRoller";
-import { LikelihoodPicker } from "./LikelihoodPicker";
+import { interpolate } from "../lib/i18n";
+import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
+import { Modal } from "./Modal";
+import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import {
-  IconChevronDown,
+  IconAction,
   IconClose,
+  IconConsequence,
+  IconDice,
+  IconNote,
   IconOracle,
-  IconPlus,
-  IconStar,
+  IconSend,
+  IconSession,
   IconTable,
 } from "./icons/Icons";
 
-type Panel = "oracle" | "table" | null;
+type Tool = "oracle" | "table" | "dice";
+type IconType = ComponentType<{ size?: number; className?: string }>;
+
+const MODE_ICON: Record<ComposerMode, IconType> = {
+  note: IconNote,
+  action: IconAction,
+  roll: IconDice,
+  consequence: IconConsequence,
+  session: IconSession,
+};
 
 /**
- * Panel fijo al pie del diario: es la "mesa de juego". Desde aquí se
- * pregunta al oráculo o se tira en una tabla sin salir de la aventura
- * (se apunta en ESTA aventura, sea o no la activa), y se escribe lo
- * que pasa. Tras una tirada pasa solo a "Consecuencia", que es lo
- * siguiente que se suele apuntar.
+ * Composer fijo al pie del diario, en una sola fila para dejar la
+ * pantalla al diario: herramientas (oráculo, tabla, dados), el tipo de
+ * entrada como un chip dentro del campo, el texto y enviar.
+ *
+ * El texto admite varias líneas y el campo crece con él (hasta unas
+ * seis; luego hace scroll dentro). Con teclado físico Intro envía y
+ * Mayús+Intro salta de línea, como en un chat; en táctil Intro salta
+ * de línea y se envía con el botón (allí no hay Mayús a mano).
+ *
+ * Las herramientas se abren en una hoja desde abajo por encima del
+ * contenido (no empujan el composer ni tapan las últimas entradas), con
+ * pestañas para pasar de una a otra, y se cierran al tirar. En
+ * escritorio no aparecen aquí: viven en el panel fijo de la derecha
+ * (ver AdventureDetailView).
+ *
+ * El tipo y la tirada enlazada los guarda el padre, porque también los
+ * cambia el panel de escritorio: tras cualquier tirada pasa solo a
+ * "Consecuencia", que es lo siguiente que se suele apuntar.
  */
 export function JournalComposer({
   ref,
+  inputRef,
   adventureId,
+  mode,
+  onModeChange,
+  linkedRollId,
   onLogged,
+  onRolled,
 }: {
-  /** El diario lo mide para no dejar lo recién apuntado debajo del panel. */
+  /** El diario lo mide para no dejar lo recién apuntado debajo del composer. */
   ref?: Ref<HTMLDivElement>;
+  inputRef: RefObject<HTMLTextAreaElement | null>;
   adventureId: string;
-  /** Avisa de que se ha añadido algo, para que el diario baje hasta ello. */
+  mode: ComposerMode;
+  onModeChange: (mode: ComposerMode) => void;
+  linkedRollId: string | undefined;
+  /** Se ha apuntado algo escrito a mano. */
   onLogged: () => void;
+  /** Se ha tirado con una herramienta (rollId para enlazar la consecuencia). */
+  onRolled: (rollId?: string) => void;
 }) {
   const { t } = useLocaleContext();
   const { addEntry } = useJournalContext();
-  const { askOracle, rollTable } = usePlayActions();
-
-  const [expanded, setExpanded] = useState(true);
-  const [panel, setPanel] = useState<Panel>(null);
-  const [kind, setKind] = useState<ComposerKind>("note");
+  const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
-  // Tirada a la que se enlaza la próxima consecuencia (si la hay).
-  const [lastRollId, setLastRollId] = useState<string | undefined>(undefined);
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Teclado físico (ratón/trackpad): Intro envía. Se mira una vez; no
+  // cambia a mitad de partida.
+  const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
+  const sendsOnEnter = finePointer || mode === "session";
 
-  const kindLabels: Record<ComposerKind, string> = {
-    action: t.journal.kindAction,
-    roll: t.journal.kindRoll,
-    consequence: t.journal.kindConsequence,
-    note: t.journal.kindNote,
-  };
+  // El campo crece con el texto (vacío vuelve a una fila: si no, un
+  // placeholder largo que no cabe también lo haría crecer). Si lo
+  // último del diario se veía justo encima, se baja lo que crece para
+  // que el composer no lo tape.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    const root = el?.closest<HTMLElement>("[data-composer]");
+    if (!el || !root) return;
+    const listEnd = root.previousElementSibling?.getBoundingClientRect().bottom;
+    const lastWasVisible = listEnd !== undefined && listEnd <= root.getBoundingClientRect().top + 2;
+    el.style.height = "auto";
+    el.style.height = text ? `${el.scrollHeight}px` : "";
+    const covered = (listEnd ?? 0) - root.getBoundingClientRect().top;
+    if (lastWasVisible && covered > 0) window.scrollBy(0, covered);
+  }, [text, inputRef]);
 
-  // Una línea de contexto bajo los botones para que quede claro qué
-  // es cada tipo sin añadir pasos — sobre todo "Tirada", que se
-  // confunde fácil con las del oráculo/tablas (esas tienen sus propios
-  // botones; esta es para las de tu propio sistema).
-  const kindHints: Record<ComposerKind, string> = {
-    action: t.journal.composerHintAction,
-    roll: t.journal.composerHintRoll,
-    consequence: t.journal.composerHintConsequence,
-    note: t.journal.composerHintNote,
-  };
+  const placeholder =
+    mode === "consequence"
+      ? t.oracle.consequencePlaceholder
+      : mode === "session"
+        ? t.journal.newSessionPlaceholder
+        : t.journal.addPlaceholder;
 
-  function afterRoll(rollId: string) {
-    setPanel(null);
-    setKind("consequence");
-    setLastRollId(rollId);
-    onLogged();
-    // En táctil no se enfoca: abriría el teclado encima del resultado
-    // que se acaba de apuntar, justo cuando se quiere leer.
-    if (window.matchMedia("(pointer: fine)").matches) {
-      window.setTimeout(() => inputRef.current?.focus(), 0);
+  function handleSubmit() {
+    if (mode === "session") {
+      // Un título de sesión es de una línea (en Lonelog va entre "===").
+      addEntry(adventureId, "session", text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString());
+      onModeChange("note");
+    } else {
+      if (!text.trim()) return;
+      addEntry(adventureId, mode, text.trim(), mode === "consequence" ? linkedRollId : undefined);
     }
-  }
-
-  function handleAdd() {
-    if (!text.trim()) return;
-    addEntry(adventureId, kind, text.trim(), kind === "consequence" ? lastRollId : undefined);
-    if (kind !== "consequence") setLastRollId(undefined);
     setText("");
     onLogged();
   }
 
-  // Encadena tiradas del roller genérico al texto ya escrito (p. ej.
-  // "Ataque al orco" + tocar d20 -> "Ataque al orco d20 -> 14"), en
-  // vez de sustituirlo, para poder ir añadiendo contexto y dados.
-  function handleDiceRoll(rolled: string) {
-    setText((prev) => (prev.trim() ? `${prev.trim()} ${rolled}` : rolled));
+  const tools: { id: Tool; label: string; title: string; Icon: IconType }[] = [
+    { id: "oracle", label: t.journal.toolOracle, title: t.journal.toolOracleTitle, Icon: IconOracle },
+    { id: "table", label: t.journal.toolTable, title: t.journal.toolTableTitle, Icon: IconTable },
+    { id: "dice", label: t.journal.toolDice, title: t.journal.toolDiceTitle, Icon: IconDice },
+  ];
+  const openTool = tools.find((x) => x.id === tool);
+
+  function rolled(rollId?: string) {
+    setTool(null);
+    onRolled(rollId);
   }
 
   return (
-    <div ref={ref} className="sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto rounded-t-2xl border-t border-ink-border bg-ink-900/95 px-4 pt-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:rounded-b-none lg:border-b-0 lg:pb-2">
-      {!expanded ? (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          aria-label={t.journal.composerShow}
-          className="flex w-full items-center justify-center gap-2 pb-3 text-sm text-parchment-dim transition hover:text-gold"
+    <div
+      ref={ref}
+      data-composer
+      className="group/composer sticky bottom-[calc(3.375rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
+    >
+      <div className="flex items-center gap-1.5">
+        {/* Al escribir en un móvil estrecho se pliegan, para dejar el
+            ancho al texto (como en una app de mensajería). */}
+        <div className="flex shrink-0 gap-1 max-sm:group-has-[textarea:focus]/composer:hidden lg:hidden">
+          {tools.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTool(id)}
+              aria-label={label}
+              title={label}
+              className="flex size-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/20 active:scale-95"
+            >
+              <Icon size={19} />
+            </button>
+          ))}
+        </div>
+
+        <form
+          className="flex min-w-0 flex-1 items-end gap-1 rounded-xl border border-ink-border bg-ink-800/70 p-1 transition focus-within:border-gold"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
         >
-          <IconPlus size={16} />
-          {t.journal.composerCollapsedLabel}
-          <IconChevronDown size={14} className="rotate-180" />
-        </button>
-      ) : panel === "oracle" ? (
-        <OraclePanel
-          onClose={() => setPanel(null)}
-          onRoll={(question, likelihood) => afterRoll(askOracle(question, likelihood, adventureId).id)}
-        />
-      ) : panel === "table" ? (
-        <TablePanel
-          onClose={() => setPanel(null)}
-          onRoll={(table) => afterRoll(rollTable(table, adventureId).id)}
-        />
-      ) : (
-        <div className="flex flex-col gap-3 pb-3">
+          <ModePicker mode={mode} onChange={onModeChange} />
+          <textarea
+            ref={inputRef}
+            rows={1}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing || !sendsOnEnter) return;
+              e.preventDefault();
+              handleSubmit();
+            }}
+            placeholder={placeholder}
+            aria-label={placeholder}
+            enterKeyHint={sendsOnEnter ? "send" : "enter"}
+            className="max-h-40 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-1.5 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+          />
+          <button
+            type="submit"
+            aria-label={t.journal.sendButton}
+            title={t.journal.sendButton}
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold text-ink-950 transition hover:bg-gold-soft active:scale-95"
+          >
+            <IconSend size={17} />
+          </button>
+        </form>
+      </div>
+
+      {openTool && (
+        <Modal
+          sheet
+          onClose={() => setTool(null)}
+          label={openTool.title}
+          className="animate-fade-up flex max-h-[85dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-ink-border bg-ink-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl sm:p-6 md:max-w-3xl sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+        >
+          {/* Pestañas en vez de título: se pasa del oráculo a una tabla
+              sin cerrar la hoja (en escritorio están las tres a la vista). */}
           <div className="flex items-center gap-2">
-            <ToolButton Icon={IconOracle} label={t.journal.toolOracle} onClick={() => setPanel("oracle")} />
-            <ToolButton Icon={IconTable} label={t.journal.toolTable} onClick={() => setPanel("table")} />
+            <div role="tablist" aria-label={t.journal.playPanelLabel} className="flex min-w-0 flex-1 gap-1 rounded-xl bg-ink-900/60 p-1">
+              {tools.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={id === tool}
+                  onClick={() => setTool(id)}
+                  className={[
+                    "flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition",
+                    id === tool ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
+                  ].join(" ")}
+                >
+                  {/* En el móvil más estrecho no caben icono y nombre. */}
+                  <Icon size={16} className="shrink-0 max-[380px]:hidden" />
+                  <span className="truncate">{label}</span>
+                </button>
+              ))}
+            </div>
             <button
               type="button"
-              onClick={() => setExpanded(false)}
-              aria-label={t.journal.composerHide}
-              title={t.journal.composerHide}
-              className="-m-2 ml-auto shrink-0 p-2 text-parchment-dim/60 transition hover:text-parchment"
+              onClick={() => setTool(null)}
+              aria-label={t.common.close}
+              className="shrink-0 p-2 text-parchment-dim transition hover:text-parchment"
             >
-              <IconChevronDown size={18} />
+              <IconClose size={18} />
             </button>
           </div>
-
-          <div className="h-px bg-ink-border/70" />
-
-          <div className="flex flex-wrap gap-1.5">
-            {COMPOSER_KINDS.map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setKind(k)}
-                aria-pressed={kind === k}
-                className={[
-                  "rounded-lg px-3 py-1.5 text-sm transition",
-                  kind === k ? "bg-gold font-medium text-ink-950" : "text-parchment-dim hover:text-parchment",
-                ].join(" ")}
-              >
-                {kindLabels[k]}
-              </button>
-            ))}
-          </div>
-          <p className="-mt-1 text-xs text-parchment-dim/70">{kindHints[kind]}</p>
-          {kind === "roll" && <DiceRoller onRoll={handleDiceRoll} ariaLabel={t.journal.diceRollerLabel} />}
-          <form
-            className="flex items-center gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAdd();
-            }}
-          >
-            <input
-              ref={inputRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={kind === "consequence" ? t.oracle.consequencePlaceholder : t.journal.addPlaceholder}
-              enterKeyHint="send"
-              className={`${INPUT_CLASS} bg-ink-800/70`}
-            />
-            <button type="submit" className={PRIMARY_BUTTON_CLASS}>
-              {t.journal.addButton}
-            </button>
-          </form>
-        </div>
+          <h2 className="sr-only">{openTool.title}</h2>
+          {tool === "oracle" && <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />}
+          {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
+          {tool === "dice" && <DiceTool adventureId={adventureId} onRolled={rolled} />}
+        </Modal>
       )}
     </div>
   );
 }
 
-function ToolButton({
-  Icon,
-  label,
-  onClick,
-}: {
-  Icon: ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3.5 py-2 text-sm font-medium text-gold transition hover:bg-gold/20 active:scale-95"
-    >
-      <Icon size={18} />
-      {label}
-    </button>
-  );
-}
-
-function PanelHeader({
-  Icon,
-  title,
-  onClose,
-}: {
-  Icon: ComponentType<{ size?: number; className?: string }>;
-  title: string;
-  onClose: () => void;
-}) {
+/**
+ * Chip con el icono del tipo de entrada; abre hacia arriba la lista de
+ * tipos con una línea que explica cada uno (sustituye a las pestañas y
+ * a la pista fija que ocupaban dos filas del composer).
+ */
+function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: ComposerMode) => void }) {
   const { t } = useLocaleContext();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useDismiss(open, rootRef, () => setOpen(false));
+
+  const options: { mode: ComposerMode; label: string; hint: string }[] = [
+    ...COMPOSER_KINDS.map((k) => ({
+      mode: k,
+      label: {
+        note: t.journal.kindNote,
+        action: t.journal.kindAction,
+        roll: t.journal.kindRoll,
+        consequence: t.journal.kindConsequence,
+      }[k],
+      hint: {
+        note: t.journal.composerHintNote,
+        action: t.journal.composerHintAction,
+        roll: t.journal.composerHintRoll,
+        consequence: t.journal.composerHintConsequence,
+      }[k],
+    })),
+    { mode: "session", label: t.journal.newSessionButton, hint: t.journal.composerHintSession },
+  ];
+  const current = options.find((o) => o.mode === mode)!;
+  const CurrentIcon = MODE_ICON[mode];
+
   return (
-    <div className="flex items-center gap-2">
-      <Icon size={18} className="shrink-0 text-gold" />
-      <h2 className="min-w-0 flex-1 truncate font-display text-base text-parchment">{title}</h2>
+    // Sin "relative": el menú se coloca respecto al composer entero
+    // (que es sticky), así ocupa su ancho en móvil en vez de salirse
+    // por la derecha desde la posición del botón.
+    <div ref={rootRef} className="shrink-0">
       <button
         type="button"
-        onClick={onClose}
-        aria-label={t.common.close}
-        className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-parchment"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={interpolate(t.journal.kindMenuLabel, { kind: current.label })}
+        title={current.label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={[
+          "flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm transition",
+          open ? "bg-ink-700 text-parchment" : "text-gold hover:bg-ink-700/60",
+        ].join(" ")}
       >
-        <IconClose size={18} />
+        <CurrentIcon size={18} />
+        {/* El nombre solo cabe a partir de tablet; en móvil basta el icono. */}
+        <span className="hidden font-medium sm:inline">{current.label}</span>
       </button>
-    </div>
-  );
-}
 
-function OraclePanel({
-  onClose,
-  onRoll,
-}: {
-  onClose: () => void;
-  onRoll: (question: string, likelihood: Likelihood) => void;
-}) {
-  const { t } = useLocaleContext();
-  const [question, setQuestion] = useState("");
-  const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
-
-  return (
-    <form
-      className="flex flex-col gap-3 pb-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onRoll(question, likelihood);
-      }}
-    >
-      <PanelHeader Icon={IconOracle} title={t.journal.toolOracleTitle} onClose={onClose} />
-      <input
-        autoFocus
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        aria-label={t.oracle.questionLabel}
-        placeholder={t.oracle.questionPlaceholder}
-        enterKeyHint="go"
-        className={`${INPUT_CLASS} flex-none bg-ink-800/70`}
-      />
-      <LikelihoodPicker value={likelihood} onChange={setLikelihood} />
-      <button
-        type="submit"
-        className="w-full rounded-xl bg-gold py-2.5 font-display text-base font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
-      >
-        {t.oracle.rollButton}
-      </button>
-    </form>
-  );
-}
-
-function TablePanel({ onClose, onRoll }: { onClose: () => void; onRoll: (table: MeaningTable) => void }) {
-  const { t } = useLocaleContext();
-  const tables = useMemo(() => {
-    const favorites = loadFavoriteTableIds();
-    const all = getMeaningTables(t);
-    // Favoritas primero, igual que en la pantalla de Tablas.
-    return [...all.filter((x) => favorites.has(x.id)), ...all.filter((x) => !favorites.has(x.id))].map(
-      (table) => ({ table, favorite: favorites.has(table.id) }),
-    );
-  }, [t]);
-
-  return (
-    <div className="flex flex-col gap-3 pb-3">
-      <PanelHeader Icon={IconTable} title={t.journal.toolTableTitle} onClose={onClose} />
-      <p className="-mt-1 text-xs text-parchment-dim/70">{t.journal.toolTableHint}</p>
-      <ul className="grid max-h-[40vh] grid-cols-1 gap-2 overflow-y-auto overscroll-contain sm:grid-cols-2">
-        {tables.map(({ table, favorite }) => (
-          <li key={table.id}>
-            <button
-              type="button"
-              onClick={() => onRoll(table)}
-              className="flex w-full items-center gap-2 rounded-xl border border-ink-border bg-ink-800/60 px-3.5 py-2.5 text-left transition hover:border-gold/50 active:scale-[0.99]"
-            >
-              {favorite && <IconStar size={14} filled className="shrink-0 text-gold" />}
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">{table.name}</span>
-              <span className="shrink-0 rounded-md border border-gold/40 px-1.5 py-0.5 text-xs font-medium text-gold">
-                {table.dice}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      {open && (
+        <div
+          role="menu"
+          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
+        >
+          {options.map((o) => {
+            const Icon = MODE_ICON[o.mode];
+            const selected = o.mode === mode;
+            return (
+              <button
+                key={o.mode}
+                type="button"
+                role="menuitemradio"
+                aria-checked={selected}
+                onClick={() => {
+                  onChange(o.mode);
+                  setOpen(false);
+                }}
+                className={[
+                  "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
+                  selected ? "bg-gold/10" : "",
+                ].join(" ")}
+              >
+                <Icon size={18} className={`mt-0.5 shrink-0 ${selected ? "text-gold" : "text-parchment-dim"}`} />
+                <span className="min-w-0">
+                  <span className={`block text-sm font-medium ${selected ? "text-gold" : "text-parchment"}`}>
+                    {o.label}
+                  </span>
+                  <span className="block text-xs text-parchment-dim">{o.hint}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,8 @@ interface UseHistoryResult {
   error: string | null;
   addEntry: (entry: HistoryEntry) => void;
   removeEntry: (id: string) => void;
+  /** Vuelve a poner una tirada borrada (Deshacer) en su sitio, por fecha. */
+  restoreEntry: (entry: HistoryEntry) => void;
   toggleFavorite: (id: string) => void;
   clear: () => void;
   retry: () => void;
@@ -99,6 +101,17 @@ export function useHistory(): UseHistoryResult {
     [persist],
   );
 
+  const restoreEntry = useCallback(
+    (entry: HistoryEntry) => {
+      persist((prev) =>
+        prev.some((e) => e.id === entry.id)
+          ? prev
+          : [...prev, entry].sort((a, b) => b.timestamp - a.timestamp),
+      );
+    },
+    [persist],
+  );
+
   const toggleFavorite = useCallback(
     (id: string) => {
       persist((prev) =>
@@ -129,6 +142,7 @@ export function useHistory(): UseHistoryResult {
     error,
     addEntry,
     removeEntry,
+    restoreEntry,
     toggleFavorite,
     clear,
     retry,

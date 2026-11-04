@@ -9,9 +9,11 @@ const ORDER: Likelihood[] = [
   "muy-probable",
 ];
 
-// En móvil las cinco etiquetas completas no caben en una fila (se
+// Las cinco etiquetas completas no caben en una fila estrecha (se
 // cortaban: "Equilibrad…"), así que ahí se muestra una escala corta y
-// debajo el nombre de la opción elegida. Desde sm caben enteras.
+// debajo el nombre de la opción elegida. Depende del ancho del propio
+// selector (container query), no de la pantalla: en escritorio también
+// vive en la columna estrecha de la mesa de juego.
 const SHORT: Record<Likelihood, string> = {
   "muy-improbable": "−−",
   improbable: "−",
@@ -30,7 +32,7 @@ export function LikelihoodPicker({
   const { t } = useLocaleContext();
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="@container flex flex-col gap-1.5">
       <div
         role="radiogroup"
         aria-label={t.likelihoodGroupLabel}
@@ -54,17 +56,17 @@ export function LikelihoodPicker({
               ].join(" ")}
               title={t.likelihood[option]}
             >
-              <span aria-hidden className="text-base sm:hidden">
+              <span aria-hidden className="text-base @md:hidden">
                 {SHORT[option]}
               </span>
-              <span aria-hidden className="hidden text-xs sm:inline">
+              <span aria-hidden className="hidden text-xs @md:inline">
                 {t.likelihood[option]}
               </span>
             </button>
           );
         })}
       </div>
-      <p className="text-center text-xs text-parchment-dim sm:hidden">
+      <p className="text-center text-xs text-parchment-dim @md:hidden">
         {t.likelihoodGroupLabel}:{" "}
         <span className="font-medium text-parchment">{t.likelihood[value]}</span>
       </p>

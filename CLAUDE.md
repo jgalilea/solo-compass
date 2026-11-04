@@ -45,7 +45,9 @@ Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/diario`
 The nav has only three tabs (Oráculo, Tablas, Diario): `/historial` is
 reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
 highlights the Oráculo tab. Theme, mode, language, backup and credits all
-live in one header button (`SettingsDialog`).
+live in one header button (`SettingsDialog`). Which adventure rolls are
+being logged to is shown in one place only: the header chip
+(`ActiveAdventureChip`), the same on every screen.
 Context providers are nested in a fixed order in `App.tsx`; `LocaleProvider`
 wraps `AppErrorBoundary` (not the other way round) so the error boundary can
 render its fallback in the right language even if something below it throws.
@@ -83,8 +85,9 @@ No backend; persistence is split by access pattern, not by feature:
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
   browser (`navigator.storage.persist()`) not to evict its data. Never call
   it silently — Firefox shows its own permission prompt — always behind
-  the in-app explanation (`StorageProtection.tsx`: a one-time prompt once
-  the first adventure exists, plus a status/retry block in Settings).
+  the in-app explanation, and only from Settings (`StorageProtection.tsx`:
+  status, button and explanation). The app never offers it on its own
+  in the journal or elsewhere — it got in the way of playing.
 - **Updates (service worker)**: `registerType: "prompt"` in
   `vite.config.ts`, registered from `UpdatePrompt.tsx`. It checks for a new
   version when the app returns to the foreground and hourly (an installed
@@ -113,11 +116,21 @@ directions:
 ### Rolling from several screens (`src/hooks/usePlayActions.ts`)
 
 Asking the oracle and rolling on a table can happen from the Oracle screen,
-the Tables screen and the journal's bottom composer (`JournalComposer`, the
-"game table" of an adventure). All three go through `usePlayActions`, which
+the Tables screen and an adventure's "game table" (`PlayTools.tsx`:
+oracle, tables and dice). All of them go through `usePlayActions`, which
 always records to history and, if there's a target adventure (the active
-one by default; the composer passes its own adventure id), logs the
+one by default; the game table passes its own adventure id), logs the
 Lonelog entries. Don't duplicate that logic in a view.
+
+The game table tools are the same components in two places: a bottom
+sheet with tabs opened from the one-row composer (`JournalComposer`,
+mobile and tablet; `Modal` with `sheet`, so it stays a bottom sheet on
+tablet too) and a fixed right-hand panel (desktop, where the composer
+has no tool buttons). The composer's text is an auto-growing textarea:
+Enter sends with a fine pointer (Shift+Enter = new line); on touch Enter
+is a new line and the send button sends. The composer's entry type and the roll a consequence links
+to live in `AdventureDetailView`, because both places change them (after
+any roll the composer switches to "Consecuencia").
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -157,9 +170,21 @@ inside it (`backdrop-filter`/z-index stacking).
 ### Responsive
 
 Mobile-first; `md` widens content, `lg` (desktop) moves the nav into a
-sticky header, hides the bottom bar and uses two columns where it helps
-(oracle form/result, tables list/result panel). Check changes at phone,
-tablet and desktop widths.
+sticky header (exactly `h-14`; sticky columns below it use `top-14`),
+hides the bottom bar and uses two columns where it helps (oracle
+form/result, tables list/result panel). An adventure becomes a workspace:
+journal + game table panel at `lg`, plus a session index on the left at
+`xl` (below `xl` the same index is a dropdown in the adventure header). Keep the journal free of fixed chrome on phones (one-row composer,
+tools in sheets, entry buttons only on tap/hover). Components that live
+both in a wide page and in the narrow desktop panel (e.g.
+`LikelihoodPicker`) adapt with container queries (`@container`/`@md:`),
+not viewport breakpoints. Check changes at phone, tablet and desktop
+widths.
+
+Deleting a journal entry or a history roll is immediate with a "Deshacer"
+toast (`Toast` with `action`); `ConfirmDialog` is only for big,
+irreversible actions (deleting an adventure, clearing history, restoring
+a backup).
 
 ### Theming (`src/lib/theme.ts` + `src/index.css`)
 

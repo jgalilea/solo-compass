@@ -29,6 +29,7 @@ import {
   ListBulletIcon,
   MagnifyingGlassIcon,
   NewspaperIcon,
+  PaperAirplaneIcon,
   PauseIcon,
   PencilIcon,
   PlayIcon,
@@ -199,6 +200,9 @@ export function IconArchive(props: IconProps) {
 }
 export function IconArchiveRestore(props: IconProps) {
   return <HeroIcon icon={ArrowUturnLeftIcon} {...props} />;
+}
+export function IconSend(props: IconProps) {
+  return <HeroIcon icon={PaperAirplaneIcon} {...props} />;
 }
 export function IconMore(props: IconProps) {
   return <HeroIcon icon={EllipsisHorizontalIcon} {...props} />;

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useRef, useState, type ComponentType } from "react";
+import { useDismiss } from "../hooks/useDismiss";
 import { IconMore } from "./icons/Icons";
 
 export interface ActionMenuItem {
@@ -17,21 +18,7 @@ export function ActionMenu({ label, items }: { label: string; items: ActionMenuI
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function handlePointerDown(e: PointerEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    }
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
+  useDismiss(open, rootRef, () => setOpen(false));
 
   return (
     <div ref={rootRef} className="relative shrink-0">

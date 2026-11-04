@@ -24,6 +24,7 @@ export interface Dictionary {
     viewOriginal: string;
     save: string;
     delete: string;
+    undo: string;
   };
   nav: {
     oracle: string;
@@ -48,8 +49,6 @@ export interface Dictionary {
   };
   storage: {
     sectionTitle: string;
-    promptTitle: string;
-    promptIntro: string;
     whatTitle: string;
     what: string;
     benefitTitle: string;
@@ -60,15 +59,9 @@ export interface Dictionary {
     ownership: string;
     protectButton: string;
     protecting: string;
-    decline: string;
-    declineNote: string;
     howToRemoveTitle: string;
     howToRemove: string;
-    done: string;
-    grantedTitle: string;
-    granted: string;
     deniedTitle: string;
-    denied: string;
     deniedInSettings: string;
     statusProtected: string;
     statusUnprotected: string;
@@ -224,10 +217,7 @@ export interface Dictionary {
     clearConfirmTitle: string;
     clearConfirmDescription: string;
     clearConfirmButton: string;
-    deleteConfirmTitle: string;
-    deleteConfirmSuffix: string;
-    deleteConfirmButton: string;
-    describeOracleFallback: string;
+    entryDeleted: string;
     storageUnavailableError: string;
     storageCorruptedError: string;
     storageSaveError: string;
@@ -255,18 +245,13 @@ export interface Dictionary {
     activeAdventureNote: string;
     noActiveAdventureNote: string;
     activateHint: string;
-    activateNudge: string;
     goToActiveAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;
     dragHandle: string;
     toggleSession: string;
-    currentSessionBadge: string;
     previousSessionsHeading: string;
     togglePreviousSessions: string;
-    composerShow: string;
-    composerHide: string;
-    composerCollapsedLabel: string;
     diceRollerLabel: string;
     searchPlaceholder: string;
     searchLabel: string;
@@ -292,7 +277,6 @@ export interface Dictionary {
     toolTable: string;
     toolOracleTitle: string;
     toolTableTitle: string;
-    toolTableHint: string;
     moreActions: string;
     composerHintAction: string;
     composerHintRoll: string;
@@ -300,6 +284,21 @@ export interface Dictionary {
     composerHintNote: string;
     addPlaceholder: string;
     addButton: string;
+    sendButton: string;
+    kindMenuLabel: string;
+    composerHintSession: string;
+    toolDice: string;
+    toolDiceTitle: string;
+    diceLabelPlaceholder: string;
+    diceHint: string;
+    diceLog: string;
+    diceClear: string;
+    entryDeleted: string;
+    sessionsHeading: string;
+    prologueLabel: string;
+    noActiveChip: string;
+    noActiveChipTitle: string;
+    playPanelLabel: string;
     newSessionButton: string;
     newSessionPlaceholder: string;
     deleteEntry: string;

@@ -1,35 +1,32 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { Toast } from "./Toast";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { IconArrowLeft, IconHistory, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
-import type { Dictionary } from "../lib/i18n";
 
 type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
 
-function describeEntry(t: Dictionary, entry: HistoryEntry): string {
-  if (entry.kind === "oraculo") {
-    return entry.question ? `“${entry.question}”` : t.history.describeOracleFallback;
-  }
-  return `${entry.tableName}: ${entry.resultText}`;
-}
-
 export function HistoryView() {
-  const { status, entries, error, removeEntry, toggleFavorite, clear, retry } =
+  const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
     useHistoryContext();
   const { t } = useLocaleContext();
   const [filter, setFilter] = useState<Filter>("todo");
   const [confirmingClear, setConfirmingClear] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  // Borrar una tirada no pide confirmación: se deshace desde el aviso.
+  // Vaciar todo el historial sí la pide (es grande e irreversible).
+  const [deletedEntry, setDeletedEntry] = useState<HistoryEntry | null>(null);
+  const dismissUndo = useCallback(() => setDeletedEntry(null), []);
 
-  const entryToDelete = useMemo(
-    () => entries.find((e) => e.id === deleteId) ?? null,
-    [entries, deleteId],
-  );
+  function deleteWithUndo(id: string) {
+    const entry = entries.find((e) => e.id === id);
+    removeEntry(id);
+    if (entry) setDeletedEntry(entry);
+  }
 
   const filtered = useMemo(() => {
     if (filter === "todo") return entries;
@@ -137,7 +134,7 @@ export function HistoryView() {
             <li key={entry.id}>
               <HistoryEntryCard
                 entry={entry}
-                onRequestDelete={setDeleteId}
+                onRequestDelete={deleteWithUndo}
                 onToggleFavorite={toggleFavorite}
               />
             </li>
@@ -158,16 +155,15 @@ export function HistoryView() {
         />
       )}
 
-      {entryToDelete && (
-        <ConfirmDialog
-          title={t.history.deleteConfirmTitle}
-          description={`${describeEntry(t, entryToDelete)} ${t.history.deleteConfirmSuffix}`}
-          confirmLabel={t.history.deleteConfirmButton}
-          onConfirm={() => {
-            removeEntry(entryToDelete.id);
-            setDeleteId(null);
-          }}
-          onCancel={() => setDeleteId(null)}
+      {deletedEntry && (
+        <Toast
+          key={deletedEntry.id}
+          Icon={IconTrash}
+          title={t.history.entryDeleted}
+          closeLabel={t.common.close}
+          action={{ label: t.common.undo, onClick: () => restoreEntry(deletedEntry) }}
+          duration={6000}
+          onDismiss={dismissUndo}
         />
       )}
     </div>

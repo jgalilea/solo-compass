@@ -11,14 +11,13 @@
  * - Firefox muestra su propio aviso de permiso al pedirlo.
  * - Chrome/Edge y Safari no preguntan: lo conceden o no según el uso
  *   (p. ej. si la app está instalada en la pantalla de inicio).
- * Por eso nunca se pide en silencio: antes se explica en la app qué
- * es (StorageProtection), para que el aviso de Firefox no pille a
- * nadie por sorpresa, y la persona decide si lo pide.
+ * Por eso nunca se pide en silencio ni se ofrece por iniciativa de la
+ * app: solo desde Ajustes, con la explicación al lado
+ * (StorageProtection), para que el aviso de Firefox no pille a nadie
+ * por sorpresa.
  */
 
 export type PersistenceStatus = "persisted" | "not-persisted" | "unsupported";
-
-const PROMPT_SEEN_KEY = "solo-compass:storage-prompt-seen";
 
 function isSupported(): boolean {
   return (
@@ -45,23 +44,5 @@ export async function requestPersistentStorage(): Promise<boolean> {
     return await navigator.storage.persist();
   } catch {
     return false;
-  }
-}
-
-/** Si ya se mostró la explicación automática (solo se enseña una vez). */
-export function hasSeenPersistencePrompt(): boolean {
-  try {
-    return window.localStorage.getItem(PROMPT_SEEN_KEY) === "1";
-  } catch {
-    // Sin localStorage no se puede recordar: mejor no insistir.
-    return true;
-  }
-}
-
-export function markPersistencePromptSeen(): void {
-  try {
-    window.localStorage.setItem(PROMPT_SEEN_KEY, "1");
-  } catch {
-    // Sin localStorage disponible: no pasa nada.
   }
 }

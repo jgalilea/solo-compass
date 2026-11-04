@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEntryBlocks, groupBySession, splitRollText } from "./journalUi";
+import { buildEntryBlocks, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 let n = 0;
@@ -77,5 +77,34 @@ describe("splitRollText", () => {
 
   it("sin «->» todo es detalle", () => {
     expect(splitRollText("tiro dados")).toEqual({ detail: "tiro dados", result: null, answer: undefined });
+  });
+});
+
+describe("splitRollSeries", () => {
+  it("separa cada dado de su resultado, con comas o sin ellas", () => {
+    const rolls = [
+      { die: "d10", result: "9" },
+      { die: "d10", result: "5" },
+      { die: "d10", result: "2" },
+    ];
+    expect(splitRollSeries("d10 -> 9, d10 -> 5, d10 -> 2")).toEqual({ label: "", rolls });
+    expect(splitRollSeries("d10 -> 9 d10 -> 5 d10 -> 2")).toEqual({ label: "", rolls });
+  });
+
+  it("conserva el texto de delante y los resultados de Fudge y d%", () => {
+    expect(splitRollSeries("Ataque al orco d20 -> 14, 4dF -> +1 (+ 0 − +), d% -> 73")).toEqual({
+      label: "Ataque al orco",
+      rolls: [
+        { die: "d20", result: "14" },
+        { die: "4dF", result: "+1 (+ 0 − +)" },
+        { die: "d%", result: "73" },
+      ],
+    });
+  });
+
+  it("deja como tirada normal una sola tirada, el oráculo o texto libre", () => {
+    expect(splitRollSeries("d20 -> 14")).toBeNull();
+    expect(splitRollSeries("Recluse — blanco 5 / negro 2 -> Sí")).toBeNull();
+    expect(splitRollSeries("Sigilo -> Sí, d6 -> 3")).toBeNull();
   });
 });

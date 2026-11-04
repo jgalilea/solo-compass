@@ -1,39 +1,59 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { exportAdventureToMarkdown } from "../lib/lonelog";
+import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
 import { ActionMenu } from "./ActionMenu";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { JournalComposer } from "./JournalComposer";
+import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
-import { EntryList, SessionGroupRow, type EntryActions } from "./journalShared";
+import { EntryList, LineButtons, SessionGroupRow, type EntryActions } from "./journalShared";
 import {
   downloadTextFile,
   groupBySession,
   INPUT_CLASS,
   PRIMARY_BUTTON_CLASS,
   sanitizeFilename,
-  SECONDARY_BUTTON_CLASS,
+  type ComposerMode,
+  type EntryGroup,
 } from "../lib/journalUi";
 import {
   IconArchive,
   IconArchiveRestore,
   IconArrowLeft,
-  IconCheck,
   IconChevronRight,
+  IconDice,
   IconDownload,
   IconJournal,
+  IconOracle,
+  IconPause,
   IconPencil,
   IconPlay,
-  IconPlus,
+  IconSession,
   IconStar,
+  IconTable,
   IconTrash,
 } from "./icons/Icons";
 
+/**
+ * Una aventura: su diario y la "mesa de juego" para seguir jugándola.
+ *
+ * - Móvil/tablet: una sola columna para el diario, con el composer de
+ *   una fila al pie; oráculo, tablas y dados se abren en una hoja.
+ * - Escritorio (lg): el diario en el centro y la mesa siempre abierta a
+ *   la derecha, sin hojas. Desde xl, a la izquierda, el índice de
+ *   sesiones para saltar entre ellas.
+ *
+ * Las sesiones van en orden cronológico, como el propio diario: las
+ * anteriores, plegadas, arriba; la actual (la última) abierta debajo,
+ * con su título fijo arriba al hacer scroll.
+ */
 export function AdventureDetailView() {
   const { adventureId = "" } = useParams<{ adventureId: string }>();
   const navigate = useNavigate();
@@ -48,8 +68,8 @@ export function AdventureDetailView() {
     deleteAdventure,
     toggleAdventureFavorite,
     setAdventureStatus,
-    addEntry,
     removeEntry,
+    restoreEntry,
     editEntry,
   } = useJournalContext();
   const { entries: historyEntries } = useHistoryContext();
@@ -65,49 +85,31 @@ export function AdventureDetailView() {
     [entries, adventureId],
   );
   const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
-  const lastSessionId = useMemo(() => {
-    const last = groups.findLast((g) => g.sessionEntry);
-    return last?.sessionEntry?.id ?? null;
-  }, [groups]);
 
-  // La sesión actual (la última creada, o el "prólogo" si aún no hay
-  // ninguna sesión) se pinta siempre primero y siempre expandida —
-  // así nunca hay que bajar entre sesiones ya cerradas para llegar a
-  // ella. El resto vive en "Sesiones anteriores", colapsado.
-  const currentGroupIndex = useMemo(() => {
-    if (lastSessionId) return groups.findIndex((g) => g.sessionEntry?.id === lastSessionId);
-    return groups.length > 0 ? groups.length - 1 : -1;
-  }, [groups, lastSessionId]);
-  const currentGroup = currentGroupIndex >= 0 ? groups[currentGroupIndex] : null;
-  const previousGroups = groups.filter((_, i) => i !== currentGroupIndex);
+  // La sesión actual es la última: siempre abierta. Las anteriores
+  // (y el "prólogo" sin sesión, si lo hay) van plegadas encima.
+  const currentGroup = groups.at(-1) ?? null;
+  const previousGroups = groups.slice(0, -1);
 
-  const [manualOverrides, setManualOverrides] = useState<Map<string, boolean>>(new Map());
-
-  function isSessionExpanded(id: string): boolean {
-    return manualOverrides.get(id) ?? false;
-  }
-
-  function toggleSession(id: string) {
-    setManualOverrides((prev) => {
-      const next = new Map(prev);
-      next.set(id, !isSessionExpanded(id));
-      return next;
-    });
-  }
-
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   const [previousExpanded, setPreviousExpanded] = useState(false);
   // Un solo id "en edición" a la vez para toda la pantalla (título de
-  // sesión o cualquier entrada) — abrir uno cierra cualquier otro que
-  // estuviera abierto, en vez de permitir varios formularios a la vez.
+  // sesión o cualquier entrada), y uno "seleccionado" (táctil: muestra
+  // sus botones) — abrir uno cierra el que hubiera.
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
+  const [deletedEntry, setDeletedEntry] = useState<JournalEntry | null>(null);
 
-  const [sessionTitle, setSessionTitle] = useState("");
-  const [showNewSession, setShowNewSession] = useState(false);
+  // Composer: el tipo y la tirada a la que enlazar la consecuencia viven
+  // aquí porque también los cambia el panel de escritorio.
+  const [composerMode, setComposerMode] = useState<ComposerMode>("note");
+  const [linkedRollId, setLinkedRollId] = useState<string | undefined>(undefined);
+  const composerInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Respuesta del oráculo de cada tirada enlazada, para pintarla con
   // su color en el diario (Sí/No/Contradicción).
@@ -117,19 +119,47 @@ export function AdventureDetailView() {
     return map;
   }, [historyEntries]);
 
+  // Borrar no pide confirmación: se deshace desde el aviso (el último
+  // borrado; uno nuevo sustituye al anterior).
+  const deleteEntryWithUndo = useCallback(
+    (id: string) => {
+      const entry = entries.find((e) => e.id === id);
+      removeEntry(id);
+      setSelectedEntryId(null);
+      if (entry) setDeletedEntry(entry);
+    },
+    [entries, removeEntry, setSelectedEntryId],
+  );
+  const dismissUndo = useCallback(() => setDeletedEntry(null), []);
+  const dismissExported = useCallback(() => setExportedFilename(null), []);
+
   const entryActions: EntryActions = {
-    onDelete: removeEntry,
+    onDelete: deleteEntryWithUndo,
     onEdit: editEntry,
     editingId: editingEntryId,
-    onStartEdit: setEditingEntryId,
+    onStartEdit: (id) => {
+      setSelectedEntryId(null);
+      setEditingEntryId(id);
+    },
     onStopEdit: () => setEditingEntryId(null),
+    selectedId: selectedEntryId,
+    onSelect: setSelectedEntryId,
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
   };
 
-  // Al apuntar algo desde el panel de abajo, se baja hasta ello para
-  // que se vea el resultado (si no, en móvil queda tapado por el panel).
-  // Es un ref (no estado): solo marca que la próxima entrada nueva
-  // viene del panel, sin provocar un render extra.
+  // Tocar fuera de cualquier entrada quita la selección.
+  useEffect(() => {
+    if (!selectedEntryId) return;
+    function handlePointerDown(e: PointerEvent) {
+      if (!(e.target as Element).closest?.("[data-entry]")) setSelectedEntryId(null);
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [selectedEntryId]);
+
+  // Al apuntar algo se baja hasta ello para que se vea el resultado. Es
+  // un ref (no estado): solo marca que la próxima entrada nueva viene
+  // del composer o de la mesa, sin provocar un render extra.
   const listEndRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
   const scrollPendingRef = useRef(false);
@@ -138,13 +168,11 @@ export function AdventureDetailView() {
     scrollPendingRef.current = false;
     const end = listEndRef.current;
     if (!end) return;
-    // El panel cambia de alto según el modo (los dados de "Tirada", una
-    // pista de dos líneas…), así que se mide en cada vez en lugar de
-    // usar un margen fijo: con uno fijo, la entrada recién apuntada
-    // quedaba a veces tapada justo por la parte que importa.
+    // Se mide el composer cada vez en lugar de usar un margen fijo: su
+    // alto cambia (p. ej. en escritorio no lleva herramientas).
     const visibleBottom = composerRef.current?.getBoundingClientRect().top ?? window.innerHeight;
     const delta = end.getBoundingClientRect().top - (visibleBottom - 12);
-    window.scrollBy({ top: delta, behavior: "smooth" });
+    if (delta > 0) window.scrollBy({ top: delta, behavior: "smooth" });
   }, [adventureEntries.length]);
 
   if (status === "loading") {
@@ -184,13 +212,6 @@ export function AdventureDetailView() {
     setRenaming(false);
   }
 
-  function handleAddSession() {
-    const title = sessionTitle.trim() || new Date().toLocaleDateString();
-    addEntry(adventure!.id, "session", title);
-    setSessionTitle("");
-    setShowNewSession(false);
-  }
-
   function commitSessionTitleEdit() {
     if (currentGroup?.sessionEntry && sessionTitleEditValue.trim()) {
       editEntry(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
@@ -205,123 +226,205 @@ export function AdventureDetailView() {
     setExportedFilename(filename);
   }
 
+  function handleLogged() {
+    if (composerMode !== "consequence") setLinkedRollId(undefined);
+    scrollPendingRef.current = true;
+  }
+
+  // Tras una tirada (oráculo, tabla o dados) lo siguiente suele ser
+  // apuntar qué pasa: el composer pasa solo a "Consecuencia".
+  function handleRolled(rollId?: string) {
+    setComposerMode("consequence");
+    setLinkedRollId(rollId);
+    scrollPendingRef.current = true;
+    // En táctil no se enfoca: abriría el teclado encima del resultado
+    // que se acaba de apuntar, justo cuando se quiere leer.
+    if (window.matchMedia("(pointer: fine)").matches) {
+      window.setTimeout(() => composerInputRef.current?.focus(), 0);
+    }
+  }
+
+  // Saltar a una sesión desde el índice (index: posición en `groups`;
+  // la última es la actual). Se despliega con flushSync para que ya
+  // esté pintada al llevarla a la vista.
+  function jumpToSession(index: number) {
+    const group = groups[index];
+    if (!group) return;
+    let target = group.sessionEntry?.id ?? "current";
+    if (index < groups.length - 1) {
+      flushSync(() => {
+        setPreviousExpanded(true);
+        if (group.sessionEntry) setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
+      });
+      if (!group.sessionEntry) target = "previous";
+    }
+    document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const isArchived = adventure.status === "archived";
-  // "Pausada" no es un estado guardado: es solo cómo se ve cualquier
-  // aventura en curso que no es la activa ahora mismo.
-  const isPaused = !isArchived && !isActive;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pt-8 sm:py-12 md:max-w-3xl lg:pb-0">
-      <div className="flex items-center gap-1">
-        <Link
-          to="/diario"
-          aria-label={t.journal.backToList}
-          className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
-        >
-          <IconArrowLeft size={20} />
-        </Link>
-        {renaming ? (
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <input
-              autoFocus
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitRename();
-                if (e.key === "Escape") setRenaming(false);
-              }}
-              placeholder={t.journal.renameAdventurePlaceholder}
-              className={INPUT_CLASS}
-            />
-            <button type="button" onClick={commitRename} className={PRIMARY_BUTTON_CLASS}>
-              {t.common.save}
-            </button>
-          </div>
-        ) : (
-          <>
-            <h1 className="min-w-0 flex-1 truncate font-display text-2xl text-parchment sm:text-3xl">
-              {adventure.name}
-            </h1>
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[13rem_minmax(0,1fr)_21rem]">
+      {groups.some((g) => g.sessionEntry) && (
+        <SessionIndex
+          groups={groups}
+          onJump={jumpToSession}
+          className="hidden xl:flex"
+        />
+      )}
+
+      <div className="flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] xl:col-start-2">
+        <div className="relative flex items-center gap-2">
+          <Link
+            to="/diario"
+            aria-label={t.journal.backToList}
+            className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
+          >
+            <IconArrowLeft size={20} />
+          </Link>
+          {renaming ? (
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitRename();
+                  if (e.key === "Escape") setRenaming(false);
+                }}
+                placeholder={t.journal.renameAdventurePlaceholder}
+                className={INPUT_CLASS}
+              />
+              <button type="button" onClick={commitRename} className={PRIMARY_BUTTON_CLASS}>
+                {t.common.save}
+              </button>
+            </div>
+          ) : (
+            <>
+              <h1 className="min-w-0 truncate font-display text-2xl text-parchment sm:text-3xl">
+                {adventure.favorite && <IconStar size={16} filled className="mr-1.5 inline align-baseline text-gold" />}
+                {adventure.name}
+              </h1>
+              {isActive ? (
+                <span
+                  title={interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium text-gold"
+                >
+                  <span className="size-1.5 rounded-full bg-gold" />
+                  {t.journal.activeLabel}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveAdventureId(adventure.id)}
+                  title={t.journal.activateHint}
+                  className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                >
+                  <IconPlay size={13} />
+                  {t.journal.setActive}
+                </button>
+              )}
+              {isArchived && (
+                <span className="shrink-0 rounded-full border border-ink-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-parchment-dim">
+                  {t.journal.statusArchived}
+                </span>
+              )}
+              <div className="ml-auto" />
+              {/* Con una sola sesión no hay adónde saltar. */}
+              {groups.length > 1 && <SessionMenu groups={groups} onJump={jumpToSession} className="xl:hidden" />}
+              {/* Todo lo poco frecuente, agrupado, para que la cabecera
+                  quepa en una línea y no compita con lo que se usa al jugar. */}
+              <ActionMenu
+                label={t.journal.moreActions}
+                items={[
+                  {
+                    label: adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd,
+                    Icon: IconStar,
+                    onSelect: () => toggleAdventureFavorite(adventure.id),
+                  },
+                  ...(isActive
+                    ? [{ label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }]
+                    : []),
+                  { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
+                  { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
+                  isArchived
+                    ? {
+                        label: t.journal.unarchiveAdventure,
+                        Icon: IconArchiveRestore,
+                        onSelect: () => setAdventureStatus(adventure.id, "ongoing"),
+                      }
+                    : {
+                        label: t.journal.archiveAdventure,
+                        Icon: IconArchive,
+                        onSelect: () => setAdventureStatus(adventure.id, "archived"),
+                      },
+                  { label: t.journal.deleteAdventure, Icon: IconTrash, onSelect: () => setDeleting(true), danger: true },
+                ]}
+              />
+            </>
+          )}
+        </div>
+
+        {previousGroups.length > 0 && (
+          <section id="session-previous" className="flex scroll-mt-16 flex-col gap-2">
             <button
               type="button"
-              onClick={() => toggleAdventureFavorite(adventure.id)}
-              aria-pressed={adventure.favorite}
-              aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
-              className={[
-                "-m-1 shrink-0 p-1.5 transition",
-                adventure.favorite ? "text-gold" : "text-parchment-dim/50 hover:text-gold",
-              ].join(" ")}
+              onClick={() => setPreviousExpanded((v) => !v)}
+              aria-expanded={previousExpanded}
+              aria-label={t.journal.togglePreviousSessions}
+              className="flex items-center gap-2 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
             >
-              <IconStar size={20} filled={adventure.favorite} />
+              <IconChevronRight
+                size={14}
+                className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
+              />
+              {t.journal.previousSessionsHeading}
+              <span className="text-parchment-dim/50">{previousGroups.length}</span>
             </button>
-            {/* Acciones poco frecuentes agrupadas, para que la cabecera
-                no compita con lo que se usa al jugar. */}
-            <ActionMenu
-              label={t.journal.moreActions}
-              items={[
-                { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
-                { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
-                isArchived
-                  ? {
-                      label: t.journal.unarchiveAdventure,
-                      Icon: IconArchiveRestore,
-                      onSelect: () => setAdventureStatus(adventure.id, "ongoing"),
-                    }
-                  : {
-                      label: t.journal.archiveAdventure,
-                      Icon: IconArchive,
-                      onSelect: () => setAdventureStatus(adventure.id, "archived"),
-                    },
-                { label: t.journal.deleteAdventure, Icon: IconTrash, onSelect: () => setDeleting(true), danger: true },
-              ]}
-            />
-          </>
+            {previousExpanded && (
+              <ul className="flex flex-col gap-2">
+                {previousGroups.map((group, i) =>
+                  group.sessionEntry ? (
+                    <SessionGroupRow
+                      key={group.sessionEntry.id}
+                      group={group}
+                      expanded={expandedSessions.has(group.sessionEntry.id)}
+                      onToggle={() =>
+                        setExpandedSessions((prev) => {
+                          const next = new Set(prev);
+                          const id = group.sessionEntry!.id;
+                          if (next.has(id)) next.delete(id);
+                          else next.add(id);
+                          return next;
+                        })
+                      }
+                      toggleLabel={t.journal.toggleSession}
+                      actions={entryActions}
+                    />
+                  ) : (
+                    <Fragment key={`prologue-${i}`}>
+                      <EntryList items={group.items} actions={entryActions} />
+                    </Fragment>
+                  ),
+                )}
+              </ul>
+            )}
+          </section>
         )}
-      </div>
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <button
-          type="button"
-          onClick={() => setActiveAdventureId(isActive ? null : adventure.id)}
-          aria-pressed={isActive}
-          aria-label={isActive ? t.journal.unsetActive : t.journal.setActive}
-          title={isActive ? t.journal.unsetActive : t.journal.setActive}
-          className={[
-            "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition",
-            isActive
-              ? "border-gold/50 bg-gold/10 text-gold"
-              : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
-          ].join(" ")}
-        >
-          {isActive ? <IconCheck size={16} /> : <IconPlay size={16} />}
-          {isActive ? t.journal.activeLabel : t.journal.setActive}
-        </button>
-        {(isPaused || isArchived) && (
-          <span className="rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-            {isArchived ? t.journal.statusArchived : t.journal.statusPaused}
-          </span>
-        )}
-        <p className={`min-w-0 basis-full text-sm sm:basis-auto sm:flex-1 ${isActive ? "text-gold/80" : "text-parchment-dim/70"}`}>
-          {isActive
-            ? interpolate(t.journal.activeAdventureNote, { name: adventure.name })
-            : !isArchived && t.journal.activateHint}
-        </p>
-      </div>
-
-      {adventureEntries.length === 0 ? (
-        <EmptyState
-          icon={<IconJournal size={22} />}
-          title={t.journal.noEntriesTitle}
-          description={t.journal.noEntriesDescription}
-          compact
-        />
-      ) : (
-        currentGroup && (
-          <ul className="flex flex-col gap-2">
-            {currentGroup.sessionEntry ? (
-              <li className="flex flex-col gap-2">
-                {editingEntryId === currentGroup.sessionEntry.id ? (
-                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-2.5">
+        {adventureEntries.length === 0 ? (
+          <EmptyState
+            icon={<IconJournal size={22} />}
+            title={t.journal.noEntriesTitle}
+            description={t.journal.noEntriesDescription}
+            compact
+          />
+        ) : (
+          currentGroup && (
+            <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-16 flex-col gap-2">
+              {currentGroup.sessionEntry &&
+                (editingEntryId === currentGroup.sessionEntry.id ? (
+                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-ink-900 px-3 py-2">
                     <input
                       autoFocus
                       value={sessionTitleEditValue}
@@ -337,116 +440,66 @@ export function AdventureDetailView() {
                     </button>
                   </div>
                 ) : (
-                  <div className="group flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] px-4 py-3">
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
-                      {currentGroup.sessionEntry.text}
-                    </span>
-                    <span className="shrink-0 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gold">
-                      {t.journal.currentSessionBadge}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSessionTitleEditValue(currentGroup.sessionEntry!.text);
-                        setEditingEntryId(currentGroup.sessionEntry!.id);
-                      }}
-                      aria-label={t.journal.editEntry}
-                      className="-m-1 shrink-0 p-1.5 text-parchment-dim/50 transition hover:text-gold"
-                    >
-                      <IconPencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeEntry(currentGroup.sessionEntry!.id)}
-                      aria-label={t.journal.deleteEntry}
-                      className="-m-1 shrink-0 p-1.5 text-parchment-dim/50 transition hover:text-no"
-                    >
-                      <IconTrash size={15} />
-                    </button>
+                  // Fijo arriba al hacer scroll: siempre se sabe en qué
+                  // sesión se está escribiendo.
+                  <div
+                    data-entry
+                    onClick={() =>
+                      setSelectedEntryId((id) => (id === currentGroup.sessionEntry!.id ? null : currentGroup.sessionEntry!.id))
+                    }
+                    className="group sticky top-0 z-20 -mx-4 bg-ink-950/90 px-4 py-1.5 backdrop-blur sm:mx-0 sm:px-0 lg:top-14"
+                  >
+                    <div className="relative flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-2.5">
+                      <IconSession size={15} className="shrink-0 text-gold" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
+                        {currentGroup.sessionEntry.text}
+                      </span>
+                      <LineButtons
+                        visible={selectedEntryId === currentGroup.sessionEntry.id}
+                        onEdit={() => {
+                          setSessionTitleEditValue(currentGroup.sessionEntry!.text);
+                          entryActions.onStartEdit(currentGroup.sessionEntry!.id);
+                        }}
+                        onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
+                      />
+                    </div>
                   </div>
-                )}
-                <ul className="flex flex-col gap-2 pl-1">
-                  <EntryList items={currentGroup.items} actions={entryActions} />
-                </ul>
-              </li>
-            ) : (
-              <EntryList items={currentGroup.items} actions={entryActions} />
-            )}
-          </ul>
-        )
-      )}
-      <div ref={listEndRef} className="-mt-5" />
+                ))}
+              <ul className="flex flex-col gap-2">
+                <EntryList items={currentGroup.items} actions={entryActions} />
+              </ul>
+            </section>
+          )
+        )}
+        <div ref={listEndRef} className="-mt-4" />
 
-      {showNewSession ? (
-        <div className="flex items-center gap-2">
-          <input
-            autoFocus
-            value={sessionTitle}
-            onChange={(e) => setSessionTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAddSession();
-              if (e.key === "Escape") setShowNewSession(false);
-            }}
-            placeholder={t.journal.newSessionPlaceholder}
-            className={INPUT_CLASS}
-          />
-          <button type="button" onClick={handleAddSession} className={SECONDARY_BUTTON_CLASS}>
-            {t.common.save}
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowNewSession(true)}
-          className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-        >
-          <IconPlus size={15} />
-          {t.journal.newSessionButton}
-        </button>
-      )}
+        <JournalComposer
+          ref={composerRef}
+          inputRef={composerInputRef}
+          adventureId={adventure.id}
+          mode={composerMode}
+          onModeChange={setComposerMode}
+          linkedRollId={linkedRollId}
+          onLogged={handleLogged}
+          onRolled={handleRolled}
+        />
+      </div>
 
-      {previousGroups.length > 0 && (
-        <section className="flex flex-col gap-2.5">
-          <button
-            type="button"
-            onClick={() => setPreviousExpanded((v) => !v)}
-            aria-expanded={previousExpanded}
-            aria-label={t.journal.togglePreviousSessions}
-            className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
-          >
-            <IconChevronRight
-              size={14}
-              className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
-            />
-            {t.journal.previousSessionsHeading}
-            <span className="text-parchment-dim/50">{previousGroups.length}</span>
-          </button>
-          {previousExpanded && (
-            <ul className="flex flex-col gap-2">
-              {previousGroups.map((group, i) =>
-                group.sessionEntry ? (
-                  <SessionGroupRow
-                    key={group.sessionEntry.id}
-                    group={group}
-                    expanded={isSessionExpanded(group.sessionEntry.id)}
-                    onToggle={() => toggleSession(group.sessionEntry!.id)}
-                    toggleLabel={t.journal.toggleSession}
-                    actions={entryActions}
-                  />
-                ) : (
-                  <Fragment key={`prologue-${i}`}>
-                    <EntryList items={group.items} actions={entryActions} />
-                  </Fragment>
-                ),
-              )}
-            </ul>
-          )}
-        </section>
-      )}
-
-      <JournalComposer ref={composerRef} adventureId={adventure.id} onLogged={() => {
-          scrollPendingRef.current = true;
-        }} />
+      {/* Escritorio: la mesa siempre abierta, sin hojas que tapen nada. */}
+      <aside
+        aria-label={t.journal.playPanelLabel}
+        className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain py-8 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
+      >
+        <PanelSection Icon={IconOracle} title={t.journal.toolOracleTitle}>
+          <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
+        </PanelSection>
+        <PanelSection Icon={IconTable} title={t.journal.toolTableTitle}>
+          <TableTool adventureId={adventure.id} onRolled={handleRolled} />
+        </PanelSection>
+        <PanelSection Icon={IconDice} title={t.journal.toolDiceTitle}>
+          <DiceTool adventureId={adventure.id} onRolled={handleRolled} />
+        </PanelSection>
+      </aside>
 
       {deleting && (
         <ConfirmDialog
@@ -462,14 +515,150 @@ export function AdventureDetailView() {
         />
       )}
 
-      {exportedFilename && (
+      {deletedEntry ? (
         <Toast
-          title={interpolate(t.journal.exportedToastTitle, { filename: exportedFilename })}
-          description={t.journal.exportedToastDescription}
+          key={deletedEntry.id}
+          Icon={IconTrash}
+          title={t.journal.entryDeleted}
           closeLabel={t.common.close}
-          onDismiss={() => setExportedFilename(null)}
+          action={{ label: t.common.undo, onClick: () => restoreEntry(deletedEntry) }}
+          duration={6000}
+          onDismiss={dismissUndo}
         />
+      ) : (
+        exportedFilename && (
+          <Toast
+            title={interpolate(t.journal.exportedToastTitle, { filename: exportedFilename })}
+            description={t.journal.exportedToastDescription}
+            closeLabel={t.common.close}
+            onDismiss={dismissExported}
+          />
+        )
       )}
     </div>
+  );
+}
+
+function PanelSection({
+  Icon,
+  title,
+  children,
+}: {
+  Icon: typeof IconOracle;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+        <Icon size={15} className="text-gold" />
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** Índice de sesiones (escritorio ancho): salta a cada una. */
+function SessionIndex({
+  groups,
+  onJump,
+  className,
+}: {
+  groups: EntryGroup[];
+  onJump: (index: number) => void;
+  className: string;
+}) {
+  const { t } = useLocaleContext();
+  return (
+    <nav
+      aria-label={t.journal.sessionsHeading}
+      className={`${className} sticky top-14 max-h-[calc(100dvh-3.5rem)] flex-col gap-2 overflow-y-auto py-8`}
+    >
+      <h2 className="flex items-center gap-2 px-3 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+        <IconSession size={15} className="text-gold" />
+        {t.journal.sessionsHeading}
+      </h2>
+      <SessionList groups={groups} onJump={onJump} />
+    </nav>
+  );
+}
+
+/**
+ * El mismo índice donde no cabe una columna para él (móvil, tablet y
+ * escritorio estrecho): un botón en la cabecera que lo despliega.
+ */
+function SessionMenu({
+  groups,
+  onJump,
+  className,
+}: {
+  groups: EntryGroup[];
+  onJump: (index: number) => void;
+  className: string;
+}) {
+  const { t } = useLocaleContext();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  useDismiss(open, rootRef, () => setOpen(false));
+
+  return (
+    // Sin "relative" en móvil: el desplegable toma el ancho de la
+    // cabecera en vez de salirse por la izquierda desde el botón.
+    <div ref={rootRef} className={`${className} shrink-0 sm:relative`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={t.journal.sessionsHeading}
+        title={t.journal.sessionsHeading}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className={[
+          "-m-1 rounded-full p-1.5 transition",
+          open ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
+        ].join(" ")}
+      >
+        <IconSession size={21} />
+      </button>
+      {open && (
+        <nav
+          aria-label={t.journal.sessionsHeading}
+          className="animate-fade-up absolute inset-x-0 top-full z-40 mt-2 flex max-h-[60dvh] flex-col overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 p-1.5 shadow-2xl sm:left-auto sm:w-72"
+        >
+          <SessionList
+            groups={groups}
+            onJump={(i) => {
+              setOpen(false);
+              onJump(i);
+            }}
+          />
+        </nav>
+      )}
+    </div>
+  );
+}
+
+function SessionList({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
+  const { t } = useLocaleContext();
+  const last = groups.length - 1;
+  return (
+    <ul className="flex flex-col gap-0.5">
+      {groups.map((g, i) => (
+        <li key={g.sessionEntry?.id ?? `prologue-${i}`}>
+          <button
+            type="button"
+            onClick={() => onJump(i)}
+            aria-current={i === last ? "true" : undefined}
+            className={[
+              "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition hover:bg-ink-700/60",
+              i === last ? "font-medium text-gold" : "text-parchment-dim hover:text-parchment",
+            ].join(" ")}
+          >
+            <span className="min-w-0 flex-1 truncate">{g.sessionEntry?.text ?? t.journal.prologueLabel}</span>
+            <span className="shrink-0 text-xs text-parchment-dim/50">{g.items.length}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

@@ -18,6 +18,43 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-03",
+    text: {
+      es: {
+        title: "Capítulo VI · Más mesa, menos estorbo",
+        intro: "Recogimos los trastos de la mesa para que tu historia tenga sitio.",
+        items: [
+          "El panel para escribir en el diario cabe en una sola fila: oráculo, tablas y dados se abren por encima cuando los necesitas y se recogen al tirar.",
+          "El tipo de entrada (nota, acción, tirada, consecuencia o nueva sesión) se elige desde un pequeño menú junto al texto.",
+          "Puedes escribir entradas de varias líneas: el cuadro crece contigo. Con teclado, Mayús+Intro empieza una línea nueva.",
+          "En el ordenador, la mesa de juego queda siempre abierta a la derecha del diario y, en pantallas anchas, el índice de sesiones a la izquierda.",
+          "En el móvil y la tablet, el marcapáginas junto al título te lleva a cualquier sesión de la aventura.",
+          "La aventura en la que estás jugando se ve siempre arriba, en todas las pantallas, y te lleva a ella de un toque.",
+          "Las sesiones se leen en orden, como un libro: las anteriores, recogidas arriba; la actual, abajo, con su título siempre a la vista.",
+          "El lápiz y la papelera solo aparecen al tocar una entrada, y si borras algo por error puedes deshacerlo al momento.",
+          "Varias tiradas de dados en una misma entrada se ven una a una, cada una con su dado.",
+          "El aviso para proteger tu diario ya no te interrumpe: lo tienes en Ajustes, cuando quieras.",
+        ],
+      },
+      en: {
+        title: "Chapter VI · More table, less clutter",
+        intro: "We cleared the clutter off the table to make room for your story.",
+        items: [
+          "The journal's writing panel fits in a single row: oracle, tables and dice open on top when you need them and tuck away once you roll.",
+          "Pick the entry type (note, action, roll, consequence or new session) from a small menu next to the text.",
+          "Write entries over several lines: the box grows with you. With a keyboard, Shift+Enter starts a new line.",
+          "On a computer, the game table stays open to the right of the journal and, on wide screens, the session index sits on the left.",
+          "On phone and tablet, the bookmark next to the title takes you to any session of the adventure.",
+          "The adventure you're playing is always shown at the top, on every screen, one tap away.",
+          "Sessions read in order, like a book: earlier ones folded away above, the current one below with its title always in sight.",
+          "The pencil and the bin only appear when you tap an entry, and if you delete something by mistake you can undo it right away.",
+          "Several dice rolls in one entry show one by one, each with its die.",
+          "The reminder to protect your journal no longer interrupts you: it's in Settings, whenever you want it.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-10-22",
     text: {
       es: {

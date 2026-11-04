@@ -17,6 +17,7 @@ export function Modal({
   label,
   labelledBy,
   centered = false,
+  sheet = false,
   className,
   children,
 }: {
@@ -25,6 +26,8 @@ export function Modal({
   labelledBy?: string;
   /** Centrado siempre; si no, en móvil sale como hoja desde abajo. */
   centered?: boolean;
+  /** Hoja desde abajo en todos los tamaños (las herramientas del diario). */
+  sheet?: boolean;
   /** Clases del panel. */
   className: string;
   children: ReactNode;
@@ -58,7 +61,7 @@ export function Modal({
     <div
       className={[
         "fixed inset-0 z-50 flex justify-center bg-black/60",
-        centered ? "items-center px-4" : "items-end sm:items-center",
+        centered ? "items-center px-4" : sheet ? "items-end" : "items-end sm:items-center",
       ].join(" ")}
       role="dialog"
       aria-modal="true"
