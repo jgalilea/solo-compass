@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Solo Compass: a solo-RPG tabletop companion (yes/no oracle, meaning tables,
 and a session journal). Browser-only, installable PWA, no backend — all data
-lives on the device (IndexedDB + localStorage). Español is the primary
-language of the UI, code comments, and commit messages; see "Idioma" below
-for the i18n mechanism.
+lives on the device (IndexedDB + localStorage). The UI is bilingual
+(Spanish first, English); see "i18n" below.
+
+**Code comments, test names and commit messages are written in English.**
 
 ## Commands
 

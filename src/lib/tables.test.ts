@@ -8,7 +8,7 @@ afterEach(() => {
 
 const EXPECTED_ENTRIES = { d6: 6, d66: 36, d20: 20 } as const;
 
-describe("tablas de significado", () => {
+describe("meaning tables", () => {
   it.each(LOCALES)("en «%s» cada tabla tiene un texto por cada valor del dado", (locale) => {
     const t = DICTIONARIES[locale];
     for (const table of getMeaningTables(t)) {
@@ -17,14 +17,14 @@ describe("tablas de significado", () => {
     }
   });
 
-  it("los dos idiomas tienen las mismas tablas con el mismo número de entradas", () => {
+  it("both languages have the same tables with the same number of entries", () => {
     const [a, b] = LOCALES.map((l) => DICTIONARIES[l].tables.entries);
     for (const key of Object.keys(a) as (keyof typeof a)[]) {
       expect(b[key], key).toHaveLength(a[key].length);
     }
   });
 
-  it("d66 se lee como decenas y unidades y siempre encuentra entrada", () => {
+  it("d66 reads as tens and units and always finds an entry", () => {
     const spy = vi.spyOn(Math, "random");
     spy.mockReturnValueOnce(2 / 6 + 0.01).mockReturnValueOnce(5 / 6 + 0.01);
     expect(rollForTable("d66")).toEqual({ rolls: [3, 6], total: 36 });

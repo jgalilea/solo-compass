@@ -23,7 +23,7 @@ const SAMPLE: [JournalLineKind, string][] = [
 ];
 
 describe("formatLine", () => {
-  it("antepone el símbolo Lonelog de cada tipo", () => {
+  it("prefixes each kind's Lonelog symbol", () => {
     expect(formatLine({ kind: "action", text: "Abro la puerta" })).toBe("@ Abro la puerta");
     expect(formatLine({ kind: "question", text: "¿Está cerrada?" })).toBe("? ¿Está cerrada?");
     expect(formatLine({ kind: "roll", text: "d6 -> 4" })).toBe("d: d6 -> 4");
@@ -34,7 +34,7 @@ describe("formatLine", () => {
 });
 
 describe("exportAdventureToMarkdown", () => {
-  it("escribe título, crédito y una entrada por párrafo, en orden cronológico", () => {
+  it("writes title, credit and one entry per paragraph, in chronological order", () => {
     const entries = [entry("action", "Segundo", 2), entry("note", "Primero", 1)];
     const md = exportAdventureToMarkdown(es, "La Cripta", entries);
     const blocks = md.trimEnd().split("\n\n");
@@ -45,19 +45,19 @@ describe("exportAdventureToMarkdown", () => {
 });
 
 describe("parseMarkdownToEntries", () => {
-  it("exportar e importar devuelve el mismo diario", () => {
+  it("export then import returns the same journal", () => {
     const original = SAMPLE.map(([kind, text], i) => entry(kind, text, i));
     const md = exportAdventureToMarkdown(es, "Aventura", original);
     const parsed = parseMarkdownToEntries(md, "a2", 5000);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual(SAMPLE);
   });
 
-  it("ignora el BOM, el título H1, las citas y las líneas vacías", () => {
+  it("ignores the BOM, the H1 title, quotes and empty lines", () => {
     const parsed = parseMarkdownToEntries("﻿# Título\n\n> crédito\n\n@ Algo\n", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([["action", "Algo"]]);
   });
 
-  it("reconoce sesiones en «## Título» además de «=== Título ===»", () => {
+  it("recognises sessions in \"## Title\" as well as \"=== Title ===\"", () => {
     const parsed = parseMarkdownToEntries("## Capítulo 1\n=== Capítulo 2 ===", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["session", "Capítulo 1"],
@@ -65,13 +65,13 @@ describe("parseMarkdownToEntries", () => {
     ]);
   });
 
-  it("acepta los símbolos sin espacio detrás", () => {
+  it("accepts symbols with no space after them", () => {
     const parsed = parseMarkdownToEntries("@Corro\n?¿Me siguen?\nd:2d6 -> 7\n=>Me alcanzan", "a", 0);
     expect(parsed.map((e) => e.kind)).toEqual(["action", "question", "roll", "consequence"]);
     expect(parsed.map((e) => e.text)).toEqual(["Corro", "¿Me siguen?", "2d6 -> 7", "Me alcanzan"]);
   });
 
-  it("guarda como nota lo que no entiende, sin fallar", () => {
+  it("keeps what it doesn't understand as a note, without failing", () => {
     const parsed = parseMarkdownToEntries("[N:Garrick|posadero|nervioso]\nTexto suelto", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["note", "[N:Garrick|posadero|nervioso]"],
@@ -79,7 +79,7 @@ describe("parseMarkdownToEntries", () => {
     ]);
   });
 
-  it("conserva las entradas de varias líneas, aunque una línea empiece por un símbolo", () => {
+  it("keeps multi-line entries, even if a line starts with a symbol", () => {
     const original: [JournalLineKind, string][] = [
       ["action", "Empujo la losa\ncon todas mis fuerzas"],
       ["note", "Primer párrafo.\n\nSegundo párrafo, tras una línea en blanco."],
@@ -91,7 +91,7 @@ describe("parseMarkdownToEntries", () => {
     expect(parsed.map((e) => [e.kind, e.text])).toEqual(original);
   });
 
-  it("las notas que empiezan como un símbolo o un título Markdown sobreviven al viaje", () => {
+  it("notes that start like a symbol or a Markdown heading survive the round trip", () => {
     const notes = ["#pista: la llave estaba en el pozo", "> Cita de un libro", "@ no es una acción", "? tampoco una pregunta", "d: ni una tirada", "=> ni una consecuencia", "=== ni una sesión ===", "## ni un encabezado", "\\barra inicial"];
     const original = notes.map((text, i) => entry("note", text, i));
     const md = exportAdventureToMarkdown(es, "Aventura", original);
@@ -100,7 +100,7 @@ describe("parseMarkdownToEntries", () => {
     );
   });
 
-  it("en un archivo ajeno, «#» y «>» solo se ignoran en la cabecera", () => {
+  it("in a foreign file, \"#\" and \">\" are only ignored in the header", () => {
     const parsed = parseMarkdownToEntries("# Mi aventura\n> intro\n\n@ Entro\n#etiqueta\n> una cita", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["action", "Entro"],
@@ -109,7 +109,7 @@ describe("parseMarkdownToEntries", () => {
     ]);
   });
 
-  it("en un archivo ajeno, una línea sangrada continúa la entrada anterior", () => {
+  it("in a foreign file, an indented line continues the previous entry", () => {
     const parsed = parseMarkdownToEntries("d: 2d6 -> 4\n    -> Fallo\nTexto suelto\n=== S1 ===\n  sangrado tras sesión", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["roll", "2d6 -> 4\n-> Fallo"],
@@ -119,11 +119,11 @@ describe("parseMarkdownToEntries", () => {
     ]);
   });
 
-  it("un título de sesión con saltos de línea se exporta en una sola línea", () => {
+  it("a session title with line breaks is exported on a single line", () => {
     expect(formatLine({ kind: "session", text: "Sesión 3:\nEl regreso" })).toBe("=== Sesión 3: El regreso ===");
   });
 
-  it("asigna timestamps secuenciales e ids únicos para conservar el orden", () => {
+  it("assigns sequential timestamps and unique ids to keep the order", () => {
     const parsed = parseMarkdownToEntries("uno\ndos\ntres", "a", 100);
     expect(parsed.map((e) => e.timestamp)).toEqual([100, 101, 102]);
     expect(new Set(parsed.map((e) => e.id)).size).toBe(3);

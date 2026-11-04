@@ -4,7 +4,7 @@ import { HistoryContext, type HistoryContextValue } from "./historyContextInstan
 export function useHistoryContext(): HistoryContextValue {
   const ctx = useContext(HistoryContext);
   if (!ctx) {
-    throw new Error("useHistoryContext debe usarse dentro de HistoryProvider");
+    throw new Error("useHistoryContext must be used inside HistoryProvider");
   }
   return ctx;
 }

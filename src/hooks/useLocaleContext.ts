@@ -4,7 +4,7 @@ import { LocaleContext, type LocaleContextValue } from "./localeContextInstance"
 export function useLocaleContext(): LocaleContextValue {
   const ctx = useContext(LocaleContext);
   if (!ctx) {
-    throw new Error("useLocaleContext debe usarse dentro de LocaleProvider");
+    throw new Error("useLocaleContext must be used inside LocaleProvider");
   }
   return ctx;
 }

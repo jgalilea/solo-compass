@@ -2,10 +2,10 @@ import type { JournalEntry, JournalLineKind } from "./lonelog";
 import type { Answer } from "./oracle";
 
 /**
- * Constantes de estilo y utilidades compartidas por JournalListView y
- * AdventureDetailView. Separado de src/components/journalShared.tsx
- * (que solo exporta componentes) para que el fast refresh de React
- * funcione en ambos, igual que con los *ContextInstance.ts.
+ * Style constants and utilities shared by JournalListView and
+ * AdventureDetailView. Kept apart from src/components/journalShared.tsx
+ * (which only exports components) so React fast refresh works in both,
+ * same as with the *ContextInstance.ts files.
  */
 
 export const INPUT_CLASS =
@@ -15,16 +15,16 @@ export const PRIMARY_BUTTON_CLASS =
 export const SECONDARY_BUTTON_CLASS =
   "shrink-0 rounded-xl border border-ink-border px-4 py-3 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold";
 
-// "question" se queda fuera a propósito: el oráculo ya tiene su
-// propia pantalla, que registra pregunta + tirada juntas solo — no
-// hay caso de uso real para apuntar una pregunta suelta aquí. Sigue
-// existiendo como JournalLineKind porque las entradas ya guardadas
-// (o importadas de otro Lonelog) pueden tener ese tipo.
+// "question" is left out on purpose: the oracle already has its own
+// screen, which logs question + roll together by itself — there's no
+// real use case for logging a loose question here. It still exists as
+// a JournalLineKind because entries already saved (or imported from
+// another Lonelog) can have that kind.
 export type ComposerKind = Exclude<JournalLineKind, "session" | "question">;
 
 export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "roll", "consequence"];
 
-/** Lo que se puede elegir en el composer: los tipos de entrada y abrir sesión. */
+/** What can be picked in the composer: the entry kinds and starting a session. */
 export type ComposerMode = ComposerKind | "session";
 
 export const SYMBOL: Record<JournalLineKind, string> = {
@@ -37,10 +37,10 @@ export const SYMBOL: Record<JournalLineKind, string> = {
 };
 
 export function downloadTextFile(filename: string, content: string) {
-  // Al descargarse, el archivo se queda solo con bytes + extensión —
-  // el "charset=utf-8" del blob no viaja con él. Sin un BOM, algunos
-  // visores (sobre todo en iOS) adivinan mal la codificación y
-  // muestran los acentos/símbolos rotos al abrirlo fuera de la app.
+  // Once downloaded, the file is left with just bytes + extension —
+  // the blob's "charset=utf-8" doesn't travel with it. Without a BOM,
+  // some viewers (iOS especially) guess the encoding wrong and show
+  // broken accents/symbols when it's opened outside the app.
   const blob = new Blob(["﻿" + content], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -77,11 +77,11 @@ export function groupBySession(sortedEntries: JournalEntry[]): EntryGroup[] {
 }
 
 /**
- * Agrupa las entradas de una sesión en bloques para pintarlas: una
- * pregunta, la tirada que la responde y las consecuencias que vienen
- * justo detrás van juntas; el resto (notas, acciones…) va suelto.
- * Se agrupa por posición (no solo por linkedRollId) para que también
- * funcione con diarios importados, que no traen enlaces.
+ * Groups a session's entries into blocks for display: a question, the
+ * roll that answers it and the consequences right after it go
+ * together; the rest (notes, actions…) stands alone.
+ * Grouped by position (not only by linkedRollId) so it also works with
+ * imported journals, which carry no links.
  */
 export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
   const blocks: JournalEntry[][] = [];
@@ -115,11 +115,11 @@ export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
   return blocks;
 }
 
-// Palabras de respuesta del oráculo en cualquiera de los idiomas de
-// la app, para reconocerla en tiradas sin enlace al historial (p. ej.
-// importadas, o si se borró el historial).
-// (Sin \b: no reconoce el final de palabra tras una letra acentuada
-// como la "í" de "Sí"; se usa un lookahead Unicode en su lugar.)
+// Oracle answer words in any of the app's languages, to recognise
+// the answer in rolls with no link to the history (e.g. imported,
+// or if the history was cleared).
+// (No \b: it doesn't detect a word boundary after an accented letter
+// such as the "í" in "Sí"; a Unicode lookahead is used instead.)
 const ANSWER_PATTERNS: [Answer, RegExp][] = [
   ["contradiccion", /^(contradicci[oó]n|contradiction)(?!\p{L})/iu],
   ["si", /^(s[ií]|yes)(?!\p{L})/iu],
@@ -127,9 +127,9 @@ const ANSWER_PATTERNS: [Answer, RegExp][] = [
 ];
 
 /**
- * Separa el texto de una tirada ("Recluse — blanco 3 / negro 5 -> No")
- * en el detalle de los dados y el resultado. Si el detalle tiene la
- * forma de una tirada de oráculo, intenta reconocer la respuesta.
+ * Splits a roll's text ("Recluse — blanco 3 / negro 5 -> No") into the
+ * dice detail and the result. If the detail looks like an oracle roll,
+ * it tries to recognise the answer.
  */
 export function splitRollText(text: string): {
   detail: string;
@@ -147,7 +147,7 @@ export function splitRollText(text: string): {
   return { detail, result, answer };
 }
 
-/** Un dado del roller genérico: "d10", "2d6", "d%", "4dF". */
+/** One die from the generic roller: "d10", "2d6", "d%", "4dF". */
 const DIE = String.raw`\d*d(?:\d+|%|F)`;
 const ROLL_SEGMENT = new RegExp(
   String.raw`(${DIE})\s*->\s*(.+?)(?=\s*,?\s+${DIE}\s*->|\s*$)`,
@@ -155,11 +155,12 @@ const ROLL_SEGMENT = new RegExp(
 );
 
 /**
- * Reconoce varias tiradas encadenadas en una sola entrada ("d10 -> 9,
- * d10 -> 5", o con espacios en vez de comas como se guardaban antes),
- * con un texto opcional delante ("Ataque d20 -> 14, d8 -> 3"). Devuelve
- * null si hay menos de dos o si sobra texto que no encaja, para que
- * esa entrada se muestre como una tirada normal (splitRollText).
+ * Recognises several chained rolls in a single entry ("d10 -> 9,
+ * d10 -> 5", or with spaces instead of commas as they used to be
+ * saved), with an optional text in front ("Attack d20 -> 14, d8 -> 3").
+ * Returns null if there are fewer than two or if there's leftover text
+ * that doesn't fit, so that entry is shown as a normal roll
+ * (splitRollText).
  */
 export function splitRollSeries(
   text: string,

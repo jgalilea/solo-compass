@@ -11,16 +11,16 @@ const ANSWER_COLOR: Record<string, string> = {
 };
 
 /**
- * Las últimas tiradas (oráculo y tablas, con o sin aventura activa)
- * con acceso al historial completo. Sustituye a la pestaña
- * "Historial" de la barra: el registro sigue a un toque, sin ocupar
- * un hueco de la navegación principal.
+ * The latest rolls (oracle and tables, with or without an active
+ * adventure) with access to the full history. It replaces the bar's
+ * "History" tab: the log stays one tap away without taking a slot in
+ * the main navigation.
  */
 export function RecentRolls({ limit = 3, excludeId }: { limit?: number; excludeId?: string }) {
   const { status, entries } = useHistoryContext();
   const { t } = useLocaleContext();
 
-  // La tirada que ya se está mostrando en grande no se repite aquí.
+  // The roll already shown large isn't repeated here.
   const recent = entries.filter((e) => e.id !== excludeId).slice(0, limit);
   if (status !== "ready" || recent.length === 0) return null;
 

@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 
-/** Tecla (`e.key`, en minúscula si es un carácter) → acción. */
+/** Key (`e.key`, lowercased if it's a character) → action. */
 export type HotkeyMap = Record<string, () => void>;
 
 const FOCUSABLE = "input, textarea, select, button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
-/** Si el foco está en un campo de texto, las teclas son texto, no atajos. */
+/** If focus is in a text field, keys are text, not shortcuts. */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
@@ -16,11 +16,10 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Atajos de teclado de escritorio (leyenda en Ajustes). No saltan
- * mientras se escribe en un campo, con Ctrl/Cmd/Alt pulsado (para no
- * pisar los del navegador) ni con un diálogo abierto. Las mayúsculas no
- * cuentan como modificador: en el teclado español "/" y "?" van con
- * Mayús.
+ * Desktop keyboard shortcuts (legend in Settings). They don't fire
+ * while typing in a field, with Ctrl/Cmd/Alt held (so the browser's own
+ * aren't overridden) or with a dialog open. Shift doesn't count as a
+ * modifier: on the Spanish keyboard "/" and "?" need Shift.
  */
 export function useHotkeys(map: HotkeyMap) {
   const mapRef = useRef(map);
@@ -48,12 +47,12 @@ function isVisible(el: Element): boolean {
 }
 
 /**
- * Lleva el foco al destino de un atajo: el primer elemento visible con
- * `data-hotkey~="name"` (o lo primero enfocable dentro de él). Si no
- * hay ninguno a la vista —la mesa de juego en móvil/tablet está
- * recogida— pulsa el botón que lo abre (`data-hotkey-open="name"`).
- * Así las pantallas solo marcan sus elementos y no hace falta pasar
- * refs hasta la cabecera.
+ * Moves focus to a shortcut's target: the first visible element with
+ * `data-hotkey~="name"` (or the first focusable thing inside it). If
+ * none is visible —the game table on phone/tablet is folded away— it
+ * clicks the button that opens it (`data-hotkey-open="name"`).
+ * This way screens only mark their elements and no refs need passing
+ * up to the header.
  */
 export function focusHotkeyTarget(name: string): boolean {
   const target = [...document.querySelectorAll(`[data-hotkey~="${name}"]`)].find(isVisible);

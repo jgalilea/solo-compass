@@ -31,24 +31,24 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
 };
 
 /**
- * Composer fijo al pie del diario, en una sola fila para dejar la
- * pantalla al diario: herramientas (oráculo, tabla, dados), el tipo de
- * entrada como un chip dentro del campo, el texto y enviar.
+ * Composer pinned to the bottom of the journal, on a single row to
+ * leave the screen to the journal: tools (oracle, table, dice), the
+ * entry kind as a chip inside the field, the text and send.
  *
- * El texto admite varias líneas y el campo crece con él (hasta unas
- * seis; luego hace scroll dentro). Con teclado físico Intro envía y
- * Mayús+Intro salta de línea, como en un chat; en táctil Intro salta
- * de línea y se envía con el botón (allí no hay Mayús a mano).
+ * The text can span several lines and the field grows with it (up to
+ * about six; then it scrolls inside). With a physical keyboard Enter
+ * sends and Shift+Enter adds a line break, as in a chat; on touch
+ * Enter adds a line break and the button sends (no Shift at hand).
  *
- * Las herramientas se abren en una hoja desde abajo por encima del
- * contenido (no empujan el composer ni tapan las últimas entradas), con
- * pestañas para pasar de una a otra, y se cierran al tirar. En
- * escritorio no aparecen aquí: viven en el panel fijo de la derecha
- * (ver AdventureDetailView).
+ * The tools open in a bottom sheet over the content (they don't push
+ * the composer or cover the latest entries), with tabs to switch
+ * between them, and close after rolling. On desktop they don't appear
+ * here: they live in the fixed right-hand panel (see
+ * AdventureDetailView).
  *
- * El tipo y la tirada enlazada los guarda el padre, porque también los
- * cambia el panel de escritorio: tras cualquier tirada pasa solo a
- * "Consecuencia", que es lo siguiente que se suele apuntar.
+ * The kind and the linked roll are kept by the parent, because the
+ * desktop panel changes them too: after any roll it switches to
+ * "Consequence", which is what usually gets written next.
  */
 export function JournalComposer({
   ref,
@@ -60,31 +60,31 @@ export function JournalComposer({
   onLogged,
   onRolled,
 }: {
-  /** El diario lo mide para no dejar lo recién apuntado debajo del composer. */
+  /** The journal measures it so the newest entry isn't left under the composer. */
   ref?: Ref<HTMLDivElement>;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   adventureId: string;
   mode: ComposerMode;
   onModeChange: (mode: ComposerMode) => void;
   linkedRollId: string | undefined;
-  /** Se ha apuntado algo escrito a mano. */
+  /** Something typed by hand was logged. */
   onLogged: () => void;
-  /** Se ha tirado con una herramienta (rollId para enlazar la consecuencia). */
+  /** A tool was rolled (rollId to link the consequence). */
   onRolled: (rollId?: string) => void;
 }) {
   const { t } = useLocaleContext();
   const { addEntry } = useJournalContext();
   const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
-  // Teclado físico (ratón/trackpad): Intro envía. Se mira una vez; no
-  // cambia a mitad de partida.
+  // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
+  // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
   const sendsOnEnter = finePointer || mode === "session";
 
-  // El campo crece con el texto (vacío vuelve a una fila: si no, un
-  // placeholder largo que no cabe también lo haría crecer). Si lo
-  // último del diario se veía justo encima, se baja lo que crece para
-  // que el composer no lo tape.
+  // The field grows with the text (empty goes back to one row:
+  // otherwise a long placeholder that doesn't fit would grow it too).
+  // If the end of the journal was visible right above, it scrolls down
+  // by the growth so the composer doesn't cover it.
   useLayoutEffect(() => {
     const el = inputRef.current;
     const root = el?.closest<HTMLElement>("[data-composer]");
@@ -106,7 +106,7 @@ export function JournalComposer({
 
   function handleSubmit() {
     if (mode === "session") {
-      // Un título de sesión es de una línea (en Lonelog va entre "===").
+      // A session title is a single line (in Lonelog it goes between "===").
       addEntry(adventureId, "session", text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString());
       onModeChange("note");
     } else {
@@ -136,8 +136,8 @@ export function JournalComposer({
       className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
       <div className="flex items-center gap-1.5">
-        {/* Al escribir en un móvil estrecho se pliegan, para dejar el
-            ancho al texto (como en una app de mensajería). */}
+        {/* While typing on a narrow phone they fold away, to leave the
+            width to the text (as in a messaging app). */}
         <div className="flex shrink-0 gap-1 max-sm:group-has-[textarea:focus]/composer:hidden lg:hidden">
           {tools.map(({ id, label, Icon }) => (
             <button
@@ -196,8 +196,8 @@ export function JournalComposer({
           label={openTool.title}
           className="animate-fade-up flex max-h-[85dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-ink-border bg-ink-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl sm:p-6 md:max-w-3xl sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
-          {/* Pestañas en vez de título: se pasa del oráculo a una tabla
-              sin cerrar la hoja (en escritorio están las tres a la vista). */}
+          {/* Tabs instead of a title: go from the oracle to a table
+              without closing the sheet (on desktop all three are visible). */}
           <div className="flex items-center gap-2">
             <div role="tablist" aria-label={t.journal.playPanelLabel} className="flex min-w-0 flex-1 gap-1 rounded-xl bg-ink-900/60 p-1">
               {tools.map(({ id, label, Icon }) => (
@@ -212,7 +212,7 @@ export function JournalComposer({
                     id === tool ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
                   ].join(" ")}
                 >
-                  {/* En el móvil más estrecho no caben icono y nombre. */}
+                  {/* On the narrowest phones icon and name don't both fit. */}
                   <Icon size={16} className="shrink-0 max-[380px]:hidden" />
                   <span className="truncate">{label}</span>
                 </button>
@@ -238,9 +238,9 @@ export function JournalComposer({
 }
 
 /**
- * Chip con el icono del tipo de entrada; abre hacia arriba la lista de
- * tipos con una línea que explica cada uno (sustituye a las pestañas y
- * a la pista fija que ocupaban dos filas del composer).
+ * Chip with the entry kind's icon; opens upwards the list of kinds,
+ * each with a line explaining it (it replaces the tabs and the fixed
+ * hint that took up two rows of the composer).
  */
 function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: ComposerMode) => void }) {
   const { t } = useLocaleContext();
@@ -271,9 +271,9 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
   const CurrentIcon = MODE_ICON[mode];
 
   return (
-    // Sin "relative": el menú se coloca respecto al composer entero
-    // (que es sticky), así ocupa su ancho en móvil en vez de salirse
-    // por la derecha desde la posición del botón.
+    // No "relative": the menu is positioned against the whole composer
+    // (which is sticky), so on phones it takes its width instead of
+    // overflowing to the right from the button's position.
     <div ref={rootRef} className="shrink-0">
       <button
         type="button"
@@ -282,8 +282,8 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
         title={current.label}
         aria-haspopup="menu"
         aria-expanded={open}
-        // Con borde y flecha para que se lea como un desplegable: sin
-        // ellos parecía una etiqueta y no se encontraba "Nueva sesión".
+        // With a border and an arrow so it reads as a dropdown: without
+        // them it looked like a label and "New session" went unnoticed.
         className={[
           "flex h-9 items-center gap-1 rounded-lg border pl-2 pr-1.5 text-sm transition",
           open
@@ -292,7 +292,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
         ].join(" ")}
       >
         <CurrentIcon size={18} />
-        {/* El nombre solo cabe a partir de tablet; en móvil basta el icono. */}
+        {/* The name only fits from tablet up; on phones the icon is enough. */}
         <span className="ml-0.5 hidden font-medium sm:inline">{current.label}</span>
         <IconChevronUpDown size={14} className="text-parchment-dim" />
       </button>

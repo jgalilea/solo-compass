@@ -11,17 +11,17 @@ import { LikelihoodPicker } from "./LikelihoodPicker";
 import { IconSearch, IconStar } from "./icons/Icons";
 
 /**
- * Las tres herramientas de la "mesa de juego" de una aventura: oráculo,
- * tablas y dados. Son las mismas en la hoja que se abre desde el
- * composer (móvil/tablet) y en el panel fijo de la derecha (escritorio).
- * Todo se apunta en `adventureId` (sea o no la activa) y avisa con
- * `onRolled` para que el diario baje hasta ello y el composer pase a
- * "Consecuencia".
+ * The three tools of an adventure's "game table": oracle, tables and
+ * dice. They're the same in the sheet opened from the composer
+ * (phone/tablet) and in the fixed right-hand panel (desktop).
+ * Everything is logged to `adventureId` (active or not) and reported
+ * through `onRolled` so the journal scrolls down to it and the
+ * composer switches to "Consequence".
  */
 
 interface ToolProps {
   adventureId: string;
-  /** rollId: la tirada del historial a la que enlazar la consecuencia. */
+  /** rollId: the history roll the consequence links to. */
   onRolled: (rollId?: string) => void;
 }
 
@@ -68,7 +68,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
   const tables = useMemo(() => {
     const favorites = loadFavoriteTableIds();
     const all = getMeaningTables(t);
-    // Favoritas primero, igual que en la pantalla de Tablas.
+    // Favourites first, same as on the Tables screen.
     return [...all.filter((x) => favorites.has(x.id)), ...all.filter((x) => !favorites.has(x.id))].map(
       (table) => ({ table, favorite: favorites.has(table.id) }),
     );
@@ -82,7 +82,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
 
   return (
     <div data-hotkey="table" className="@container flex flex-col gap-2">
-      {/* Con pocas tablas el buscador sobra; aparece cuando ya cuesta encontrarlas. */}
+      {/* With few tables the search is unnecessary; it appears once they get hard to find. */}
       {tables.length > 6 && (
         <label className="relative">
           <IconSearch size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-dim/60" />
@@ -94,7 +94,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
           />
         </label>
       )}
-      {/* En dos columnas cuando hay sitio (la hoja en tablet), una en el panel estrecho. */}
+      {/* Two columns when there's room (the sheet on tablet), one in the narrow panel. */}
       <ul className="grid gap-1.5 @lg:grid-cols-2">
         {visible.map(({ table, favorite }) => (
           <li key={table.id}>
@@ -118,9 +118,9 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
 }
 
 /**
- * Tiradas de tu propio sistema: se van acumulando ("d20 -> 14, d6 -> 3")
- * con un texto opcional delante, y se apuntan juntas en una sola
- * entrada de tipo "Tirada" — así se ven en el diario como un grupo.
+ * Rolls from your own system: they accumulate ("d20 -> 14, d6 -> 3")
+ * with an optional text in front, and are logged together as a single
+ * "Roll" entry — so they show up in the journal as one group.
  */
 export function DiceTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();

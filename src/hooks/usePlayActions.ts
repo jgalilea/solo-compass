@@ -17,11 +17,11 @@ function makeId(): string {
 }
 
 /**
- * Las tiradas que se pueden hacer desde varias pantallas (Oráculo,
- * Tablas y el panel del propio diario): cada una se guarda siempre en
- * el historial y, si hay aventura destino (la activa por defecto), se
- * apunta también en su diario en notación Lonelog. Así las tres
- * pantallas registran exactamente lo mismo.
+ * The rolls that can be made from several screens (Oracle, Tables and
+ * the journal's own panel): each one is always saved to the history
+ * and, if there's a target adventure (the active one by default), also
+ * logged in its journal in Lonelog notation. That way all three
+ * screens record exactly the same thing.
  */
 export function usePlayActions() {
   const { addEntry: addHistoryEntry } = useHistoryContext();

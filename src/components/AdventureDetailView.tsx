@@ -42,17 +42,17 @@ import {
 } from "./icons/Icons";
 
 /**
- * Una aventura: su diario y la "mesa de juego" para seguir jugándola.
+ * One adventure: its journal and the "game table" to keep playing it.
  *
- * - Móvil/tablet: una sola columna para el diario, con el composer de
- *   una fila al pie; oráculo, tablas y dados se abren en una hoja.
- * - Escritorio (lg): el diario en el centro y la mesa siempre abierta a
- *   la derecha, sin hojas. Desde xl, a la izquierda, el índice de
- *   sesiones para saltar entre ellas.
+ * - Phone/tablet: a single column for the journal, with the one-row
+ *   composer at the bottom; oracle, tables and dice open in a sheet.
+ * - Desktop (lg): the journal in the middle and the table always open
+ *   on the right, no sheets. From xl, on the left, the session index
+ *   to jump between them.
  *
- * Las sesiones van en orden cronológico, como el propio diario: las
- * anteriores, plegadas, arriba; la actual (la última) abierta debajo,
- * con su título fijo arriba al hacer scroll.
+ * Sessions are in chronological order, like the journal itself: the
+ * earlier ones folded at the top; the current one (the last) open
+ * below, with its title pinned at the top while scrolling.
  */
 export function AdventureDetailView() {
   const { adventureId = "" } = useParams<{ adventureId: string }>();
@@ -86,16 +86,16 @@ export function AdventureDetailView() {
   );
   const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
 
-  // La sesión actual es la última: siempre abierta. Las anteriores
-  // (y el "prólogo" sin sesión, si lo hay) van plegadas encima.
+  // The current session is the last one: always open. The earlier ones
+  // (and the session-less "prologue", if any) are folded above it.
   const currentGroup = groups.at(-1) ?? null;
   const previousGroups = groups.slice(0, -1);
 
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   const [previousExpanded, setPreviousExpanded] = useState(false);
-  // Un solo id "en edición" a la vez para toda la pantalla (título de
-  // sesión o cualquier entrada), y uno "seleccionado" (táctil: muestra
-  // sus botones) — abrir uno cierra el que hubiera.
+  // A single "editing" id at a time for the whole screen (session title
+  // or any entry), and one "selected" (touch: shows its buttons) —
+  // opening one closes whichever was open.
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
@@ -105,22 +105,22 @@ export function AdventureDetailView() {
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<JournalEntry | null>(null);
 
-  // Composer: el tipo y la tirada a la que enlazar la consecuencia viven
-  // aquí porque también los cambia el panel de escritorio.
+  // Composer: the entry kind and the roll a consequence links to live
+  // here because the desktop panel changes them too.
   const [composerMode, setComposerMode] = useState<ComposerMode>("note");
   const [linkedRollId, setLinkedRollId] = useState<string | undefined>(undefined);
   const composerInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Respuesta del oráculo de cada tirada enlazada, para pintarla con
-  // su color en el diario (Sí/No/Contradicción).
+  // Oracle answer of each linked roll, to paint it in its colour in the
+  // journal (Yes/No/Contradiction).
   const answersByRollId = useMemo(() => {
     const map = new Map<string, (typeof historyEntries)[number] & { kind: "oraculo" }>();
     for (const h of historyEntries) if (h.kind === "oraculo") map.set(h.id, h);
     return map;
   }, [historyEntries]);
 
-  // Borrar no pide confirmación: se deshace desde el aviso (el último
-  // borrado; uno nuevo sustituye al anterior).
+  // Deleting doesn't ask for confirmation: it's undone from the toast
+  // (the latest deletion; a new one replaces the previous).
   const deleteEntryWithUndo = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
@@ -147,7 +147,7 @@ export function AdventureDetailView() {
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
   };
 
-  // Tocar fuera de cualquier entrada quita la selección.
+  // Tapping outside any entry clears the selection.
   useEffect(() => {
     if (!selectedEntryId) return;
     function handlePointerDown(e: PointerEvent) {
@@ -157,9 +157,9 @@ export function AdventureDetailView() {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [selectedEntryId]);
 
-  // Al apuntar algo se baja hasta ello para que se vea el resultado. Es
-  // un ref (no estado): solo marca que la próxima entrada nueva viene
-  // del composer o de la mesa, sin provocar un render extra.
+  // After logging something we scroll down to it so the result is
+  // visible. It's a ref (not state): it only marks that the next new
+  // entry comes from the composer or the table, without an extra render.
   const listEndRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
   const scrollPendingRef = useRef(false);
@@ -168,8 +168,8 @@ export function AdventureDetailView() {
     scrollPendingRef.current = false;
     const end = listEndRef.current;
     if (!end) return;
-    // Se mide el composer cada vez en lugar de usar un margen fijo: su
-    // alto cambia (p. ej. en escritorio no lleva herramientas).
+    // The composer is measured every time instead of using a fixed margin:
+    // its height changes (e.g. on desktop it has no tools).
     const visibleBottom = composerRef.current?.getBoundingClientRect().top ?? window.innerHeight;
     const delta = end.getBoundingClientRect().top - (visibleBottom - 12);
     if (delta > 0) window.scrollBy({ top: delta, behavior: "smooth" });
@@ -184,9 +184,8 @@ export function AdventureDetailView() {
   }
 
   if (!adventure) {
-    // Aventura inexistente (id inválido, o borrada mientras estaba
-    // abierta en otra pestaña) — de vuelta a la lista en vez de
-    // enseñar una pantalla rota.
+    // Missing adventure (invalid id, or deleted while open in another
+    // tab) — back to the list instead of showing a broken screen.
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-8 text-center sm:py-12 md:max-w-3xl">
         <EmptyState
@@ -231,22 +230,22 @@ export function AdventureDetailView() {
     scrollPendingRef.current = true;
   }
 
-  // Tras una tirada (oráculo, tabla o dados) lo siguiente suele ser
-  // apuntar qué pasa: el composer pasa solo a "Consecuencia".
+  // After a roll (oracle, table or dice) the next thing is usually to
+  // write what happens: the composer switches to "Consequence" by itself.
   function handleRolled(rollId?: string) {
     setComposerMode("consequence");
     setLinkedRollId(rollId);
     scrollPendingRef.current = true;
-    // En táctil no se enfoca: abriría el teclado encima del resultado
-    // que se acaba de apuntar, justo cuando se quiere leer.
+    // No focus on touch: it would open the keyboard over the result that
+    // was just logged, right when you want to read it.
     if (window.matchMedia("(pointer: fine)").matches) {
       window.setTimeout(() => composerInputRef.current?.focus(), 0);
     }
   }
 
-  // Saltar a una sesión desde el índice (index: posición en `groups`;
-  // la última es la actual). Se despliega con flushSync para que ya
-  // esté pintada al llevarla a la vista.
+  // Jump to a session from the index (index: position in `groups`; the
+  // last one is the current one). It's expanded with flushSync so it's
+  // already painted when scrolled into view.
   function jumpToSession(index: number) {
     const group = groups[index];
     if (!group) return;
@@ -263,8 +262,8 @@ export function AdventureDetailView() {
 
   const isArchived = adventure.status === "archived";
 
-  // Sin sesiones no hay índice: el diario ocupa también su columna en
-  // vez de dejar un hueco vacío a la izquierda.
+  // No sessions, no index: the journal takes that column too instead of
+  // leaving an empty gap on the left.
   const hasSessionIndex = groups.some((g) => g.sessionEntry);
 
   return (
@@ -336,10 +335,10 @@ export function AdventureDetailView() {
                 </span>
               )}
               <div className="ml-auto" />
-              {/* Con una sola sesión no hay adónde saltar. */}
+              {/* With a single session there's nowhere to jump to. */}
               {groups.length > 1 && <SessionMenu groups={groups} onJump={jumpToSession} className="xl:hidden" />}
-              {/* Todo lo poco frecuente, agrupado, para que la cabecera
-                  quepa en una línea y no compita con lo que se usa al jugar. */}
+              {/* Everything rarely used, grouped, so the header fits on one
+                  line and doesn't compete with what's used while playing. */}
               <ActionMenu
                 label={t.journal.moreActions}
                 items={[
@@ -446,8 +445,8 @@ export function AdventureDetailView() {
                     </button>
                   </div>
                 ) : (
-                  // Fijo arriba al hacer scroll: siempre se sabe en qué
-                  // sesión se está escribiendo.
+                  // Pinned at the top while scrolling: you always know which
+                  // session you're writing in.
                   <div
                     data-entry
                     onClick={() =>
@@ -491,7 +490,7 @@ export function AdventureDetailView() {
         />
       </div>
 
-      {/* Escritorio: la mesa siempre abierta, sin hojas que tapen nada. */}
+      {/* Desktop: the table always open, no sheets covering anything. */}
       <aside
         aria-label={t.journal.playPanelLabel}
         className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain py-8 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
@@ -565,7 +564,7 @@ function PanelSection({
   );
 }
 
-/** Índice de sesiones (escritorio ancho): salta a cada una. */
+/** Session index (wide desktop): jumps to each session. */
 function SessionIndex({
   groups,
   onJump,
@@ -591,8 +590,8 @@ function SessionIndex({
 }
 
 /**
- * El mismo índice donde no cabe una columna para él (móvil, tablet y
- * escritorio estrecho): un botón en la cabecera que lo despliega.
+ * The same index where there's no room for a column (phone, tablet and
+ * narrow desktop): a button in the header that drops it down.
  */
 function SessionMenu({
   groups,
@@ -609,8 +608,8 @@ function SessionMenu({
   useDismiss(open, rootRef, () => setOpen(false));
 
   return (
-    // Sin "relative" en móvil: el desplegable toma el ancho de la
-    // cabecera en vez de salirse por la izquierda desde el botón.
+    // No "relative" on phones: the dropdown takes the header's width
+    // instead of overflowing to the left from the button.
     <div ref={rootRef} className={`${className} shrink-0 sm:relative`}>
       <button
         type="button"

@@ -1,20 +1,20 @@
 /**
- * Almacenamiento persistente del navegador (Storage API).
+ * Browser persistent storage (Storage API).
  *
- * Sin servidor, el diario solo existe en este dispositivo. Por defecto
- * el navegador guarda los datos de una web en modo "best effort": si
- * se queda sin espacio, o (en Safari) si la web no se usa en un
- * tiempo, puede borrarlos por su cuenta. Marcarlos como persistentes
- * se lo impide; solo se borrarían si la persona lo decide.
+ * With no server, the journal only exists on this device. By default
+ * the browser keeps a site's data in "best effort" mode: if it runs out
+ * of space, or (in Safari) if the site isn't used for a while, it may
+ * delete it on its own. Marking it as persistent prevents that; it
+ * would only be deleted if the person decides so.
  *
- * Cada navegador lo gestiona a su manera:
- * - Firefox muestra su propio aviso de permiso al pedirlo.
- * - Chrome/Edge y Safari no preguntan: lo conceden o no según el uso
- *   (p. ej. si la app está instalada en la pantalla de inicio).
- * Por eso nunca se pide en silencio ni se ofrece por iniciativa de la
- * app: solo desde Ajustes, con la explicación al lado
- * (StorageProtection), para que el aviso de Firefox no pille a nadie
- * por sorpresa.
+ * Each browser handles it its own way:
+ * - Firefox shows its own permission prompt when it's requested.
+ * - Chrome/Edge and Safari don't ask: they grant it or not based on
+ *   usage (e.g. whether the app is installed on the home screen).
+ * That's why it's never requested silently or offered on the app's own
+ * initiative: only from Settings, with the explanation alongside
+ * (StorageProtection), so Firefox's prompt doesn't catch anyone by
+ * surprise.
  */
 
 export type PersistenceStatus = "persisted" | "not-persisted" | "unsupported";
@@ -37,7 +37,7 @@ export async function getPersistenceStatus(): Promise<PersistenceStatus> {
   }
 }
 
-/** Pide el permiso. Devuelve si los datos han quedado protegidos. */
+/** Requests the permission. Returns whether the data is now protected. */
 export async function requestPersistentStorage(): Promise<boolean> {
   if (!isSupported()) return false;
   try {

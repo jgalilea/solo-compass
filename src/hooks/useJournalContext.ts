@@ -4,7 +4,7 @@ import { JournalContext, type JournalContextValue } from "./journalContextInstan
 export function useJournalContext(): JournalContextValue {
   const ctx = useContext(JournalContext);
   if (!ctx) {
-    throw new Error("useJournalContext debe usarse dentro de JournalProvider");
+    throw new Error("useJournalContext must be used inside JournalProvider");
   }
   return ctx;
 }

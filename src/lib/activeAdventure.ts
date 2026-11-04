@@ -1,8 +1,8 @@
 /**
- * Qué aventura está activa ahora mismo (o ninguna). Es un dato
- * minúsculo (un id), así que se queda en localStorage, igual que el
- * tema/idioma/oráculo elegidos — no tiene el problema de tamaño del
- * historial o del propio diario.
+ * Which adventure is active right now (or none). It's a tiny piece of
+ * data (an id), so it stays in localStorage, like the chosen
+ * theme/language/oracle — it doesn't have the size problem of the
+ * history or the journal itself.
  */
 
 const STORAGE_KEY = "solo-compass:active-adventure";
@@ -22,6 +22,6 @@ export function saveActiveAdventureId(id: string | null): void {
     if (id) window.localStorage.setItem(STORAGE_KEY, id);
     else window.localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // No es crítico: si falla, no persiste entre sesiones.
+    // Not critical: if it fails, it just doesn't persist between sessions.
   }
 }

@@ -15,17 +15,17 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Cada pantalla empieza arriba: sin esto, en móvil se heredaba el
-  // scroll de la anterior (p. ej. el historial se abría a media lista).
-  // HashRouter no admite <ScrollRestoration>, que es solo para los
-  // routers de datos.
+  // Every screen starts at the top: without this, on phones the
+  // previous screen's scroll was inherited (e.g. history opened halfway
+  // down the list). HashRouter doesn't support <ScrollRestoration>,
+  // which is only for data routers.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Tres secciones: el historial completo ya no ocupa pestaña propia —
-  // se llega desde "Últimas tiradas" en el oráculo (y cuenta como parte
-  // de esa sección a efectos de resaltado).
+  // Three sections: the full history no longer has its own tab — it's
+  // reached from "Recent rolls" on the oracle (and counts as part of
+  // that section for highlighting).
   const tabs = [
     {
       to: "/",
@@ -42,11 +42,11 @@ export function Layout() {
       hotkey: "2",
     },
     {
-      // Con aventura activa, el atajo de la barra va directo a ella —
-      // la lista sigue accesible desde la flecha "volver" del detalle.
-      // El resaltado del propio tab se basa en la sección ("/diario"),
-      // no en este destino concreto, para que siga marcado como
-      // activo aunque se navegue a otra aventura desde la lista.
+      // With an active adventure, the bar shortcut goes straight to it —
+      // the list is still reachable from the detail's "back" arrow.
+      // The tab's own highlight is based on the section ("/diario"), not
+      // on this specific destination, so it stays marked as active even
+      // when navigating to another adventure from the list.
       to: activeAdventureId ? `/diario/${activeAdventureId}` : "/diario",
       label: t.nav.journal,
       Icon: IconJournal,
@@ -55,7 +55,7 @@ export function Layout() {
     },
   ];
 
-  // Atajos de escritorio (leyenda en Ajustes; "?" lo registra SettingsDialog).
+  // Desktop shortcuts (legend in Settings; "?" is registered by SettingsDialog).
   useHotkeys({
     ...Object.fromEntries(tabs.map((tab) => [tab.hotkey, () => navigate(tab.to)])),
     h: () => navigate("/historial"),
@@ -65,9 +65,9 @@ export function Layout() {
     d: () => focusHotkeyTarget("dice"),
   });
 
-  // Esc en un campo de texto suelta el foco, para poder seguir con los
-  // atajos sin coger el ratón (los diálogos y menús ya usan Esc para
-  // cerrarse, y van antes).
+  // Esc in a text field drops focus, so shortcuts keep working without
+  // reaching for the mouse (dialogs and menus already use Esc to close,
+  // and they come first).
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key !== "Escape" || e.defaultPrevented || !isTypingTarget(e.target)) return;
@@ -80,23 +80,23 @@ export function Layout() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      {/* En escritorio (lg+) la navegación sube a la cabecera, que se
-          queda fija arriba; la barra inferior es solo para móvil/tablet,
-          donde queda al alcance del pulgar. Fondo opaco y sin
-          backdrop-blur a propósito: un backdrop-filter convierte la
-          cabecera en el bloque contenedor de sus hijos `fixed`, y los
-          diálogos que viven dentro (Acerca de, idioma, tema) quedarían
-          recortados a su altura. */}
-      {/* En escritorio mide exactamente 3.5rem (h-14): las columnas fijas
-          del diario (top-14) se colocan justo debajo. */}
-      {/* Tres columnas en escritorio (1fr · auto · 1fr): las pestañas
-          quedan siempre centradas y nada se mueve cuando el chip de la
-          aventura aparece o desaparece según la pantalla. */}
+      {/* On desktop (lg+) the nav moves up into the header, which stays
+          pinned at the top; the bottom bar is only for phone/tablet,
+          where it's within thumb reach. Opaque background and no
+          backdrop-blur on purpose: a backdrop-filter makes the header
+          the containing block of its `fixed` children, and the dialogs
+          living inside it (About, language, theme) would be clipped to
+          its height. */}
+      {/* On desktop it's exactly 3.5rem tall (h-14): the journal's sticky
+          columns (top-14) sit right below it. */}
+      {/* Three columns on desktop (1fr · auto · 1fr): the tabs always stay
+          centred and nothing moves when the adventure chip appears or
+          disappears depending on the screen. */}
       <header className="border-b border-ink-border/70 px-4 py-3 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0">
         <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[1fr_auto_1fr] lg:gap-6 2xl:max-w-[110rem]">
           <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
-            {/* En los móviles más estrechos solo el logo, para que quepa el chip. */}
+            {/* On the narrowest phones only the logo, so the chip fits. */}
             <span className="hidden font-display text-xl tracking-wide min-[380px]:inline">
               {t.header.appName}
             </span>
@@ -123,8 +123,8 @@ export function Layout() {
           </nav>
           <div className="flex min-w-0 items-center justify-end gap-3 lg:gap-4">
             <ActiveAdventureChip />
-            {/* Solo en escritorio, donde sobra sitio en la cabecera; en
-                móvil/tablet el apoyo vive en Ajustes → Acerca de. */}
+            {/* Desktop only, where the header has room to spare; on
+                phone/tablet support lives in Settings → About. */}
             <a
               href={KOFI_URL}
               target="_blank"
@@ -147,7 +147,7 @@ export function Layout() {
       </main>
 
       <nav className="sticky bottom-0 z-40 border-t lg:hidden border-ink-border bg-ink-950/90 backdrop-blur">
-        {/* Alto fijo (ver --spacing-nav en index.css; -1px del borde). */}
+        {/* Fixed height (see --spacing-nav in index.css; -1px for the border). */}
         <div className="mx-auto flex h-[calc(var(--spacing-nav)-1px)] max-w-xl md:max-w-3xl">
           {tabs.map(({ to, label, Icon, isActive }) => (
             <Link

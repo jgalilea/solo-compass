@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LIKELIHOOD_DICE, rollOracle, type Likelihood } from "./oracle";
 
 /**
- * Fuerza los valores de los d6 en el orden en que se tiran: primero
- * todos los blancos y luego todos los negros (como hace rollOracle).
+ * Forces the d6 values in the order they're rolled: first all the
+ * white ones and then all the black ones (as rollOracle does).
  */
 function forceDice(...values: number[]) {
   const spy = vi.spyOn(Math, "random");
@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe("rollOracle (Recluse)", () => {
-  it("blanco más alto → Sí", () => {
+  it("higher white → Yes", () => {
     forceDice(5, 2);
     const roll = rollOracle("¿Hay alguien?", "equilibrado");
     expect(roll.answer).toBe("si");
@@ -23,12 +23,12 @@ describe("rollOracle (Recluse)", () => {
     expect(roll.black.kept).toBe(2);
   });
 
-  it("negro más alto → No", () => {
+  it("higher black → No", () => {
     forceDice(1, 6);
     expect(rollOracle("?", "equilibrado").answer).toBe("no");
   });
 
-  it("empate → Contradicción, sin matiz aunque los dados sean altos o bajos", () => {
+  it("tie → Contradiction, with no qualifier even if the dice are high or low", () => {
     forceDice(6, 6);
     const high = rollOracle("?", "equilibrado");
     expect(high.answer).toBe("contradiccion");
@@ -38,27 +38,27 @@ describe("rollOracle (Recluse)", () => {
     expect(rollOracle("?", "equilibrado").qualifier).toBeNull();
   });
 
-  it("ambos bajos (≤3) → «pero»", () => {
+  it("both low (≤3) → \"but\"", () => {
     forceDice(3, 1);
     const roll = rollOracle("?", "equilibrado");
     expect(roll.answer).toBe("si");
     expect(roll.qualifier).toBe("pero");
   });
 
-  it("ambos altos (≥4) → «y además»", () => {
+  it("both high (≥4) → \"and\"", () => {
     forceDice(4, 6);
     const roll = rollOracle("?", "equilibrado");
     expect(roll.answer).toBe("no");
     expect(roll.qualifier).toBe("y");
   });
 
-  it("uno bajo y otro alto → respuesta seca", () => {
+  it("one low and one high → plain answer", () => {
     forceDice(3, 4);
     expect(rollOracle("?", "equilibrado").qualifier).toBeNull();
   });
 
-  it("con dados extra se queda con el más alto de cada color", () => {
-    // Muy probable: tres blancos y un negro.
+  it("with extra dice, keeps the highest of each colour", () => {
+    // Very likely: three white and one black.
     forceDice(1, 5, 2, 4);
     const roll = rollOracle("?", "muy-probable");
     expect(roll.white.rolls).toEqual([1, 5, 2]);
@@ -81,18 +81,18 @@ describe("rollOracle (Recluse)", () => {
     },
   );
 
-  it("las probabilidades favorecen al color que deben", () => {
+  it("likelihoods favour the right colour", () => {
     const rate = (likelihood: Likelihood) => {
       let yes = 0;
       for (let i = 0; i < 4000; i++) if (rollOracle("?", likelihood).answer === "si") yes++;
       return yes / 4000;
     };
-    // Equilibrado: 15/36 ≈ 0,42 de Sí (el resto, No o Contradicción).
+    // Even: 15/36 ≈ 0.42 Yes (the rest, No or Contradiction).
     expect(rate("muy-improbable")).toBeLessThan(rate("equilibrado"));
     expect(rate("equilibrado")).toBeLessThan(rate("muy-probable"));
   });
 
-  it("guarda la pregunta sin espacios sobrantes", () => {
+  it("saves the question without extra whitespace", () => {
     expect(rollOracle("  ¿Llueve?  ", "equilibrado").question).toBe("¿Llueve?");
   });
 });

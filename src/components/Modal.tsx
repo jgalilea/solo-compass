@@ -1,23 +1,23 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-// Pila de diálogos abiertos, para que Esc cierre solo el de arriba
-// (p. ej. la confirmación de restaurar copia, abierta encima de
-// "Acerca de").
+// Stack of open dialogs, so Esc only closes the top one (e.g. the
+// restore-backup confirmation, opened on top of "About").
 const openStack: symbol[] = [];
 
 const FOCUSABLE =
   "input:not([type='hidden']):not(.hidden), textarea, select, button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
 /**
- * Fondo + panel de diálogo. Se monta con un portal en <body> para que
- * ningún ancestro lo recorte ni lo deje por debajo (la cabecera fija
- * de escritorio crea su propio contexto de apilamiento). Se cierra con
- * Esc o pinchando en el fondo.
+ * Backdrop + dialog panel. Mounted through a portal in <body> so no
+ * ancestor clips it or leaves it underneath (the sticky desktop header
+ * creates its own stacking context). Closes on Esc or on a backdrop
+ * click.
  *
- * Con teclado: al abrirse el foco entra en el panel (salvo que un hijo
- * ya lo haya tomado con autoFocus), Tab no sale de él mientras esté
- * arriba en la pila y, al cerrarse, el foco vuelve a quien lo abrió.
+ * With the keyboard: on open, focus moves into the panel (unless a
+ * child already took it with autoFocus), Tab doesn't leave it while
+ * it's on top of the stack and, on close, focus goes back to whoever
+ * opened it.
  */
 export function Modal({
   onClose,
@@ -31,11 +31,11 @@ export function Modal({
   onClose: () => void;
   label?: string;
   labelledBy?: string;
-  /** Centrado siempre; si no, en móvil sale como hoja desde abajo. */
+  /** Always centred; otherwise on phones it comes up as a bottom sheet. */
   centered?: boolean;
-  /** Hoja desde abajo en todos los tamaños (las herramientas del diario). */
+  /** Bottom sheet at every size (the journal's tools). */
   sheet?: boolean;
-  /** Clases del panel. */
+  /** Panel classes. */
   className: string;
   children: ReactNode;
 }) {
@@ -43,8 +43,9 @@ export function Modal({
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
-  // Solo cuenta como "pinchar fuera" si el gesto empezó en el fondo:
-  // así no se cierra al seleccionar texto del panel y soltar fuera.
+  // Only counts as a "click outside" if the gesture started on the
+  // backdrop: so it doesn't close when selecting panel text and
+  // releasing outside.
   const pressedOnBackdrop = useRef(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -84,8 +85,8 @@ export function Modal({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       openStack.splice(openStack.indexOf(id), 1);
-      // Si quien abrió el diálogo ya no existe (p. ej. el menú que lo
-      // lanzó se cerró), el foco se queda donde lo deje el navegador.
+      // If whoever opened the dialog no longer exists (e.g. the menu that
+      // launched it closed), focus stays wherever the browser leaves it.
       if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
   }, []);
@@ -104,14 +105,14 @@ export function Modal({
         pressedOnBackdrop.current = e.target === e.currentTarget;
       }}
       onClick={(e) => {
-        // Con un portal los eventos de React siguen subiendo por el
-        // árbol de componentes (no el del DOM): se cortan aquí para
-        // que no lleguen a quien abrió el diálogo.
+        // With a portal, React events still bubble up the component tree
+        // (not the DOM's): they're stopped here so they don't reach
+        // whoever opened the dialog.
         e.stopPropagation();
         if (e.target === e.currentTarget && pressedOnBackdrop.current) onClose();
       }}
     >
-      {/* tabIndex -1: enfocable por código (al abrir), sin anillo ni parada de Tab. */}
+      {/* tabIndex -1: focusable from code (on open), with no ring and no Tab stop. */}
       <div ref={panelRef} tabIndex={-1} className={`${className} outline-none`}>
         {children}
       </div>

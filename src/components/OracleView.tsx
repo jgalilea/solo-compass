@@ -24,9 +24,9 @@ export function OracleView() {
 
   const activeAdventure = adventures.find((c) => c.id === activeAdventureId) ?? null;
 
-  // En móvil el resultado queda bajo el formulario, a menudo fuera de
-  // pantalla: se lleva a la vista al tirar. "nearest" no mueve nada si
-  // ya se ve (escritorio, donde va en la columna de al lado).
+  // On phones the result sits below the form, often off screen: it's
+  // scrolled into view on roll. "nearest" doesn't move anything if it's
+  // already visible (desktop, where it's in the next column).
   useEffect(() => {
     if (animateKey > 0) {
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -39,8 +39,8 @@ export function OracleView() {
   }
 
   return (
-    // En escritorio (lg+) pregunta y resultado van en dos columnas, para
-    // no apilar todo en una tira estrecha con los laterales vacíos.
+    // On desktop (lg+) question and result go in two columns, so
+    // everything isn't stacked in a narrow strip with empty sides.
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-8 pt-8 md:max-w-2xl md:pt-12 lg:grid lg:max-w-6xl lg:grid-cols-2 2xl:max-w-7xl 2xl:gap-16 lg:items-start lg:gap-10 lg:pb-12">
       <div className="flex flex-col gap-6 lg:sticky lg:top-24">
         <header className="flex items-center justify-center gap-2.5">

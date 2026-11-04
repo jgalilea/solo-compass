@@ -1,12 +1,12 @@
 /**
- * Roller de dados genérico, sin reglas de ningún sistema — solo tira
- * y formatea el resultado en notación Lonelog (`d: ... -> ...`), para
- * rellenar rápido el tipo "Tirada" del composer del diario sin salir
- * de la app ni usar dados físicos. Cubre el set clásico de d&d (d4 a
- * d20 y d%) y el de Fudge/Fate (4dF).
+ * Generic dice roller, with no system's rules — it just rolls and
+ * formats the result in Lonelog notation (`d: ... -> ...`), to quickly
+ * fill the journal composer's "Roll" kind without leaving the app or
+ * using physical dice. Covers the classic d&d set (d4 to d20 and d%)
+ * and Fudge/Fate (4dF).
  */
 
-/** Dados del set "d&d": d4, d6, d8, d10, d12, d20, d% (= d100). */
+/** The "d&d" set: d4, d6, d8, d10, d12, d20, d% (= d100). */
 export const DND_DICE = [4, 6, 8, 10, 12, 20, 100] as const;
 
 export function rollDie(sides: number): number {
@@ -21,7 +21,7 @@ export function formatDieRoll(sides: number, result: number): string {
   return `${formatDieLabel(sides)} -> ${result}`;
 }
 
-/** Un dado Fudge tiene 6 caras: dos "-", dos en blanco (0) y dos "+". */
+/** A Fudge die has 6 faces: two "-", two blank (0) and two "+". */
 export function rollFudgeDie(): -1 | 0 | 1 {
   const r = Math.floor(Math.random() * 6);
   if (r < 2) return -1;

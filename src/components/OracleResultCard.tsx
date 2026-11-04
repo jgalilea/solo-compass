@@ -10,8 +10,8 @@ const ANSWER_STYLE: Record<
   no: { className: "text-no", sizeClass: "text-5xl" },
   contradiccion: {
     className: "text-contradiction",
-    // Palabra larga: en mayúsculas (Cinzel/Playfair/mono) a text-5xl
-    // se sale del ancho de la tarjeta en móvil, así que va más chica.
+    // Long word: uppercase (Cinzel/Playfair/mono) at text-5xl overflows
+    // the card's width on phones, so it goes smaller.
     sizeClass: "text-3xl sm:text-4xl",
   },
 };

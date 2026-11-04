@@ -5,11 +5,11 @@ import { interpolate } from "../lib/i18n";
 import { IconJournal } from "./icons/Icons";
 
 /**
- * Chip de la cabecera, el mismo en todas las pantallas: dónde se están
- * apuntando las tiradas y un atajo para volver a esa aventura. Sin
- * aventura activa avisa (atenuado) y lleva al diario para elegir una.
- * Se oculta donde repetirlo no aporta: dentro de esa misma aventura, o
- * en el diario si no hay ninguna activa (ya se está eligiendo).
+ * Header chip, the same on every screen: where rolls are being logged
+ * and a shortcut back to that adventure. With no active adventure it
+ * says so (dimmed) and leads to the journal to pick one.
+ * Hidden where repeating it adds nothing: inside that same adventure,
+ * or in the journal when none is active (you're already picking).
  */
 export function ActiveAdventureChip() {
   const { status, adventures, activeAdventureId } = useJournalContext();

@@ -1,24 +1,23 @@
 /**
- * Recordatorio de copia de seguridad, a propósito casi invisible: un
- * punto en el botón de Ajustes y una línea "Última copia: hace…" en la
- * tarjeta de copia. Nada de avisos ni diálogos — el diario es para
- * jugar.
+ * Backup reminder, almost invisible on purpose: a dot on the Settings
+ * button and a "Last backup: … ago" line on the backup card. No
+ * toasts or dialogs — the journal is for playing.
  *
- * El punto sale solo si de verdad hay algo que perder: bastantes
- * entradas nuevas desde la última copia y tiempo suficiente sin
- * hacerla. Abrir Ajustes lo apaga una temporada aunque no se haga la
- * copia (se ha visto; no se insiste).
+ * The dot only shows if there really is something to lose: enough new
+ * entries since the last backup and enough time without one. Opening
+ * Settings turns it off for a while even if no backup is made (it's
+ * been seen; no need to insist).
  */
 
 const LAST_BACKUP_KEY = "solo-compass:last-backup";
 const NUDGE_SEEN_KEY = "solo-compass:backup-nudge-seen";
 
 const DAY = 24 * 60 * 60 * 1000;
-/** Entradas nuevas desde la última copia a partir de las cuales merece la pena. */
+/** New entries since the last backup from which it's worth it. */
 export const NUDGE_MIN_NEW_ENTRIES = 10;
-/** Días desde la última copia (o desde la primera entrada, si nunca hubo). */
+/** Days since the last backup (or since the first entry, if there never was one). */
 export const NUDGE_AFTER_DAYS = 14;
-/** Días que el punto se queda apagado tras abrir Ajustes. */
+/** Days the dot stays off after opening Settings. */
 export const NUDGE_SNOOZE_DAYS = 7;
 
 function loadTime(key: string): number | null {
@@ -36,7 +35,7 @@ function saveTime(key: string, time: number): void {
   try {
     window.localStorage.setItem(key, String(time));
   } catch {
-    // No es crítico: en el peor caso el punto vuelve a salir.
+    // Not critical: at worst the dot shows up again.
   }
 }
 
@@ -66,7 +65,7 @@ export function shouldNudgeBackup(
   return now - reference >= NUDGE_AFTER_DAYS * DAY;
 }
 
-/** "hace 3 días", "hace 2 meses"… en el idioma de la app. */
+/** "3 days ago", "2 months ago"… in the app's language. */
 export function formatSince(time: number, locale: string, now = Date.now()): string {
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const days = Math.round((time - now) / DAY);

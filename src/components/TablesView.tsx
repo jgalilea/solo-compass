@@ -21,8 +21,8 @@ import {
 import { Modal } from "./Modal";
 
 function normalize(s: string): string {
-  // Quita acentos (vía descomposición Unicode) para que la búsqueda
-  // encuentre "accion" al escribir "Acción" y viceversa.
+  // Strips accents (via Unicode decomposition) so searching "Acción"
+  // finds "accion" and vice versa.
   return s
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -35,10 +35,10 @@ interface LastResult {
 }
 
 /**
- * Lista compacta de tablas + un único "último resultado". En móvil y
- * tablet el resultado se abre bajo la tabla tirada; en escritorio va
- * en un panel fijo a la derecha. Solo se guarda el último (no uno por
- * tabla), para que la lista no crezca con cada tirada.
+ * Compact list of tables + a single "latest result". On phone and
+ * tablet the result opens below the rolled table; on desktop it goes in
+ * a fixed panel on the right. Only the latest is kept (not one per
+ * table), so the list doesn't grow with every roll.
  */
 export function TablesView() {
   const { adventures, activeAdventureId } = useJournalContext();
@@ -56,7 +56,7 @@ export function TablesView() {
 
   function handleRoll(table: MeaningTable) {
     setRollingId(table.id);
-    // Pequeña pausa para que se note que "se está tirando".
+    // Short pause so it feels like "rolling".
     window.setTimeout(() => {
       setLast({ table, entry: rollTable(table) });
       setRollingId(null);
@@ -207,7 +207,7 @@ function TableRow({
   const { t } = useLocaleContext();
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // En móvil el resultado se abre bajo la fila: se trae a la vista.
+  // On phones the result opens below the row: bring it into view.
   useEffect(() => {
     if (last) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [last]);
@@ -248,8 +248,8 @@ function TableRow({
           {interpolate(t.tables.rollButton, { dice: table.dice })}
         </button>
       </div>
-      {/* A todo el ancho de la tarjeta, no bajo la descripción: si no, que
-          quepa en una línea dependía de lo largo que fuera el rango. */}
+      {/* Across the card's full width, not under the description: otherwise
+          fitting on one line depended on how long the range was. */}
       <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
         <GameBadge table={table} />
         <TableEntriesButton table={table} />
@@ -350,7 +350,7 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
       >
         <IconList size={14} />
         {t.tables.viewResultsHint}
-        {/* Rango real de la tabla: un d66 va de 11 a 66, no de 1 a 66. */}
+        {/* The table's real range: a d66 goes from 11 to 66, not 1 to 66. */}
         <span className="text-parchment-dim/60">
           · {table.entries[0]?.range[0]}–{table.entries.at(-1)?.range[1]}
         </span>

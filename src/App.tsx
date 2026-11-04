@@ -14,9 +14,9 @@ import { JournalProvider } from "./hooks/JournalContext";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 function App() {
-  // LocaleProvider va fuera del error boundary para que, si algo
-  // revienta más abajo, el propio boundary pueda mostrar su mensaje
-  // en el idioma correcto (lee el contexto vía contextType).
+  // LocaleProvider goes outside the error boundary so that, if something
+  // blows up further down, the boundary itself can show its message in
+  // the right language (it reads the context via contextType).
   return (
     <LocaleProvider>
       <AppErrorBoundary>

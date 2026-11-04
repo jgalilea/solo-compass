@@ -11,7 +11,7 @@ function entry(kind: JournalLineKind, text: string = kind, linkedRollId?: string
 const kinds = (blocks: JournalEntry[][]) => blocks.map((b) => b.map((e) => e.kind));
 
 describe("groupBySession", () => {
-  it("separa por sesiones y conserva lo anterior a la primera", () => {
+  it("splits by session and keeps what comes before the first", () => {
     const groups = groupBySession([
       entry("note"),
       entry("session", "S1"),
@@ -25,14 +25,14 @@ describe("groupBySession", () => {
     ]);
   });
 
-  it("no crea un grupo vacío si el diario empieza con una sesión", () => {
+  it("doesn't create an empty group if the journal starts with a session", () => {
     const groups = groupBySession([entry("session", "S1"), entry("note")]);
     expect(groups).toHaveLength(1);
   });
 });
 
 describe("buildEntryBlocks", () => {
-  it("junta pregunta, tirada y consecuencias en una tarjeta", () => {
+  it("puts question, roll and consequences together in one card", () => {
     const blocks = buildEntryBlocks([
       entry("question", "?", "r1"),
       entry("roll", "d", "r1"),
@@ -43,24 +43,24 @@ describe("buildEntryBlocks", () => {
     expect(kinds(blocks)).toEqual([["question", "roll", "consequence", "consequence"], ["note"]]);
   });
 
-  it("agrupa por posición en diarios importados (sin enlaces)", () => {
+  it("groups by position in imported journals (no links)", () => {
     const blocks = buildEntryBlocks([entry("question"), entry("roll"), entry("consequence")]);
     expect(kinds(blocks)).toEqual([["question", "roll", "consequence"]]);
   });
 
-  it("no mete en la pregunta una tirada enlazada a otra cosa", () => {
+  it("doesn't put a roll linked to something else into the question", () => {
     const blocks = buildEntryBlocks([entry("question", "?", "r1"), entry("roll", "d", "r2")]);
     expect(kinds(blocks)).toEqual([["question"], ["roll"]]);
   });
 
-  it("una tirada suelta también recoge sus consecuencias", () => {
+  it("a standalone roll also gathers its consequences", () => {
     const blocks = buildEntryBlocks([entry("roll"), entry("consequence"), entry("action"), entry("consequence")]);
     expect(kinds(blocks)).toEqual([["roll", "consequence"], ["action"], ["consequence"]]);
   });
 });
 
 describe("splitRollText", () => {
-  it("separa el detalle del resultado y reconoce la respuesta del oráculo", () => {
+  it("splits the detail from the result and recognises the oracle answer", () => {
     expect(splitRollText("Recluse — blanco 5 / negro 2 -> Sí, y además.")).toEqual({
       detail: "Recluse — blanco 5 / negro 2",
       result: "Sí, y además.",
@@ -70,18 +70,18 @@ describe("splitRollText", () => {
     expect(splitRollText("Recluse — white 2 / black 4 -> No, but.").answer).toBe("no");
   });
 
-  it("no confunde una tirada normal con el oráculo", () => {
+  it("doesn't mistake a normal roll for the oracle", () => {
     expect(splitRollText("d20 -> 14")).toEqual({ detail: "d20", result: "14", answer: undefined });
     expect(splitRollText("Sigilo -> Sí")).toMatchObject({ answer: undefined });
   });
 
-  it("sin «->» todo es detalle", () => {
+  it("without \"->\" everything is detail", () => {
     expect(splitRollText("tiro dados")).toEqual({ detail: "tiro dados", result: null, answer: undefined });
   });
 });
 
 describe("splitRollSeries", () => {
-  it("separa cada dado de su resultado, con comas o sin ellas", () => {
+  it("splits each die from its result, with or without commas", () => {
     const rolls = [
       { die: "d10", result: "9" },
       { die: "d10", result: "5" },
@@ -91,7 +91,7 @@ describe("splitRollSeries", () => {
     expect(splitRollSeries("d10 -> 9 d10 -> 5 d10 -> 2")).toEqual({ label: "", rolls });
   });
 
-  it("conserva el texto de delante y los resultados de Fudge y d%", () => {
+  it("keeps the leading text and the Fudge and d% results", () => {
     expect(splitRollSeries("Ataque al orco d20 -> 14, 4dF -> +1 (+ 0 − +), d% -> 73")).toEqual({
       label: "Ataque al orco",
       rolls: [
@@ -102,7 +102,7 @@ describe("splitRollSeries", () => {
     });
   });
 
-  it("deja como tirada normal una sola tirada, el oráculo o texto libre", () => {
+  it("leaves a single roll, the oracle or free text as a normal roll", () => {
     expect(splitRollSeries("d20 -> 14")).toBeNull();
     expect(splitRollSeries("Recluse — blanco 5 / negro 2 -> Sí")).toBeNull();
     expect(splitRollSeries("Sigilo -> Sí, d6 -> 3")).toBeNull();

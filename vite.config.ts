@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Nombre del repositorio de GitHub Pages: https://<user>.github.io/solo-compass/
+// GitHub Pages repository name: https://<user>.github.io/solo-compass/
 const base = "/solo-compass/";
 
 // https://vite.dev/config/
@@ -13,12 +13,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      // "prompt": la versión nueva espera hasta que la persona pulsa
-      // "Actualizar" en el aviso de la app (UpdatePrompt), en vez de
-      // recargar sola y arriesgarse a perder algo a medio escribir.
-      // El registro lo hace UpdatePrompt (virtual:pwa-register/react),
-      // que además busca actualizaciones al volver a la app: instalada,
-      // casi nunca se navega de nuevo, que es cuando el navegador mira.
+      // "prompt": the new version waits until the person presses "Update"
+      // in the app's banner (UpdatePrompt), instead of reloading by itself
+      // and risking losing something half-typed. Registration is done by
+      // UpdatePrompt (virtual:pwa-register/react), which also checks for
+      // updates when coming back to the app: once installed, it hardly ever
+      // navigates again, which is when the browser checks.
       registerType: "prompt",
       injectRegister: false,
       includeAssets: ["favicon.svg"],

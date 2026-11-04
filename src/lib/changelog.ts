@@ -1,17 +1,17 @@
 import type { Locale } from "./i18n";
 
 /**
- * Crónica de cambios visible en la app (Ajustes → Acerca de), escrita
- * para jugadores curiosos, no para desarrolladores: tono de partida de
- * rol, sin jerga técnica. La más reciente va primero.
+ * In-app changelog (Settings → About), written for curious players,
+ * not developers: role-playing flavour, no technical jargon. Newest
+ * first.
  *
- * Es contenido, no textos de interfaz, así que vive aquí y no en los
- * diccionarios — pero sigue siendo bilingüe: cada entrada debe tener
- * los dos idiomas (TypeScript avisa si falta alguno).
+ * It's content, not UI strings, so it lives here and not in the
+ * dictionaries — but it's still bilingual: every entry must have both
+ * languages (TypeScript complains if one is missing).
  */
 
 export interface ChangelogEntry {
-  /** Fecha ISO (AAAA-MM-DD) de la versión. */
+  /** ISO date (YYYY-MM-DD) of the release. */
   date: string;
   text: Record<Locale, { title: string; intro?: string; items: string[] }>;
 }

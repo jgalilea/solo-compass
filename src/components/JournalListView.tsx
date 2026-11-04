@@ -20,10 +20,10 @@ import {
 } from "./icons/Icons";
 
 /**
- * Lista de aventuras del diario. El contenido de cada una (sesiones,
- * composer…) vive en AdventureDetailView (/diario/:adventureId) — así
- * esta pantalla se queda ligera aunque haya muchas aventuras, y nunca
- * desplaza nada fuera de sitio.
+ * The journal's list of adventures. Each one's content (sessions,
+ * composer…) lives in AdventureDetailView (/diario/:adventureId) — so
+ * this screen stays light even with many adventures, and never
+ * pushes anything out of place.
  */
 export function JournalListView() {
   const {
@@ -48,10 +48,10 @@ export function JournalListView() {
   const [archivedExpanded, setArchivedExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Orden de visualización (solo aventuras no archivadas): sale
-  // directamente del orden guardado de `adventures` (las nuevas ya se
-  // crean al principio y reorderAdventures lo persiste). Mientras se
-  // arrastra se usa un orden provisional, que se guarda al soltar.
+  // Display order (non-archived adventures only): it comes straight
+  // from the stored order of `adventures` (new ones are created at the
+  // start and reorderAdventures persists it). While dragging a
+  // provisional order is used, saved on release.
   const savedOrder = useMemo(
     () => adventures.filter((c) => c.status !== "archived").map((c) => c.id),
     [adventures],
@@ -81,9 +81,9 @@ export function JournalListView() {
 
   useEffect(() => {
     if (!draggingId) return;
-    // Una aventura solo cambia de posición dentro de su propio grupo
-    // (favoritas / resto) — así "pineadas al principio" es siempre
-    // cierto, arrastrar nunca puede sacarla de su grupo.
+    // An adventure only moves within its own group (favourites / the
+    // rest) — so "pinned at the top" always holds; dragging can never
+    // take it out of its group.
     const draggingFavorite = byId.get(draggingId)?.favorite ?? false;
 
     function handleMove(e: PointerEvent) {
@@ -153,8 +153,8 @@ export function JournalListView() {
     }
   }
 
-  // El ejemplo se abre sin activarlo: las tiradas del oráculo y las
-  // tablas no deben ir a parar a él sin que lo pidas.
+  // The sample opens without being activated: oracle and table rolls
+  // mustn't end up in it unless you ask for it.
   function handleOpenSample() {
     const { name, markdown } = buildSampleAdventure(t);
     const adventure = importAdventure(name, markdown);
@@ -237,7 +237,7 @@ export function JournalListView() {
                 title={t.journal.noAdventuresTitle}
                 description={t.journal.noAdventuresDescription}
                 action={
-                  // Solo con el diario vacío, y como un enlace discreto: nunca se crea solo.
+                  // Only with an empty journal, and as a discreet link: never created on its own.
                   <button
                     type="button"
                     onClick={handleOpenSample}
@@ -355,9 +355,9 @@ export function JournalListView() {
   );
 }
 
-// "Pausada" no es un estado guardado: es solo cómo se ve cualquier
-// aventura en curso que no es la activa ahora mismo — de ahí que este
-// componente reciba booleanos ya calculados, no el status en crudo.
+// "Paused" isn't a stored state: it's just how any ongoing adventure
+// that isn't the active one right now looks — hence this component
+// gets already-computed booleans, not the raw status.
 function StatusBadge({
   isPaused = false,
   isArchived = false,

@@ -15,23 +15,24 @@ import {
 } from "./icons/Icons";
 
 /**
- * Filas compartidas entre JournalListView y AdventureDetailView (esta
- * última es quien realmente las usa; conviven aquí porque son
- * componentes, no utilidades — ver src/lib/journalUi.ts para esas).
+ * Rows shared between JournalListView and AdventureDetailView (the
+ * latter is the one that actually uses them; they live here because
+ * they're components, not utilities — see src/lib/journalUi.ts for
+ * those).
  *
- * Qué entrada está en edición vive en el padre (un solo id para toda
- * la pantalla, vía editingId/onStartEdit/onStopEdit) en vez de en
- * cada fila: así abrir una cierra cualquier otra que estuviera
- * abierta, en vez de permitir varios formularios a la vez.
+ * Which entry is being edited lives in the parent (a single id for the
+ * whole screen, via editingId/onStartEdit/onStopEdit) instead of in
+ * each row: so opening one closes any other that was open, instead of
+ * allowing several forms at once.
  *
- * Lápiz y papelera no ocupan sitio fijo en cada línea: con ratón salen
- * al pasar por encima, y en táctil al tocar la entrada (selectedId,
- * también en el padre). Flotan sobre la esquina en vez de reservar un
- * hueco, para que el texto no cambie de ancho al aparecer.
+ * Pencil and trash don't take fixed space on every line: with a mouse
+ * they show on hover, and on touch when the entry is tapped (selectedId,
+ * also in the parent). They float over the corner instead of reserving
+ * a gap, so the text doesn't change width when they appear.
  *
- * Lonelog es el formato de exportación, no la vista: aquí cada tipo
- * se pinta con su icono (el símbolo solo aparece al exportar), y una
- * pregunta + su tirada + sus consecuencias se agrupan en un bloque.
+ * Lonelog is the export format, not the view: here each kind is drawn
+ * with its icon (the symbol only appears on export), and a question +
+ * its roll + its consequences are grouped into one block.
  */
 
 export interface EntryActions {
@@ -42,7 +43,7 @@ export interface EntryActions {
   onStopEdit: () => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  /** Respuesta del oráculo de una tirada enlazada, si se conoce (vía historial). */
+  /** Oracle answer of a linked roll, if known (via history). */
   answerFor: (rollId: string | undefined) => Answer | undefined;
 }
 
@@ -60,7 +61,7 @@ const ANSWER_CHIP: Record<Answer, string> = {
   contradiccion: "border-contradiction/40 bg-contradiction/10 text-contradiction",
 };
 
-/** Lista de entradas de una sesión, agrupando pregunta → tirada → consecuencias. */
+/** A session's entries, grouping question → roll → consequences. */
 export function EntryList({ items, actions }: { items: JournalEntry[]; actions: EntryActions }) {
   return (
     <>
@@ -151,8 +152,8 @@ export function SessionGroupRow({
             </span>
             <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
           </button>
-          {/* Al desplegarla con un toque queda seleccionada: así sus
-              botones también se alcanzan en táctil. */}
+          {/* Expanding it with a tap selects it: that way its
+              buttons are reachable on touch too. */}
           <LineButtons
             visible={actions.selectedId === session.id}
             onEdit={() => {
@@ -256,8 +257,8 @@ function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer |
   }
 
   if (entry.kind === "roll") {
-    // Varios dados en una entrada: cada resultado con su dado, no solo
-    // el último destacado y los demás mezclados en el detalle.
+    // Several dice in one entry: each result with its die, not just the
+    // last one highlighted and the rest mixed into the detail.
     const series = splitRollSeries(entry.text);
     if (series) {
       return (
@@ -310,7 +311,7 @@ function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer |
   );
 }
 
-/** "+1 (+ 0 − +)" de 4dF: el total grande y las caras en pequeño debajo. */
+/** "+1 (+ 0 − +)" for 4dF: the total large and the faces small below. */
 function RollResult({ result }: { result: string }) {
   const faces = result.match(/^(\S+)\s+\((.+)\)$/);
   return (
@@ -326,7 +327,7 @@ export function LineButtons({
   onEdit,
   onDelete,
 }: {
-  /** Seleccionada con un toque (táctil); con ratón salen también al pasar por encima. */
+  /** Selected with a tap (touch); with a mouse they also show on hover. */
   visible: boolean;
   onEdit: () => void;
   onDelete: () => void;

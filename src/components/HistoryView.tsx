@@ -17,8 +17,8 @@ export function HistoryView() {
   const { t } = useLocaleContext();
   const [filter, setFilter] = useState<Filter>("todo");
   const [confirmingClear, setConfirmingClear] = useState(false);
-  // Borrar una tirada no pide confirmación: se deshace desde el aviso.
-  // Vaciar todo el historial sí la pide (es grande e irreversible).
+  // Deleting a roll doesn't ask for confirmation: it's undone from the toast.
+  // Clearing the whole history does ask (it's big and irreversible).
   const [deletedEntry, setDeletedEntry] = useState<HistoryEntry | null>(null);
   const dismissUndo = useCallback(() => setDeletedEntry(null), []);
 
@@ -59,8 +59,8 @@ export function HistoryView() {
             </h1>
           </div>
           <p className="mt-1 text-sm text-parchment-dim">{t.history.subtitle}</p>
-          {/* Los gestos solo existen en pantallas táctiles; con ratón ya
-              están los iconos de estrella y papelera de cada tirada. */}
+          {/* Gestures only exist on touch screens; with a mouse each roll
+              already has its star and trash icons. */}
           <p className="mt-1 hidden text-xs text-parchment-dim/70 pointer-coarse:block">
             {t.history.swipeHint}
           </p>

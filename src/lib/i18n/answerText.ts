@@ -1,7 +1,7 @@
 import type { Answer, Qualifier } from "../oracle";
 import type { Dictionary } from "./types";
 
-/** "Sí" / "Sí, y además." / "No, pero." … según el diccionario activo. */
+/** "Yes" / "Yes, and." / "No, but." … according to the active dictionary. */
 export function formatAnswer(
   t: Dictionary,
   roll: { answer: Answer; qualifier: Qualifier },

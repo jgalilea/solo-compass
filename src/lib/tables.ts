@@ -1,15 +1,15 @@
 /**
- * Tablas de significado.
+ * Meaning tables.
  *
- * Contenido original y genérico (escrito para Solo Compass, sin
- * copiar tablas de ningún juego con licencia), pensado para servir en
- * cualquier ambientación. La estructura soporta d6, d66 (dos d6
- * leídos como decenas/unidades) y d20: añadir una tabla es solo
- * añadir datos aquí y sus textos en el diccionario.
- * Los textos (nombre, descripción y entradas) son bilingües y viven
- * en el diccionario; getMeaningTables los combina con los datos
- * estructurales de aquí. Las entradas se listan en orden: la primera
- * corresponde al valor más bajo del dado.
+ * Original, generic content (written for Solo Compass, without copying
+ * tables from any licensed game), meant to work in any setting. The
+ * structure supports d6, d66 (two d6 read as tens/units) and d20:
+ * adding a table is just adding data here and its texts in the
+ * dictionary.
+ * The texts (name, description and entries) are bilingual and live in
+ * the dictionary; getMeaningTables combines them with the structural
+ * data here. Entries are listed in order: the first one matches the
+ * die's lowest value.
  */
 
 import type { Dictionary } from "./i18n";
@@ -22,9 +22,9 @@ export interface TableEntry {
 }
 
 export interface GameRef {
-  /** Nombre del juego/sistema al que pertenece la tabla (o genérico). */
+  /** Name of the game/system the table belongs to (or generic). */
   name: string;
-  /** Enlace opcional a la fuente/manual. Sin enlace si es una tabla genérica. */
+  /** Optional link to the source/manual. No link if it's a generic table. */
   url?: string;
 }
 
@@ -39,7 +39,7 @@ export interface MeaningTable {
 
 type TableKey = keyof Dictionary["tables"]["entries"];
 
-/** Valores posibles de cada dado, en orden (d66: 11–16, 21–26 … 61–66). */
+/** Possible values of each die, in order (d66: 11–16, 21–26 … 61–66). */
 function diceValues(dice: DiceType): number[] {
   if (dice === "d66") {
     const values: number[] = [];
@@ -51,7 +51,7 @@ function diceValues(dice: DiceType): number[] {
   return Array.from({ length: diceMax(dice) }, (_, i) => i + 1);
 }
 
-// Datos estructurales (independientes del idioma) de cada tabla.
+// Structural (language-independent) data for each table.
 const TABLE_STRUCTURE: {
   id: string;
   dice: DiceType;
@@ -112,7 +112,7 @@ function rollDie(sides: number): number {
   return 1 + Math.floor(Math.random() * sides);
 }
 
-/** Devuelve los dados individuales lanzados y el valor combinado usado para buscar en la tabla. */
+/** Returns the individual dice rolled and the combined value used to look up the table. */
 export function rollForTable(dice: DiceType): { rolls: number[]; total: number } {
   if (dice === "d66") {
     const tens = rollDie(6);

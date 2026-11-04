@@ -2,10 +2,10 @@ import { useEffect, type ComponentType } from "react";
 import { IconClose, IconDownload } from "./icons/Icons";
 
 /**
- * Aviso breve que no bloquea nada y se va solo. Va por encima del
- * composer del diario (en móvil, también por encima del menú inferior)
- * para no tapar lo que se está escribiendo. Con `action` sirve para
- * "Deshacer": un aviso nuevo sustituye al anterior en vez de apilarse.
+ * Short notice that blocks nothing and goes away by itself. It sits
+ * above the journal composer (on phones, above the bottom nav too) so it
+ * doesn't cover what's being typed. With `action` it serves as "Undo":
+ * a new toast replaces the previous one instead of stacking.
  */
 export function Toast({
   title,

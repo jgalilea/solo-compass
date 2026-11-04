@@ -1,22 +1,22 @@
 /**
- * Notación Lonelog (Roberto Bisceglie, CC BY-SA 4.0):
- * https://lonelog.itch.io/lonelog — un estándar abierto de texto
- * plano para registrar sesiones de rol en solitario. Cinco símbolos:
+ * Lonelog notation (Roberto Bisceglie, CC BY-SA 4.0):
+ * https://lonelog.itch.io/lonelog — an open plain-text standard for
+ * logging solo RPG sessions. Five symbols:
  *
- *   @   acción del jugador
- *   ?   pregunta al oráculo
- *   d:  tirada (el resultado va inline con "->", p. ej. "d: ... -> ...")
- *   =>  consecuencia narrativa
- *   === Título ===   cabecera de sección/sesión
+ *   @   player action
+ *   ?   question to the oracle
+ *   d:  roll (the result goes inline with "->", e.g. "d: ... -> ...")
+ *   =>  narrative consequence
+ *   === Title ===   section/session header
  *
- * Este módulo es el único sitio que sabe traducir entre nuestras
- * entradas de diario y ese formato de texto, en los dos sentidos
- * (exportar/importar), para que el resultado sea un .md válido para
- * cualquier herramienta compatible con Lonelog (p. ej. el plugin de
- * Obsidian), no solo para esta app. Se exporta en la notación tal
- * cual, sin sustituir símbolos por equivalentes Markdown — el
- * espaciado entre líneas (una en blanco entre cada entrada) es lo
- * único que se ajusta, para que se lea bien como párrafos.
+ * This module is the only place that knows how to translate between
+ * our journal entries and that text format, in both directions
+ * (export/import), so the result is a valid .md for any
+ * Lonelog-compatible tool (e.g. the Obsidian plugin), not just this
+ * app. It's exported in the notation as is, without swapping symbols
+ * for Markdown equivalents — the spacing between lines (a blank one
+ * between entries) is the only thing adjusted, so it reads well as
+ * paragraphs.
  */
 
 import { interpolate, type Dictionary } from "./i18n";
@@ -34,9 +34,9 @@ export interface JournalEntry {
   adventureId: string;
   timestamp: number;
   kind: JournalLineKind;
-  /** El texto ya sin el símbolo/prefijo de Lonelog. */
+  /** The text without the Lonelog symbol/prefix. */
   text: string;
-  /** Si la entrada viene de una tirada de la app, su id en el historial. */
+  /** If the entry comes from an app roll, its id in the history. */
   linkedRollId?: string;
 }
 
@@ -48,23 +48,23 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
 };
 
 /**
- * Una nota cuyo texto empieza como un símbolo de Lonelog (o como un
- * título/cita de Markdown) se leería al importar como otra cosa: se
- * escapa con "\\", que además es el escape estándar de Markdown y no
- * se ve al renderizar.
+ * A note whose text starts like a Lonelog symbol (or like a Markdown
+ * heading/quote) would be read as something else on import: it's
+ * escaped with "\\", which is also Markdown's standard escape and
+ * doesn't show when rendered.
  */
 const NEEDS_ESCAPE = /^(@|\?|d:|=>|===|#|>|\\)/;
 
 /**
- * Las entradas pueden tener varias líneas (el editor lo permite). Las
- * líneas de continuación se exportan sangradas con dos espacios: en
- * Markdown siguen siendo el mismo párrafo, y al importar la sangría
- * indica que pertenecen a la entrada anterior aunque empiecen por un
- * símbolo. Las líneas en blanco intermedias se conservan.
+ * Entries can span several lines (the editor allows it). Continuation
+ * lines are exported indented by two spaces: in Markdown they're still
+ * the same paragraph, and on import the indent says they belong to the
+ * previous entry even if they start with a symbol. Blank lines in
+ * between are kept.
  */
 export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   if (entry.kind === "session") {
-    // El título de sesión es una sola línea por definición.
+    // A session title is a single line by definition.
     return `=== ${entry.text.replace(/\s*\n\s*/g, " ")} ===`;
   }
   const [first, ...rest] = entry.text.split(/\r?\n/);
@@ -79,7 +79,7 @@ export const LONELOG_URL = "https://lonelog.itch.io/lonelog";
 export const LONELOG_LICENSE_URL = "https://creativecommons.org/licenses/by-sa/4.0/";
 export const APP_URL = "https://jgalilea.github.io/solo-compass/";
 
-/** Crédito con enlaces Markdown reales (no solo texto plano con la URL). */
+/** Credit with real Markdown links (not just plain text with the URL). */
 export function buildCreditLine(t: Dictionary): string {
   return interpolate(t.journal.lonelogCreditLine, {
     app: `[Solo Compass](${APP_URL})`,
@@ -88,11 +88,11 @@ export function buildCreditLine(t: Dictionary): string {
 }
 
 /**
- * Genera el .md de una aventura: cabecera + crédito visible a Lonelog
- * (como cita, no como comentario oculto) + una entrada por párrafo.
- * Cada bloque va separado por una línea en blanco (no solo un salto
- * de línea) para que Markdown los trate como párrafos distintos —
- * si no, la mayoría de visores los junta todos pegados en uno solo.
+ * Builds an adventure's .md: header + visible credit to Lonelog (as a
+ * quote, not a hidden comment) + one entry per paragraph. Each block
+ * is separated by a blank line (not just a line break) so Markdown
+ * treats them as separate paragraphs — otherwise most viewers glue
+ * them all together into one.
  */
 export function exportAdventureToMarkdown(
   t: Dictionary,
@@ -106,34 +106,33 @@ export function exportAdventureToMarkdown(
 }
 
 const ROLL_PREFIX = /^d:\s?/;
-/** Una línea sangrada continúa la entrada anterior (ver formatLine). */
+/** An indented line continues the previous entry (see formatLine). */
 const CONTINUATION_LINE = /^[ \t]+\S/;
 const ACTION_PREFIX = /^@\s?/;
 const QUESTION_PREFIX = /^\?\s?/;
 const CONSEQUENCE_PREFIX = /^=>\s?/;
-/** "=== Título ===", el marcador de sesión de Lonelog. */
+/** "=== Title ===", Lonelog's session marker. */
 const LEGACY_SESSION_LINE = /^===\s*(.+?)\s*===$/;
-/** "## Título" — no lo exportamos, pero se reconoce igual al importar
- *  por si el archivo viene de fuera y usa un encabezado Markdown en
- *  vez del marcador de Lonelog para las sesiones. */
+/** "## Title" — we don't export it, but it's still recognised on import
+ *  in case the file comes from elsewhere and uses a Markdown heading
+ *  instead of Lonelog's marker for sessions. */
 const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
-/** Título H1 (# solo, no ## ni más) — el nombre de aventura a ignorar. */
+/** H1 title (# alone, not ## or more) — the adventure name to ignore. */
 const H1_TITLE_LINE = /^#(?!#)/;
 
 /**
- * Parsea texto en notación Lonelog a entradas. Deliberadamente
- * permisivo: cualquier línea que no encaje con un símbolo reconocido
- * se guarda como nota en vez de descartarse o fallar — igual que
- * Lonelog admite contenido adicional (etiquetas, prosa suelta) sin
- * romper el resto del documento.
+ * Parses Lonelog text into entries. Deliberately permissive: any line
+ * that doesn't match a recognised symbol is kept as a note instead of
+ * being dropped or failing — just as Lonelog allows extra content
+ * (tags, loose prose) without breaking the rest of the document.
  *
- * - La cabecera (el título H1 con el nombre de la aventura y las citas
- *   ">" que lo siguen, como nuestro crédito) se ignora solo al
- *   principio: más abajo, "#pista" o "> una cita" son notas.
- * - Las sesiones se reconocen en "=== Título ===" (lo que exportamos) y
- *   también en "## Título", por si el archivo viene de fuera.
- * - Una línea sangrada continúa la entrada anterior (entradas de varias
- *   líneas); "\\" al inicio escapa una nota que empieza por un símbolo.
+ * - The header (the H1 title with the adventure name and the ">"
+ *   quotes after it, like our credit) is only ignored at the start:
+ *   further down, "#clue" or "> a quote" are notes.
+ * - Sessions are recognised in "=== Title ===" (what we export) and
+ *   also in "## Title", in case the file comes from elsewhere.
+ * - An indented line continues the previous entry (multi-line
+ *   entries); a leading "\\" escapes a note that starts with a symbol.
  */
 export function parseMarkdownToEntries(
   text: string,
@@ -141,14 +140,14 @@ export function parseMarkdownToEntries(
   startTimestamp: number,
 ): JournalEntry[] {
   const entries: JournalEntry[] = [];
-  // Quita un posible BOM inicial (lo añade nuestra propia exportación
-  // para que los visores externos detecten bien el UTF-8) para que no
-  // se cuele en la primera línea y la deje sin reconocer.
+  // Strip a possible leading BOM (our own export adds it so external
+  // viewers detect UTF-8 correctly) so it doesn't sneak into the first
+  // line and leave it unrecognised.
   const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
   let inHeader = true;
   let seenTitle = false;
-  // Líneas en blanco desde la última línea de la entrada anterior, para
-  // conservarlas si lo que sigue es una continuación.
+  // Blank lines since the last line of the previous entry, to keep
+  // them if what follows is a continuation.
   let pendingBlankLines = 0;
 
   for (const rawLine of lines) {
@@ -208,8 +207,8 @@ export function parseMarkdownToEntries(
 
     const index = entries.length;
     entries.push({
-      // No hay timestamp real por línea en el texto plano: se generan
-      // secuenciales para conservar el orden del archivo al mostrarlo.
+      // Plain text has no real timestamp per line: sequential ones are
+      // generated to keep the file's order when displaying it.
       id: `${startTimestamp}-${index}-${Math.random().toString(36).slice(2, 8)}`,
       adventureId,
       timestamp: startTimestamp + index,

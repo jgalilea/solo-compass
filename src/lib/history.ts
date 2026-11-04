@@ -16,11 +16,11 @@ export interface TableRollEntry {
 
 export type HistoryEntry = OracleRoll | TableRollEntry;
 
-// Se guarda en IndexedDB (vía idb-keyval) en vez de localStorage: el
-// historial no tiene techo natural de tamaño y localStorage está
-// limitado a ~5 MiB por origen, compartidos además con cualquier otra
-// app en el mismo dominio. IndexedDB da órdenes de magnitud más
-// espacio y es igual de gratuito/sin dependencias de servidor.
+// Stored in IndexedDB (via idb-keyval) instead of localStorage: the
+// history has no natural size cap and localStorage is limited to
+// ~5 MiB per origin, shared with any other app on the same domain.
+// IndexedDB gives orders of magnitude more room and is just as free
+// and server-less.
 const IDB_KEY = "solo-compass:history";
 const LEGACY_LOCALSTORAGE_KEY = "solo-compass:history";
 
@@ -32,11 +32,11 @@ interface LegacyStoredPayload {
 export class HistoryStorageError extends Error {}
 
 /**
- * Si ya hay historial guardado en localStorage de antes de pasar a
- * IndexedDB, lo migra una vez y limpia la clave antigua (para
- * recuperar ese espacio del cupo compartido). Si algo falla aquí no
- * se propaga como error: como mucho, el historial antiguo se pierde,
- * pero no debe impedir que la app siga funcionando con IndexedDB.
+ * If there's history saved in localStorage from before the move to
+ * IndexedDB, it's migrated once and the old key is cleared (to win
+ * that space back from the shared quota). If something fails here it
+ * isn't raised as an error: at worst the old history is lost, but it
+ * mustn't stop the app from working with IndexedDB.
  */
 function migrateFromLocalStorage(): HistoryEntry[] | null {
   try {
@@ -67,7 +67,7 @@ export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
     if (!Array.isArray(stored)) {
       throw new HistoryStorageError(t.history.storageCorruptedError);
     }
-    // Compatibilidad con historiales guardados antes de añadir favoritos.
+    // Compatibility with histories saved before favourites were added.
     return stored.map((e) => ({ ...e, favorite: e.favorite ?? false }));
   }
 
@@ -76,8 +76,8 @@ export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
     try {
       await set(IDB_KEY, migrated);
     } catch {
-      // No se pudo persistir la migración todavía, pero se devuelven
-      // los datos igualmente para no perderlos de la sesión actual.
+      // The migration couldn't be persisted yet, but the data is
+      // returned anyway so it isn't lost from the current session.
     }
     return migrated;
   }

@@ -1,9 +1,9 @@
 import { DND_DICE, formatDieLabel, formatDieRoll, formatFudgeRoll, rollDie, rollFudgeSet } from "../lib/dice";
 
 /**
- * Fila de dados genéricos (d&d + Fudge/Fate) para el tipo "Tirada"
- * del composer del diario — tocar uno tira y añade el resultado ya
- * formateado en notación Lonelog al texto, sin salir de la app.
+ * Row of generic dice (d&d + Fudge/Fate) for the journal composer's
+ * "Roll" kind — tapping one rolls it and appends the result, already
+ * formatted in Lonelog notation, to the text, without leaving the app.
  */
 export function DiceRoller({ onRoll, ariaLabel }: { onRoll: (text: string) => void; ariaLabel: string }) {
   const buttonClass =

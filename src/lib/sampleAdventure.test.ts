@@ -4,8 +4,8 @@ import { buildSampleAdventure } from "./sampleAdventure";
 import { parseMarkdownToEntries } from "./lonelog";
 import { splitRollText } from "./journalUi";
 
-describe("aventura de ejemplo", () => {
-  it("tiene el mismo guion (tipos y dados) en todos los idiomas", () => {
+describe("sample adventure", () => {
+  it("has the same script (kinds and dice) in every language", () => {
     const shape = (lang: "es" | "en") =>
       DICTIONARIES[lang].sample.script.map((l) =>
         "oracle" in l ? `oracle:${l.oracle}` : "table" in l ? `table:${l.table}:${l.roll}` : l.kind,
@@ -14,7 +14,7 @@ describe("aventura de ejemplo", () => {
   });
 
   for (const lang of ["es", "en"] as const) {
-    it(`se importa entera y con las respuestas del oráculo reconocidas (${lang})`, () => {
+    it(`imports in full with the oracle answers recognised (${lang})`, () => {
       const t = DICTIONARIES[lang];
       const { markdown } = buildSampleAdventure(t);
       expect(markdown).not.toMatch(/undefined|\{\w+\}/);

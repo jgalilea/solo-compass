@@ -1,8 +1,8 @@
 import type { Answer, Likelihood, Qualifier } from "../oracle";
 import type { ThemeId } from "../theme";
 
-// Duplicado a propósito en vez de importarlo de components/Die.tsx,
-// para que este módulo no dependa de la capa de componentes.
+// Duplicated on purpose instead of importing it from components/Die.tsx,
+// so this module doesn't depend on the component layer.
 type DieColor = "blanco" | "negro";
 
 export type Locale = "es" | "en";
@@ -10,15 +10,14 @@ export type Locale = "es" | "en";
 export const LOCALES: Locale[] = ["es", "en"];
 
 /**
- * Diccionario completo de textos de la interfaz. Ambos locales
- * (src/lib/i18n/locales/{es,en}.ts) deben implementar exactamente
- * esta forma — si falta una clave en alguno, TypeScript avisa.
+ * Full dictionary of UI strings. Both locales
+ * (src/lib/i18n/locales/{es,en}.ts) must implement exactly this
+ * shape — if a key is missing from either, TypeScript complains.
  */
 /**
- * Una línea del guion de la aventura de ejemplo. Las tiradas se dan
- * como dados, no como texto: `sampleAdventure.ts` las escribe igual
- * que una partida real (nombre del oráculo, respuesta, resultado de la
- * tabla), en el idioma de la app.
+ * One line of the sample adventure's script. Rolls are given as dice,
+ * not text: `sampleAdventure.ts` writes them like a real game (oracle
+ * name, answer, table result), in the app's language.
  */
 export type SampleLine =
   | { kind: "note" | "action" | "question" | "consequence" | "session" | "roll"; text: string }
@@ -57,7 +56,7 @@ export interface Dictionary {
     appearanceHeading: string;
     languageHeading: string;
     aboutHeading: string;
-    /** Título del botón de Ajustes cuando tiene el punto de copia pendiente. */
+    /** Settings button title when it shows the backup-due dot. */
     triggerLabelBackupDue: string;
   };
   shortcuts: {
@@ -151,7 +150,7 @@ export interface Dictionary {
     dataSectionDescription: string;
     exportAllButton: string;
     exportedAllConfirmation: string;
-    /** "Última copia: {when}" ({when} = "hace 3 días"). */
+    /** "Last backup: {when}" ({when} = "3 days ago"). */
     lastBackup: string;
     noBackupYet: string;
     importAllButton: string;
@@ -354,9 +353,9 @@ export interface Dictionary {
     boundaryDescription: string;
     reload: string;
   };
-  /** Código para Intl.DateTimeFormat (formateo de fecha/hora). */
+  /** Code for Intl.DateTimeFormat (date/time formatting). */
   sample: {
-    /** Enlace discreto bajo "Todavía no tienes ninguna aventura". */
+    /** Discreet link under "You don't have any adventures yet". */
     offer: string;
     name: string;
     script: SampleLine[];

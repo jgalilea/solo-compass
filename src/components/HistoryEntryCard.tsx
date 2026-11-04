@@ -37,15 +37,15 @@ export function HistoryEntryCard({
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
-  // Refleja dragX sin esperar al repintado, para poder leer el valor
-  // final al soltar sin depender de un closure que podría quedar
-  // desactualizado (la actualización de dragX y la lectura al soltar
-  // pueden caer en el mismo tick).
+  // Mirrors dragX without waiting for a repaint, so the final value
+  // can be read on release without relying on a closure that might be
+  // stale (the dragX update and the read on release can land in the
+  // same tick).
   const dragXRef = useRef(0);
   const pointerIdRef = useRef<number | null>(null);
 
-  // Se escuchan los eventos de puntero en window mientras se arrastra, para
-  // no perder el gesto si el dedo/cursor sale de la tarjeta.
+  // Pointer events are listened to on window while dragging, so the
+  // gesture isn't lost if the finger/cursor leaves the card.
   useEffect(() => {
     if (!dragging) return;
 
@@ -60,10 +60,9 @@ export function HistoryEntryCard({
     function handleUp(e: globalThis.PointerEvent) {
       if (e.pointerId !== pointerIdRef.current) return;
       const finalX = dragXRef.current;
-      // Primero se limpia el estado visual local; el aviso al padre
-      // (que dispara renders en otro componente) va después y fuera
-      // de cualquier función de actualización de estado, para no
-      // arriesgarse a dejar el gesto a medio resetear.
+      // Local visual state is cleared first; notifying the parent (which
+      // triggers renders in another component) comes after and outside any
+      // state updater, so the gesture is never left half-reset.
       dragXRef.current = 0;
       setDragX(0);
       setDragging(false);
@@ -76,9 +75,9 @@ export function HistoryEntryCard({
     }
 
     function handleCancel() {
-      // Red de seguridad: si por lo que sea nunca llega el pointerup
-      // (p. ej. se cambia de app a medio gesto), no se dispara
-      // ninguna acción, solo se limpia el estado visual.
+      // Safety net: if for whatever reason pointerup never arrives
+      // (e.g. switching apps mid-gesture), no action fires, only the
+      // visual state is cleared.
       dragXRef.current = 0;
       setDragX(0);
       setDragging(false);
@@ -191,9 +190,9 @@ export function HistoryEntryCard({
               </div>
               <span
                 className={[
-                  // Mismo tamaño para todas las variantes (antes las
-                  // cortas como "Sí"/"No" iban más grandes que las
-                  // largas y se veía inconsistente).
+                  // Same size for every variant (the short ones like "Yes"/"No"
+                  // used to be bigger than the long ones, which looked
+                  // inconsistent).
                   "break-words font-display text-sm font-semibold",
                   ANSWER_COLOR[entry.answer],
                 ].join(" ")}

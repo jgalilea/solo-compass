@@ -1,18 +1,18 @@
 /**
- * Motor del oráculo "Recluse" (Graven Utterance, CC BY 4.0).
+ * Engine for the "Recluse" oracle (Graven Utterance, CC BY 4.0).
  *
- * Regla base: se lanza un dado blanco y un dado negro (d6).
- * - Blanco > Negro  -> Sí
- * - Negro > Blanco  -> No
- * - Empate          -> Contradicción: una premisa de la pregunta es errónea.
+ * Base rule: roll one white die and one black die (d6).
+ * - White > Black  -> Yes
+ * - Black > White  -> No
+ * - Tie            -> Contradiction: a premise of the question is wrong.
  *
- * Matiz: si ambos dados comparados son bajos (<=3) se añade "Pero";
- * si ambos son altos (>=4) se añade "Y". Si están mezclados, la
- * respuesta queda seca (sin matiz).
+ * Qualifier: if both compared dice are low (<=3) "But" is added; if
+ * both are high (>=4) "And" is added. If they're mixed, the answer is
+ * plain (no qualifier).
  *
- * Probabilidad: para eventos más o menos probables se añaden dados
- * extra del color favorecido y solo se conserva el más alto de ese
- * color al comparar.
+ * Likelihood: for more or less likely events, extra dice of the
+ * favoured colour are added and only the highest of that colour is
+ * kept for the comparison.
  */
 
 export type Likelihood =
@@ -67,7 +67,7 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** La regla de arriba aplicada a los dados ya elegidos (el más alto de cada color). */
+/** The rule above applied to the already-chosen dice (the highest of each colour). */
 export function judgeDice(white: number, black: number): { answer: Answer; qualifier: Qualifier } {
   if (white === black) return { answer: "contradiccion", qualifier: null };
   const answer: Answer = white > black ? "si" : "no";

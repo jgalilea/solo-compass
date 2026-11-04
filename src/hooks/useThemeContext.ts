@@ -4,7 +4,7 @@ import { ThemeContext, type ThemeContextValue } from "./themeContextInstance";
 export function useThemeContext(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
-    throw new Error("useThemeContext debe usarse dentro de ThemeProvider");
+    throw new Error("useThemeContext must be used inside ThemeProvider");
   }
   return ctx;
 }

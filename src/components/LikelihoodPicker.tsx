@@ -10,13 +10,13 @@ const ORDER: Likelihood[] = [
   "muy-probable",
 ];
 
-// Las cinco etiquetas completas no caben en una fila estrecha (se
-// cortaban: "Equilibrad…"), así que ahí se muestra una escala corta y
-// debajo el nombre de la opción elegida. Depende del ancho del propio
-// selector (container query), no de la pantalla: en escritorio también
-// vive en la columna estrecha de la mesa de juego.
-// La escala va con iconos, no con "+"/"−" escritos: las tipografías de
-// algunos temas (OSR, fantasía) dibujan el "+" como una cruz.
+// The five full labels don't fit in a narrow row (they got cut off:
+// "Equilibrad…"), so there a short scale is shown with the chosen
+// option's name below. It depends on the picker's own width
+// (container query), not the screen's: on desktop it also lives in
+// the game table's narrow column.
+// The scale uses icons, not typed "+"/"−": some themes' fonts (OSR,
+// fantasy) draw the "+" as a cross.
 const SHORT: Record<Likelihood, { Icon: typeof IconPlus; count: number }> = {
   "muy-improbable": { Icon: IconMinus, count: 2 },
   improbable: { Icon: IconMinus, count: 1 },

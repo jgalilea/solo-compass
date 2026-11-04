@@ -1,15 +1,14 @@
 /**
- * Copia de seguridad completa de la app: historial + diario (todas
- * las aventuras y entradas) + ajustes, en un único .json — para no
- * depender solo del almacenamiento del navegador (ver "Almacenamiento"
- * en el README: todo vive en IndexedDB/localStorage de este
- * dispositivo, sin servidor ni sincronización).
+ * Full app backup: history + journal (every adventure and entry) +
+ * settings, in a single .json — so as not to rely only on browser
+ * storage (see "Your data" in the README: everything lives in this
+ * device's IndexedDB/localStorage, with no server or sync).
  *
- * Se construye encima de las funciones load/save de cada módulo
- * (history.ts, journal.ts, theme.ts, mode.ts, i18n, oracles.ts,
- * tableFavorites.ts, activeAdventure.ts) en vez de leer/escribir las
- * claves de almacenamiento a mano aquí — así no se duplica ninguna
- * lógica de validación/migración que esos módulos ya resuelven.
+ * Built on top of each module's load/save functions (history.ts,
+ * journal.ts, theme.ts, mode.ts, i18n, oracles.ts, tableFavorites.ts,
+ * activeAdventure.ts) instead of reading/writing the storage keys by
+ * hand here — so none of the validation/migration logic those modules
+ * already handle gets duplicated.
  */
 
 import { loadHistory, saveHistory, type HistoryEntry } from "./history";
@@ -23,8 +22,8 @@ import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
 
-// 2: journal.adventures (antes journal.campaigns) — la copia de
-// seguridad es tan nueva que no hace falta migrar copias antiguas.
+// 2: journal.adventures (formerly journal.campaigns) — backups are so
+// new there's no need to migrate old ones.
 export const BACKUP_SCHEMA_VERSION = 2;
 
 export interface BackupPayload {
@@ -71,8 +70,8 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
   };
 }
 
-/** Solo valida la forma mínima imprescindible para no reventar al
- * restaurar — los ajustes son deliberadamente laxos (best-effort). */
+/** Only validates the bare minimum shape so restoring doesn't blow up
+ * — settings are deliberately lenient (best-effort). */
 function isBackupPayload(value: unknown): value is BackupPayload {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -86,11 +85,10 @@ function isBackupPayload(value: unknown): value is BackupPayload {
 }
 
 /**
- * Restaura una copia de seguridad: sustituye por completo el
- * historial y el diario actuales de este dispositivo (no los
- * combina — ver el aviso de confirmación en la interfaz). Los
- * ajustes se restauran uno a uno y en silencio si alguno no es
- * válido, para no bloquear el resto por un solo campo suelto.
+ * Restores a backup: fully replaces this device's current history
+ * and journal (it doesn't merge them — see the confirmation prompt in
+ * the UI). Settings are restored one by one, silently skipping any
+ * that are invalid, so a single stray field doesn't block the rest.
  */
 export async function restoreBackup(t: Dictionary, text: string): Promise<void> {
   let parsed: unknown;
@@ -108,7 +106,7 @@ export async function restoreBackup(t: Dictionary, text: string): Promise<void> 
     saveAdventures(t, parsed.journal.adventures),
     saveJournalEntries(t, parsed.journal.entries),
   ]);
-  // Lo que hay ahora es justo esa copia: cuenta como la última.
+  // What's here now is exactly that backup: it counts as the latest.
   const exportedAt = Date.parse(parsed.exportedAt);
   if (Number.isFinite(exportedAt)) saveLastBackupAt(exportedAt);
 
@@ -132,9 +130,9 @@ export function backupFilename(): string {
   return `solo-compass-backup-${date}.json`;
 }
 
-/** Sin BOM a propósito (a diferencia de journalUi.ts's downloadTextFile):
- * JSON.parse rechaza un BOM inicial, y el archivo se vuelve a leer
- * con nuestro propio parser al restaurar. */
+/** No BOM on purpose (unlike journalUi.ts's downloadTextFile):
+ * JSON.parse rejects a leading BOM, and the file is read back with
+ * our own parser on restore. */
 export function downloadBackupFile(filename: string, payload: BackupPayload): void {
   const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: "application/json" });

@@ -40,16 +40,16 @@ import { Modal } from "./Modal";
 import { KOFI_URL } from "../lib/support";
 
 /**
- * Un único punto de entrada para todo lo que no es jugar: apariencia,
- * idioma, copia de seguridad y créditos. Antes eran tres iconos
- * sueltos en la cabecera, y la copia de seguridad (lo más importante
- * en una app sin servidor) quedaba escondida dentro de "Acerca de".
+ * A single entry point for everything that isn't playing: appearance,
+ * language, backup and credits. These used to be three loose icons in
+ * the header, and the backup (the most important thing in an app with
+ * no server) was hidden inside "About".
  */
 export function SettingsDialog() {
   const { t } = useLocaleContext();
   const { entries } = useJournalContext();
   const [open, setOpen] = useState(false);
-  // "?" abre Ajustes directamente en la leyenda de atajos.
+  // "?" opens Settings straight at the shortcut legend.
   const [showShortcuts, setShowShortcuts] = useState(false);
   const shortcutsRef = useRef<HTMLElement>(null);
   const [nudgeSeen, setNudgeSeen] = useState(false);
@@ -59,7 +59,7 @@ export function SettingsDialog() {
   function openSettings(shortcuts = false) {
     setShowShortcuts(shortcuts);
     setOpen(true);
-    // Visto el punto, no se insiste en una temporada aunque no se haga la copia.
+    // Once the dot has been seen, don't insist for a while even if no backup is made.
     if (nudge) {
       markBackupNudgeSeen();
       setNudgeSeen(true);
@@ -85,7 +85,7 @@ export function SettingsDialog() {
         className="relative -m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
       >
         <IconSettings size={22} />
-        {/* Copia de seguridad pendiente: solo un punto, sin texto ni aviso. */}
+        {/* Backup due: just a dot, no text and no notice. */}
         {nudge && (
           <span className="absolute right-1 top-1 size-2 rounded-full bg-gold ring-2 ring-ink-950" />
         )}
@@ -97,8 +97,8 @@ export function SettingsDialog() {
           label={t.settings.title}
           className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-ink-border bg-ink-800 shadow-2xl sm:max-w-lg sm:rounded-3xl lg:max-w-4xl"
         >
-          {/* La cabecera queda fija y solo el contenido hace scroll, para
-              que la barra no se monte sobre las esquinas redondeadas. */}
+          {/* The header stays fixed and only the content scrolls, so the
+              scrollbar doesn't run over the rounded corners. */}
           <div className="flex shrink-0 items-center justify-between border-b border-ink-border/70 px-5 py-4 sm:px-6">
             <h2 className="font-display text-xl text-parchment">{t.settings.title}</h2>
             <button
@@ -120,7 +120,7 @@ export function SettingsDialog() {
                 <Section title={t.settings.languageHeading}>
                   <LanguageSettings />
                 </Section>
-                {/* Solo con ratón o teclado a mano (o si se ha llegado con "?"). */}
+                {/* Only with a mouse or a keyboard at hand (or when reached via "?"). */}
                 <Section
                   ref={shortcutsRef}
                   title={t.shortcuts.heading}
@@ -294,7 +294,7 @@ function ShortcutsLegend() {
       {groups.map(({ heading, rows }) => (
         <div key={heading} className="mt-3.5">
           <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{heading}</p>
-          {/* Columna de teclas de ancho fijo: las dos listas quedan alineadas. */}
+          {/* Fixed-width key column: both lists line up. */}
           <dl className="mt-2 grid grid-cols-[6.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
             {rows.map(([keys, label]) => (
               <div key={label} className="contents">
@@ -322,7 +322,7 @@ function BackupSettings() {
   const { t, locale } = useLocaleContext();
   const { entries } = useJournalContext();
   const [lastBackupAt, setLastBackupAt] = useState(loadLastBackupAt);
-  // El mismo criterio que el punto de la cabecera, sin la pausa de "ya visto".
+  // Same rule as the header dot, without the "already seen" snooze.
   const stale = useMemo(
     () => shouldNudgeBackup(entries.map((e) => e.timestamp), undefined, lastBackupAt, null),
     [entries, lastBackupAt],
@@ -357,10 +357,10 @@ function BackupSettings() {
     setRestoring(true);
     try {
       await restoreBackup(t, pendingRestore);
-      // Recarga completa a propósito: history/journal/theme/locale…
-      // viven repartidos en varios contextos de React ya montados, y
-      // la forma más simple y fiable de que todos reflejen los datos
-      // recién restaurados es arrancar de cero.
+      // Full reload on purpose: history/journal/theme/locale… are
+      // spread across several React contexts that are already mounted,
+      // and the simplest, most reliable way for all of them to reflect
+      // the freshly restored data is to start from scratch.
       window.location.reload();
     } catch (err) {
       setImportError(err instanceof BackupError ? err.message : t.about.importAllError);
@@ -481,9 +481,9 @@ function AboutSettings() {
 }
 
 /**
- * Un enlace normal a Ko-fi, no su widget: el widget carga un script de
- * terceros en cada visita (y aquí nada sale del dispositivo), no
- * funciona sin conexión ni respeta los temas.
+ * A plain link to Ko-fi, not its widget: the widget loads a third-party
+ * script on every visit (and here nothing leaves the device), doesn't
+ * work offline and doesn't respect the themes.
  */
 function SupportCard() {
   const { t } = useLocaleContext();

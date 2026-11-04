@@ -1,14 +1,14 @@
 /**
- * Registro de oráculos disponibles. De momento solo Recluse, pero la
- * estructura ya soporta añadir más: cada uno lleva su propio crédito
- * (autor, licencia, enlace). El nombre/autor/licencia son datos, no
- * texto de interfaz, así que no van en el diccionario de idioma —
- * igual que "Recluse" nunca se tradujo.
+ * Registry of available oracles. Only Recluse for now, but the
+ * structure already supports adding more: each one carries its own
+ * credit (author, license, link). Name/author/license are data, not
+ * UI text, so they don't go in the language dictionary — just as
+ * "Recluse" was never translated.
  *
- * La mecánica de tirada en sí (src/lib/oracle.ts) sigue siendo
- * específica de Recluse por ahora: cuando llegue un segundo oráculo
- * con reglas propias, ese es el momento de convertir OracleView en un
- * despachador según el id seleccionado aquí.
+ * The roll mechanic itself (src/lib/oracle.ts) is still specific to
+ * Recluse for now: when a second oracle with its own rules arrives,
+ * that's the time to turn OracleView into a dispatcher based on the id
+ * selected here.
  */
 
 export interface OracleInfo {
@@ -48,8 +48,8 @@ export function loadOracleId(): string {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved && isOracleId(saved)) return saved;
   } catch {
-    // Sin localStorage disponible: se usa el oráculo por defecto en
-    // silencio, no es un fallo crítico para el resto de la app.
+    // No localStorage available: silently use the default oracle, it's
+    // not a critical failure for the rest of the app.
   }
   return DEFAULT_ORACLE_ID;
 }
@@ -59,7 +59,7 @@ export function saveOracleId(id: string): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, id);
   } catch {
-    // Igual que en loadOracleId: si falla, la elección no persiste
-    // entre sesiones pero la app sigue funcionando con normalidad.
+    // Same as in loadOracleId: if it fails, the choice doesn't persist
+    // between sessions but the app keeps working normally.
   }
 }

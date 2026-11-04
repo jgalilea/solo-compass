@@ -2,27 +2,27 @@ import type { SVGProps } from "react";
 import * as Tabler from "@tabler/icons-react";
 
 /**
- * Iconos de la app: Tabler Icons (MIT), envueltos para mantener una API
- * única (`size` en px, heredan color con currentColor para tintarse con
- * Tailwind). Las pantallas solo importan de aquí, así que cambiar un
- * icono es cambiar una línea. Si hace falta uno nuevo, se elige el
- * Tabler más cercano (https://tabler.io/icons) y se añade aquí — no se
- * dibujan SVG a mano. La única excepción es el logo (IconCompass).
+ * App icons: Tabler Icons (MIT), wrapped to keep a single API (`size`
+ * in px; they inherit currentColor so Tailwind can tint them). Screens
+ * only import from here, so changing an icon is a one-line change. If a
+ * new one is needed, pick the closest Tabler icon
+ * (https://tabler.io/icons) and add it here — no hand-drawn SVG. The
+ * only exception is the logo (IconCompass).
  */
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number };
 
-// Trazo algo más fino que el de serie (2): con 2 pesaban demasiado al
-// lado del texto en los tamaños pequeños de la app.
+// Slightly thinner stroke than the default (2): at 2 they looked too
+// heavy next to text at the app's small sizes.
 function TablerIcon({ icon: Icon, size = 20, strokeWidth = 1.75, ...rest }: IconProps & { icon: Tabler.Icon }) {
   return <Icon size={size} stroke={strokeWidth} aria-hidden {...rest} />;
 }
 
 /**
- * Logo de la app (no es de Tabler: es la marca). Rosa de los vientos
- * de cuatro puntas con una cara de cada punta rellena; es el mismo
- * dibujo que el icono instalado y el favicon (public/), para que la
- * marca se reconozca igual dentro y fuera de la app.
+ * App logo (not from Tabler: it's the brand). A four-point compass
+ * rose with one face of each point filled; it's the same drawing as the
+ * installed icon and the favicon (public/), so the brand looks the
+ * same inside and outside the app.
  */
 export function IconCompass({ size = 20, ...rest }: IconProps) {
   return (
@@ -54,12 +54,12 @@ export function IconStar({ filled = false, ...props }: IconProps & { filled?: bo
   return <TablerIcon icon={filled ? Tabler.IconStarFilled : Tabler.IconStar} {...props} />;
 }
 
-// Secciones
-// El oráculo: una bola de cristal.
+// Sections
+// The oracle: a crystal ball.
 export function IconOracle(props: IconProps) {
   return <TablerIcon icon={Tabler.IconCrystalBall} {...props} />;
 }
-// Una tabla de sentido es una lista numerada que se tira con un dado.
+// A meaning table is a numbered list rolled with a die.
 export function IconTable(props: IconProps) {
   return <TablerIcon icon={Tabler.IconListNumbers} {...props} />;
 }
@@ -73,7 +73,7 @@ export function IconSettings(props: IconProps) {
   return <TablerIcon icon={Tabler.IconSettings} {...props} />;
 }
 
-// Tipos de entrada del diario (equivalen a los símbolos de Lonelog)
+// Journal entry kinds (matching the Lonelog symbols)
 export function IconQuestion(props: IconProps) {
   return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
 }
@@ -86,7 +86,7 @@ export function IconAction(props: IconProps) {
 export function IconConsequence(props: IconProps) {
   return <TablerIcon icon={Tabler.IconCornerDownRight} {...props} />;
 }
-// Escrito a pluma: narración libre.
+// Written with a quill: free narration.
 export function IconNote(props: IconProps) {
   return <TablerIcon icon={Tabler.IconFeather} {...props} />;
 }
@@ -94,7 +94,7 @@ export function IconSession(props: IconProps) {
   return <TablerIcon icon={Tabler.IconBookmark} {...props} />;
 }
 
-// Acciones y estados
+// Actions and states
 export function IconAlertTriangle(props: IconProps) {
   return <TablerIcon icon={Tabler.IconAlertTriangle} {...props} />;
 }
@@ -194,7 +194,7 @@ export function IconShieldCheck(props: IconProps) {
 export function IconShieldAlert(props: IconProps) {
   return <TablerIcon icon={Tabler.IconShieldExclamation} {...props} />;
 }
-// La crónica de cambios: un pergamino.
+// The changelog: a scroll.
 export function IconChronicle(props: IconProps) {
   return <TablerIcon icon={Tabler.IconScript} {...props} />;
 }

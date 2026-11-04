@@ -1,13 +1,13 @@
 /**
- * Aventura de ejemplo: una partida corta ya jugada para quien abre el
- * diario por primera vez. Se ofrece solo con el diario vacío y nunca
- * se crea sola (ver JournalListView).
+ * Sample adventure: a short game already played, for whoever opens
+ * the journal for the first time. Only offered with an empty journal
+ * and never created on its own (see JournalListView).
  *
- * El guion vive en los diccionarios (`t.sample.script`), pero las
- * tiradas van como dados y aquí se escriben con el mismo formato que
- * `usePlayActions` (oráculo con su respuesta, tabla con su resultado),
- * así el ejemplo se ve exactamente igual que una partida real. Se
- * devuelve como Lonelog y entra por la importación normal.
+ * The script lives in the dictionaries (`t.sample.script`), but rolls
+ * are given as dice and written here in the same format as
+ * `usePlayActions` (oracle with its answer, table with its result), so
+ * the sample looks exactly like a real game. It's returned as Lonelog
+ * and goes in through the normal import.
  */
 
 import type { Dictionary } from "./i18n";

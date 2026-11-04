@@ -15,8 +15,8 @@ export function isLocale(value: string): value is Locale {
 }
 
 /**
- * Español si el navegador está en español (cualquier variante: es,
- * es-MX, es-419…); inglés para todo lo demás, tal y como se pidió.
+ * Spanish if the browser is in Spanish (any variant: es, es-MX,
+ * es-419…); English for everything else, as requested.
  */
 export function detectBrowserLocale(): Locale {
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
@@ -35,8 +35,8 @@ export function loadLocale(): Locale {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved && isLocale(saved)) return saved;
   } catch {
-    // Sin localStorage disponible: se usa la detección del
-    // navegador en silencio, no es un fallo crítico.
+    // No localStorage available: silently use the browser's
+    // detection, it's not a critical failure.
   }
   return detectBrowserLocale();
 }
@@ -46,7 +46,7 @@ export function saveLocale(locale: Locale): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, locale);
   } catch {
-    // Igual que en loadLocale: si falla, el idioma no persiste entre
-    // sesiones pero la app sigue funcionando con normalidad.
+    // Same as in loadLocale: if it fails, the language doesn't persist
+    // between sessions but the app keeps working normally.
   }
 }

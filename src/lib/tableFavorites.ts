@@ -1,7 +1,7 @@
 /**
- * Tablas marcadas como favoritas. Almacenamiento best-effort, igual
- * que el tema visual: si localStorage falla, la app sigue
- * funcionando, simplemente no recuerda la marca entre sesiones.
+ * Tables marked as favourites. Best-effort storage, like the visual
+ * theme: if localStorage fails, the app keeps working, it just doesn't
+ * remember the mark between sessions.
  */
 
 const STORAGE_KEY = "solo-compass:table-favorites";
@@ -23,6 +23,6 @@ export function saveFavoriteTableIds(ids: Set<string>): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {
-    // No es crítico: si falla, simplemente no persiste.
+    // Not critical: if it fails, it just doesn't persist.
   }
 }

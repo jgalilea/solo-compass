@@ -3,11 +3,11 @@ import type { Dictionary } from "./i18n";
 import type { JournalEntry } from "./lonelog";
 
 /**
- * "ongoing": en curso, aparece en la lista principal — "en pausa" no
- * es un estado propio: es solo cómo se ve una aventura "ongoing" que
- * no es la activa ahora mismo (se deriva, no se guarda).
- * "archived": fuera de la lista principal (va en su propia sección
- * plegada), no puede ser la aventura activa — activarla la desarchiva.
+ * "ongoing": in progress, shown in the main list — "paused" isn't a
+ * state of its own: it's just how an "ongoing" adventure that isn't
+ * the active one right now looks (derived, not stored).
+ * "archived": out of the main list (it goes in its own folded
+ * section), can't be the active adventure — activating it unarchives it.
  */
 export type AdventureStatus = "ongoing" | "archived";
 
@@ -20,11 +20,11 @@ export interface Adventure {
   status: AdventureStatus;
 }
 
-// Igual que el historial: sin techo natural de tamaño, así que va en
-// IndexedDB en vez de localStorage (ver src/lib/history.ts para el
-// razonamiento completo). Todas las aventuras y todas las entradas
-// comparten una única clave cada una; se filtran por adventureId en
-// memoria — con los volúmenes reales de un diario de rol, de sobra.
+// Same as the history: no natural size cap, so it goes in IndexedDB
+// instead of localStorage (see src/lib/history.ts for the full
+// reasoning). All adventures and all entries share a single key
+// each; they're filtered by adventureId in memory — more than enough
+// for the real volumes of an RPG journal.
 const ADVENTURES_KEY = "solo-compass:journal-adventures";
 const ENTRIES_KEY = "solo-compass:journal-entries";
 
@@ -35,10 +35,10 @@ export async function loadAdventures(t: Dictionary): Promise<Adventure[]> {
   try {
     const stored = await get<Adventure[]>(ADVENTURES_KEY);
     if (!Array.isArray(stored)) return [];
-    // Compatibilidad con aventuras guardadas antes de añadir favoritos,
-    // y con el "paused" que existió como estado propio antes de pasar
-    // a derivarse — cualquier valor que no sea "archived" cae a
-    // "ongoing", que es como se ve ahora mismo si no es la activa.
+    // Compatibility with adventures saved before favourites were added,
+    // and with the "paused" that existed as a state of its own before it
+    // became derived — any value other than "archived" falls back to
+    // "ongoing", which is how it looks now if it isn't the active one.
     return stored.map((a) => ({
       ...a,
       favorite: a.favorite ?? false,

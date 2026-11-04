@@ -8,10 +8,10 @@ import {
 import { IconChevronRight, IconShieldAlert, IconShieldCheck } from "./icons/Icons";
 
 /**
- * Explicación de la protección de datos del navegador (ver
- * src/lib/storagePersistence.ts). El permiso nunca se pide sin
- * explicarlo antes: Firefox muestra su propio aviso, y sin contexto
- * parecería algo raro o sospechoso.
+ * Explanation of the browser's data protection (see
+ * src/lib/storagePersistence.ts). The permission is never requested
+ * without explaining it first: Firefox shows its own prompt, and with
+ * no context it would look odd or suspicious.
  */
 
 function usePersistenceStatus() {
@@ -48,7 +48,7 @@ function StorageExplanation() {
   );
 }
 
-/** El navegador no lo ha concedido: qué hacer para que lo conceda. */
+/** The browser hasn't granted it: what to do so it does. */
 function DeniedNote() {
   const { t } = useLocaleContext();
   return (
@@ -62,7 +62,7 @@ function DeniedNote() {
   );
 }
 
-/** Estado + botón en Ajustes → Tus datos, con la explicación desplegable. */
+/** Status + button in Settings → Your data, with the expandable explanation. */
 export function StorageProtectionSettings() {
   const { t } = useLocaleContext();
   const [status, setStatus] = usePersistenceStatus();

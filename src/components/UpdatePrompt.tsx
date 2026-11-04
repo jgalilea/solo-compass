@@ -3,10 +3,10 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { IconClose, IconSparkles } from "./icons/Icons";
 
-// Una app instalada rara vez vuelve a "navegar" (se reanuda desde
-// segundo plano), que es cuando el navegador busca un service worker
-// nuevo por su cuenta. Así que se lo pedimos nosotros: al volver a la
-// app y cada hora mientras esté abierta.
+// An installed app rarely "navigates" again (it resumes from the
+// background), which is when the browser looks for a new service
+// worker on its own. So we ask for it ourselves: when coming back to
+// the app and every hour while it's open.
 const HOURLY = 60 * 60 * 1000;
 const MIN_GAP = 60 * 1000;
 
@@ -17,7 +17,7 @@ function watchForUpdates(registration: ServiceWorkerRegistration) {
     if (Date.now() - lastCheck < MIN_GAP) return;
     lastCheck = Date.now();
     registration.update().catch(() => {
-      // Sin red o servidor caído: se volverá a intentar más tarde.
+      // Offline or server down: it'll try again later.
     });
   }
   window.setInterval(check, HOURLY);
@@ -27,10 +27,10 @@ function watchForUpdates(registration: ServiceWorkerRegistration) {
 }
 
 /**
- * Registra el service worker y, cuando hay una versión nueva
- * descargada, lo dice con un aviso bajo la cabecera. No recarga solo:
- * se actualiza al pulsar "Actualizar". Con "Más tarde" el aviso se
- * oculta, y vuelve a salir la próxima vez que se abra la app.
+ * Registers the service worker and, when a new version has been
+ * downloaded, says so with a banner under the header. It doesn't
+ * reload by itself: it updates when "Update" is pressed. "Later" hides
+ * the banner, and it shows again the next time the app is opened.
  */
 export function UpdatePrompt() {
   const { t } = useLocaleContext();
@@ -62,10 +62,10 @@ export function UpdatePrompt() {
           onClick={() => {
             setUpdating(true);
             void updateServiceWorker(true);
-            // Lo normal es que la recarga llegue en cuanto la versión
-            // nueva toma el control. Si la página no estaba controlada
-            // por el service worker (p. ej. la primera visita), ese
-            // momento no llega: se recarga igualmente.
+            // Normally the reload comes as soon as the new version takes
+            // control. If the page wasn't controlled by the service worker
+            // (e.g. the first visit), that moment never comes: reload
+            // anyway.
             window.setTimeout(() => window.location.reload(), 3000);
           }}
           disabled={updating}

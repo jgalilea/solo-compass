@@ -22,14 +22,14 @@ export class AppErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Error no controlado en Solo Compass:", error, info);
+    console.error("Unhandled error in Solo Compass:", error, info);
   }
 
   render() {
     if (this.state.error) {
-      // Si por lo que sea el boundary se renderizase fuera de
-      // LocaleProvider, cae a un diccionario por defecto en vez de
-      // reventar mostrando el propio error de la app.
+      // If for whatever reason the boundary rendered outside
+      // LocaleProvider, fall back to a default dictionary instead of
+      // crashing while showing the app's own error.
       const t = this.context?.t ?? DICTIONARIES[DEFAULT_LOCALE];
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">

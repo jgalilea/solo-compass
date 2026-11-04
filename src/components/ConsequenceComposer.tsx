@@ -2,12 +2,12 @@ import { useState } from "react";
 import { IconCheckCircle, IconConsequence } from "./icons/Icons";
 
 /**
- * Campo rápido para apuntar la consecuencia (`=>`) justo después de
- * una tirada, sin pasar por el composer general del diario. Usado
- * por OracleView y TablesView — cada tirada nueva debe montar una
- * instancia fresca (key distinto) para que "saved" se reinicie.
- * Al guardar no desaparece sin más: se queda la confirmación con el
- * texto y dónde se ha apuntado, para que no quede duda.
+ * Quick field to log the consequence (`=>`) right after a roll,
+ * without going through the journal's main composer. Used by
+ * OracleView and TablesView — every new roll must mount a fresh
+ * instance (different key) so "saved" resets.
+ * Saving doesn't just make it vanish: the confirmation stays with the
+ * text and where it was logged, so there's no doubt.
  */
 export function ConsequenceComposer({
   onSave,

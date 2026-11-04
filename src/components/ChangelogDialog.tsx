@@ -5,13 +5,13 @@ import { IconChevronRight, IconChronicle, IconClose } from "./icons/Icons";
 import { Modal } from "./Modal";
 
 function formatDate(dateLocale: string, iso: string): string {
-  // Mediodía UTC para que la zona horaria nunca cambie el día.
+  // Midday UTC so the time zone never shifts the day.
   return new Intl.DateTimeFormat(dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(
     new Date(`${iso}T12:00:00Z`),
   );
 }
 
-/** Botón (en Ajustes → Acerca de) + diálogo con la crónica de cambios. */
+/** Button (in Settings → About) + dialog with the changelog. */
 export function ChangelogDialog() {
   const { t, locale } = useLocaleContext();
   const [open, setOpen] = useState(false);

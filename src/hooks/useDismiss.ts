@@ -1,13 +1,13 @@
 import { useEffect, type RefObject } from "react";
 
 /**
- * Cierra un desplegable al pinchar fuera de `rootRef`, al pulsar Esc o
- * al salir de él con Tab, mientras esté abierto. Lo comparten los menús
- * de la app (acciones, tipo de entrada, sesiones).
+ * Closes a dropdown on a click outside `rootRef`, on Esc or when
+ * tabbing out of it, while it's open. Shared by the app's menus
+ * (actions, entry kind, sessions).
  *
- * Con teclado: las flechas (e Inicio/Fin) recorren las opciones del
- * menú, y Esc devuelve el foco al botón que lo abrió (el que lleva
- * `aria-haspopup`) para no dejarlo perdido en la página.
+ * With the keyboard: the arrows (and Home/End) move through the menu's
+ * options, and Esc returns focus to the button that opened it (the one
+ * with `aria-haspopup`) so it isn't left lost on the page.
  */
 export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>, onClose: () => void) {
   useEffect(() => {
@@ -27,7 +27,7 @@ export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>
       if (!root?.contains(document.activeElement) || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
         return;
       }
-      // Las opciones: todo lo pulsable salvo el propio botón que abre.
+      // The options: everything clickable except the opening button itself.
       const items = [...root.querySelectorAll<HTMLElement>("button:not([aria-haspopup]), a[href]")];
       if (items.length === 0) return;
       e.preventDefault();
@@ -43,8 +43,8 @@ export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>
       items[next].focus();
     }
     function handleFocusOut(e: FocusEvent) {
-      // relatedTarget es null al pinchar en una zona no enfocable: de eso
-      // ya se encarga pointerdown.
+      // relatedTarget is null when clicking a non-focusable area: pointerdown
+      // already takes care of that.
       if (e.relatedTarget instanceof Node && !root?.contains(e.relatedTarget)) onClose();
     }
     document.addEventListener("pointerdown", handlePointerDown);

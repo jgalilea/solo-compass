@@ -10,9 +10,9 @@ export interface ActionMenuItem {
 }
 
 /**
- * Botón "⋯" con un desplegable de acciones secundarias, para no
- * llenar una cabecera de iconos sueltos. Se cierra al elegir, con Esc
- * o pinchando fuera.
+ * "⋯" button with a dropdown of secondary actions, so a header doesn't
+ * fill up with loose icons. Closes on pick, on Esc or on a click
+ * outside.
  */
 export function ActionMenu({ label, items }: { label: string; items: ActionMenuItem[] }) {
   const [open, setOpen] = useState(false);

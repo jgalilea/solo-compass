@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
-/* ---------- Fuentes autoalojadas ---------- */
-/* Un peso por familia salvo Cinzel/Playfair (400 y 700). Alojadas en
-   public/fonts para que funcionen offline como PWA, sin depender de
-   Google Fonts en tiempo de ejecución. Subset "latin" (cubre acentos
-   y ¿¡ del español). Licencia SIL Open Font License. */
+/* ---------- Self-hosted fonts ---------- */
+/* One weight per family except Cinzel/Playfair (400 and 700). Hosted in
+   public/fonts so they work offline as a PWA, without relying on
+   Google Fonts at runtime. "latin" subset (covers Spanish accents
+   and ¿¡). Licensed under the SIL Open Font License. */
 
 @font-face {
   font-family: "Cinzel";
@@ -50,19 +50,19 @@
 }
 
 @theme {
-  /* Fantasía es el tema por defecto: estos valores son los que
-     Tailwind usa para generar las clases (bg-gold, text-parchment,
-     font-display…) y también los que se aplican si no hay ningún
-     data-theme en <html>. El resto de temas los sobrescriben más
-     abajo con selectores :root[data-theme="…"]. */
+  /* Fantasy is the default theme: these values are the ones Tailwind
+     uses to generate the classes (bg-gold, text-parchment,
+     font-display…) and also the ones applied when <html> has no
+     data-theme. The other themes override them further down with
+     :root[data-theme="…"] selectors. */
   --font-display: "Cinzel", "Iowan Old Style", Palatino, Georgia, serif;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Alto de la barra inferior de móvil/tablet (sin la zona segura). Lo
-     que se apoya encima (composer del diario, avisos) se coloca con
-     este mismo valor: si no coinciden, el composer se mete por debajo
-     de la barra y "cambia de tamaño" al llegar al final del scroll. */
+  /* Height of the phone/tablet bottom bar (without the safe area).
+     Whatever rests on it (journal composer, toasts) is positioned with
+     this same value: if they don't match, the composer slips under the
+     bar and "changes size" when the scroll reaches the end. */
   --spacing-nav: 3.75rem;
 
   --color-ink-950: #0b0c10;
@@ -84,11 +84,11 @@
   --color-no: #f4778a;
   --color-contradiction: #b98af8;
 
-  /* Los dados físicos del oráculo son uno blanco y uno negro, siempre
-     — a diferencia de --color-parchment (que es "el color del texto"
-     y por eso se invierte en modo claro), estos dos tokens no se
-     redefinen en modo claro, así que los dados se ven igual pase lo
-     que pase con el tema o el modo. */
+  /* The oracle's physical dice are always one white and one black —
+     unlike --color-parchment (which is "the text colour" and is
+     therefore inverted in light mode), these two tokens aren't
+     redefined in light mode, so the dice look the same whatever the
+     theme or mode. */
   --color-die-white: #f4efe6;
   --color-die-black: #20222b;
 
@@ -122,19 +122,19 @@
   }
 }
 
-/* ---------- Temas ---------- */
-/* El selector :root[data-theme="…"] tiene más especificidad que el
-   :root plano que emite @theme, así que gana siempre, sin depender
-   del orden de las reglas en el CSS compilado. */
+/* ---------- Themes ---------- */
+/* The :root[data-theme="…"] selector is more specific than the plain
+   :root that @theme emits, so it always wins, regardless of rule
+   order in the compiled CSS. */
 
-/* Fantasía: tono manual de D&D — mayúsculas inscripcionales (Cinzel)
-   sobre pergamino y oro viejo. */
+/* Fantasy: a D&D manual feel — inscriptional capitals (Cinzel) on
+   parchment and old gold. */
 :root[data-theme="fantasia"] {
   --font-display: "Cinzel", "Iowan Old Style", Palatino, Georgia, serif;
 }
 
-/* Pulp: cabecera de periódico/pasquín pulp — serifa dramática de alto
-   contraste (Playfair Display), como Weird Tales o un dossier 007. */
+/* Pulp: a pulp newspaper/broadsheet masthead — dramatic high-contrast
+   serif (Playfair Display), like Weird Tales or a 007 dossier. */
 :root[data-theme="pulp"] {
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
 
@@ -185,8 +185,8 @@
   --color-die-white: #eef0f3;
 }
 
-/* Sci-fi: terminal/Matrix — monoespaciada (Share Tech Mono) y verde
-   fósforo sobre negro azulado, con rojo/ámbar de estado tipo consola. */
+/* Sci-fi: terminal/Matrix — monospace (Share Tech Mono) and phosphor
+   green on bluish black, with console-style red/amber status colours. */
 :root[data-theme="scifi"] {
   --font-display: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
@@ -212,8 +212,8 @@
   --color-die-white: #d7ecdf;
 }
 
-/* OSR: fantasía oscura y gótica (Mörk Borg / Shadowdark) — blackletter
-   (Pirata One) casi monocroma, con un rojo más vivo y crudo. */
+/* OSR: dark gothic fantasy (Mörk Borg / Shadowdark) — near-monochrome
+   blackletter (Pirata One), with a brighter, rawer red. */
 :root[data-theme="osr"] {
   --font-display: "Pirata One", "Courier New", Courier, monospace;
 
@@ -229,8 +229,8 @@
   --color-parchment: #f2f0eb;
   --color-parchment-dim: #8a8a86;
 
-  /* Sin dorado: el "acento" es hueso casi blanco, a juego con el
-     resto de la paleta en blanco y negro. */
+  /* No gold: the "accent" is near-white bone, matching the rest of
+     the black-and-white palette. */
   --color-gold: #e8e4da;
   --color-gold-soft: #ffffff;
 
@@ -241,14 +241,14 @@
   --color-die-white: #f2f0eb;
 }
 
-/* ---------- Modo claro ---------- */
-/* El modo (claro/oscuro/automático) es independiente del tema: cada
-   uno de los 5 temas de arriba es la paleta oscura; aquí va su
-   equivalente clara. Se activan con data-mode="light" además de
-   data-theme, así que :root[data-theme="x"][data-mode="light"] tiene
-   más especificidad que :root[data-theme="x"] solo y gana siempre —
-   el tipo de letra y los acabados (mayúsculas, radios) no cambian
-   con el modo, se quedan definidos arriba, solo el color. */
+/* ---------- Light mode ---------- */
+/* Mode (light/dark/auto) is independent of theme: each of the 5
+   themes above is the dark palette; its light counterpart goes here.
+   They're enabled with data-mode="light" on top of data-theme, so
+   :root[data-theme="x"][data-mode="light"] is more specific than
+   :root[data-theme="x"] alone and always wins — the typeface and
+   finishes (capitals, radii) don't change with the mode, they stay
+   defined above; only colour does. */
 
 :root[data-theme="fantasia"][data-mode="light"] {
   --color-ink-950: #f7f1e4;
@@ -334,9 +334,9 @@
   --color-contradiction: #9c6b0a;
 }
 
-/* OSR ya era blanco y negro casi puro en oscuro; en claro se invierte
-   sin más — sigue siendo el mismo pergamino/tinta, solo que ahora el
-   hueso es el fondo en vez del texto. */
+/* OSR was already near-pure black and white in dark mode; in light it
+   is simply inverted — still the same parchment/ink, only now the
+   bone is the background instead of the text. */
 :root[data-theme="osr"][data-mode="light"] {
   --color-ink-950: #f4f1ea;
   --color-ink-900: #ece7dc;
@@ -358,8 +358,8 @@
   --color-contradiction: #4a3a58;
 }
 
-/* Acabados tipográficos: cada tema le da su acento a los títulos y
-   textos en font-display sin tocar los componentes. */
+/* Typographic finishes: each theme gives its own touch to headings and
+   font-display text without touching the components. */
 :root[data-theme="fantasia"] .font-display {
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -381,7 +381,7 @@
   font-weight: 600;
 }
 
-/* Pulp, sci-fi y OSR prefieren esquinas más cerradas que el resto. */
+/* Pulp, sci-fi and OSR prefer tighter corners than the rest. */
 :root[data-theme="pulp"] .rounded-3xl,
 :root[data-theme="scifi"] .rounded-3xl,
 :root[data-theme="osr"] .rounded-3xl {
@@ -394,7 +394,7 @@
   border-radius: 0.65rem;
 }
 
-/* OSR es blanco y negro casi puro: sin resplandor de fondo. */
+/* OSR is near-pure black and white: no background glow. */
 :root[data-theme="osr"] body {
   background: var(--color-ink-950);
 }
@@ -413,16 +413,16 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color 200ms ease, color 200ms ease;
-  /* Bloquea el pellizco para hacer zoom y el zoom por doble-tap:
-     solo se permite el paneo vertical (que es todo lo que necesita
-     la app). Complementa al meta viewport, que algunos navegadores
-     no respetan del todo para estos gestos. */
+  /* Blocks pinch-to-zoom and double-tap zoom: only vertical panning
+     is allowed (which is all the app needs). Complements the meta
+     viewport, which some browsers don't fully honour for these
+     gestures. */
   touch-action: pan-y;
 }
 
-/* Tailwind v4 deja los botones con el cursor por defecto; aquí todo lo
-   pulsable muestra la mano, y lo deshabilitado no. En @layer base para
-   que una clase cursor-* del componente pueda sobrescribirlo. */
+/* Tailwind v4 leaves buttons with the default cursor; here everything
+   clickable shows the hand, and disabled things don't. In @layer base so
+   a component's cursor-* class can override it. */
 @layer base {
   button:not(:disabled),
   [role="button"],
@@ -438,12 +438,12 @@ body {
     cursor: not-allowed;
   }
 
-  /* Foco con teclado: un anillo del color de acento en todo lo
-     enfocable (solo con teclado: :focus-visible no salta al pinchar).
-     Los campos de texto lo sustituyen por su borde dorado
-     (focus:outline-none + focus:border-gold). Dentro de menús y
-     listas con overflow-hidden el anillo va hacia dentro para que no
-     se recorte. */
+  /* Keyboard focus: an accent-coloured ring on everything focusable
+     (keyboard only: :focus-visible doesn't trigger on click).
+     Text fields replace it with their gold border
+     (focus:outline-none + focus:border-gold). Inside menus and
+     lists with overflow-hidden the ring goes inwards so it isn't
+     clipped. */
   :focus-visible {
     outline: 2px solid var(--color-gold);
     outline-offset: 2px;
@@ -465,7 +465,7 @@ body {
   color: var(--color-ink-950);
 }
 
-/* Barra de scroll discreta, coherente con el tema oscuro */
+/* Subtle scrollbar, in keeping with the dark theme */
 * {
   scrollbar-color: var(--color-ink-500) transparent;
   scrollbar-width: thin;

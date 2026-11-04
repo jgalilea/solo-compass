@@ -40,7 +40,7 @@ interface UseJournalResult {
     linkedRollId?: string,
   ) => void;
   removeEntry: (id: string) => void;
-  /** Vuelve a poner una entrada borrada (Deshacer), con su id y fecha originales. */
+  /** Puts a deleted entry (Undo) back, with its original id and date. */
   restoreEntry: (entry: JournalEntry) => void;
   editEntry: (id: string, text: string) => void;
   importAdventure: (name: string, markdownText: string) => Adventure;
@@ -57,9 +57,9 @@ export function useJournal(): UseJournalResult {
     () => loadActiveAdventureId(),
   );
 
-  // Lectura de IndexedDB. No toca "loading" por sí misma: el estado
-  // inicial ya es "loading", y al reintentar lo pone retry() (un
-  // evento), así el efecto de montaje no hace setState síncrono.
+  // IndexedDB read. It doesn't touch "loading" itself: the initial
+  // state is already "loading", and on retry retry() sets it (an
+  // event), so the mount effect doesn't call setState synchronously.
   const load = useCallback(() => {
     let cancelled = false;
     Promise.all([loadAdventures(t), loadJournalEntries(t)])
@@ -89,11 +89,11 @@ export function useJournal(): UseJournalResult {
     load();
   }, [load]);
 
-  // updateAdventures/updateEntries siempre parten del estado más
-  // reciente (forma funcional de setState), no de "adventures"/
-  // "entries" capturados por closure — así, si addEntry se llama dos
-  // veces seguidas en el mismo evento (p. ej. pregunta + tirada), la
-  // segunda no pisa a la primera antes de que React repinte.
+  // updateAdventures/updateEntries always start from the latest state
+  // (functional setState), not from "adventures"/"entries" captured by
+  // a closure — so if addEntry is called twice in a row in the same
+  // event (e.g. question + roll), the second doesn't overwrite the
+  // first before React repaints.
   const updateAdventures = useCallback(
     (updater: (prev: Adventure[]) => Adventure[]) => {
       setAdventures((prev) => {
@@ -126,11 +126,11 @@ export function useJournal(): UseJournalResult {
     [t],
   );
 
-  // Una aventura archivada no puede ser la activa a la vez — activarla
-  // es justo la señal de que se vuelve a usar, así que la desarchiva
-  // sola. "En pausa" no es un estado propio: es solo cómo se ve una
-  // aventura "ongoing" que no es esta, así que no hay nada que
-  // "despausar" aparte de activarla.
+  // An archived adventure can't be the active one at the same time —
+  // activating it is exactly the sign it's in use again, so it gets
+  // unarchived automatically. "Paused" isn't a state of its own: it's
+  // just how an "ongoing" adventure other than this one looks, so
+  // there's nothing to "unpause" apart from activating it.
   const setActiveAdventureId = useCallback(
     (id: string | null) => {
       setActiveAdventureIdState(id);
@@ -169,8 +169,8 @@ export function useJournal(): UseJournalResult {
       updateAdventures((prev) => {
         const byId = new Map(prev.map((a) => [a.id, a]));
         const reordered = orderedIds.map((id) => byId.get(id)).filter((a): a is Adventure => !!a);
-        // Por si acaso algún id no estuviera en orderedIds (no debería
-        // pasar), se añaden al final para no perder ninguna aventura.
+        // Just in case some id isn't in orderedIds (it shouldn't happen),
+        // they're appended at the end so no adventure is lost.
         const missing = prev.filter((a) => !orderedIds.includes(a.id));
         return [...reordered, ...missing];
       });
@@ -196,8 +196,8 @@ export function useJournal(): UseJournalResult {
     [activeAdventureId, updateAdventures, updateEntries, setActiveAdventureId],
   );
 
-  // Archivar la aventura activa la desactiva (una aventura archivada
-  // no puede ser la que recibe el auto-registro).
+  // Archiving the active adventure deactivates it (an archived
+  // adventure can't be the one receiving auto-logging).
   const setAdventureStatus = useCallback(
     (id: string, status: AdventureStatus) => {
       updateAdventures((prev) =>

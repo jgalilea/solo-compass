@@ -16,7 +16,7 @@ interface UseHistoryResult {
   error: string | null;
   addEntry: (entry: HistoryEntry) => void;
   removeEntry: (id: string) => void;
-  /** Vuelve a poner una tirada borrada (Deshacer) en su sitio, por fecha. */
+  /** Puts a deleted roll (Undo) back in its place, by date. */
   restoreEntry: (entry: HistoryEntry) => void;
   toggleFavorite: (id: string) => void;
   clear: () => void;
@@ -29,14 +29,14 @@ export function useHistory(): UseHistoryResult {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Lectura de IndexedDB. No toca "loading" por sí misma: el estado
-  // inicial ya es "loading", y al reintentar lo pone retry() (un
-  // evento), así el efecto de montaje no hace setState síncrono.
+  // IndexedDB read. It doesn't touch "loading" itself: the initial
+  // state is already "loading", and on retry retry() sets it (an
+  // event), so the mount effect doesn't call setState synchronously.
   const load = useCallback(() => {
     let cancelled = false;
-    // IndexedDB es asíncrono de verdad (a diferencia del localStorage
-    // de antes), así que ya no hace falta simular el estado de carga
-    // con un setTimeout: la propia lectura tarda lo suyo.
+    // IndexedDB is truly asynchronous (unlike the old localStorage),
+    // so there's no need to fake the loading state with a setTimeout:
+    // the read itself takes its time.
     loadHistory(t)
       .then((loaded) => {
         if (cancelled) return;
@@ -63,18 +63,18 @@ export function useHistory(): UseHistoryResult {
     load();
   }, [load]);
 
-  // Forma funcional de setState (parte siempre del estado más
-  // reciente, no de "entries" capturado por closure): si addEntry se
-  // llama más de una vez en el mismo evento antes de que React
-  // repinte, la segunda llamada no pisa a la primera. Mismo bug que
-  // se coló en useJournal con la pregunta + tirada del oráculo.
+  // Functional setState (always starts from the latest state, not from
+  // "entries" captured by a closure): if addEntry is called more than
+  // once in the same event before React repaints, the second call
+  // doesn't overwrite the first. Same bug that slipped into useJournal
+  // with the oracle's question + roll.
   const persist = useCallback(
     (updater: (prev: HistoryEntry[]) => HistoryEntry[]) => {
       setEntries((prev) => {
         const next = updater(prev);
-        // Optimista: la UI refleja el cambio ya, sin esperar a que el
-        // guardado en IndexedDB confirme (es rápido, pero sigue
-        // siendo una operación asíncrona).
+        // Optimistic: the UI reflects the change right away, without
+        // waiting for the IndexedDB save to confirm (it's fast, but still
+        // an asynchronous operation).
         saveHistory(t, next).catch((err: unknown) => {
           setError(
             err instanceof HistoryStorageError ? err.message : t.history.genericSaveError,
