@@ -36,6 +36,7 @@ import {
 import { ChangelogDialog } from "./ChangelogDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
+import { InstallAppSettings } from "./InstallApp";
 import { Modal } from "./Modal";
 import { KOFI_URL } from "../lib/support";
 
@@ -130,6 +131,9 @@ export function SettingsDialog() {
                 </Section>
               </div>
               <div className="flex flex-col gap-6">
+                <Section title={t.install.sectionTitle}>
+                  <InstallAppSettings />
+                </Section>
                 <Section title={t.storage.sectionTitle}>
                   <StorageProtectionSettings />
                   <BackupSettings />

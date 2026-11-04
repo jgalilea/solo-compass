@@ -41,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Quien juega con teclado ya ve siempre dónde está: un brillo dorado marca el botón activo, y los diálogos y menús se recorren con Tab y las flechas.",
           "En Ajustes ves cuándo guardaste tu última copia de seguridad. Si pasa mucho tiempo y el diario crece, un pequeño punto dorado en la rueda de Ajustes te lo recordará, sin más.",
           "¿Primera vez? Con el diario vacío puedes abrir una aventura de ejemplo, «La posada del cruce», para ver cómo queda una partida: preguntas, tiradas, tablas y consecuencias. Puedes seguir jugándola o borrarla.",
+          "En Ajustes puedes instalar Solo Compass en tu dispositivo con un solo toque, o ver cómo hacerlo si tu navegador no lo ofrece. Si ya la tienes instalada, te lo dice.",
         ],
       },
       en: {
@@ -64,6 +65,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Keyboard players can always see where they are: a golden glow marks the focused button, and dialogs and menus can be walked with Tab and the arrow keys.",
           "Settings shows when you saved your last backup. If a long time goes by and the journal grows, a small golden dot on the Settings wheel will remind you, nothing more.",
           "First time? With an empty journal you can open a sample adventure, “The Crossroads Inn”, to see what a game looks like: questions, rolls, tables and consequences. Keep playing it or delete it.",
+          "Install Solo Compass on your device from Settings with a single tap, or see how to do it if your browser doesn't offer it. If it's already installed, it tells you so.",
         ],
       },
     },

@@ -79,6 +79,18 @@ export interface Dictionary {
     shiftKey: string;
     enterKey: string;
   };
+  install: {
+    sectionTitle: string;
+    statusStandalone: string;
+    statusInstalled: string;
+    openIt: string;
+    statusNotInstalled: string;
+    benefit: string;
+    button: string;
+    installing: string;
+    manualIos: string;
+    manual: string;
+  };
   storage: {
     sectionTitle: string;
     whatTitle: string;

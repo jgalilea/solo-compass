@@ -54,6 +54,20 @@ export const en: Dictionary = {
     shiftKey: "Shift",
     enterKey: "Enter",
   },
+  install: {
+    sectionTitle: "App",
+    statusStandalone: "Installed: you're using Solo Compass as an app.",
+    statusInstalled: "Installed on this device.",
+    openIt: "Open it from your home screen or app list to play in its own window.",
+    statusNotInstalled: "Not installed: you're using it from the browser.",
+    benefit:
+      "Install it to open it from your home screen, in its own window and offline too. Browsers also take better care of installed apps' data.",
+    button: "Install Solo Compass",
+    installing: "Installing…",
+    manualIos: "In Safari, tap the Share button and choose “Add to Home Screen”.",
+    manual:
+      "Your browser doesn't offer installing it from here. Look for it in its menu (“Install app” or “Add to Home Screen”). Some, like Firefox on desktop, can't install web apps.",
+  },
   storage: {
     sectionTitle: "Your data",
     whatTitle: "What is this?",

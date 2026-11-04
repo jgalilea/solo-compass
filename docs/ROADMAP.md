@@ -66,6 +66,10 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 - Recordatorio de copia de seguridad (2026-11-04): "Última copia: hace…"
   en Ajustes y un punto en la rueda solo si hay 10+ entradas nuevas y
   14+ días sin copia; se apaga 7 días al abrir Ajustes.
+- Instalar la app (2026-11-04): Ajustes → Aplicación. Botón con el
+  diálogo del navegador (`beforeinstallprompt`, Chrome/Edge); en Safari
+  y Firefox, instrucciones del menú. Indica si ya está instalada (modo
+  standalone, o recordado en localStorage al verla en una pestaña).
 
 ---
 

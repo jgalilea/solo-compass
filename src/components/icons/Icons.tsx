@@ -201,3 +201,9 @@ export function IconChronicle(props: IconProps) {
 export function IconSparkles(props: IconProps) {
   return <TablerIcon icon={Tabler.IconSparkles} {...props} />;
 }
+export function IconInstall(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconDeviceMobileDown} {...props} />;
+}
+export function IconInstalled(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconDeviceMobileCheck} {...props} />;
+}

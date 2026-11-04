@@ -95,6 +95,11 @@ No backend; persistence is split by access pattern, not by feature:
   PWA rarely navigates, which is when browsers check on their own), then
   shows an "Actualizar" banner instead of reloading by itself (it could
   drop half-typed text).
+- **Install** (`install.ts`, card in `InstallApp.tsx`): imported early
+  from `main.tsx` to catch `beforeinstallprompt` (fires once at load);
+  Settings shows the browser's install dialog, menu instructions where
+  there's no prompt (Safari, Firefox), or "installed" (standalone mode,
+  or a localStorage flag when seen from a browser tab).
 - **Backup reminder** (`backupReminder.ts`): last backup time in
   `localStorage`; a gold dot on the Settings button only when there are
   10+ journal entries newer than the last backup and it's 14+ days old,

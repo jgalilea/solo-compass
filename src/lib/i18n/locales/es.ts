@@ -54,6 +54,20 @@ export const es: Dictionary = {
     shiftKey: "Mayús",
     enterKey: "Intro",
   },
+  install: {
+    sectionTitle: "Aplicación",
+    statusStandalone: "Instalada: estás usando Solo Compass como app.",
+    statusInstalled: "Instalada en este dispositivo.",
+    openIt: "Ábrela desde tu pantalla de inicio o tu lista de aplicaciones para jugar en su propia ventana.",
+    statusNotInstalled: "Sin instalar: la estás usando desde el navegador.",
+    benefit:
+      "Instálala para abrirla desde tu pantalla de inicio, en su propia ventana y también sin conexión. Además, los navegadores cuidan más los datos de las apps instaladas.",
+    button: "Instalar Solo Compass",
+    installing: "Instalando…",
+    manualIos: "En Safari, pulsa el botón Compartir y elige «Añadir a pantalla de inicio».",
+    manual:
+      "Tu navegador no ofrece instalarla desde aquí. Búscalo en su menú («Instalar app» o «Añadir a pantalla de inicio»). Algunos, como Firefox en el ordenador, no permiten instalar apps web.",
+  },
   storage: {
     sectionTitle: "Tus datos",
     whatTitle: "¿Qué es esto?",
