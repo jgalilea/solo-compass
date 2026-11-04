@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import {
   IconAction,
   IconCheck,
@@ -18,12 +18,21 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { useThemeContext } from "../hooks/useThemeContext";
 import { useModeContext } from "../hooks/useModeContext";
+import { useJournalContext } from "../hooks/useJournalContext";
+import { useHotkeys } from "../hooks/useHotkeys";
 import { getOracle } from "../lib/oracles";
 import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
 import { backupFilename, BackupError, buildBackup, downloadBackupFile, restoreBackup } from "../lib/backup";
+import {
+  formatSince,
+  loadLastBackupAt,
+  markBackupNudgeSeen,
+  saveLastBackupAt,
+  shouldNudgeBackup,
+} from "../lib/backupReminder";
 import { ChangelogDialog } from "./ChangelogDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
@@ -38,18 +47,48 @@ import { KOFI_URL } from "../lib/support";
  */
 export function SettingsDialog() {
   const { t } = useLocaleContext();
+  const { entries } = useJournalContext();
   const [open, setOpen] = useState(false);
+  // "?" abre Ajustes directamente en la leyenda de atajos.
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutsRef = useRef<HTMLElement>(null);
+  const [nudgeSeen, setNudgeSeen] = useState(false);
+  const backupDue = useMemo(() => shouldNudgeBackup(entries.map((e) => e.timestamp)), [entries]);
+  const nudge = backupDue && !nudgeSeen;
+
+  function openSettings(shortcuts = false) {
+    setShowShortcuts(shortcuts);
+    setOpen(true);
+    // Visto el punto, no se insiste en una temporada aunque no se haga la copia.
+    if (nudge) {
+      markBackupNudgeSeen();
+      setNudgeSeen(true);
+    }
+  }
+
+  useHotkeys({ "?": () => openSettings(true) });
+
+  useEffect(() => {
+    if (open && showShortcuts) shortcutsRef.current?.scrollIntoView({ block: "start" });
+  }, [open, showShortcuts]);
+
+  const triggerLabel = nudge ? t.settings.triggerLabelBackupDue : t.settings.triggerLabel;
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        aria-label={t.settings.triggerLabel}
-        title={t.settings.triggerLabel}
-        className="-m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
+        onClick={() => openSettings()}
+        aria-label={triggerLabel}
+        title={triggerLabel}
+        aria-keyshortcuts="?"
+        className="relative -m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
       >
         <IconSettings size={22} />
+        {/* Copia de seguridad pendiente: solo un punto, sin texto ni aviso. */}
+        {nudge && (
+          <span className="absolute right-1 top-1 size-2 rounded-full bg-gold ring-2 ring-ink-950" />
+        )}
       </button>
 
       {open && (
@@ -81,6 +120,14 @@ export function SettingsDialog() {
                 <Section title={t.settings.languageHeading}>
                   <LanguageSettings />
                 </Section>
+                {/* Solo con ratón o teclado a mano (o si se ha llegado con "?"). */}
+                <Section
+                  ref={shortcutsRef}
+                  title={t.shortcuts.heading}
+                  className={showShortcuts ? "scroll-mt-4" : "hidden any-pointer-fine:flex"}
+                >
+                  <ShortcutsLegend />
+                </Section>
               </div>
               <div className="flex flex-col gap-6">
                 <Section title={t.storage.sectionTitle}>
@@ -99,9 +146,19 @@ export function SettingsDialog() {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  className = "",
+  ref,
+  children,
+}: {
+  title: string;
+  className?: string;
+  ref?: React.Ref<HTMLElement>;
+  children: ReactNode;
+}) {
   return (
-    <section className="flex flex-col gap-3">
+    <section ref={ref} className={`flex flex-col gap-3 ${className}`}>
       <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{title}</h3>
       {children}
     </section>
@@ -203,8 +260,73 @@ function LanguageSettings() {
   );
 }
 
-function BackupSettings() {
+function ShortcutsLegend() {
   const { t } = useLocaleContext();
+  const s = t.shortcuts;
+  const groups: { heading: string; rows: [keys: string[], label: string][] }[] = [
+    {
+      heading: s.navigationHeading,
+      rows: [
+        [["1"], s.goOracle],
+        [["2"], s.goTables],
+        [["3"], s.goJournal],
+        [["H"], s.goHistory],
+      ],
+    },
+    {
+      heading: s.playHeading,
+      rows: [
+        [["/"], s.write],
+        [["O"], s.oracle],
+        [["T"], s.table],
+        [["D"], s.dice],
+        [[s.enterKey], s.send],
+        [[s.shiftKey, s.enterKey], s.newLine],
+        [["Esc"], s.leaveField],
+        [["?"], s.help],
+      ],
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="text-sm text-parchment-dim">{s.intro}</p>
+      {groups.map(({ heading, rows }) => (
+        <div key={heading} className="mt-3.5">
+          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{heading}</p>
+          {/* Columna de teclas de ancho fijo: las dos listas quedan alineadas. */}
+          <dl className="mt-2 grid grid-cols-[6.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
+            {rows.map(([keys, label]) => (
+              <div key={label} className="contents">
+                <dt className="flex gap-1">
+                  {keys.map((k) => (
+                    <kbd
+                      key={k}
+                      className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-b-2 border-ink-border bg-ink-800 px-1.5 font-sans text-xs font-medium text-parchment"
+                    >
+                      {k}
+                    </kbd>
+                  ))}
+                </dt>
+                <dd className="min-w-0 text-parchment-dim">{label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BackupSettings() {
+  const { t, locale } = useLocaleContext();
+  const { entries } = useJournalContext();
+  const [lastBackupAt, setLastBackupAt] = useState(loadLastBackupAt);
+  // El mismo criterio que el punto de la cabecera, sin la pausa de "ya visto".
+  const stale = useMemo(
+    () => shouldNudgeBackup(entries.map((e) => e.timestamp), undefined, lastBackupAt, null),
+    [entries, lastBackupAt],
+  );
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   const [pendingRestore, setPendingRestore] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -216,6 +338,9 @@ function BackupSettings() {
     const filename = backupFilename();
     downloadBackupFile(filename, payload);
     setExportedFilename(filename);
+    const now = Date.now();
+    saveLastBackupAt(now);
+    setLastBackupAt(now);
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -251,6 +376,12 @@ function BackupSettings() {
       </p>
       <p className="mt-1.5 text-sm text-parchment-dim">{t.about.dataSectionDescription}</p>
       <p className="mt-1.5 text-sm text-parchment-dim">{t.storage.backupStillMatters}</p>
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-parchment-dim/80">
+        {stale && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-gold" />}
+        {lastBackupAt
+          ? interpolate(t.about.lastBackup, { when: formatSince(lastBackupAt, locale) })
+          : t.about.noBackupYet}
+      </p>
 
       {exportedFilename && (
         <p className="mt-2 text-xs text-gold/80">

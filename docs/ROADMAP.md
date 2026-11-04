@@ -53,10 +53,32 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     diálogo al crear la primera aventura): queda solo en Ajustes.
   - Dados propios: varias tiradas en una entrada se ven una por una, con
     su dado; los dados del composer se acumulan y se apuntan juntos.
+- Escritorio (2026-11-04): cursor de mano y hover en todo lo pulsable;
+  anillo de foco dorado con teclado, foco atrapado en los diálogos y
+  flechas en los menús; atajos (1/2/3/H, /, O/T/D, Esc, ?) con leyenda
+  en Ajustes.
+- Aventura de ejemplo (2026-11-04): «La posada del cruce», dos sesiones
+  con preguntas, oráculo (sí, «sí, pero», contradicción, «no, y
+  además»), tablas, dados y consecuencias. Solo se ofrece con el diario
+  vacío, como enlace discreto. Se descartó un tutorial guiado (globos
+  sobre los botones): tres diseños distintos, se rompe con cada cambio
+  de interfaz y estorba al empezar.
+- Recordatorio de copia de seguridad (2026-11-04): "Última copia: hace…"
+  en Ajustes y un punto en la rueda solo si hay 10+ entradas nuevas y
+  14+ días sin copia; se apaga 7 días al abrir Ajustes.
 
 ---
 
-## 1. Lonelog completo: hilos, personajes, lugares, relojes (P1)
+## 1. Lonelog completo: hilos, personajes, lugares, relojes (P2, aplazado)
+
+Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
+la mesa: modelo mixto — los cambios de estado salen de las entradas
+(`[N:Jonah|+capturado]`), pero cada PNJ/lugar tiene una ficha propia
+(descripción, alias) que se exporta como bloque al principio del `.md`.
+Lo de más valor: la ficha con todas las entradas donde aparece.
+Fases: 1) entender y mostrar las etiquetas como chips (ida y vuelta en
+el `.md`), 2) panel derivado, 3) menciones desde el composer, 4) fichas
+editables, 5) hilos, relojes y "tirar en la lista".
 
 Hoy el parser guarda como nota cualquier etiqueta `[...]`. Lonelog ya
 define una notación para todo esto, así que no hay que inventar

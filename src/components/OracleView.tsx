@@ -56,6 +56,7 @@ export function OracleView() {
           }}
         >
           <input
+            data-hotkey="write oracle"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             aria-label={t.oracle.questionLabel}

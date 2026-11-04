@@ -21,6 +21,7 @@ import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
 import { loadOracleId, saveOracleId } from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
+import { saveLastBackupAt } from "./backupReminder";
 
 // 2: journal.adventures (antes journal.campaigns) — la copia de
 // seguridad es tan nueva que no hace falta migrar copias antiguas.
@@ -107,6 +108,9 @@ export async function restoreBackup(t: Dictionary, text: string): Promise<void> 
     saveAdventures(t, parsed.journal.adventures),
     saveJournalEntries(t, parsed.journal.entries),
   ]);
+  // Lo que hay ahora es justo esa copia: cuenta como la última.
+  const exportedAt = Date.parse(parsed.exportedAt);
+  if (Number.isFinite(exportedAt)) saveLastBackupAt(exportedAt);
 
   const s = parsed.settings as unknown as Record<string, unknown> | undefined;
   if (s) {

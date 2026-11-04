@@ -11,7 +11,7 @@ import type { Answer } from "./oracle";
 export const INPUT_CLASS =
   "min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-4 py-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none";
 export const PRIMARY_BUTTON_CLASS =
-  "shrink-0 rounded-xl bg-gold px-4 py-3 text-sm font-medium text-ink-950";
+  "shrink-0 rounded-xl bg-gold px-4 py-3 text-sm font-medium text-ink-950 transition hover:bg-gold-soft";
 export const SECONDARY_BUTTON_CLASS =
   "shrink-0 rounded-xl border border-ink-border px-4 py-3 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold";
 

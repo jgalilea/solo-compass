@@ -67,6 +67,15 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/** La regla de arriba aplicada a los dados ya elegidos (el más alto de cada color). */
+export function judgeDice(white: number, black: number): { answer: Answer; qualifier: Qualifier } {
+  if (white === black) return { answer: "contradiccion", qualifier: null };
+  const answer: Answer = white > black ? "si" : "no";
+  if (white <= 3 && black <= 3) return { answer, qualifier: "pero" };
+  if (white >= 4 && black >= 4) return { answer, qualifier: "y" };
+  return { answer, qualifier: null };
+}
+
 export function rollOracle(
   question: string,
   likelihood: Likelihood,
@@ -79,19 +88,7 @@ export function rollOracle(
   const whiteKept = Math.max(...whiteRolls);
   const blackKept = Math.max(...blackRolls);
 
-  let answer: Answer;
-  let qualifier: Qualifier = null;
-
-  if (whiteKept === blackKept) {
-    answer = "contradiccion";
-  } else {
-    answer = whiteKept > blackKept ? "si" : "no";
-    if (whiteKept <= 3 && blackKept <= 3) {
-      qualifier = "pero";
-    } else if (whiteKept >= 4 && blackKept >= 4) {
-      qualifier = "y";
-    }
-  }
+  const { answer, qualifier } = judgeDice(whiteKept, blackKept);
 
   return {
     kind: "oraculo",

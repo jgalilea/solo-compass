@@ -5,6 +5,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
+import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import {
   IconCheck,
@@ -152,6 +153,14 @@ export function JournalListView() {
     }
   }
 
+  // El ejemplo se abre sin activarlo: las tiradas del oráculo y las
+  // tablas no deben ir a parar a él sin que lo pidas.
+  function handleOpenSample() {
+    const { name, markdown } = buildSampleAdventure(t);
+    const adventure = importAdventure(name, markdown);
+    navigate(`/diario/${adventure.id}`);
+  }
+
   const hasAnyAdventures = adventures.length > 0;
   const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0;
 
@@ -227,6 +236,16 @@ export function JournalListView() {
                 icon={<IconJournal size={24} />}
                 title={t.journal.noAdventuresTitle}
                 description={t.journal.noAdventuresDescription}
+                action={
+                  // Solo con el diario vacío, y como un enlace discreto: nunca se crea solo.
+                  <button
+                    type="button"
+                    onClick={handleOpenSample}
+                    className="mt-1 text-sm text-gold/80 underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:text-gold hover:decoration-gold"
+                  >
+                    {t.sample.offer}
+                  </button>
+                }
                 compact
               />
             )}
@@ -378,8 +397,10 @@ function AdventureRow({
       ref={rowRef}
       style={isDragging ? { opacity: 0.5 } : undefined}
       className={[
-        "flex items-center gap-1 rounded-2xl border p-2",
-        isActive ? "border-gold/50 bg-gold/[0.06]" : "border-ink-border bg-ink-800/50",
+        "group flex min-w-0 items-center gap-1 rounded-2xl border p-2 transition",
+        isActive
+          ? "border-gold/50 bg-gold/[0.06] has-[a:hover]:bg-gold/10"
+          : "border-ink-border bg-ink-800/50 has-[a:hover]:border-gold/40 has-[a:hover]:bg-ink-800",
       ].join(" ")}
     >
       <button
@@ -390,7 +411,7 @@ function AdventureRow({
         }}
         aria-label={t.journal.dragHandle}
         style={{ touchAction: "none" }}
-        className="-m-1 shrink-0 cursor-grab p-3 text-parchment-dim/40 active:cursor-grabbing"
+        className="-m-1 shrink-0 cursor-grab p-3 text-parchment-dim/40 transition hover:text-parchment-dim active:cursor-grabbing"
       >
         <IconGripVertical size={18} />
       </button>
@@ -420,7 +441,7 @@ function AdventureRow({
             {t.journal.activeLabel}
           </span>
         )}
-        <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40" />
+        <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40 transition group-has-[a:hover]:translate-x-0.5 group-has-[a:hover]:text-gold" />
       </Link>
     </li>
   );

@@ -33,6 +33,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
 
   return (
     <form
+      data-hotkey="oracle"
       className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
@@ -80,7 +81,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
   }
 
   return (
-    <div className="@container flex flex-col gap-2">
+    <div data-hotkey="table" className="@container flex flex-col gap-2">
       {/* Con pocas tablas el buscador sobra; aparece cuando ya cuesta encontrarlas. */}
       {tables.length > 6 && (
         <label className="relative">
@@ -136,7 +137,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div data-hotkey="dice" className="flex flex-col gap-3">
       <input
         value={label}
         onChange={(e) => setLabel(e.target.value)}

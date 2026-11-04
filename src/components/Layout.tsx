@@ -1,17 +1,19 @@
 import { useEffect } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { IconCompass, IconHeart, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { focusHotkeyTarget, isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
 import { KOFI_URL } from "../lib/support";
 
 export function Layout() {
   const { t } = useLocaleContext();
   const { activeAdventureId } = useJournalContext();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Cada pantalla empieza arriba: sin esto, en móvil se heredaba el
   // scroll de la anterior (p. ej. el historial se abría a media lista).
@@ -30,12 +32,14 @@ export function Layout() {
       label: t.nav.oracle,
       Icon: IconOracle,
       isActive: location.pathname === "/" || location.pathname.startsWith("/historial"),
+      hotkey: "1",
     },
     {
       to: "/tablas",
       label: t.nav.tables,
       Icon: IconTable,
       isActive: location.pathname.startsWith("/tablas"),
+      hotkey: "2",
     },
     {
       // Con aventura activa, el atajo de la barra va directo a ella —
@@ -47,8 +51,32 @@ export function Layout() {
       label: t.nav.journal,
       Icon: IconJournal,
       isActive: location.pathname.startsWith("/diario"),
+      hotkey: "3",
     },
   ];
+
+  // Atajos de escritorio (leyenda en Ajustes; "?" lo registra SettingsDialog).
+  useHotkeys({
+    ...Object.fromEntries(tabs.map((tab) => [tab.hotkey, () => navigate(tab.to)])),
+    h: () => navigate("/historial"),
+    "/": () => focusHotkeyTarget("write"),
+    o: () => focusHotkeyTarget("oracle"),
+    t: () => focusHotkeyTarget("table"),
+    d: () => focusHotkeyTarget("dice"),
+  });
+
+  // Esc en un campo de texto suelta el foco, para poder seguir con los
+  // atajos sin coger el ratón (los diálogos y menús ya usan Esc para
+  // cerrarse, y van antes).
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Escape" || e.defaultPrevented || !isTypingTarget(e.target)) return;
+      if (document.querySelector('[aria-modal="true"]')) return;
+      (e.target as HTMLElement).blur();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -74,11 +102,13 @@ export function Layout() {
             </span>
           </div>
           <nav className="hidden gap-1 lg:flex">
-            {tabs.map(({ to, label, Icon, isActive }) => (
+            {tabs.map(({ to, label, Icon, isActive, hotkey }) => (
               <Link
                 key={label}
                 to={to}
                 aria-current={isActive ? "page" : undefined}
+                aria-keyshortcuts={hotkey}
+                title={`${label} (${hotkey})`}
                 className={[
                   "flex items-center gap-2 rounded-full px-4 py-2 text-sm transition",
                   isActive

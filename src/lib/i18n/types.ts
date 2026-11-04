@@ -14,6 +14,17 @@ export const LOCALES: Locale[] = ["es", "en"];
  * (src/lib/i18n/locales/{es,en}.ts) deben implementar exactamente
  * esta forma — si falta una clave en alguno, TypeScript avisa.
  */
+/**
+ * Una línea del guion de la aventura de ejemplo. Las tiradas se dan
+ * como dados, no como texto: `sampleAdventure.ts` las escribe igual
+ * que una partida real (nombre del oráculo, respuesta, resultado de la
+ * tabla), en el idioma de la app.
+ */
+export type SampleLine =
+  | { kind: "note" | "action" | "question" | "consequence" | "session" | "roll"; text: string }
+  | { oracle: [white: number, black: number] }
+  | { table: "eventoAleatorio" | "accionPnj" | "descriptorEscena"; roll: number[] };
+
 export interface Dictionary {
   common: {
     close: string;
@@ -46,6 +57,28 @@ export interface Dictionary {
     appearanceHeading: string;
     languageHeading: string;
     aboutHeading: string;
+    /** Título del botón de Ajustes cuando tiene el punto de copia pendiente. */
+    triggerLabelBackupDue: string;
+  };
+  shortcuts: {
+    heading: string;
+    intro: string;
+    navigationHeading: string;
+    goOracle: string;
+    goTables: string;
+    goJournal: string;
+    goHistory: string;
+    playHeading: string;
+    write: string;
+    oracle: string;
+    table: string;
+    dice: string;
+    leaveField: string;
+    send: string;
+    newLine: string;
+    help: string;
+    shiftKey: string;
+    enterKey: string;
   };
   storage: {
     sectionTitle: string;
@@ -118,6 +151,9 @@ export interface Dictionary {
     dataSectionDescription: string;
     exportAllButton: string;
     exportedAllConfirmation: string;
+    /** "Última copia: {when}" ({when} = "hace 3 días"). */
+    lastBackup: string;
+    noBackupYet: string;
     importAllButton: string;
     importAllConfirmTitle: string;
     importAllConfirmDescription: string;
@@ -319,6 +355,12 @@ export interface Dictionary {
     reload: string;
   };
   /** Código para Intl.DateTimeFormat (formateo de fecha/hora). */
+  sample: {
+    /** Enlace discreto bajo "Todavía no tienes ninguna aventura". */
+    offer: string;
+    name: string;
+    script: SampleLine[];
+  };
   dateLocale: string;
 }
 

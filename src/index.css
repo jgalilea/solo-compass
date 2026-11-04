@@ -420,6 +420,40 @@ body {
   touch-action: pan-y;
 }
 
+/* Tailwind v4 deja los botones con el cursor por defecto; aquí todo lo
+   pulsable muestra la mano, y lo deshabilitado no. En @layer base para
+   que una clase cursor-* del componente pueda sobrescribirlo. */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  [role="tab"],
+  [role^="menuitem"],
+  [role="option"],
+  select,
+  summary,
+  label:has(> input[type="checkbox"], > input[type="radio"], > input[type="file"]) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Foco con teclado: un anillo del color de acento en todo lo
+     enfocable (solo con teclado: :focus-visible no salta al pinchar).
+     Los campos de texto lo sustituyen por su borde dorado
+     (focus:outline-none + focus:border-gold). Dentro de menús y
+     listas con overflow-hidden el anillo va hacia dentro para que no
+     se recorte. */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  [role^="menuitem"]:focus-visible,
+  [role="option"]:focus-visible {
+    outline-offset: -2px;
+  }
+}
+
 #root {
   min-height: 100svh;
   display: flex;

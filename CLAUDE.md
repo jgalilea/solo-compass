@@ -94,6 +94,11 @@ No backend; persistence is split by access pattern, not by feature:
   PWA rarely navigates, which is when browsers check on their own), then
   shows an "Actualizar" banner instead of reloading by itself (it could
   drop half-typed text).
+- **Backup reminder** (`backupReminder.ts`): last backup time in
+  `localStorage`; a gold dot on the Settings button only when there are
+  10+ journal entries newer than the last backup and it's 14+ days old,
+  snoozed 7 days once Settings is opened. Deliberately no toast or
+  dialog.
 - **Full backup/restore** (`backup.ts`, wired into `SettingsDialog`): exports
   everything above into one `.json`, and can restore it (overwriting
   current data, then reloading the app so every context picks up the
@@ -131,6 +136,15 @@ Enter sends with a fine pointer (Shift+Enter = new line); on touch Enter
 is a new line and the send button sends. The composer's entry type and the roll a consequence links
 to live in `AdventureDetailView`, because both places change them (after
 any roll the composer switches to "Consecuencia").
+
+### Sample adventure (`src/lib/sampleAdventure.ts`)
+
+Offered only as a discreet link in the empty-journal state (never
+created on its own, and opened without making it active). The script
+lives in the dictionaries (`t.sample.script`); rolls are given as dice
+and written with the same format as `usePlayActions` (oracle verdict via
+`judgeDice` in `oracle.ts`, table results from the real tables), then
+imported as Lonelog. A test keeps both languages' scripts in step.
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -191,6 +205,22 @@ both in a wide page and in the narrow desktop panel (e.g.
 `LikelihoodPicker`) adapt with container queries (`@container`/`@md:`),
 not viewport breakpoints. Check changes at phone, tablet and desktop
 widths.
+
+The pointer cursor on clickable elements and the keyboard focus ring
+(`:focus-visible`, gold outline) come from base rules in `index.css`
+(Tailwind v4 sets neither); text fields replace the ring with
+`focus:border-gold`. Every button and link still needs its own `hover:`
+state (on a selected item, the selection itself is enough). `Modal` moves
+focus into the panel, traps Tab and gives focus back on close;
+`useDismiss` adds arrow keys and Esc-returns-focus to dropdown menus.
+
+Desktop keyboard shortcuts (`src/hooks/useHotkeys.ts`, legend in Settings,
+`?` opens it): registered in `Layout` (screens, `/`, O/T/D) and
+`SettingsDialog` (`?`). Screens don't pass refs up: they mark targets with
+`data-hotkey="write"` / `"oracle"` / `"table"` / `"dice"` (space-separated
+list) and, where the tool is folded away (composer sheet),
+`data-hotkey-open="…"` on the button that opens it. When adding a shortcut,
+add it to `ShortcutsLegend` too.
 
 Deleting a journal entry or a history roll is immediate with a "Deshacer"
 toast (`Toast` with `action`); `ConfirmDialog` is only for big,

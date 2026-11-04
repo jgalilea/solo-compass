@@ -339,7 +339,7 @@ export function LineButtons({
         "absolute right-1 top-1/2 flex -translate-y-1/2 items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
         visible
           ? "opacity-100"
-          : "pointer-events-none opacity-0 pointer-fine:group-hover:pointer-events-auto pointer-fine:group-hover:opacity-100 pointer-fine:focus-within:pointer-events-auto pointer-fine:focus-within:opacity-100",
+          : "pointer-events-none opacity-0 pointer-fine:group-hover:pointer-events-auto pointer-fine:group-hover:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100",
       ].join(" ")}
     >
       <button

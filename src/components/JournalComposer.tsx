@@ -146,6 +146,7 @@ export function JournalComposer({
               onClick={() => setTool(id)}
               aria-label={label}
               title={label}
+              data-hotkey-open={id}
               className="flex size-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/20 active:scale-95"
             >
               <Icon size={19} />
@@ -163,6 +164,7 @@ export function JournalComposer({
           <ModePicker mode={mode} onChange={onModeChange} />
           <textarea
             ref={inputRef}
+            data-hotkey="write"
             rows={1}
             value={text}
             onChange={(e) => setText(e.target.value)}

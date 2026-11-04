@@ -121,6 +121,7 @@ export function TablesView() {
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/60"
             />
             <input
+              data-hotkey="write table"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

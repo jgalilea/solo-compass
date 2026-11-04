@@ -1,0 +1,35 @@
+import { describe, expect, it } from "vitest";
+import { DICTIONARIES } from "./i18n";
+import { buildSampleAdventure } from "./sampleAdventure";
+import { parseMarkdownToEntries } from "./lonelog";
+import { splitRollText } from "./journalUi";
+
+describe("aventura de ejemplo", () => {
+  it("tiene el mismo guion (tipos y dados) en todos los idiomas", () => {
+    const shape = (lang: "es" | "en") =>
+      DICTIONARIES[lang].sample.script.map((l) =>
+        "oracle" in l ? `oracle:${l.oracle}` : "table" in l ? `table:${l.table}:${l.roll}` : l.kind,
+      );
+    expect(shape("en")).toEqual(shape("es"));
+  });
+
+  for (const lang of ["es", "en"] as const) {
+    it(`se importa entera y con las respuestas del oráculo reconocidas (${lang})`, () => {
+      const t = DICTIONARIES[lang];
+      const { markdown } = buildSampleAdventure(t);
+      expect(markdown).not.toMatch(/undefined|\{\w+\}/);
+
+      const entries = parseMarkdownToEntries(markdown, "a", 0);
+      expect(entries).toHaveLength(t.sample.script.length);
+      expect(entries.map((e) => e.kind)).toEqual(
+        t.sample.script.map((l) => ("kind" in l ? l.kind : "roll")),
+      );
+
+      const answers = entries
+        .filter((_, i) => "oracle" in t.sample.script[i])
+        .map((e) => splitRollText(e.text).answer);
+      expect(answers).toEqual(["si", "si", "contradiccion", "no"]);
+      expect(entries.some((e) => e.text.includes("\n"))).toBe(true);
+    });
+  }
+});
