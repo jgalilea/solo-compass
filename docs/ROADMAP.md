@@ -5,11 +5,11 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-03.
+Última revisión: 2026-11-04.
 
 ## Hecho recientemente
 
-- Licencia AGPL-3.0 (`LICENSE`, README, `package.json`).
+- Licencia GPL-3.0 (`LICENSE`, README, `package.json`); antes AGPL-3.0.
 - Tests con Vitest (`npm test`), que bloquean el despliegue si fallan:
   oráculo, Lonelog, agrupación del diario y datos de las tablas.
 - Apoyo en Ko-fi: tarjeta en Ajustes → Acerca de y enlace "Apoyar" en
@@ -169,7 +169,7 @@ oráculo hay que introducir el despacho por id (ver CLAUDE.md).
 Recordatorio de licencias: la app es gratuita pero tiene enlace a
 Ko-fi. Las licencias **NonCommercial (NC)** son una zona gris con
 donaciones; mejor priorizar **CC BY** y **CC BY-SA**. El texto de
-terceros conserva su licencia aunque el código sea AGPL.
+terceros conserva su licencia aunque el código sea GPL.
 
 | Material | Licencia | ¿Usable? | Notas |
 |---|---|---|---|
@@ -255,7 +255,7 @@ seguir leyendo los archivos ya exportados.
 
 ## 8. Decisiones pendientes
 
-- **Visibilidad del repositorio y uso de IA.** Abierto (AGPL) o privado:
+- **Visibilidad del repositorio y uso de IA.** Abierto (GPL) o privado:
   GitHub Pages desde un repo privado necesita un plan de pago, y
   Cloudflare Pages lo permite gratis. Cambiar de URL cambia el origen y
   los datos de los usuarios no se mueven solos (IndexedDB y

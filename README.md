@@ -4,7 +4,7 @@
   <p><strong>A yes/no oracle, meaning tables and a session journal for solo tabletop RPGs, in one app that works offline.</strong></p>
   <p>
     <a href="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml/badge.svg"></a>
-    <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/jgalilea/solo-compass"></a>
+    <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/jgalilea/solo-compass"></a>
   </p>
   <p><a href="https://jgalilea.github.io/solo-compass/"><strong>Open the app</strong></a> · <a href="#how-to-play">How to play</a> · <a href="#your-data">Your data</a> · <a href="#development">Development</a></p>
 </div>
@@ -153,7 +153,7 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - **Tabler Icons**, MIT.
 - The meaning tables are original and written for this app.
 
-The Solo Compass code is released under the [GNU Affero General Public License v3.0](LICENSE). You can use, study, change and share it. If you publish a modified version, including running it as a website, you must offer its source code under the same license.
+The Solo Compass code is released under the [GNU General Public License v3.0](LICENSE). You can use, study, change and share it. If you distribute a modified version, you must make its source code available under the same license.
 
 If Solo Compass is useful at your table, you can [support it on Ko-fi](https://ko-fi.com/jgalilea).
 
