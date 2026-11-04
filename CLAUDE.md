@@ -56,7 +56,7 @@ render its fallback in the right language even if something below it throws.
 ### State: context-per-feature, four-file split
 
 Each piece of global state (`Journal`, `History`, `Theme`, `Mode`, `Locale`,
-`Oracle`) follows the same four-file pattern in `src/hooks/`:
+`Oracle`, `CustomTables`) follows the same four-file pattern in `src/hooks/`:
 
 - `useX.ts` — the actual state/logic (the hook body).
 - `xContextInstance.ts` — just `createContext(...)`, nothing else.
@@ -75,7 +75,8 @@ file.
 No backend; persistence is split by access pattern, not by feature:
 
 - **IndexedDB** (via `idb-keyval`), for anything that can grow unbounded:
-  journal (`journal.ts`) and oracle/table roll history (`history.ts`).
+  journal (`journal.ts`), oracle/table roll history (`history.ts`) and
+  the player's own tables (`customTables.ts`).
   `localStorage` is ~5 MiB per origin and shared with every other app on the
   same `github.io` subdomain, so it's unsuitable for this.
   History auto-migrates once from a legacy `localStorage` version if found.
@@ -170,13 +171,35 @@ skewed likelihood) lives in `src/lib/oracle.ts` and is called directly
 (via `usePlayActions`) rather than dispatched by oracle id — when a second
 oracle is added, that dispatch is the thing to introduce.
 
-### Tables (`src/lib/tables.ts`)
+### Tables (`src/lib/tables.ts`, `src/lib/customTables.ts`)
 
-Structure supports d6/d66/d20 tables with an optional `game`
-attribution/link, favorites, and search. Seeded with original, generic
-tables written for the app (no content copied from licensed games); their
-texts live in the locale dictionaries (`tables.entries`, one string per die
-value in order). Adding a table is a data change, not a structural one.
+`DiceType` is `"d66"` (two d6 as tens/units) or any `dN`. Tables have an
+optional `game` attribution/link, favorites, and search. Built-in tables
+are original, generic tables written for the app (no content copied from
+licensed games); their texts live in the locale dictionaries
+(`tables.entries`, one string per die value in order). Adding a built-in
+table is a data change, not a structural one.
+
+The player's own tables (`customTables.ts`, state in the
+`CustomTables` context) are converted to the same `MeaningTable`
+shape (`custom: true`); `useMeaningTables` returns built-in + custom,
+so screens never read either list on their own. Their text format
+(editor, import, export) is deliberately permissive: one result per
+line, optional leading ranges, list markers, Markdown tables; the .md
+export is read back by the same parser (tested). "Quick inspiration"
+(`rollInspiration` in `usePlayActions`) rolls Acción + Tema together:
+two history rolls, one journal entry.
+
+### Journal search and stats
+
+`journalSearch.ts` (every query word, accent-insensitive, in journal
+order) is used inside an adventure (header magnifier; jumping unfolds
+the session and highlights the entry via `entry-<id>` ids) and across
+all journals from the list view (navigates with `state.entryId`).
+`journalStats.ts` derives the adventure statistics from entries plus
+the linked history, falling back to parsing roll text for imports.
+Sharing (`share.ts`, Web Share API) is only offered where
+`navigator.share` exists and falls back to download on failure.
 
 ### Icons and dialogs
 

@@ -6,7 +6,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const EXPECTED_ENTRIES = { d6: 6, d66: 36, d20: 20 } as const;
+const EXPECTED_ENTRIES: Record<string, number> = { d6: 6, d66: 36, d20: 20 };
 
 describe("meaning tables", () => {
   it.each(LOCALES)("en «%s» cada tabla tiene un texto por cada valor del dado", (locale) => {

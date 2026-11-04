@@ -1,48 +1,82 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getMeaningTables, type MeaningTable } from "../lib/tables";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { MeaningTable } from "../lib/tables";
+import { formatRange } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
-import type { TableRollEntry } from "../lib/history";
+import {
+  exportTableToMarkdown,
+  parseTablesFile,
+  type CustomTable,
+  type CustomTableDraft,
+} from "../lib/customTables";
+import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { useMeaningTables } from "../hooks/useMeaningTables";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
+import { downloadTextFile, sanitizeFilename } from "../lib/journalUi";
+import { canShare, shareTextFile } from "../lib/share";
+import { normalizeForSearch } from "../lib/text";
+import { ActionMenu } from "./ActionMenu";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { EmptyState } from "./StateViews";
+import { TableEditorDialog } from "./TableEditorDialog";
+import { Toast } from "./Toast";
 import {
+  IconAlertCircle,
   IconClose,
   IconDice,
+  IconDownload,
   IconExternalLink,
   IconList,
+  IconPencil,
+  IconPlus,
   IconSearch,
+  IconShare,
+  IconSparkles,
   IconStar,
   IconTable,
+  IconTrash,
+  IconUpload,
 } from "./icons/Icons";
 import { Modal } from "./Modal";
 
-function normalize(s: string): string {
-  // Strips accents (via Unicode decomposition) so searching "Acción"
-  // finds "accion" and vice versa.
-  return s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+/** The latest roll on this screen: a table, or the quick inspiration. */
+interface LastResult {
+  /** Table id, or "inspiration": which row shows it inline on phones. */
+  sourceId: string;
+  /** History id, to link the consequence. */
+  rollId: string;
+  title: string;
+  /** "d20 · 14", or the inspiration's "Action 3/4, Theme 2/5". */
+  detail: string;
+  /** Value looked up in the table (single tables only). */
+  total?: number;
+  text: string;
 }
 
-interface LastResult {
-  table: MeaningTable;
-  entry: TableRollEntry;
-}
+const INSPIRATION_ID = "inspiration";
+
+type ToastState =
+  | { kind: "deleted"; table: CustomTable; index: number }
+  | { kind: "message"; title: string; error?: boolean };
 
 /**
  * Compact list of tables + a single "latest result". On phone and
  * tablet the result opens below the rolled table; on desktop it goes in
  * a fixed panel on the right. Only the latest is kept (not one per
  * table), so the list doesn't grow with every roll.
+ *
+ * On top, the quick inspiration (action + theme in one roll); then
+ * favourites, the player's own tables (create, import, edit, export,
+ * share) and the built-in ones.
  */
 export function TablesView() {
   const { adventures, activeAdventureId } = useJournalContext();
-  const { rollTable, addConsequence } = usePlayActions();
+  const { rollTable, rollInspiration, addConsequence } = usePlayActions();
+  const { tables: customTables, addTables, updateTable, removeTable, restoreTable } = useCustomTablesContext();
+  const { builtIn, custom } = useMeaningTables();
   const { t } = useLocaleContext();
   const [last, setLast] = useState<LastResult | null>(null);
   const [rollingId, setRollingId] = useState<string | null>(null);
@@ -50,17 +84,47 @@ export function TablesView() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() =>
     loadFavoriteTableIds(),
   );
+  const [editor, setEditor] = useState<{ id?: string; draft?: CustomTableDraft } | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dismissToast = useCallback(() => setToast(null), []);
 
-  const tables = useMemo(() => getMeaningTables(t), [t]);
   const activeAdventure = adventures.find((c) => c.id === activeAdventureId) ?? null;
 
-  function handleRoll(table: MeaningTable) {
-    setRollingId(table.id);
-    // Short pause so it feels like "rolling".
+  // Short pause so it feels like "rolling".
+  function withRollPause(id: string, roll: () => LastResult) {
+    setRollingId(id);
     window.setTimeout(() => {
-      setLast({ table, entry: rollTable(table) });
+      setLast(roll());
       setRollingId(null);
     }, 220);
+  }
+
+  function handleRoll(table: MeaningTable) {
+    withRollPause(table.id, () => {
+      const entry = rollTable(table);
+      return {
+        sourceId: table.id,
+        rollId: entry.id,
+        title: table.name,
+        detail: `${table.dice} · ${entry.rolls.join(" · ")}`,
+        total: entry.total,
+        text: entry.resultText,
+      };
+    });
+  }
+
+  function handleInspiration() {
+    withRollPause(INSPIRATION_ID, () => {
+      const inspiration = rollInspiration();
+      return {
+        sourceId: INSPIRATION_ID,
+        rollId: inspiration.id,
+        title: t.tables.inspirationName,
+        detail: inspiration.detail,
+        text: inspiration.text,
+      };
+    });
   }
 
   function toggleFavorite(id: string) {
@@ -73,35 +137,131 @@ export function TablesView() {
     });
   }
 
-  const filteredTables = useMemo(() => {
-    const q = normalize(query.trim());
-    if (!q) return tables;
-    return tables.filter(
-      (table) =>
-        normalize(table.name).includes(q) ||
-        normalize(table.description).includes(q) ||
-        normalize(table.game.name).includes(q),
-    );
-  }, [tables, query]);
+  function saveEditor(draft: CustomTableDraft) {
+    if (editor?.id) updateTable(editor.id, draft);
+    else addTables([draft]);
+    setEditor(null);
+  }
 
-  const favoriteTables = filteredTables.filter((table) => favoriteIds.has(table.id));
-  const otherTables = filteredTables.filter((table) => !favoriteIds.has(table.id));
+  async function handleImportFile(file: File) {
+    const drafts = parseTablesFile(t, await file.text(), file.name);
+    if (drafts.length === 0) setToast({ kind: "message", title: t.tables.importError, error: true });
+    // A single table opens in the editor, to review it before saving.
+    else if (drafts.length === 1) setEditor({ draft: drafts[0] });
+    else {
+      addTables(drafts);
+      setToast({ kind: "message", title: interpolate(t.tables.importedCount, { count: drafts.length }) });
+    }
+  }
+
+  function deleteTable(id: string) {
+    const index = customTables.findIndex((x) => x.id === id);
+    if (index < 0) return;
+    setToast({ kind: "deleted", table: customTables[index], index });
+    removeTable(id);
+    if (last?.sourceId === id) setLast(null);
+  }
+
+  function exportTable(id: string) {
+    const table = customTables.find((x) => x.id === id);
+    if (!table) return;
+    const filename = `${sanitizeFilename(table.name)}.md`;
+    downloadTextFile(filename, exportTableToMarkdown(t, table));
+    setToast({ kind: "message", title: interpolate(t.tables.exportedTable, { filename }) });
+  }
+
+  function shareTable(id: string) {
+    const table = customTables.find((x) => x.id === id);
+    if (!table) return;
+    shareTextFile(`${sanitizeFilename(table.name)}.md`, exportTableToMarkdown(t, table), table.name).catch(() =>
+      exportTable(id),
+    );
+  }
+
+  const q = normalizeForSearch(query.trim());
+  const matches = useCallback(
+    (table: MeaningTable) =>
+      !q ||
+      normalizeForSearch(table.name).includes(q) ||
+      normalizeForSearch(table.description).includes(q) ||
+      normalizeForSearch(table.game.name).includes(q),
+    [q],
+  );
+  const favoriteTables = useMemo(
+    () => [...custom, ...builtIn].filter((x) => favoriteIds.has(x.id) && matches(x)),
+    [custom, builtIn, favoriteIds, matches],
+  );
+  const otherCustom = custom.filter((x) => !favoriteIds.has(x.id) && matches(x));
+  const otherBuiltIn = builtIn.filter((x) => !favoriteIds.has(x.id) && matches(x));
+  const nothingFound = q && favoriteTables.length + otherCustom.length + otherBuiltIn.length === 0;
 
   function renderRow(table: MeaningTable) {
     return (
       <TableRow
         key={table.id}
         table={table}
-        last={last?.table.id === table.id ? last : null}
+        last={last?.sourceId === table.id ? last : null}
         rolling={rollingId === table.id}
         favorite={favoriteIds.has(table.id)}
         activeAdventure={activeAdventure}
         onRoll={() => handleRoll(table)}
         onToggleFavorite={() => toggleFavorite(table.id)}
         onSaveConsequence={addConsequence}
+        menu={
+          table.custom ? (
+            <ActionMenu
+              label={t.tables.tableActions}
+              items={[
+                {
+                  label: t.tables.editTable,
+                  Icon: IconPencil,
+                  onSelect: () => setEditor({ id: table.id, draft: customTables.find((x) => x.id === table.id) }),
+                },
+                { label: t.tables.exportTable, Icon: IconDownload, onSelect: () => exportTable(table.id) },
+                ...(canShare()
+                  ? [{ label: t.tables.shareTable, Icon: IconShare, onSelect: () => shareTable(table.id) }]
+                  : []),
+                { label: t.tables.deleteTable, Icon: IconTrash, onSelect: () => deleteTable(table.id), danger: true },
+              ]}
+            />
+          ) : null
+        }
       />
     );
   }
+
+  const customActions = (
+    <div className="flex shrink-0 gap-2">
+      <button
+        type="button"
+        onClick={() => setEditor({})}
+        className="flex items-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
+      >
+        <IconPlus size={16} />
+        {t.tables.newTable}
+      </button>
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        title={t.tables.importTableTitle}
+        className="flex items-center gap-1.5 rounded-xl border border-ink-border px-3 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+      >
+        <IconUpload size={16} />
+        {t.tables.importTable}
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".md,.markdown,.txt,.json,text/plain,text/markdown,application/json"
+        className="hidden"
+        onChange={(ev) => {
+          const file = ev.target.files?.[0];
+          ev.target.value = "";
+          if (file) void handleImportFile(file);
+        }}
+      />
+    </div>
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
@@ -111,7 +271,6 @@ export function TablesView() {
         </h1>
         <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
       </header>
-
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-12">
         <div className="flex flex-col gap-6">
@@ -131,7 +290,17 @@ export function TablesView() {
             />
           </label>
 
-          {filteredTables.length === 0 ? (
+          {!q && (
+            <InspirationCard
+              last={last?.sourceId === INSPIRATION_ID ? last : null}
+              rolling={rollingId === INSPIRATION_ID}
+              activeAdventure={activeAdventure}
+              onRoll={handleInspiration}
+              onSaveConsequence={addConsequence}
+            />
+          )}
+
+          {nothingFound ? (
             <EmptyState
               icon={<IconSearch size={24} />}
               title={t.tables.noResultsTitle}
@@ -142,24 +311,37 @@ export function TablesView() {
           ) : (
             <>
               {favoriteTables.length > 0 && (
-                <section className="flex flex-col gap-3">
-                  <h2 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-                    <IconStar size={13} filled className="text-gold" />
-                    {t.tables.favoritesHeading}
-                  </h2>
+                <TableSection
+                  title={
+                    <>
+                      <IconStar size={13} filled className="text-gold" />
+                      {t.tables.favoritesHeading}
+                    </>
+                  }
+                >
                   <ul className="grid gap-3 2xl:grid-cols-2">{favoriteTables.map(renderRow)}</ul>
-                </section>
+                </TableSection>
               )}
 
-              {otherTables.length > 0 && (
-                <section className="flex flex-col gap-3">
-                  {favoriteTables.length > 0 && (
-                    <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
-                      {t.tables.allHeading}
-                    </h2>
+              {/* Always there (unless searching), so creating a table is never hidden. */}
+              {(!q || otherCustom.length > 0) && (
+                <TableSection title={t.tables.customHeading} actions={customActions}>
+                  {otherCustom.length > 0 ? (
+                    <ul className="grid gap-3 2xl:grid-cols-2">{otherCustom.map(renderRow)}</ul>
+                  ) : (
+                    custom.length === 0 && (
+                      <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
+                        {t.tables.customEmpty}
+                      </p>
+                    )
                   )}
-                  <ul className="grid gap-3 2xl:grid-cols-2">{otherTables.map(renderRow)}</ul>
-                </section>
+                </TableSection>
+              )}
+
+              {otherBuiltIn.length > 0 && (
+                <TableSection title={t.tables.builtInHeading}>
+                  <ul className="grid gap-3 2xl:grid-cols-2">{otherBuiltIn.map(renderRow)}</ul>
+                </TableSection>
               )}
             </>
           )}
@@ -171,7 +353,7 @@ export function TablesView() {
           </h2>
           {last ? (
             <ResultPanel
-              key={last.entry.id}
+              key={last.rollId}
               last={last}
               activeAdventure={activeAdventure}
               onSaveConsequence={addConsequence}
@@ -181,7 +363,103 @@ export function TablesView() {
           )}
         </aside>
       </div>
+
+      {editor && (
+        <TableEditorDialog
+          initial={editor.draft}
+          editing={!!editor.id}
+          onSave={saveEditor}
+          onClose={() => setEditor(null)}
+        />
+      )}
+
+      {toast?.kind === "deleted" && (
+        <Toast
+          key={toast.table.id}
+          Icon={IconTrash}
+          title={t.tables.tableDeleted}
+          closeLabel={t.common.close}
+          action={{ label: t.common.undo, onClick: () => restoreTable(toast.table, toast.index) }}
+          duration={6000}
+          onDismiss={dismissToast}
+        />
+      )}
+      {toast?.kind === "message" && (
+        <Toast
+          key={toast.title}
+          Icon={toast.error ? IconAlertCircle : IconDownload}
+          title={toast.title}
+          closeLabel={t.common.close}
+          onDismiss={dismissToast}
+        />
+      )}
     </div>
+  );
+}
+
+function TableSection({ title, actions, children }: { title: ReactNode; actions?: ReactNode; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <h2 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+          {title}
+        </h2>
+        {actions}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function InspirationCard({
+  last,
+  rolling,
+  activeAdventure,
+  onRoll,
+  onSaveConsequence,
+}: {
+  last: LastResult | null;
+  rolling: boolean;
+  activeAdventure: Adventure | null;
+  onRoll: () => void;
+  onSaveConsequence: (rollId: string, text: string) => void;
+}) {
+  const { t } = useLocaleContext();
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (last) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [last]);
+
+  return (
+    <section className="rounded-2xl border border-gold/40 bg-gold/[0.06] p-4 sm:p-5">
+      <div className="flex items-start gap-3">
+        <IconSparkles size={20} className="mt-0.5 shrink-0 text-gold" />
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-lg leading-snug text-parchment">{t.tables.inspirationTitle}</h2>
+          <p className="mt-0.5 text-sm text-parchment-dim">{t.tables.inspirationDescription}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onRoll}
+          disabled={rolling}
+          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gold px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-95 disabled:opacity-60"
+        >
+          <IconDice size={17} className={rolling ? "animate-spin" : ""} />
+          {t.tables.inspirationButton}
+        </button>
+      </div>
+      {last && (
+        <div ref={resultRef} className="mt-4 scroll-mb-24 lg:hidden">
+          <ResultPanel
+            key={last.rollId}
+            last={last}
+            activeAdventure={activeAdventure}
+            onSaveConsequence={onSaveConsequence}
+            inline
+          />
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -194,6 +472,7 @@ function TableRow({
   onRoll,
   onToggleFavorite,
   onSaveConsequence,
+  menu,
 }: {
   table: MeaningTable;
   last: LastResult | null;
@@ -203,6 +482,8 @@ function TableRow({
   onRoll: () => void;
   onToggleFavorite: () => void;
   onSaveConsequence: (rollId: string, text: string) => void;
+  /** Options of the player's own tables (edit, export…). */
+  menu: ReactNode;
 }) {
   const { t } = useLocaleContext();
   const resultRef = useRef<HTMLDivElement>(null);
@@ -236,7 +517,7 @@ function TableRow({
               <IconStar size={16} filled={favorite} />
             </button>
           </div>
-          <p className="mt-0.5 text-sm text-parchment-dim">{table.description}</p>
+          {table.description && <p className="mt-0.5 text-sm text-parchment-dim">{table.description}</p>}
         </div>
         <button
           type="button"
@@ -253,12 +534,13 @@ function TableRow({
       <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
         <GameBadge table={table} />
         <TableEntriesButton table={table} />
+        {menu && <div className="ml-auto">{menu}</div>}
       </div>
 
       {last && (
         <div ref={resultRef} className="mt-4 scroll-mb-24 lg:hidden">
           <ResultPanel
-            key={last.entry.id}
+            key={last.rollId}
             last={last}
             activeAdventure={activeAdventure}
             onSaveConsequence={onSaveConsequence}
@@ -282,7 +564,6 @@ function ResultPanel({
   inline?: boolean;
 }) {
   const { t } = useLocaleContext();
-  const { table, entry } = last;
 
   return (
     <div className="flex flex-col gap-3">
@@ -294,21 +575,21 @@ function ResultPanel({
       >
         <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim">
           <span className="truncate">
-            {inline ? interpolate(t.tables.resultLabel, { n: entry.total }) : table.name}
+            {inline && last.total !== undefined ? interpolate(t.tables.resultLabel, { n: last.total }) : last.title}
           </span>
           <span className="shrink-0">
-            {table.dice} · {entry.rolls.join(" · ")}
-            {!inline && ` → ${entry.total}`}
+            {last.detail}
+            {!inline && last.total !== undefined && ` → ${last.total}`}
           </span>
         </div>
         <p className={inline ? "mt-2 text-parchment" : "mt-3 text-lg font-medium leading-snug text-parchment"}>
-          {entry.resultText}
+          {last.text}
         </p>
       </div>
 
       {activeAdventure && (
         <ConsequenceComposer
-          onSave={(text) => onSaveConsequence(entry.id, text)}
+          onSave={(text) => onSaveConsequence(last.rollId, text)}
           placeholder={t.oracle.consequencePlaceholder}
           saveLabel={t.common.save}
           savedLabel={interpolate(t.oracle.consequenceSaved, { name: activeAdventure.name })}
@@ -339,6 +620,10 @@ function GameBadge({ table }: { table: MeaningTable }) {
 function TableEntriesButton({ table }: { table: MeaningTable }) {
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
+  const credit = [
+    table.game.author && `${t.tables.authorLabel}: ${table.game.author}`,
+    table.game.license && `${t.tables.licenseLabel}: ${table.game.license}`,
+  ].filter(Boolean);
 
   return (
     <>
@@ -379,17 +664,14 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
             {table.dice} ·{" "}
             {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
           </p>
+          {credit.length > 0 && <p className="-mt-1 mb-3 text-xs text-parchment-dim">{credit.join(" · ")}</p>}
           <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
             {table.entries.map((entry) => (
               <li
                 key={`${entry.range[0]}-${entry.range[1]}`}
                 className="flex gap-3 rounded-xl border border-ink-border/70 bg-ink-900/50 px-3 py-2 text-sm"
               >
-                <span className="shrink-0 font-display text-parchment-dim">
-                  {entry.range[0] === entry.range[1]
-                    ? entry.range[0]
-                    : `${entry.range[0]}–${entry.range[1]}`}
-                </span>
+                <span className="shrink-0 font-display text-parchment-dim">{formatRange(entry.range)}</span>
                 <span className="text-parchment/90">{entry.text}</span>
               </li>
             ))}

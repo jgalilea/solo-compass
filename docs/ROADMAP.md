@@ -5,9 +5,27 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-04.
+Última revisión: 2026-11-04 (tablas personalizadas, búsqueda).
 
 ## Hecho recientemente
+
+- Tablas personalizadas (2026-11-04, punto 2): crear, editar, importar
+  (.md/.txt/.json, varias por archivo), exportar a .md y compartir. Dado
+  fijo (d4–d100, d66) o "según las líneas" (dN), rangos opcionales
+  ("1-3 Ratas") y tablas de Markdown pegadas. En IndexedDB y en la copia
+  de seguridad (esquema 3; las copias de versión 2 se restauran sin
+  tocar las tablas propias).
+- Diez tablas de serie nuevas (2026-11-04): Acción y Tema (d66), Cómo
+  (adverbios), Aspecto (adjetivos sin género), Rasgo de PNJ,
+  Motivación, Complicación, Lugar, Hallazgo (d20) y Clima (d6).
+- Inspiración rápida (2026-11-04): Acción + Tema en una sola tirada,
+  en la pantalla de Tablas y en la mesa de juego. Dos tiradas en el
+  historial y una sola entrada en el diario.
+- Búsqueda en el diario (2026-11-04, punto 4).
+- Estadísticas de la aventura (2026-11-04): menú "⋯" de la aventura.
+- Compartir con el menú del sistema (2026-11-04): aventura (el mismo
+  .md Lonelog que la exportación) y tablas propias. Solo aparece donde
+  el navegador tiene Web Share; si falla, se descarga.
 
 - Licencia GPL-3.0 (`LICENSE`, README, `package.json`); antes AGPL-3.0.
 - Tests con Vitest (`npm test`), que bloquean el despliegue si fallan:
@@ -119,7 +137,10 @@ Propuesta:
 - **Oráculo**: más adelante, "tirar en la lista de hilos/PNJ" para
   elegir uno al azar (como las listas de Mythic).
 
-## 2. Tablas personalizadas: crear e importar (P1)
+## 2. Tablas personalizadas: crear e importar — HECHO (2026-11-04)
+
+Lo que se planteó:
+
 
 - Crear una tabla desde la app: nombre, dado (d6, d66, d20, y quizá
   dN/d100 libre) y una línea por resultado.
@@ -157,7 +178,25 @@ Lo que se decidió:
   expirar el aviso, o borrado real + reinsertar con el mismo id y
   timestamp al deshacer (más simple con IndexedDB).
 
-## 4. Búsqueda dentro del diario (P2)
+## 4. Búsqueda dentro del diario — HECHO (2026-11-04)
+
+Cómo funciona: todas las palabras de la búsqueda tienen que aparecer
+(en cualquier orden, sin distinguir mayúsculas ni acentos), así que
+"posadero nombre" encuentra "El posadero dice que su nombre es Bram".
+Resultados en el orden del diario (donde aparece un nombre por primera
+vez suele ser donde se presentó), con la palabra resaltada, sesión y
+fecha. Dos sitios:
+
+- Dentro de la aventura: lupa en la cabecera. Al elegir un resultado se
+  despliega su sesión, se salta a la entrada y se resalta un momento.
+- En la lista del diario: el buscador de aventuras busca también en las
+  entradas de todos los diarios ("En los diarios") y abre la aventura en
+  esa entrada.
+
+Queda para el punto 1: filtrar por PNJ/lugar/hilo.
+
+Lo que se planteó:
+
 
 - Buscar en el texto de todas las entradas de una aventura (y quizá de
   todas las aventuras): "¿cómo se llamaba aquel posadero?".
@@ -166,6 +205,11 @@ Lo que se decidió:
 - Con el punto 1, filtrar también por PNJ/lugar/hilo.
 
 ## 5. Más oráculos y tablas (P2, investigar antes)
+
+**Decidido (2026-11-04): añadir las tablas de Ironsworn/Delve y de
+Starforged (CC BY 4.0), pero no ahora.** Es el siguiente paso en tablas
+de terceros cuando se retome; antes, comprobar la atribución exacta en
+su página de licencias.
 
 La estructura ya es un registro (`oracles.ts`); al añadir el segundo
 oráculo hay que introducir el despacho por id (ver CLAUDE.md).
@@ -270,6 +314,30 @@ seguir leyendo los archivos ya exportados.
 
 ## 9. Otras ideas (P3)
 
+- **Notas fijas por aventura (aplazado el 2026-11-04; propuesta lista).**
+  Al retomarlo, decidir: una sola nota o varias tarjetas ("Pendiente",
+  "Inventario"…), y si lleva casillas marcables o solo texto libre. Un
+  apartado de "situación actual" que se edita en el sitio, aparte del
+  registro cronológico (lo que mucha gente lleva en papel al lado):
+  - Una sola nota de texto libre por aventura (varias líneas, con
+    listas `- ` y casillas `- [ ]` que se pueden marcar), guardada sola
+    mientras escribes. No es una entrada: no tiene fecha ni sale en el
+    orden del diario, y editarla no deja rastro.
+  - Dónde: en escritorio xl, en la columna izquierda bajo el índice de
+    sesiones; en lg, arriba del panel de la mesa de juego (plegable);
+    en móvil y tablet, una cuarta pestaña "Notas" en la hoja del
+    composer y un icono de chincheta en la cabecera de la aventura.
+  - Modelo: campo `notes` en `Adventure` (IndexedDB), así entra en la
+    copia de seguridad sin más.
+  - Lonelog: se exporta al principio del `.md`, tras el título, como
+    un bloque propio que la importación reconoce y devuelve a las notas
+    (revisar si la spec 1.5.0 define algo para esto antes de inventarlo).
+  - Encaja con el punto 1: el panel "Reparto y tramas" iría en el mismo
+    sitio, y la nota podría ser su primera versión manual.
+- **"En el capítulo anterior…" (dudoso).** Resumen plegable al volver a
+  una aventura (últimas consecuencias y la última pregunta). Aplazado y
+  sin decidir si merece la pena: las sesiones anteriores ya se pueden
+  leer, y la búsqueda ayuda a encontrar lo concreto.
 - Exportar también a PDF o HTML legible para compartir una partida.
 - Probabilidad "a ojo" del oráculo (mostrar % aproximado de Sí/No).
 - Escenas y factor de caos (estilo Mythic) como add-on opcional.

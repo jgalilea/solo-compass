@@ -5,8 +5,8 @@
  * device's IndexedDB/localStorage, with no server or sync).
  *
  * Built on top of each module's load/save functions (history.ts,
- * journal.ts, theme.ts, mode.ts, i18n, oracles.ts, tableFavorites.ts,
- * activeAdventure.ts) instead of reading/writing the storage keys by
+ * journal.ts, customTables.ts, theme.ts, mode.ts, i18n, oracles.ts,
+ * tableFavorites.ts, activeAdventure.ts) instead of reading/writing the storage keys by
  * hand here — so none of the validation/migration logic those modules
  * already handle gets duplicated.
  */
@@ -14,6 +14,7 @@
 import { loadHistory, saveHistory, type HistoryEntry } from "./history";
 import { loadAdventures, saveAdventures, loadJournalEntries, saveJournalEntries, type Adventure } from "./journal";
 import type { JournalEntry } from "./lonelog";
+import { isCustomTable, loadCustomTables, saveCustomTables, type CustomTable } from "./customTables";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
@@ -24,7 +25,9 @@ import { saveLastBackupAt } from "./backupReminder";
 
 // 2: journal.adventures (formerly journal.campaigns) — backups are so
 // new there's no need to migrate old ones.
-export const BACKUP_SCHEMA_VERSION = 2;
+// 3: customTables (the player's own tables). Version 2 backups still
+// restore; they just leave this device's own tables as they are.
+export const BACKUP_SCHEMA_VERSION = 3;
 
 export interface BackupPayload {
   app: "solo-compass";
@@ -35,6 +38,7 @@ export interface BackupPayload {
     adventures: Adventure[];
     entries: JournalEntry[];
   };
+  customTables?: CustomTable[];
   settings: {
     theme: string;
     mode: string;
@@ -48,10 +52,11 @@ export interface BackupPayload {
 export class BackupError extends Error {}
 
 export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
-  const [history, adventures, entries] = await Promise.all([
+  const [history, adventures, entries, customTables] = await Promise.all([
     loadHistory(t),
     loadAdventures(t),
     loadJournalEntries(t),
+    loadCustomTables(t),
   ]);
   return {
     app: "solo-compass",
@@ -59,6 +64,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
     exportedAt: new Date().toISOString(),
     history,
     journal: { adventures, entries },
+    customTables,
     settings: {
       theme: loadTheme(),
       mode: loadMode(),
@@ -105,6 +111,10 @@ export async function restoreBackup(t: Dictionary, text: string): Promise<void> 
     saveHistory(t, parsed.history),
     saveAdventures(t, parsed.journal.adventures),
     saveJournalEntries(t, parsed.journal.entries),
+    // Older backups have no custom tables: the ones here are kept.
+    Array.isArray(parsed.customTables)
+      ? saveCustomTables(t, parsed.customTables.filter(isCustomTable))
+      : Promise.resolve(),
   ]);
   // What's here now is exactly that backup: it counts as the latest.
   const exportedAt = Date.parse(parsed.exportedAt);

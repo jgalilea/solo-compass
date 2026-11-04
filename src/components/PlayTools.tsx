@@ -3,12 +3,14 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import type { Likelihood } from "../lib/oracle";
-import { getMeaningTables, type MeaningTable } from "../lib/tables";
+import type { MeaningTable } from "../lib/tables";
 import { loadFavoriteTableIds } from "../lib/tableFavorites";
+import { useMeaningTables } from "../hooks/useMeaningTables";
+import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { DiceRoller } from "./DiceRoller";
 import { LikelihoodPicker } from "./LikelihoodPicker";
-import { IconSearch, IconStar } from "./icons/Icons";
+import { IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 
 /**
  * The three tools of an adventure's "game table": oracle, tables and
@@ -63,18 +65,18 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
 
 export function TableTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();
-  const { rollTable } = usePlayActions();
+  const { rollTable, rollInspiration } = usePlayActions();
+  const { all } = useMeaningTables();
   const [query, setQuery] = useState("");
   const tables = useMemo(() => {
     const favorites = loadFavoriteTableIds();
-    const all = getMeaningTables(t);
     // Favourites first, same as on the Tables screen.
     return [...all.filter((x) => favorites.has(x.id)), ...all.filter((x) => !favorites.has(x.id))].map(
       (table) => ({ table, favorite: favorites.has(table.id) }),
     );
-  }, [t]);
-  const q = query.trim().toLowerCase();
-  const visible = q ? tables.filter(({ table }) => table.name.toLowerCase().includes(q)) : tables;
+  }, [all]);
+  const q = normalizeForSearch(query.trim());
+  const visible = q ? tables.filter(({ table }) => normalizeForSearch(table.name).includes(q)) : tables;
 
   function roll(table: MeaningTable) {
     onRolled(rollTable(table, adventureId).id);
@@ -82,9 +84,19 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
 
   return (
     <div data-hotkey="table" className="@container flex flex-col gap-2">
+      {/* Action + theme in one go: the quickest way out of a blank. */}
+      <button
+        type="button"
+        onClick={() => onRolled(rollInspiration(adventureId).id)}
+        title={t.tables.inspirationDescription}
+        className="flex w-full items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3.5 py-2.5 text-left transition hover:bg-gold/20 active:scale-[0.99]"
+      >
+        <IconSparkles size={16} className="shrink-0 text-gold" />
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-gold">{t.tables.inspirationTitle}</span>
+      </button>
       {/* With few tables the search is unnecessary; it appears once they get hard to find. */}
       {tables.length > 6 && (
-        <label className="relative">
+        <label className="relative flex">
           <IconSearch size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-dim/60" />
           <input
             value={query}

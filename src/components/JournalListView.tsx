@@ -7,6 +7,9 @@ import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
+import { searchEntries } from "../lib/journalSearch";
+import { normalizeForSearch } from "../lib/text";
+import { SearchResultList } from "./journalShared";
 import {
   IconCheck,
   IconChevronRight,
@@ -30,6 +33,7 @@ export function JournalListView() {
     status,
     error,
     adventures,
+    entries,
     activeAdventureId,
     setActiveAdventureId,
     createAdventure,
@@ -62,10 +66,16 @@ export function JournalListView() {
 
   const byId = useMemo(() => new Map(adventures.map((c) => [c.id, c])), [adventures]);
 
-  const query = search.trim().toLowerCase();
+  const query = normalizeForSearch(search.trim());
   function matchesQuery(c: Adventure): boolean {
-    return !query || c.name.toLowerCase().includes(query);
+    return !query || normalizeForSearch(c.name).includes(query);
   }
+  // The same search also looks inside every journal ("what was that
+  // innkeeper called?"), below the matching adventures.
+  const entryMatches = useMemo(
+    () => (search.trim() ? searchEntries(entries, search, ENTRY_RESULTS_LIMIT + 1) : []),
+    [entries, search],
+  );
 
   const orderedActive = order
     .map((id) => byId.get(id))
@@ -162,7 +172,8 @@ export function JournalListView() {
   }
 
   const hasAnyAdventures = adventures.length > 0;
-  const hasVisibleResults = pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0;
+  const hasVisibleResults =
+    pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0 || entryMatches.length > 0;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-6xl 2xl:max-w-7xl">
@@ -314,6 +325,29 @@ export function JournalListView() {
             )}
           </section>
 
+          {entryMatches.length > 0 && (
+            <section className="flex flex-col gap-2.5">
+              <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+                {t.journal.searchEntriesHeading}
+                <span className="ml-2 normal-case tracking-normal text-parchment-dim/60">
+                  {entryMatches.length > ENTRY_RESULTS_LIMIT
+                    ? interpolate(t.journal.searchMoreResults, { count: ENTRY_RESULTS_LIMIT })
+                    : entryMatches.length === 1
+                      ? t.journal.searchMatchCountOne
+                      : interpolate(t.journal.searchMatchCount, { count: entryMatches.length })}
+                </span>
+              </h2>
+              <SearchResultList
+                matches={entryMatches.slice(0, ENTRY_RESULTS_LIMIT)}
+                query={search.trim()}
+                adventureName={(id) => byId.get(id)?.name}
+                onPick={(match) =>
+                  navigate(`/diario/${match.entry.adventureId}`, { state: { entryId: match.entry.id } })
+                }
+              />
+            </section>
+          )}
+
           {archivedAdventures.length > 0 && (
             <section className="flex flex-col gap-2.5">
               <button
@@ -354,6 +388,8 @@ export function JournalListView() {
     </div>
   );
 }
+
+const ENTRY_RESULTS_LIMIT = 30;
 
 // "Paused" isn't a stored state: it's just how any ongoing adventure
 // that isn't the active one right now looks — hence this component

@@ -1,4 +1,6 @@
 import { useState, type ComponentType } from "react";
+import type { EntryMatch } from "../lib/journalSearch";
+import { highlightParts } from "../lib/text";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
 import type { Answer } from "../lib/oracle";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
@@ -11,6 +13,7 @@ import {
   IconNote,
   IconPencil,
   IconQuestion,
+  IconSession,
   IconTrash,
 } from "./icons/Icons";
 
@@ -45,6 +48,8 @@ export interface EntryActions {
   onSelect: (id: string | null) => void;
   /** Oracle answer of a linked roll, if known (via history). */
   answerFor: (rollId: string | undefined) => Answer | undefined;
+  /** Entry just jumped to from the search: briefly highlighted. */
+  highlightedId?: string | null;
 }
 
 const KIND_ICON: Record<Exclude<JournalLineKind, "session">, ComponentType<{ size?: number; className?: string }>> = {
@@ -228,11 +233,13 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   const selected = actions.selectedId === entry.id;
   return (
     <div
+      id={`entry-${entry.id}`}
       data-entry
       onClick={() => actions.onSelect(selected ? null : entry.id)}
       className={[
-        "group relative -mx-2 -my-1 flex items-start gap-2.5 rounded-lg px-2 py-1 transition-colors",
+        "group relative -mx-2 -my-1 flex scroll-mt-24 scroll-mb-32 items-start gap-2.5 rounded-lg px-2 py-1 transition-colors duration-700",
         selected ? "bg-ink-700/40" : "",
+        actions.highlightedId === entry.id ? "bg-gold/15 ring-1 ring-gold/60" : "",
       ].join(" ")}
     >
       {icon}
@@ -360,5 +367,64 @@ export function LineButtons({
         <IconTrash size={15} />
       </button>
     </div>
+  );
+}
+
+/**
+ * Journal search results (inside an adventure, or across all of them
+ * from the journal list): each entry with its icon, the matching words
+ * highlighted and where it is (session, date and, if asked, adventure).
+ */
+export function SearchResultList({
+  matches,
+  query,
+  onPick,
+  adventureName,
+}: {
+  matches: EntryMatch[];
+  query: string;
+  onPick: (match: EntryMatch) => void;
+  /** Across adventures: the name to show in each result. */
+  adventureName?: (adventureId: string) => string | undefined;
+}) {
+  const { t } = useLocaleContext();
+  const dateFormat = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "short", year: "numeric" });
+  return (
+    <ul className="flex flex-col gap-1.5">
+      {matches.map((match) => {
+        const { entry } = match;
+        const Icon = entry.kind === "session" ? IconSession : KIND_ICON[entry.kind];
+        const where = [
+          adventureName?.(entry.adventureId),
+          entry.kind === "session" ? null : (match.sessionTitle ?? t.journal.prologueLabel),
+          dateFormat.format(entry.timestamp),
+        ].filter(Boolean);
+        return (
+          <li key={entry.id}>
+            <button
+              type="button"
+              onClick={() => onPick(match)}
+              className="flex w-full items-start gap-2.5 rounded-xl border border-ink-border/70 bg-ink-900/40 px-3.5 py-2.5 text-left transition hover:border-gold/50 hover:bg-ink-800/60"
+            >
+              <Icon size={16} className="mt-0.5 shrink-0 text-gold" />
+              <span className="min-w-0 flex-1">
+                <span className="line-clamp-3 whitespace-pre-wrap text-sm text-parchment">
+                  {highlightParts(entry.text, query).map((part, i) =>
+                    part.match ? (
+                      <mark key={i} className="rounded-sm bg-gold/25 px-0.5 text-parchment">
+                        {part.text}
+                      </mark>
+                    ) : (
+                      part.text
+                    ),
+                  )}
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-parchment-dim">{where.join(" · ")}</span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

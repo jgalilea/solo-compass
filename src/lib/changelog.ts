@@ -18,6 +18,39 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-04",
+    text: {
+      es: {
+        title: "Capítulo VII · El cartógrafo y sus tablas",
+        intro: "Un viejo cartógrafo llegó a la posada con un fajo de tablas bajo el brazo… y dejó papel en blanco para las tuyas.",
+        items: [
+          "Crea tus propias tablas: un resultado por línea, el dado que quieras (o uno con tantas caras como líneas) y rangos como «1-3 Ratas» para que algo salga más a menudo.",
+          "Importa tablas desde un archivo o pégalas tal cual, incluso como tabla de Markdown. Puedes exportarlas, compartirlas y anotar de qué juego o libro vienen.",
+          "Diez tablas nuevas de serie: Acción y Tema, Cómo, Aspecto, Rasgo de PNJ, Motivación, Complicación, Lugar, Hallazgo y Clima.",
+          "Inspiración rápida: una acción y un tema a la vez, para cuando el oráculo te deja en blanco. En la pantalla de Tablas y en la mesa de juego.",
+          "Busca en tu diario: la lupa de cada aventura encuentra cualquier palabra y te lleva a la entrada. Desde la lista del diario, buscas en todas tus aventuras a la vez.",
+          "Estadísticas de cada aventura, en su menú: sesiones, palabras escritas, qué te ha dicho el oráculo y la tabla favorita del destino.",
+          "Comparte una aventura o una tabla con otra app (notas, mensajería, correo…) desde su menú, si tu dispositivo lo permite.",
+          "La copia de seguridad guarda también tus tablas.",
+        ],
+      },
+      en: {
+        title: "Chapter VII · The cartographer and his tables",
+        intro: "An old cartographer walked into the inn with a bundle of tables under his arm… and left blank pages for yours.",
+        items: [
+          "Make your own tables: one result per line, any die you like (or one with as many faces as lines) and ranges like “1-3 Rats” so something comes up more often.",
+          "Import tables from a file or paste them as they are, even as a Markdown table. Export them, share them and note which game or book they come from.",
+          "Ten new built-in tables: Action and Theme, How, Aspect, NPC trait, Motivation, Complication, Place, Find and Weather.",
+          "Quick inspiration: an action and a theme at once, for when the oracle leaves you blank. On the Tables screen and at the game table.",
+          "Search your journal: each adventure's magnifying glass finds any word and takes you to the entry. From the journal list, you search every adventure at once.",
+          "Statistics for each adventure, in its menu: sessions, words written, what the oracle told you and fate's favorite table.",
+          "Share an adventure or a table with another app (notes, messaging, email…) from its menu, if your device allows it.",
+          "Backups now keep your tables too.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-03",
     text: {
       es: {

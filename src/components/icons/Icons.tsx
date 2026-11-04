@@ -140,6 +140,12 @@ export function IconSwap(props: IconProps) {
 export function IconDownload(props: IconProps) {
   return <TablerIcon icon={Tabler.IconDownload} {...props} />;
 }
+export function IconShare(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconShare} {...props} />;
+}
+export function IconChart(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconChartBar} {...props} />;
+}
 export function IconUpload(props: IconProps) {
   return <TablerIcon icon={Tabler.IconUpload} {...props} />;
 }

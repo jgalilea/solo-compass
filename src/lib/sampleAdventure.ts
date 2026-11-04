@@ -14,7 +14,7 @@ import type { Dictionary } from "./i18n";
 import { formatAnswer } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
-import { getMeaningTables, lookupEntry } from "./tables";
+import { builtInTableId, getMeaningTables, lookupEntry } from "./tables";
 import { formatLine } from "./lonelog";
 
 export function buildSampleAdventure(t: Dictionary): { name: string; markdown: string } {
@@ -29,7 +29,7 @@ export function buildSampleAdventure(t: Dictionary): { name: string; markdown: s
       return formatLine({ kind: "roll", text });
     }
     if ("table" in line) {
-      const table = tables.find((x) => x.id === TABLE_IDS[line.table])!;
+      const table = tables.find((x) => x.id === builtInTableId(line.table))!;
       const total = line.roll.length === 2 ? line.roll[0] * 10 + line.roll[1] : line.roll[0];
       const result = lookupEntry(table, total)?.text ?? t.tables.noEntryFallback;
       return formatLine({ kind: "roll", text: `${table.name} ${line.roll.join("/")} -> ${result}` });
@@ -39,9 +39,3 @@ export function buildSampleAdventure(t: Dictionary): { name: string; markdown: s
 
   return { name: t.sample.name, markdown: lines.join("\n\n") + "\n" };
 }
-
-const TABLE_IDS = {
-  eventoAleatorio: "evento-aleatorio",
-  accionPnj: "accion-pnj",
-  descriptorEscena: "descriptor-escena",
-} as const;

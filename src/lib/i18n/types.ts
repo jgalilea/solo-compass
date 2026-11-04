@@ -22,7 +22,7 @@ export const LOCALES: Locale[] = ["es", "en"];
 export type SampleLine =
   | { kind: "note" | "action" | "question" | "consequence" | "session" | "roll"; text: string }
   | { oracle: [white: number, black: number] }
-  | { table: "eventoAleatorio" | "accionPnj" | "descriptorEscena"; roll: number[] };
+  | { table: keyof Dictionary["tables"]["entries"]; roll: number[] };
 
 export interface Dictionary {
   common: {
@@ -223,20 +223,104 @@ export interface Dictionary {
     noEntryFallback: string;
     resultPanelHeading: string;
     resultPanelEmpty: string;
+    /** Quick inspiration: action + theme rolled together. */
+    inspirationTitle: string;
+    inspirationDescription: string;
+    inspirationButton: string;
+    /** Name the combined roll gets in the journal and history panel. */
+    inspirationName: string;
+    builtInHeading: string;
+    customHeading: string;
+    customEmpty: string;
+    /** Badge of a custom table with no source. */
+    customGame: string;
+    newTable: string;
+    importTable: string;
+    importTableTitle: string;
+    importError: string;
+    importedCount: string;
+    editTable: string;
+    exportTable: string;
+    shareTable: string;
+    deleteTable: string;
+    tableActions: string;
+    tableDeleted: string;
+    exportedTable: string;
+    /** Column header in an exported table. */
+    resultColumn: string;
+    authorLabel: string;
+    licenseLabel: string;
+    editor: {
+      newTitle: string;
+      editTitle: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      descriptionLabel: string;
+      descriptionPlaceholder: string;
+      diceLabel: string;
+      diceAuto: string;
+      entriesLabel: string;
+      entriesHint: string;
+      entriesPlaceholder: string;
+      attributionToggle: string;
+      sourceLabel: string;
+      authorLabel: string;
+      licenseLabel: string;
+      urlLabel: string;
+      ownershipNote: string;
+      save: string;
+      summary: string;
+      errorName: string;
+      errorTooFew: string;
+      errorCount: string;
+      errorRanges: string;
+      errorMixed: string;
+      errorD66Lines: string;
+    };
     entries: {
+      accion: string[];
+      tema: string[];
       eventoAleatorio: string[];
       accionPnj: string[];
       descriptorEscena: string[];
+      modo: string[];
+      aspecto: string[];
+      rasgoPnj: string[];
+      motivacion: string[];
+      complicacion: string[];
+      lugar: string[];
+      hallazgo: string[];
+      clima: string[];
     };
     names: {
+      accion: string;
+      tema: string;
       eventoAleatorio: string;
       accionPnj: string;
       descriptorEscena: string;
+      modo: string;
+      aspecto: string;
+      rasgoPnj: string;
+      motivacion: string;
+      complicacion: string;
+      lugar: string;
+      hallazgo: string;
+      clima: string;
     };
     descriptions: {
+      accion: string;
+      tema: string;
       eventoAleatorio: string;
       accionPnj: string;
       descriptorEscena: string;
+      modo: string;
+      aspecto: string;
+      rasgoPnj: string;
+      motivacion: string;
+      complicacion: string;
+      lugar: string;
+      hallazgo: string;
+      clima: string;
     };
   };
   history: {
@@ -304,6 +388,13 @@ export interface Dictionary {
     searchLabel: string;
     noSearchResultsTitle: string;
     noSearchResultsDescription: string;
+    searchInJournal: string;
+    searchInJournalPlaceholder: string;
+    searchNoMatches: string;
+    searchMatchCount: string;
+    searchMatchCountOne: string;
+    searchMoreResults: string;
+    searchEntriesHeading: string;
     backToList: string;
     statusPaused: string;
     statusArchived: string;
@@ -350,6 +441,32 @@ export interface Dictionary {
     newSessionPlaceholder: string;
     deleteEntry: string;
     editEntry: string;
+    statsButton: string;
+    shareButton: string;
+    stats: {
+      title: string;
+      sessions: string;
+      entries: string;
+      words: string;
+      daysPlayed: string;
+      oracleHeading: string;
+      questions: string;
+      yes: string;
+      no: string;
+      contradiction: string;
+      qualifiers: string;
+      moodKind: string;
+      moodFair: string;
+      moodStubborn: string;
+      noOracle: string;
+      rollsHeading: string;
+      tableRolls: string;
+      diceRolls: string;
+      topTable: string;
+      dateRange: string;
+      singleDate: string;
+      empty: string;
+    };
     exportButton: string;
     exportedToastTitle: string;
     exportedToastDescription: string;

@@ -1,19 +1,22 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
+import { searchEntries } from "../lib/journalSearch";
+import { canShare, shareTextFile } from "../lib/share";
+import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { ActionMenu } from "./ActionMenu";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { JournalComposer } from "./JournalComposer";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
-import { EntryList, LineButtons, SessionGroupRow, type EntryActions } from "./journalShared";
+import { EntryList, LineButtons, SearchResultList, SessionGroupRow, type EntryActions } from "./journalShared";
 import {
   downloadTextFile,
   groupBySession,
@@ -27,7 +30,9 @@ import {
   IconArchive,
   IconArchiveRestore,
   IconArrowLeft,
+  IconChart,
   IconChevronRight,
+  IconClose,
   IconDice,
   IconDownload,
   IconJournal,
@@ -35,7 +40,9 @@ import {
   IconPause,
   IconPencil,
   IconPlay,
+  IconSearch,
   IconSession,
+  IconShare,
   IconStar,
   IconTable,
   IconTrash,
@@ -57,6 +64,7 @@ import {
 export function AdventureDetailView() {
   const { adventureId = "" } = useParams<{ adventureId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLocaleContext();
   const {
     status,
@@ -104,6 +112,10 @@ export function AdventureDetailView() {
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<JournalEntry | null>(null);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   // Composer: the entry kind and the roll a consequence links to live
   // here because the desktop panel changes them too.
@@ -145,7 +157,54 @@ export function AdventureDetailView() {
     selectedId: selectedEntryId,
     onSelect: setSelectedEntryId,
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
+    highlightedId,
   };
+
+  const searchMatches = useMemo(
+    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, SEARCH_LIMIT + 1) : []),
+    [searchOpen, adventureEntries, searchQuery],
+  );
+
+  // Jumping to an entry (from the search): its session is unfolded
+  // first, and the scroll happens once it's painted (next effect).
+  const pendingJumpRef = useRef<string | null>(null);
+  const [jumpTick, setJumpTick] = useState(0);
+  const highlightTimer = useRef<number | undefined>(undefined);
+  const jumpToEntry = useCallback(
+    (id: string) => {
+      const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
+      if (index < 0) return;
+      const group = groups[index];
+      if (index < groups.length - 1) {
+        setPreviousExpanded(true);
+        if (group.sessionEntry) setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
+      }
+      setSearchOpen(false);
+      setHighlightedId(id);
+      window.clearTimeout(highlightTimer.current);
+      highlightTimer.current = window.setTimeout(() => setHighlightedId(null), 2500);
+      pendingJumpRef.current = id;
+      setJumpTick((n) => n + 1);
+    },
+    [groups],
+  );
+  useEffect(() => {
+    const id = pendingJumpRef.current;
+    if (!id) return;
+    pendingJumpRef.current = null;
+    const el = document.getElementById(`entry-${id}`) ?? document.getElementById(`session-${id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [jumpTick]);
+  useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
+
+  // Coming from the journal list's search: go straight to that entry.
+  const targetEntryId = (location.state as { entryId?: string } | null)?.entryId;
+  const handledTargetRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (status !== "ready" || !targetEntryId || handledTargetRef.current === targetEntryId) return;
+    handledTargetRef.current = targetEntryId;
+    jumpToEntry(targetEntryId);
+  }, [status, targetEntryId, jumpToEntry]);
 
   // Tapping outside any entry clears the selection.
   useEffect(() => {
@@ -223,6 +282,13 @@ export function AdventureDetailView() {
     const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
+  }
+
+  // The same Lonelog .md as the export, through the system's share
+  // sheet; if it fails (not just cancelled), it's downloaded instead.
+  function handleShare() {
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries);
+    shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(handleExport);
   }
 
   function handleLogged() {
@@ -335,6 +401,21 @@ export function AdventureDetailView() {
                 </span>
               )}
               <div className="ml-auto" />
+              {adventureEntries.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen((v) => !v)}
+                  aria-label={t.journal.searchInJournal}
+                  title={t.journal.searchInJournal}
+                  aria-expanded={searchOpen}
+                  className={[
+                    "-m-1 shrink-0 rounded-full p-1.5 transition",
+                    searchOpen ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
+                  ].join(" ")}
+                >
+                  <IconSearch size={21} />
+                </button>
+              )}
               {/* With a single session there's nowhere to jump to. */}
               {groups.length > 1 && <SessionMenu groups={groups} onJump={jumpToSession} className="xl:hidden" />}
               {/* Everything rarely used, grouped, so the header fits on one
@@ -351,7 +432,9 @@ export function AdventureDetailView() {
                     ? [{ label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }]
                     : []),
                   { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
+                  { label: t.journal.statsButton, Icon: IconChart, onSelect: () => setStatsOpen(true) },
                   { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
+                  ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: handleShare }] : []),
                   isArchived
                     ? {
                         label: t.journal.unarchiveAdventure,
@@ -369,6 +452,16 @@ export function AdventureDetailView() {
             </>
           )}
         </div>
+
+        {searchOpen && (
+          <JournalSearchPanel
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            matches={searchMatches}
+            onPick={(match) => jumpToEntry(match.entry.id)}
+            onClose={() => setSearchOpen(false)}
+          />
+        )}
 
         {previousGroups.length > 0 && (
           <section id="session-previous" className="flex scroll-mt-16 flex-col gap-2">
@@ -506,6 +599,10 @@ export function AdventureDetailView() {
         </PanelSection>
       </aside>
 
+      {statsOpen && (
+        <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
+      )}
+
       {deleting && (
         <ConfirmDialog
           title={interpolate(t.journal.deleteAdventureConfirmTitle, { name: adventure.name })}
@@ -541,6 +638,79 @@ export function AdventureDetailView() {
         )
       )}
     </div>
+  );
+}
+
+const SEARCH_LIMIT = 50;
+
+/** Search inside the adventure, below its header; picking a result jumps to it. */
+function JournalSearchPanel({
+  query,
+  onQueryChange,
+  matches,
+  onPick,
+  onClose,
+}: {
+  query: string;
+  onQueryChange: (query: string) => void;
+  /** Up to SEARCH_LIMIT + 1, to know whether there are more. */
+  matches: ReturnType<typeof searchEntries>;
+  onPick: (match: ReturnType<typeof searchEntries>[number]) => void;
+  onClose: () => void;
+}) {
+  const { t } = useLocaleContext();
+  const q = query.trim();
+  const shown = matches.slice(0, SEARCH_LIMIT);
+  return (
+    <section
+      aria-label={t.journal.searchInJournal}
+      className="animate-fade-up flex flex-col gap-2.5 rounded-2xl border border-ink-border bg-ink-800/60 p-3"
+    >
+      <div className="relative flex">
+        <IconSearch
+          size={17}
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/50"
+        />
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onClose();
+            if (e.key === "Enter" && shown[0]) onPick(shown[0]);
+          }}
+          placeholder={t.journal.searchInJournalPlaceholder}
+          aria-label={t.journal.searchInJournal}
+          className={`${INPUT_CLASS} w-full py-2.5 pl-10 pr-10`}
+        />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-dim/60 transition hover:text-parchment"
+        >
+          <IconClose size={15} />
+        </button>
+      </div>
+      {q && (
+        <>
+          <p aria-live="polite" className="px-1 text-xs text-parchment-dim">
+            {shown.length === 0
+              ? interpolate(t.journal.searchNoMatches, { query: q })
+              : matches.length > SEARCH_LIMIT
+                ? interpolate(t.journal.searchMoreResults, { count: SEARCH_LIMIT })
+                : shown.length === 1
+                  ? t.journal.searchMatchCountOne
+                  : interpolate(t.journal.searchMatchCount, { count: shown.length })}
+          </p>
+          {shown.length > 0 && (
+            <div className="max-h-[50dvh] overflow-y-auto overscroll-contain pr-0.5">
+              <SearchResultList matches={shown} query={q} onPick={onPick} />
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

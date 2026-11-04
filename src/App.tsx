@@ -11,6 +11,7 @@ import { ModeProvider } from "./hooks/ModeContext";
 import { LocaleProvider } from "./hooks/LocaleContext";
 import { OracleProvider } from "./hooks/OracleContext";
 import { JournalProvider } from "./hooks/JournalContext";
+import { CustomTablesProvider } from "./hooks/CustomTablesContext";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 function App() {
@@ -25,17 +26,19 @@ function App() {
             <OracleProvider>
               <JournalProvider>
                 <HistoryProvider>
-                  <HashRouter>
-                    <Routes>
-                      <Route element={<Layout />}>
-                        <Route index element={<OracleView />} />
-                        <Route path="tablas" element={<TablesView />} />
-                        <Route path="diario" element={<JournalListView />} />
-                        <Route path="diario/:adventureId" element={<AdventureDetailView />} />
-                        <Route path="historial" element={<HistoryView />} />
-                      </Route>
-                    </Routes>
-                  </HashRouter>
+                  <CustomTablesProvider>
+                    <HashRouter>
+                      <Routes>
+                        <Route element={<Layout />}>
+                          <Route index element={<OracleView />} />
+                          <Route path="tablas" element={<TablesView />} />
+                          <Route path="diario" element={<JournalListView />} />
+                          <Route path="diario/:adventureId" element={<AdventureDetailView />} />
+                          <Route path="historial" element={<HistoryView />} />
+                        </Route>
+                      </Routes>
+                    </HashRouter>
+                  </CustomTablesProvider>
                 </HistoryProvider>
               </JournalProvider>
             </OracleProvider>
