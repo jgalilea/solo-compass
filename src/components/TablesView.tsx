@@ -157,7 +157,22 @@ export function TablesView() {
     });
   }
 
+  // While searching or filtering, every block with matches starts open,
+  // but can still be folded. Those folds are only for this search (not
+  // saved): a new query or theme opens them all again.
+  const filterKey = `${q}|${themeFilter ?? ""}`;
+  const [filterFolds, setFilterFolds] = useState<{ key: string; ids: Set<string> }>({ key: "", ids: new Set() });
+  const foldedWhileFiltering = filterFolds.key === filterKey ? filterFolds.ids : new Set<string>();
+  const isOpen = (id: string) => (filtering ? !foldedWhileFiltering.has(id) : openSections.has(id));
+
   function toggleSection(id: string) {
+    if (filtering) {
+      const next = new Set(foldedWhileFiltering);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      setFilterFolds({ key: filterKey, ids: next });
+      return;
+    }
     setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -389,8 +404,7 @@ export function TablesView() {
                 <FoldingSection
                   title={t.tables.customHeading}
                   count={filtering ? otherCustom.length : custom.length}
-                  open={filtering || openSections.has("custom")}
-                  searching={filtering}
+                  open={isOpen("custom")}
                   onToggle={() => toggleSection("custom")}
                   actions={customActions}
                 >
@@ -415,8 +429,7 @@ export function TablesView() {
                       title={block.title}
                       note={block.note}
                       count={filtering ? block.tables.length : block.count}
-                      open={filtering || openSections.has(block.id)}
-                      searching={filtering}
+                      open={isOpen(block.id)}
                       onToggle={() => toggleSection(block.id)}
                     >
                       {block.status === "error" ? (
@@ -545,14 +558,13 @@ function ThemeFilter({ value, onChange }: { value: TableTheme | null; onChange: 
 
 /**
  * A block of tables (yours, or one game's) that folds away. While
- * searching it's always open: it only shows the tables that match.
+ * searching or filtering it only shows the tables that match.
  */
 function FoldingSection({
   title,
   note,
   count,
   open,
-  searching,
   onToggle,
   actions,
   children,
@@ -561,7 +573,6 @@ function FoldingSection({
   note?: string;
   count: number;
   open: boolean;
-  searching: boolean;
   onToggle: () => void;
   actions?: ReactNode;
   children: ReactNode;
@@ -574,9 +585,8 @@ function FoldingSection({
         <button
           type="button"
           onClick={onToggle}
-          disabled={searching}
           aria-expanded={open}
-          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-4 text-left transition enabled:hover:bg-ink-800/40 disabled:cursor-default"
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-4 text-left transition hover:bg-ink-800/40"
         >
           <IconChevronRight
             size={16}
