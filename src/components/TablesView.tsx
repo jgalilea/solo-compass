@@ -856,7 +856,7 @@ function TableEntriesButton({ table }: { table: MeaningTable }) {
             {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
           </p>
           {credit.length > 0 && <p className="-mt-1 mb-3 text-xs text-parchment-dim">{credit.join(" · ")}</p>}
-          <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
+          <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1">
             {table.entries.map((entry) => (
               <li
                 key={`${entry.range[0]}-${entry.range[1]}`}
