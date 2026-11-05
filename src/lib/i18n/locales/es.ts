@@ -145,7 +145,7 @@ export const es: Dictionary = {
     legendTitle: "Símbolos del diario",
     legendAction: "lo que hace tu personaje.",
     legendQuestion: "lo que le preguntas al oráculo.",
-    legendRoll: "el resultado de una tirada — del oráculo, una tabla, o tu propio sistema.",
+    legendRoll: "el resultado de una tirada: del oráculo, de una tabla o de tu propio sistema.",
     legendConsequence: "qué pasa como consecuencia de una tirada.",
     legendNote: "narración libre, sin símbolo.",
     legendSession: "el título de una sesión.",

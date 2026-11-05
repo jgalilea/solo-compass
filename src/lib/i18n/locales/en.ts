@@ -145,7 +145,7 @@ export const en: Dictionary = {
     legendTitle: "Journal symbols",
     legendAction: "what your character does.",
     legendQuestion: "what you ask the oracle.",
-    legendRoll: "the result of a roll — from the oracle, a table, or your own system.",
+    legendRoll: "the result of a roll: from the oracle, a table or your own system.",
     legendConsequence: "what happens as a result of a roll.",
     legendNote: "free-form narration, no symbol.",
     legendSession: "a session title.",

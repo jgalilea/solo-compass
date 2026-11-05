@@ -106,7 +106,7 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 ## 1. Lonelog completo: hilos, personajes, lugares, relojes (P2, aplazado)
 
 Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
-la mesa: modelo mixto — los cambios de estado salen de las entradas
+la mesa: modelo mixto. Los cambios de estado salen de las entradas
 (`[N:Jonah|+capturado]`), pero cada PNJ/lugar tiene una ficha propia
 (descripción, alias) que se exporta como bloque al principio del `.md`.
 Lo de más valor: la ficha con todas las entradas donde aparece.
@@ -139,8 +139,8 @@ Propuesta:
   sigue siendo la única fuente de verdad y la importación los recupera
   gratis.
 - **UI**: panel "Reparto y tramas" por aventura. En escritorio, en la
-  columna izquierda (xl), debajo del índice de sesiones — la derecha ya
-  es la mesa de juego; en lg, quizá como pestaña de esa mesa. En móvil,
+  columna izquierda (xl), debajo del índice de sesiones (la derecha ya
+  es la mesa de juego); en lg, quizá como pestaña de esa mesa. En móvil,
   una hoja más del composer (como oráculo/tabla/dados).
 - **Escritura**: chips en el composer para insertar una etiqueta sin
   saber la sintaxis (p. ej. "+ PNJ" → autocompletar nombres ya usados).
