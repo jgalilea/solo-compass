@@ -218,22 +218,29 @@ Lo que se planteó:
 
 ## 5. Más oráculos y tablas (P2, investigar antes)
 
-**Hecho (2026-11-05): las 30 tablas de oráculo de Ironsworn**, en inglés
-y traducidas al español (`ironswornTables.ts`), en su propio bloque de la
-pantalla Tablas. Texto inglés de Datasworn
-(`@datasworn-community/ironsworn-classic`, cada tabla trae su licencia);
-traducción propia, con el módulo de Foundry de GatoMalefico
-([ironsworn-es-es](https://github.com/jesberpen/ironsworn-es-es), GPL-3.0)
-como referencia: su orden de filas no coincide con la edición actual, así
-que solo sirvió para el vocabulario. Atribución literal de Tomkin Press en
-Ajustes → Acerca de.
+**Hecho (2026-11-05): tablas de terceros, en inglés y en español**, cada
+juego en su bloque plegable y cargado aparte (`tableGames.ts`, datos en
+`src/lib/tableData/`). Las traducciones son propias; los créditos y las
+atribuciones literales, en Ajustes → Acerca de y en el README.
 
-Siguiente: **Delve** (42 tablas, todas CC BY) y **Starforged** (solo las
-de la Reference Guide son CC BY: unas 188 de 249 en Datasworn; descartar
-las que no traen esa licencia, como nombres y algunas de sectores).
-Cada juego ya se carga aparte (`tableGames.ts`): añadir uno es un fichero
-en `src/lib/tableData/` y su entrada en `TABLE_GAMES`. Sundered Isles:
-solo los movimientos son CC BY, sus tablas no.
+| Juego | Tablas | Licencia | Fuente del texto inglés |
+|---|---|---|---|
+| Ironsworn | 30 | CC BY 4.0 | Datasworn (`ironsworn-classic`); el módulo de GatoMalefico (GPL-3.0) solo como vocabulario: su orden de filas no es el de la edición actual |
+| Ironsworn: Delve | 42 | CC BY 4.0 | Datasworn (`ironsworn-classic-delve`) |
+| Ironsworn: Starforged | 249 | CC BY 4.0 (Reference Guide; Datasworn las marca todas así) | Datasworn (`starforged`) |
+| Starsmith (Eric Bright) | 195 (8 duplicadas fuera) | CC BY 4.0 según el autor; la ficha de Lulu dice CC BY-SA, así que nuestra traducción va como CC BY-SA | Datasworn (`starsmith`) |
+| Loner v2.3 (R. Bisceglie) | 19 | CC BY-SA 4.0 (traducción también BY-SA) | Edición Keeper (`farirpgs/keeper`) |
+| Knave 1.ª ed. (Ben Milton) | 11 (rasgos) | CC BY 4.0 (comprobado en el PDF) | PDF oficial |
+| Lazy GM's Resource Document | 65 | CC BY 4.0 (+ atribución del SRD 5.1) | slyflourish.com; fuera las tablas de reglas 5e |
+
+Cada tabla tiene una temática común a todos los juegos (`TABLE_THEMES`):
+se filtra por ella, se busca por ella y agrupa las tablas dentro de cada
+bloque.
+
+Pendientes posibles: Cairn (CC BY-SA 4.0, SRD en GitHub), los nombres
+del Lazy GM (listas de longitud irregular) e Ironsmith (CC BY según
+Datasworn, BY-SA según Lulu). Sundered Isles: solo
+los movimientos son CC BY, sus tablas no.
 
 La estructura ya es un registro (`oracles.ts`); al añadir el segundo
 oráculo hay que introducir el despacho por id (ver CLAUDE.md).
@@ -246,14 +253,14 @@ terceros conserva su licencia aunque el código sea GPL.
 | Material | Licencia | ¿Usable? | Notas |
 |---|---|---|---|
 | Recluse (actual) | CC BY 4.0 | Sí | Ya implementado |
-| **Ironsworn / Delve: tablas de oráculo** | CC BY 4.0 (texto) | **Sí** (Ironsworn hecho) | El autor amplió la licencia comercial a todas las tablas de Ironsworn y Delve; las de Starforged ya lo estaban. Solo texto, no arte ni maquetación. Hay que acreditar como pide su página de licencias y dejar claro que no es producto oficial. Mejor candidato para tablas. |
-| Ironsworn: Starforged, tablas de oráculo | CC BY 4.0 (solo las de la Reference Guide) | Sí | Ciencia ficción; encaja con el tema `scifi`. El libro completo es solo CC BY-NC-SA |
+| **Ironsworn / Delve: tablas de oráculo** | CC BY 4.0 (texto) | **Hecho** | El autor amplió la licencia comercial a todas las tablas de Ironsworn y Delve; las de Starforged ya lo estaban. Solo texto, no arte ni maquetación. Hay que acreditar como pide su página de licencias y dejar claro que no es producto oficial. Mejor candidato para tablas. |
+| Ironsworn: Starforged, tablas de oráculo | CC BY 4.0 (solo las de la Reference Guide) | **Hecho** (+ Starsmith) | Ciencia ficción; encaja con el tema `scifi`. El libro completo es solo CC BY-NC-SA |
 | Ironsworn: mecánica de "Ask the Oracle" | Mecánica (no protegida) | Sí | Las mecánicas no tienen copyright; usar texto propio |
 | Mythic GME | CC BY-NC (solo texto) | Dudoso | NC + Ko-fi = riesgo. Pedir permiso a Word Mill / Tana Pigeon antes |
 | Juice Oracle | CC BY-NC-SA 4.0 | Dudoso | Mismo problema NC |
 | One Page Solo Engine | Sin confirmar | ? | No encontré la licencia publicada; preguntar al autor |
-| Knave 1.ª ed. (tablas) | CC BY 4.0 (según fuentes secundarias) | Probable | Verificar en el PDF original |
-| Cairn (tablas) | Sin confirmar (¿CC BY-SA?) | ? | Verificar en la web oficial; BY-SA obliga a compartir igual |
+| Knave 1.ª ed. (tablas) | CC BY 4.0 (comprobado en el PDF) | **Hecho** (rasgos) | Conjuros y equipo, fuera: son reglas |
+| Cairn (tablas) | CC BY-SA 4.0 | Sí | BY-SA obliga a compartir igual la traducción (ya lo hacemos con Loner) |
 | Lonelog | CC BY-SA 4.0 (el documento) | Sí | La licencia cubre el documento, no usar la notación |
 | "d10 Roll Under One Page Solo" (A. Cavanagh) | CC BY 4.0 | Probable | Oráculo de palabras, eventos y lugares; verificar |
 | "The Oracle" (jamessral) | CC BY 4.0 | Probable | Oráculo de cartas; verificar |

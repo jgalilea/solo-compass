@@ -13,6 +13,30 @@
 
 export type DiceType = "d66" | `d${number}`;
 
+/**
+ * What a table is about, shared by every game so the Tables screen can
+ * filter across all of them (and group each game's block). In display
+ * order; their names live in the dictionary (`tables.themes`).
+ */
+export const TABLE_THEMES = [
+  "inspiration",
+  "plot",
+  "characters",
+  "names",
+  "places",
+  "settlements",
+  "dungeons",
+  "creatures",
+  "factions",
+  "danger",
+  "items",
+  "events",
+  "space",
+  "planets",
+] as const;
+
+export type TableTheme = (typeof TABLE_THEMES)[number];
+
 export interface TableEntry {
   range: [number, number];
   text: string;
@@ -40,6 +64,8 @@ export interface MeaningTable {
   dice: DiceType;
   game: GameRef;
   entries: TableEntry[];
+  /** Built-in tables only; the player's own have none. */
+  theme?: TableTheme;
   /** Made or imported by the player (editable, not translated). */
   custom?: boolean;
 }

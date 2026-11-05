@@ -8,6 +8,8 @@ import {
   exportTableToMarkdown,
   parseEntryLines,
   parseTablesFile,
+  parseTheme,
+  toMeaningTable,
 } from "./customTables";
 
 const t = DICTIONARIES.es;
@@ -95,6 +97,32 @@ describe("custom tables: files", () => {
       entries: table.entries,
       source: table.source,
     });
+  });
+
+  it("keeps the theme through export and import, in either language", () => {
+    const built = build("Ratas\nLobos\nOso");
+    if (!built.ok) throw new Error(built.error);
+    const table = createCustomTable({
+      name: "Bestias",
+      description: "",
+      dice: built.dice,
+      entries: built.entries,
+      theme: "creatures",
+    });
+    const md = exportTableToMarkdown(t, table);
+    expect(md).toContain("Temática: Criaturas");
+    expect(parseTablesFile(t, md, "x.md")[0].theme).toBe("creatures");
+    expect(parseTablesFile(t, "# A\nTheme: Planets\nUno\nDos", "x.md")[0].theme).toBe("planets");
+    const json = JSON.stringify({ name: "A", theme: "names", entries: ["x", "y"] });
+    expect(parseTablesFile(t, json, "x.json")[0].theme).toBe("names");
+    expect(toMeaningTable(table, t).theme).toBe("creatures");
+  });
+
+  it("reads a theme by id or by name, ignoring case and accents, and nothing else", () => {
+    expect(parseTheme("inspiracion")).toBe("inspiration");
+    expect(parseTheme(" Space and starships ")).toBe("space");
+    expect(parseTheme("dungeons")).toBe("dungeons");
+    expect(parseTheme("dragones")).toBeUndefined();
   });
 
   it("a file without headings is one table named after the file", () => {

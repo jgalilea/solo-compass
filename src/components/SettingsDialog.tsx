@@ -25,7 +25,7 @@ import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
-import { IRONSWORN_LICENSE_URL, IRONSWORN_URL } from "../lib/tableGames";
+import { TABLE_CREDITS } from "../lib/tableGames";
 import { backupFilename, BackupError, buildBackup, downloadBackupFile, restoreBackup } from "../lib/backup";
 import {
   formatSince,
@@ -458,23 +458,7 @@ function AboutSettings() {
         url={oracle.url}
       />
 
-      <Credit
-        label={t.about.tablesUsedBy}
-        name="Ironsworn"
-        author="Shawn Tomkin"
-        license="CC BY 4.0"
-        licenseUrl={IRONSWORN_LICENSE_URL}
-        url={IRONSWORN_URL}
-      >
-        {/* The wording Tomkin Press asks for, in English as published. */}
-        <p className="mt-3 text-xs italic text-parchment-dim">
-          This work is based on Ironsworn, created by Shawn Tomkin, and licensed for our use under the Creative
-          Commons Attribution 4.0 International License.
-        </p>
-        <p className="mt-2 text-xs text-parchment-dim">
-          {t.about.notOfficial} {t.about.translationNote}
-        </p>
-      </Credit>
+      <TablesCredit />
 
       <Credit
         label={t.about.journalUsedBy}
@@ -526,6 +510,52 @@ function SupportCard() {
         {t.support.button}
         <IconExternalLink size={14} />
       </a>
+    </div>
+  );
+}
+
+/** Every third-party table source, with the attribution each asks for. */
+function TablesCredit() {
+  const { t } = useLocaleContext();
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{t.about.tablesUsedBy}</p>
+      <ul className="mt-2 flex flex-col gap-3">
+        {TABLE_CREDITS.map((credit) => (
+          <li key={credit.name}>
+            <a
+              href={credit.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-display text-base text-parchment transition hover:text-gold"
+            >
+              {credit.name}
+              <IconExternalLink size={13} />
+            </a>
+            <p className="text-sm text-parchment-dim">
+              {interpolate(t.about.creditBy, { author: credit.author })}{" "}
+              <a
+                href={credit.licenseUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-dotted hover:text-parchment"
+              >
+                {credit.license}
+              </a>
+              .
+            </p>
+            {/* The wording each source asks for, in English as published. */}
+            {credit.attribution.map((line) => (
+              <p key={line} className="mt-1 text-xs italic text-parchment-dim/80">
+                {line}
+              </p>
+            ))}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 border-t border-ink-border pt-3 text-xs text-parchment-dim">
+        {t.about.notOfficial} {t.about.translationNote}
+      </p>
     </div>
   );
 }

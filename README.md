@@ -65,7 +65,7 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. Solo Compass has its own generic tables, plus the 30 oracle tables of **Ironsworn** in English and Spanish, each game in its own folding block. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings more than 600 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
@@ -152,7 +152,12 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - **Lonelog** notation by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://lonelog.itch.io/lonelog>
 - **Tabler Icons**, MIT.
 - Solo Compass's own meaning tables are original and written for this app.
-- **Ironsworn** oracle tables: this work is based on Ironsworn, created by Shawn Tomkin, and licensed for our use under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/). Not an official Tomkin Press or Ironsworn product. English text via [Datasworn](https://github.com/rsek/datasworn); the Spanish translation is our own, with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference.
+- **Ironsworn, Delve and Starforged** oracle tables: this work is based on Ironsworn, Ironsworn: Delve and Ironsworn: Starforged, created by Shawn Tomkin, and licensed for our use under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/). Not an official Tomkin Press or Ironsworn product.
+- **Starsmith: Expanded Oracles** by Eric Bright, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Loner** v2.3 by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://zeruhur.itch.io/loner-2nd-edition>
+- **Knave** by Ben Milton, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://questingbeast.itch.io/knave>
+- This work includes material taken from the **Lazy GM's Resource Document** by Michael E. Shea of SlyFlourish.com, available under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). It also includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC, licensed under the same license.
+- English text of the Ironsworn family and Starsmith via [Datasworn](https://github.com/rsek/datasworn). The Spanish translations are our own (Ironsworn's with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference); those of Loner and Starsmith are shared under CC BY-SA 4.0.
 
 The Solo Compass code is released under the [GNU General Public License v3.0](LICENSE). You can use, study, change and share it. If you distribute a modified version, you must make its source code available under the same license.
 

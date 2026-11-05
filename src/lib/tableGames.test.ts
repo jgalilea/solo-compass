@@ -10,7 +10,7 @@ import {
   toMeaningTables,
   type TableData,
 } from "./tableGames";
-import { diceMax, diceValues, tableRollName } from "./tables";
+import { diceMax, diceValues, TABLE_THEMES, tableRollName } from "./tables";
 
 // Tables of proper names: the same in both languages, so no Spanish column.
 const NAMES_ONLY = new Set([
@@ -20,6 +20,12 @@ const NAMES_ONLY = new Set([
   "ironsworn-giant-names",
   "ironsworn-varou-names",
   "ironsworn-troll-names",
+  "delve-site-name-namesake",
+  "starforged-character-name-given-name",
+  "starforged-character-name-family-name",
+  "starsmith-character-name-given-name",
+  "starsmith-character-name-family-name",
+  "starsmith-additional-registry-number-model",
 ]);
 
 const loaded = await Promise.all(TABLE_GAMES.map(async (game) => ({ game, data: await game.load() })));
@@ -64,6 +70,11 @@ describe.each(loaded)("built-in tables: $game.id", ({ game, data }) => {
 describe("built-in tables, all games", () => {
   const all: TableData[] = loaded.flatMap((x) => x.data);
   const own = loaded.find((x) => x.game.id === "solo-compass")!;
+
+  it("every table has a known theme, and every theme has tables", () => {
+    for (const table of all) expect(TABLE_THEMES, table.id).toContain(table.theme);
+    for (const theme of TABLE_THEMES) expect(all.some((t) => t.theme === theme), theme).toBe(true);
+  });
 
   it("ids are unique across games", () => {
     const ids = all.map((t) => t.id);

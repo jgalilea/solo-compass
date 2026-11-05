@@ -202,14 +202,28 @@ file plus its `TABLE_GAMES` entry.
   tables written for the app (no content copied from licensed games).
   Their ids are listed in `SOLO_COMPASS_TABLE_IDS` (the sample script
   refers to them).
-- Third-party tables under an open licence: Ironsworn's oracles
-  (CC BY 4.0, `tableData/ironsworn.ts`), English from Datasworn and our
-  own Spanish translation. Each carries its `game` credit, and
-  Settings → About has Tomkin Press's attribution wording verbatim.
-  Never add text that is only CC BY-NC-SA (Starforged's full rulebook,
-  Sundered Isles' tables): check each table's licence in Datasworn.
+- Third-party tables under an open licence (CC BY or CC BY-SA, never
+  NC): Ironsworn, Delve, Starforged, Starsmith (Datasworn), Loner,
+  Knave and the Lazy GM's Resource Document, with our own Spanish
+  translation (a translation of a BY-SA text is BY-SA too). Each table
+  carries its `game` credit; `TABLE_CREDITS` (Settings → About, and the
+  README) holds each source's attribution wording verbatim. Never add
+  text that is only CC BY-NC-SA (Starforged's full rulebook, Sundered
+  Isles' tables): check each table's licence in Datasworn.
   A third-party game has a `game.tag`: rolls are logged as
   "Ironsworn: Action" (`tableRollName`), since names repeat across games.
+  Personal names (given/family) are never translated.
+
+Every built-in table has a `theme` (`TABLE_THEMES` in `tables.ts`:
+inspiration, plot, characters, names, places…), shared by all games and
+named in the dictionary (`tables.themes`). The Tables screen filters by
+theme (chips under the search; like searching, it loads every game),
+the search matches theme names as well as game names (there and in the
+game table), and an unfolded block groups its tables by theme. When
+adding a game, give each table the closest existing theme; a test
+checks they're all known. The player's own tables can have one too
+(optional, picked in the editor; "Temática:"/"Theme:" line in the .md,
+`theme` in JSON, read by id or by name in either language).
 
 The player's own tables (`customTables.ts`, state in the
 `CustomTables` context) are converted to the same `MeaningTable`

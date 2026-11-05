@@ -17,6 +17,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-action",
     dice: "d100",
+    theme: "inspiration",
     name: { en: "Action", es: "Acción" },
     description: { en: "A verb for a discovery, event, goal or situation. Pair it with Theme.", es: "Un verbo para un descubrimiento, suceso, objetivo o situación. Combínala con Tema." },
     rows: [
@@ -125,6 +126,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-theme",
     dice: "d100",
+    theme: "inspiration",
     name: { en: "Theme", es: "Tema" },
     description: { en: "The subject of the Action.", es: "El objeto de la Acción." },
     rows: [
@@ -233,6 +235,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-region",
     dice: "d100",
+    theme: "places",
     name: { en: "Region", es: "Región" },
     description: { en: "A region of the Ironlands.", es: "Una región de las Tierras de Hierro." },
     rows: [
@@ -251,6 +254,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-location",
     dice: "d100",
+    theme: "places",
     name: { en: "Location", es: "Ubicación" },
     description: { en: "A point of interest while travelling.", es: "Un punto de interés durante el viaje." },
     rows: [
@@ -310,6 +314,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-coastal-location",
     dice: "d100",
+    theme: "places",
     name: { en: "Coastal Waters Location", es: "Ubicación en aguas costeras" },
     description: { en: "A destination when travelling by sea.", es: "Un destino al viajar por mar." },
     rows: [
@@ -335,6 +340,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-location-descriptor",
     dice: "d100",
+    theme: "places",
     name: { en: "Location Descriptor", es: "Descriptor de ubicación" },
     description: { en: "A detail for a Location.", es: "Un detalle para la Ubicación." },
     rows: [
@@ -393,6 +399,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name", es: "Nombre de asentamiento" },
     description: { en: "Where the name comes from. Then roll on the matching table.", es: "De dónde viene el nombre. Luego tira en la tabla que corresponda." },
     rows: [
@@ -408,6 +415,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-landscape",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Landscape Feature", es: "Nombre de asentamiento: paisaje" },
     description: { en: "What makes it unusual or distinctive?", es: "¿Qué lo hace inusual o característico?" },
     rows: [
@@ -426,6 +434,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-edifice",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Manmade Edifice", es: "Nombre de asentamiento: construcción" },
     description: { en: "Why is it important to the settlement's history?", es: "¿Por qué es importante en la historia del asentamiento?" },
     rows: [
@@ -444,6 +453,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-creature",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Creature", es: "Nombre de asentamiento: criatura" },
     description: { en: "Why did they choose this creature as their totem?", es: "¿Por qué eligieron esta criatura como tótem?" },
     rows: [
@@ -462,6 +472,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-event",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Historical Event", es: "Nombre de asentamiento: hecho histórico" },
     description: { en: "What happened here? What commemorates it?", es: "¿Qué ocurrió aquí? ¿Qué lo conmemora?" },
     rows: [
@@ -480,6 +491,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-old-world",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Old World Language", es: "Nombre de asentamiento: lengua del Viejo Mundo" },
     description: { en: "What culture does the word come from? What does it mean?", es: "¿De qué cultura viene la palabra? ¿Qué significa?" },
     rows: [
@@ -498,6 +510,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-environment",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Season or Environment", es: "Nombre de asentamiento: estación o entorno" },
     description: { en: "How does the weather shape the settlement?", es: "¿Cómo influye el clima en el asentamiento?" },
     rows: [
@@ -516,6 +529,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-name-other",
     dice: "d100",
+    theme: "names",
     name: { en: "Settlement Name: Something Else", es: "Nombre de asentamiento: otra cosa" },
     description: { en: "Other sources for a name, with an example.", es: "Otros orígenes para el nombre, con un ejemplo." },
     rows: [
@@ -534,6 +548,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-quick-name-1",
     dice: "d100",
+    theme: "names",
     name: { en: "Quick Settlement Name: Prefix", es: "Nombre rápido de asentamiento: primera parte" },
     description: { en: "Join it to a suffix: Bleak + moor.", es: "Únela a la segunda parte: Vado + del Lobo." },
     rows: [
@@ -567,6 +582,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-quick-name-2",
     dice: "d100",
+    theme: "names",
     name: { en: "Quick Settlement Name: Suffix", es: "Nombre rápido de asentamiento: segunda parte" },
     description: { en: "Goes after the prefix: Bleak + moor.", es: "Va tras la primera parte: Vado + del Lobo." },
     rows: [
@@ -600,6 +616,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-settlement-trouble",
     dice: "d100",
+    theme: "settlements",
     name: { en: "Settlement Trouble", es: "Problema del asentamiento" },
     description: { en: "A problem a community is facing.", es: "Un problema al que se enfrenta una comunidad." },
     rows: [
@@ -654,6 +671,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-character-role",
     dice: "d100",
+    theme: "characters",
     name: { en: "Character Role", es: "Papel del personaje" },
     description: { en: "Their occupation or background.", es: "Su oficio o su pasado." },
     rows: [
@@ -692,6 +710,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-character-goal",
     dice: "d100",
+    theme: "characters",
     name: { en: "Character Goal", es: "Objetivo del personaje" },
     description: { en: "What an NPC or a faction wants.", es: "Lo que quiere un PNJ o una facción." },
     rows: [
@@ -733,6 +752,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-character-descriptor",
     dice: "d100",
+    theme: "characters",
     name: { en: "Character Descriptor", es: "Descriptor de personaje" },
     description: { en: "Personality or appearance.", es: "Personalidad o aspecto." },
     rows: [
@@ -841,6 +861,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-ironlander-names",
     dice: "d200",
+    theme: "names",
     name: { en: "Ironlander Names", es: "Nombres de las Tierras de Hierro" },
     description: { en: "No surnames, and usually for any gender.", es: "Sin apellidos, y suelen valer para cualquier género." },
     rows: [
@@ -1049,6 +1070,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-elf-names",
     dice: "d100",
+    theme: "names",
     name: { en: "Elf Names", es: "Nombres élficos" },
     description: { en: "A name for an elf.", es: "Un nombre para un elfo." },
     rows: [
@@ -1107,6 +1129,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-giant-names",
     dice: "d100",
+    theme: "names",
     name: { en: "Giant Names", es: "Nombres de gigantes" },
     description: { en: "A name for a giant.", es: "Un nombre para un gigante." },
     rows: [
@@ -1140,6 +1163,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-varou-names",
     dice: "d100",
+    theme: "names",
     name: { en: "Varou Names", es: "Nombres varou" },
     description: { en: "A name for a varou.", es: "Un nombre para un varou." },
     rows: [
@@ -1173,6 +1197,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-troll-names",
     dice: "d100",
+    theme: "names",
     name: { en: "Troll Names", es: "Nombres de trols" },
     description: { en: "A name for a troll.", es: "Un nombre para un trol." },
     rows: [
@@ -1206,6 +1231,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-combat-action",
     dice: "d100",
+    theme: "danger",
     name: { en: "Combat Action", es: "Acción de combate" },
     description: { en: "What an enemy does in a fight.", es: "Qué hace un enemigo en combate." },
     rows: [
@@ -1232,6 +1258,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-mystic-backlash",
     dice: "d100",
+    theme: "danger",
     name: { en: "Mystic Backlash", es: "Contragolpe místico" },
     description: { en: "When magic goes wrong.", es: "Cuando la magia sale mal." },
     rows: [
@@ -1265,6 +1292,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-plot-twist",
     dice: "d100",
+    theme: "plot",
     name: { en: "Major Plot Twist", es: "Giro argumental" },
     description: { en: "A surprise or a revelation.", es: "Una sorpresa o una revelación." },
     rows: [
@@ -1293,6 +1321,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-challenge-rank",
     dice: "d100",
+    theme: "danger",
     name: { en: "Challenge Rank", es: "Rango de desafío" },
     description: { en: "How hard a vow, foe or journey is.", es: "Lo difícil que es un juramento, un enemigo o un viaje." },
     rows: [
@@ -1306,6 +1335,7 @@ export const TABLES: TableData[] = [
   {
     id: "ironsworn-pay-the-price",
     dice: "d100",
+    theme: "danger",
     name: { en: "Pay the Price", es: "Pagar el precio" },
     description: { en: "A consequence when things go wrong.", es: "Una consecuencia cuando algo sale mal." },
     rows: [

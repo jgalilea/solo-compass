@@ -10,6 +10,7 @@ export const TABLES: TableData[] = [
   {
     id: "accion",
     dice: "d66",
+    theme: "inspiration",
     name: { en: "Action", es: "Acción" },
     description: { en: "A verb: what happens, what someone does or what's asked. Pair it with “Theme”.", es: "Un verbo: qué pasa, qué hace alguien o qué se pide. Combínalo con «Tema»." },
     rows: [
@@ -54,6 +55,7 @@ export const TABLES: TableData[] = [
   {
     id: "tema",
     dice: "d66",
+    theme: "inspiration",
     name: { en: "Theme", es: "Tema" },
     description: { en: "What it's about: the subject of an action, a scene or a job.", es: "De qué va la cosa: el asunto de una acción, una escena o un encargo." },
     rows: [
@@ -98,6 +100,7 @@ export const TABLES: TableData[] = [
   {
     id: "evento-aleatorio",
     dice: "d66",
+    theme: "events",
     name: { en: "Random event", es: "Evento aleatorio" },
     description: { en: "What interrupts or changes the current scene.", es: "Qué interrumpe o cambia la escena actual." },
     rows: [
@@ -142,6 +145,7 @@ export const TABLES: TableData[] = [
   {
     id: "accion-pnj",
     dice: "d20",
+    theme: "characters",
     name: { en: "NPC action", es: "Acción de PNJ" },
     description: { en: "What a non-player character does in the situation.", es: "Qué hace un personaje no jugador ante la situación." },
     rows: [
@@ -170,6 +174,7 @@ export const TABLES: TableData[] = [
   {
     id: "descriptor-escena",
     dice: "d20",
+    theme: "inspiration",
     name: { en: "Scene descriptor", es: "Descriptor de escena" },
     description: { en: "An adjective or tone to color the place or the moment.", es: "Un adjetivo o tono para colorear el lugar o el momento." },
     rows: [
@@ -198,6 +203,7 @@ export const TABLES: TableData[] = [
   {
     id: "modo",
     dice: "d20",
+    theme: "inspiration",
     name: { en: "How", es: "Cómo" },
     description: { en: "How something is done: the tone of an action or an encounter.", es: "Cómo se hace algo: el tono de una acción o de un encuentro." },
     rows: [
@@ -226,6 +232,7 @@ export const TABLES: TableData[] = [
   {
     id: "aspecto",
     dice: "d20",
+    theme: "inspiration",
     name: { en: "Aspect", es: "Aspecto" },
     description: { en: "An adjective to describe someone, a creature or an object.", es: "Un adjetivo para describir a alguien, una criatura o un objeto." },
     rows: [
@@ -254,6 +261,7 @@ export const TABLES: TableData[] = [
   {
     id: "rasgo-pnj",
     dice: "d20",
+    theme: "characters",
     name: { en: "NPC trait", es: "Rasgo de PNJ" },
     description: { en: "A detail to make a non-player character memorable.", es: "Un detalle para que un personaje no jugador sea memorable." },
     rows: [
@@ -282,6 +290,7 @@ export const TABLES: TableData[] = [
   {
     id: "motivacion",
     dice: "d20",
+    theme: "characters",
     name: { en: "Motivation", es: "Motivación" },
     description: { en: "What a non-player character really wants.", es: "Qué quiere de verdad un personaje no jugador." },
     rows: [
@@ -310,6 +319,7 @@ export const TABLES: TableData[] = [
   {
     id: "complicacion",
     dice: "d20",
+    theme: "plot",
     name: { en: "Complication", es: "Complicación" },
     description: { en: "What goes wrong when a plan works too well.", es: "Qué se tuerce cuando un plan sale demasiado bien." },
     rows: [
@@ -338,6 +348,7 @@ export const TABLES: TableData[] = [
   {
     id: "lugar",
     dice: "d20",
+    theme: "places",
     name: { en: "Place", es: "Lugar" },
     description: { en: "Where the scene happens, if you're not sure.", es: "Dónde ocurre la escena, si no lo tienes claro." },
     rows: [
@@ -366,6 +377,7 @@ export const TABLES: TableData[] = [
   {
     id: "hallazgo",
     dice: "d20",
+    theme: "items",
     name: { en: "Find", es: "Hallazgo" },
     description: { en: "What you find when you search a place or someone.", es: "Qué encuentras al registrar un sitio o a alguien." },
     rows: [
@@ -394,6 +406,7 @@ export const TABLES: TableData[] = [
   {
     id: "clima",
     dice: "d6",
+    theme: "events",
     name: { en: "Weather", es: "Clima" },
     description: { en: "Today's weather.", es: "El tiempo que hace hoy." },
     rows: [

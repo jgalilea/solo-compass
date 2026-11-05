@@ -14,8 +14,8 @@
  * tables are a separate source, loaded from IndexedDB (customTables.ts).
  */
 
-import type { Dictionary, Locale } from "./i18n";
-import type { DiceType, GameRef, MeaningTable } from "./tables";
+import { interpolate, type Dictionary, type Locale } from "./i18n";
+import type { DiceType, GameRef, MeaningTable, TableTheme } from "./tables";
 
 /** A data file's row: the range and its text in each language. */
 export type TableRow = [from: number, to: number, en: string, es?: string];
@@ -27,12 +27,21 @@ export type TableRow = [from: number, to: number, en: string, es?: string];
 export interface TableData {
   id: string;
   dice: DiceType;
+  theme: TableTheme;
   name: Record<Locale, string>;
   description: Record<Locale, string>;
   rows: TableRow[];
 }
 
-export type GameId = "solo-compass" | "ironsworn";
+export type GameId =
+  | "solo-compass"
+  | "ironsworn"
+  | "delve"
+  | "knave"
+  | "loner"
+  | "starforged"
+  | "starsmith"
+  | "lazy-gm";
 
 export interface TableGame {
   id: GameId;
@@ -73,7 +82,6 @@ export const INSPIRATION_TABLE_IDS: SoloCompassTableId[] = ["accion", "tema"];
 const SOLO_COMPASS_IDS = new Set<string>(SOLO_COMPASS_TABLE_IDS);
 
 export const IRONSWORN_URL = "https://www.ironswornrpg.com";
-export const IRONSWORN_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/";
 
 const IRONSWORN_GAME: GameRef = {
   name: "Ironsworn",
@@ -82,6 +90,116 @@ const IRONSWORN_GAME: GameRef = {
   license: "CC BY 4.0",
   tag: "Ironsworn",
 };
+
+const DELVE_GAME: GameRef = { ...IRONSWORN_GAME, name: "Ironsworn: Delve", tag: "Delve" };
+const STARFORGED_GAME: GameRef = { ...IRONSWORN_GAME, name: "Ironsworn: Starforged", tag: "Starforged" };
+
+export const KNAVE_URL = "https://questingbeast.itch.io/knave";
+
+const KNAVE_GAME: GameRef = {
+  name: "Knave",
+  url: KNAVE_URL,
+  author: "Ben Milton",
+  license: "CC BY 4.0",
+  tag: "Knave",
+};
+
+export const LONER_URL = "https://zeruhur.itch.io/loner-2nd-edition";
+
+const LONER_GAME: GameRef = {
+  name: "Loner",
+  url: LONER_URL,
+  author: "Roberto Bisceglie",
+  license: "CC BY-SA 4.0",
+  tag: "Loner",
+};
+
+export const STARSMITH_URL = "https://www.lulu.com/shop/eric-bright/starsmith-expanded-oracles/paperback/product-d9yq44.html";
+
+const STARSMITH_GAME: GameRef = {
+  name: "Starsmith",
+  url: STARSMITH_URL,
+  author: "Eric Bright",
+  license: "CC BY 4.0",
+  tag: "Starsmith",
+};
+
+export const LAZY_GM_URL = "https://slyflourish.com/lazy_gm_resource_document.html";
+
+const LAZY_GM_GAME: GameRef = {
+  name: "Lazy GM's Resource Document",
+  url: LAZY_GM_URL,
+  author: "Michael E. Shea (Sly Flourish)",
+  license: "CC BY 4.0",
+  tag: "Lazy GM",
+};
+
+const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
+const CC_BY_SA = "https://creativecommons.org/licenses/by-sa/4.0/";
+
+/**
+ * Credits for the third-party tables (Settings → About). `attribution`
+ * is the wording each source asks for, in English as published.
+ */
+export const TABLE_CREDITS: {
+  name: string;
+  author: string;
+  license: string;
+  licenseUrl: string;
+  url: string;
+  attribution: string[];
+}[] = [
+  {
+    name: "Ironsworn · Delve · Starforged",
+    author: "Shawn Tomkin",
+    license: "CC BY 4.0",
+    licenseUrl: CC_BY,
+    url: IRONSWORN_URL,
+    attribution: [
+      "This work is based on Ironsworn, Ironsworn: Delve and Ironsworn: Starforged, created by Shawn Tomkin, and licensed for our use under the Creative Commons Attribution 4.0 International License.",
+    ],
+  },
+  {
+    name: "Starsmith: Expanded Oracles",
+    author: "Eric Bright",
+    license: "CC BY 4.0",
+    licenseUrl: CC_BY,
+    url: STARSMITH_URL,
+    attribution: ["Starsmith: Expanded Oracles by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License."],
+  },
+  {
+    name: "Loner",
+    author: "Roberto Bisceglie",
+    license: "CC BY-SA 4.0",
+    licenseUrl: CC_BY_SA,
+    url: LONER_URL,
+    attribution: ["Loner v2.3 (CC) 2023 Roberto Bisceglie, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License."],
+  },
+  {
+    name: "Knave",
+    author: "Ben Milton",
+    license: "CC BY 4.0",
+    licenseUrl: CC_BY,
+    url: KNAVE_URL,
+    attribution: ["Knave by Ben Milton, licensed under the Creative Commons Attribution 4.0 International License."],
+  },
+  {
+    name: "Lazy GM's Resource Document",
+    author: "Michael E. Shea",
+    license: "CC BY 4.0",
+    licenseUrl: CC_BY,
+    url: LAZY_GM_URL,
+    attribution: [
+      "This work includes material taken from the Lazy GM's Resource Document by Michael E. Shea of SlyFlourish.com, available under the Creative Commons Attribution 4.0 International License.",
+      "This work includes material taken from the System Reference Document 5.1 (\"SRD 5.1\") by Wizards of the Coast LLC. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License.",
+    ],
+  },
+];
+
+/** "By Ben Milton, licensed under CC BY 4.0.": a block's credit. */
+function creditNote(t: Dictionary, game: GameRef): string {
+  return interpolate(t.tables.creditNote, { author: game.author ?? "", license: game.license ?? "" });
+}
 
 export const TABLE_GAMES: TableGame[] = [
   {
@@ -100,6 +218,60 @@ export const TABLE_GAMES: TableGame[] = [
     count: 30,
     owns: (id) => id.startsWith("ironsworn-"),
     load: () => import("./tableData/ironsworn").then((m) => m.TABLES),
+  },
+  {
+    id: "delve",
+    title: () => DELVE_GAME.name,
+    note: (t) => t.tables.ironswornNote,
+    game: () => DELVE_GAME,
+    count: 42,
+    owns: (id) => id.startsWith("delve-"),
+    load: () => import("./tableData/delve").then((m) => m.TABLES),
+  },
+  {
+    id: "starforged",
+    title: () => STARFORGED_GAME.name,
+    note: (t) => t.tables.ironswornNote,
+    game: () => STARFORGED_GAME,
+    count: 249,
+    owns: (id) => id.startsWith("starforged-"),
+    load: () => import("./tableData/starforged").then((m) => m.TABLES),
+  },
+  {
+    id: "starsmith",
+    title: () => STARSMITH_GAME.name,
+    note: (t) => creditNote(t, STARSMITH_GAME),
+    game: () => STARSMITH_GAME,
+    count: 195,
+    owns: (id) => id.startsWith("starsmith-"),
+    load: () => import("./tableData/starsmith").then((m) => m.TABLES),
+  },
+  {
+    id: "loner",
+    title: () => LONER_GAME.name,
+    note: (t) => creditNote(t, LONER_GAME),
+    game: () => LONER_GAME,
+    count: 19,
+    owns: (id) => id.startsWith("loner-"),
+    load: () => import("./tableData/loner").then((m) => m.TABLES),
+  },
+  {
+    id: "knave",
+    title: () => KNAVE_GAME.name,
+    note: (t) => creditNote(t, KNAVE_GAME),
+    game: () => KNAVE_GAME,
+    count: 11,
+    owns: (id) => id.startsWith("knave-"),
+    load: () => import("./tableData/knave").then((m) => m.TABLES),
+  },
+  {
+    id: "lazy-gm",
+    title: () => LAZY_GM_GAME.name,
+    note: (t) => creditNote(t, LAZY_GM_GAME),
+    game: () => LAZY_GM_GAME,
+    count: 65,
+    owns: (id) => id.startsWith("lazy-gm-"),
+    load: () => import("./tableData/lazyGm").then((m) => m.TABLES),
   },
 ];
 
@@ -126,6 +298,7 @@ export function toMeaningTables(
     name: table.name[locale],
     description: table.description[locale],
     dice: table.dice,
+    theme: table.theme,
     game: ref,
     entries: table.rows.map((row) => ({ range: [row[0], row[1]], text: ROW_TEXT[locale](row) })),
   }));

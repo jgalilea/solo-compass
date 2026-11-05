@@ -82,7 +82,10 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
   const loading = blocks.some((b) => b.status === "loading");
   const visible = q
     ? all.filter(
-        (table) => normalizeForSearch(table.name).includes(q) || normalizeForSearch(table.game.name).includes(q),
+        (table) =>
+          normalizeForSearch(table.name).includes(q) ||
+          normalizeForSearch(table.game.name).includes(q) ||
+          (!!table.theme && normalizeForSearch(t.tables.themes[table.theme]).includes(q)),
       )
     : all.filter((table) => favorites.has(table.id));
 

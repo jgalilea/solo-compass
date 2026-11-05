@@ -58,4 +58,10 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    // Each game's tables are their own chunk, loaded only when needed
+    // (src/lib/tableGames.ts); the biggest, Starsmith, is ~650 kB. The
+    // main bundle must stay well below this: keep an eye on its size.
+    chunkSizeWarningLimit: 700,
+  },
 });

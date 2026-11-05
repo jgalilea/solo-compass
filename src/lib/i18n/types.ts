@@ -1,5 +1,6 @@
 import type { Answer, Likelihood, Qualifier } from "../oracle";
 import type { SoloCompassTableId } from "../tableGames";
+import type { TableTheme } from "../tables";
 import type { ThemeId } from "../theme";
 
 // Duplicated on purpose instead of importing it from components/Die.tsx,
@@ -238,8 +239,14 @@ export interface Dictionary {
     builtInHeading: string;
     /** Credit under the Ironsworn block's title. */
     ironswornNote: string;
+    /** Credit under a third-party game's block: "By {author}, licensed under {license}." */
+    creditNote: string;
     /** Number of tables in a folded block. */
     sectionCount: string;
+    /** Names of the table themes (filter chips, sub-headings in a block). */
+    themes: Record<TableTheme, string>;
+    themeFilterLabel: string;
+    allThemes: string;
     /** A game's tables couldn't be loaded (e.g. offline before the app was cached). */
     loadError: string;
     customHeading: string;
@@ -274,6 +281,8 @@ export interface Dictionary {
       entriesLabel: string;
       entriesHint: string;
       entriesPlaceholder: string;
+      themeLabel: string;
+      themeNone: string;
       attributionToggle: string;
       sourceLabel: string;
       authorLabel: string;

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { MeaningTable } from "../lib/tables";
-import { formatRange } from "../lib/tables";
+import { formatRange, TABLE_THEMES, type MeaningTable, type TableTheme } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import { loadOpenTableSections, saveOpenTableSections } from "../lib/tableSections";
 import { gameOfTable, TABLE_GAMES } from "../lib/tableGames";
@@ -87,12 +86,15 @@ export function TablesView() {
     loadFavoriteTableIds(),
   );
   const [openSections, setOpenSections] = useState<Set<string>>(() => loadOpenTableSections());
+  const [themeFilter, setThemeFilter] = useState<TableTheme | null>(null);
   const q = normalizeForSearch(query.trim());
+  // Searching or filtering by theme looks through every game at once.
+  const filtering = !!q || themeFilter !== null;
   // Each game is loaded only when needed: Solo Compass's (quick
   // inspiration), unfolded blocks, the favourites' games, and all of
-  // them while searching.
+  // them while searching or filtering.
   const { blocks, custom, inspiration, retry } = useMeaningTables(
-    q
+    filtering
       ? "all"
       : [
           "solo-compass",
@@ -206,13 +208,17 @@ export function TablesView() {
     );
   }
 
+  // By name, description, game or theme ("ironsworn", "naves"…), and
+  // within the chosen theme (the player's own only if they gave it one).
   const matches = useCallback(
     (table: MeaningTable) =>
-      !q ||
-      normalizeForSearch(table.name).includes(q) ||
-      normalizeForSearch(table.description).includes(q) ||
-      normalizeForSearch(table.game.name).includes(q),
-    [q],
+      (themeFilter === null || table.theme === themeFilter) &&
+      (!q ||
+        normalizeForSearch(table.name).includes(q) ||
+        normalizeForSearch(table.description).includes(q) ||
+        normalizeForSearch(table.game.name).includes(q) ||
+        (!!table.theme && normalizeForSearch(t.tables.themes[table.theme]).includes(q))),
+    [q, themeFilter, t],
   );
   const favoriteTables = useMemo(
     () => [...custom, ...builtIn].filter((x) => favoriteIds.has(x.id) && matches(x)),
@@ -222,9 +228,31 @@ export function TablesView() {
   const otherBlocks = blocks.map((b) => ({ ...b, tables: b.tables.filter((x) => !favoriteIds.has(x.id) && matches(x)) }));
   // Only once every game has been searched: not while one is still loading.
   const nothingFound =
-    q &&
+    filtering &&
     blocks.every((b) => b.status === "ready" || b.status === "error") &&
     favoriteTables.length + otherCustom.length + otherBlocks.reduce((n, b) => n + b.tables.length, 0) === 0;
+
+  // A block's tables, under a sub-heading per theme (when it has several
+  // and no theme is chosen). Tables without one (the player's own) go last.
+  function renderTables(tables: MeaningTable[]) {
+    const groups = [...TABLE_THEMES, undefined]
+      .map((theme) => ({ theme, tables: tables.filter((x) => x.theme === theme) }))
+      .filter((g) => g.tables.length > 0);
+    if (groups.length <= 1) return <ul className="grid gap-3 2xl:grid-cols-2">{tables.map(renderRow)}</ul>;
+    return (
+      <div className="flex flex-col gap-5">
+        {groups.map((g) => (
+          <div key={g.theme ?? "none"} className="flex flex-col gap-3">
+            <h3 className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+              {g.theme ? t.tables.themes[g.theme] : t.tables.editor.themeNone}
+              <span className="text-parchment-dim/50">{g.tables.length}</span>
+            </h3>
+            <ul className="grid gap-3 2xl:grid-cols-2">{g.tables.map(renderRow)}</ul>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   function renderRow(table: MeaningTable) {
     return (
@@ -321,7 +349,9 @@ export function TablesView() {
             />
           </label>
 
-          {!q && (
+          <ThemeFilter value={themeFilter} onChange={setThemeFilter} />
+
+          {!filtering && (
             <InspirationCard
               last={last?.sourceId === INSPIRATION_ID ? last : null}
               rolling={rollingId === INSPIRATION_ID || !inspiration}
@@ -336,7 +366,7 @@ export function TablesView() {
               icon={<IconSearch size={24} />}
               title={t.tables.noResultsTitle}
               description={interpolate(t.tables.noResultsDescription, {
-                query: query.trim(),
+                query: query.trim() || (themeFilter ? t.tables.themes[themeFilter] : ""),
               })}
             />
           ) : (
@@ -354,18 +384,18 @@ export function TablesView() {
                 </TableSection>
               )}
 
-              {/* Always there (unless searching), so creating a table is never hidden. */}
-              {(!q || otherCustom.length > 0) && (
+              {/* Always there (unless searching or filtering), so creating a table is never hidden. */}
+              {(!filtering || otherCustom.length > 0) && (
                 <FoldingSection
                   title={t.tables.customHeading}
-                  count={q ? otherCustom.length : custom.length}
-                  open={!!q || openSections.has("custom")}
-                  searching={!!q}
+                  count={filtering ? otherCustom.length : custom.length}
+                  open={filtering || openSections.has("custom")}
+                  searching={filtering}
                   onToggle={() => toggleSection("custom")}
                   actions={customActions}
                 >
                   {otherCustom.length > 0 ? (
-                    <ul className="grid gap-3 2xl:grid-cols-2">{otherCustom.map(renderRow)}</ul>
+                    renderTables(otherCustom)
                   ) : (
                     custom.length === 0 && (
                       <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
@@ -378,15 +408,15 @@ export function TablesView() {
 
               {otherBlocks.map(
                 (block) =>
-                  // While searching, a game without matches is left out once it's loaded.
-                  (!q || block.status !== "ready" || block.tables.length > 0) && (
+                  // While searching or filtering, a game without matches is left out once it's loaded.
+                  (!filtering || block.status !== "ready" || block.tables.length > 0) && (
                     <FoldingSection
                       key={block.id}
                       title={block.title}
                       note={block.note}
-                      count={q ? block.tables.length : block.count}
-                      open={!!q || openSections.has(block.id)}
-                      searching={!!q}
+                      count={filtering ? block.tables.length : block.count}
+                      open={filtering || openSections.has(block.id)}
+                      searching={filtering}
                       onToggle={() => toggleSection(block.id)}
                     >
                       {block.status === "error" ? (
@@ -401,9 +431,7 @@ export function TablesView() {
                           </button>
                         </div>
                       ) : block.status === "ready" ? (
-                        block.tables.length > 0 && (
-                          <ul className="grid gap-3 2xl:grid-cols-2">{block.tables.map(renderRow)}</ul>
-                        )
+                        block.tables.length > 0 && renderTables(block.tables)
                       ) : (
                         <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
                       )}
@@ -475,6 +503,43 @@ function TableSection({ title, actions, children }: { title: ReactNode; actions?
       </div>
       {children}
     </section>
+  );
+}
+
+/**
+ * One chip per theme (plus "All"): narrows every block, and the search,
+ * to that theme. On phones the row scrolls sideways instead of wrapping
+ * into several lines.
+ */
+function ThemeFilter({ value, onChange }: { value: TableTheme | null; onChange: (theme: TableTheme | null) => void }) {
+  const { t } = useLocaleContext();
+  const chip = (selected: boolean) =>
+    [
+      "shrink-0 rounded-full border px-3 py-1.5 text-sm transition",
+      // Filled when selected: not colour alone (some themes' gold is near-white).
+      selected
+        ? "border-gold bg-gold font-medium text-ink-950"
+        : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+    ].join(" ");
+  return (
+    <div role="group" aria-label={t.tables.themeFilterLabel} className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+      <div className="flex gap-2 pb-1 lg:flex-wrap">
+        <button type="button" aria-pressed={value === null} onClick={() => onChange(null)} className={chip(value === null)}>
+          {t.tables.allThemes}
+        </button>
+        {TABLE_THEMES.map((theme) => (
+          <button
+            key={theme}
+            type="button"
+            aria-pressed={value === theme}
+            onClick={() => onChange(value === theme ? null : theme)}
+            className={chip(value === theme)}
+          >
+            {t.tables.themes[theme]}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

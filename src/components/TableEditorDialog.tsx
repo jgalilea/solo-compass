@@ -11,6 +11,7 @@ import {
   type DiceChoice,
 } from "../lib/customTables";
 import { interpolate } from "../lib/i18n";
+import { TABLE_THEMES, type TableTheme } from "../lib/tables";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
 import { IconAlertCircle, IconCheck, IconChevronRight, IconClose } from "./icons/Icons";
 import { Modal } from "./Modal";
@@ -49,6 +50,7 @@ export function TableEditorDialog({
     license: initial?.source?.license ?? "",
     url: initial?.source?.url ?? "",
   });
+  const [theme, setTheme] = useState<TableTheme | "">(initial?.theme ?? "");
   const [tried, setTried] = useState(false);
 
   const result = useMemo(() => {
@@ -68,6 +70,7 @@ export function TableEditorDialog({
       dice: result.dice,
       entries: result.entries,
       source: cleanSource(source),
+      theme: theme || undefined,
     });
   }
 
@@ -135,6 +138,22 @@ export function TableEditorDialog({
             {EDITOR_DICE.map((d) => (
               <option key={d} value={d}>
                 {d}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className={LABEL_CLASS}>{e.themeLabel}</span>
+          <select
+            value={theme}
+            onChange={(ev) => setTheme(ev.target.value as TableTheme | "")}
+            className={`${INPUT_CLASS} flex-none py-2.5`}
+          >
+            <option value="">{e.themeNone}</option>
+            {TABLE_THEMES.map((id) => (
+              <option key={id} value={id}>
+                {t.tables.themes[id]}
               </option>
             ))}
           </select>

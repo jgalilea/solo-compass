@@ -13,12 +13,15 @@
  */
 
 import { get, set } from "idb-keyval";
-import { interpolate, type Dictionary } from "./i18n";
+import { DICTIONARIES, interpolate, LOCALES, type Dictionary } from "./i18n";
+import { normalizeForSearch } from "./text";
 import {
   diceSides,
   diceValues,
   formatRange,
+  TABLE_THEMES,
   type DiceType,
+  type TableTheme,
   type MeaningTable,
   type TableEntry,
 } from "./tables";
@@ -39,6 +42,8 @@ export interface CustomTable {
   /** Resolved ranges, in order, covering every value of the die once. */
   entries: TableEntry[];
   source?: TableSource;
+  /** Optional, so it can be filtered and grouped with the built-in tables. */
+  theme?: TableTheme;
   createdAt: number;
   updatedAt: number;
 }
@@ -117,8 +122,26 @@ export function toMeaningTable(table: CustomTable, t: Dictionary): MeaningTable 
       license: source.license || undefined,
     },
     entries: table.entries,
+    theme: isTableTheme(table.theme) ? table.theme : undefined,
     custom: true,
   };
+}
+
+function isTableTheme(value: unknown): value is TableTheme {
+  return typeof value === "string" && (TABLE_THEMES as readonly string[]).includes(value);
+}
+
+/**
+ * A theme from a file: its id ("characters") or its name in any of the
+ * app's languages ("Personajes", "Characters"), ignoring case and accents.
+ */
+export function parseTheme(value: string | undefined): TableTheme | undefined {
+  if (!value) return undefined;
+  const wanted = normalizeForSearch(value.trim());
+  return TABLE_THEMES.find(
+    (theme) =>
+      theme === wanted || LOCALES.some((l) => normalizeForSearch(DICTIONARIES[l].tables.themes[theme]) === wanted),
+  );
 }
 
 // --- Parsing --------------------------------------------------------
@@ -293,6 +316,7 @@ export function diceChoiceFor(table: Pick<CustomTable, "dice" | "entries">): Dic
 const META_LINE =
   /^(fuente|juego o libro|source|game or book|autor[ií]a|autor|author|licencia|license|enlace|link|url)\s*:\s*(.+)$/i;
 const DIE_LINE = /^(?:(?:dado|die|dice)\s*:?\s*)?(d\d+)$/i;
+const THEME_LINE = /^(tem[aá]tica|theme)\s*:\s*(.+)$/i;
 
 function metaKey(label: string): keyof TableSource {
   const l = label.toLowerCase();
@@ -340,13 +364,16 @@ export function parseTablesFile(t: Dictionary, text: string, filename: string): 
     const description: string[] = [];
     const source: TableSource = {};
     let dice: DiceType | undefined;
+    let theme: TableTheme | undefined;
     const entryLines: string[] = [];
     for (const line of section.body) {
       const l = line.trim();
       const quote = /^>\s?(.*)$/.exec(l);
       const meta = META_LINE.exec(l);
       const die = DIE_LINE.exec(l);
+      const themeLine = THEME_LINE.exec(l);
       if (quote) description.push(quote[1].trim());
+      else if (themeLine) theme = parseTheme(themeLine[2]);
       else if (meta) source[metaKey(meta[1])] = meta[2].trim();
       else if (die) dice = die[1].toLowerCase() as DiceType;
       else entryLines.push(line);
@@ -360,6 +387,7 @@ export function parseTablesFile(t: Dictionary, text: string, filename: string): 
       dice: built.dice,
       entries: built.entries,
       source: cleanSource(source),
+      theme,
     });
   }
   return drafts;
@@ -402,6 +430,7 @@ function parseJsonTables(t: Dictionary, data: unknown, fallbackName: string): Cu
       dice: built.dice,
       entries: built.entries,
       source: cleanSource({ name: str("source"), author: str("author"), license: str("license"), url: str("url") }),
+      theme: parseTheme(str("theme")),
     });
   }
   return drafts;
@@ -421,6 +450,7 @@ export function exportTableToMarkdown(t: Dictionary, table: CustomTable): string
   const labels = t.tables.editor;
   const lines = [`# ${table.name}`, ""];
   if (table.description) lines.push(`> ${table.description}`, "");
+  if (table.theme) lines.push(`${labels.themeLabel}: ${t.tables.themes[table.theme]}`, "");
   const source = table.source ?? {};
   const meta = [
     [labels.sourceLabel, source.name],

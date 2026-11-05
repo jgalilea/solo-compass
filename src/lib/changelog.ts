@@ -21,6 +21,31 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-05",
     text: {
       es: {
+        title: "Capítulo X · La biblioteca del viajero",
+        intro: "Llegaron más viajeros a la posada, cada uno con su libro de tablas bajo el brazo, y el posadero les hizo sitio en la estantería.",
+        items: [
+          "Más de seiscientas tablas nuevas, en inglés y en español: Ironsworn: Delve (sitios, amenazas, trampas, monstruos), Ironsworn: Starforged y Starsmith (ciencia ficción: planetas, naves, facciones, pecios), Loner (ganchos de aventura, giros y el creador de aventuras), Knave (rasgos de personaje) y el Lazy GM's Resource Document (inicios fuertes, secretos, misiones, mazmorras y pueblos).",
+          "Cada juego tiene su bloque en Tablas y solo se carga cuando lo abres o buscas, así que la app sigue arrancando igual de rápido.",
+          "Las tablas se ordenan por temática (personajes, lugares, mazmorras, naves, planetas…): dentro de cada juego van agrupadas, puedes filtrar por temática con los botones bajo el buscador, y buscar «naves» o «nombres» las encuentra en todos los juegos. Tus tablas también pueden llevar temática.",
+          "En Ajustes, todos los autores y sus licencias, con el agradecimiento que cada uno pide.",
+        ],
+      },
+      en: {
+        title: "Chapter X · The traveller's library",
+        intro: "More travellers came to the inn, each with a book of tables under their arm, and the innkeeper made room for them on the shelf.",
+        items: [
+          "Over six hundred new tables, in English and Spanish: Ironsworn: Delve (sites, threats, traps, monsters), Ironsworn: Starforged and Starsmith (science fiction: planets, starships, factions, derelicts), Loner (adventure hooks, twists and the adventure maker), Knave (character traits) and the Lazy GM's Resource Document (strong starts, secrets, quests, dungeons and towns).",
+          "Each game has its own block in Tables and is only loaded when you open it or search, so the app still starts just as fast.",
+          "Tables are sorted by theme (characters, places, dungeons, starships, planets…): grouped within each game, filterable with the buttons under the search, and searching for “starships” or “names” finds them in every game. Your own tables can have a theme too.",
+          "In Settings, every author and their licence, with the thanks each one asks for.",
+        ],
+      },
+    },
+  },
+  {
+    date: "2026-11-05",
+    text: {
+      es: {
         title: "Capítulo IX · Juramentos de hierro",
         intro: "Una viajera de las Tierras de Hierro dejó en la posada su libro de oráculos, traducido a nuestra lengua.",
         items: [
