@@ -176,7 +176,7 @@ export function JournalListView() {
     pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0 || entryMatches.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-6xl 2xl:max-w-7xl">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">
           {t.journal.title}

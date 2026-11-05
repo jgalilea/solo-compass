@@ -547,9 +547,9 @@ export function AdventureDetailView() {
                     }
                     className="group sticky top-0 z-20 -mx-4 bg-ink-950/90 px-4 py-1.5 backdrop-blur sm:mx-0 sm:px-0 lg:top-14"
                   >
-                    <div className="relative flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-2.5">
-                      <IconSession size={15} className="shrink-0 text-gold" />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment">
+                    <div className="relative flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4 py-2.5">
+                      <IconSession size={16} className="shrink-0 text-gold" />
+                      <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}
                       </span>
                       <LineButtons
@@ -563,7 +563,8 @@ export function AdventureDetailView() {
                     </div>
                   </div>
                 ))}
-              <ul className="flex flex-col gap-2">
+              {/* The same rail as an unfolded earlier session. */}
+              <ul className={currentGroup.sessionEntry ? "flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3" : "flex flex-col gap-2"}>
                 <EntryList items={currentGroup.items} actions={entryActions} />
               </ul>
             </section>

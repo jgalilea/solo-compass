@@ -225,8 +225,10 @@ hides the bottom bar and uses two columns where it helps (oracle
 form/result, tables list/result panel). An adventure becomes a workspace:
 journal + game table panel at `lg`, plus a session index on the left at
 `xl` (below `xl` the same index is a dropdown in the adventure header).
-`2xl` widens the main pages to `max-w-[110rem]` (more columns, not
-longer lines). The mobile bottom nav has a fixed height
+Every page uses the same content width as the header
+(`max-w-xl md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]`), so switching
+tabs doesn't make the content jump; `2xl` means more columns, not
+longer lines. The mobile bottom nav has a fixed height
 (`--spacing-nav` in `index.css`); anything resting on it (composer,
 toasts) offsets by that same variable. Keep the journal free of fixed chrome on phones (one-row composer,
 tools in sheets, entry buttons only on tap/hover). Components that live

@@ -28,6 +28,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "El botón de enviar se apaga mientras no hayas escrito nada.",
           "«Nueva sesión» va aparte en el menú de tipos de entrada, para que no parezca una entrada más. Y desaparece «Tirada»: para tirar ya están los dados.",
           "En la mesa de juego, los dados van justo debajo del oráculo, y de las tablas solo ves la inspiración rápida y tus favoritas; el resto, con el buscador.",
+          "Cada sesión se distingue mejor: su título destaca más y una línea a la izquierda une sus entradas.",
+          "En pantallas grandes, el oráculo, las tablas y el diario ocupan el mismo ancho: ya no bailan al cambiar de pestaña.",
         ],
       },
       en: {
@@ -38,6 +40,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "The send button stays off until you've written something.",
           "“New session” sits apart in the entry type menu, so it doesn't look like one more entry. And “Roll” is gone: the dice are there for rolling.",
           "At the game table, the dice sit right below the oracle, and of the tables you only see quick inspiration and your favorites; the rest, through search.",
+          "Each session stands out better: its title is more prominent and a line on the left ties its entries together.",
+          "On large screens, the oracle, tables and journal take the same width: no more jumping around when switching tabs.",
         ],
       },
     },

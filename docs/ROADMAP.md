@@ -35,6 +35,9 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   oráculo, dados, tablas (panel de escritorio y hoja del móvil); la
   herramienta de tablas solo muestra inspiración rápida, las favoritas
   y la búsqueda para el resto.
+- Mismo ancho de contenido en todas las pantallas (2026-11-05), igual
+  que la cabecera; cabecera de sesión más marcada (borde dorado, letra
+  de título) y una línea a la izquierda de sus entradas.
 
 - Licencia GPL-3.0 (`LICENSE`, README, `package.json`); antes AGPL-3.0.
 - Tests con Vitest (`npm test`), que bloquean el despliegue si fallan:

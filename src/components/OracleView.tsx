@@ -41,7 +41,7 @@ export function OracleView() {
   return (
     // On desktop (lg+) question and result go in two columns, so
     // everything isn't stacked in a narrow strip with empty sides.
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-8 pt-8 md:max-w-2xl md:pt-12 lg:grid lg:max-w-6xl lg:grid-cols-2 2xl:max-w-7xl 2xl:gap-16 lg:items-start lg:gap-10 lg:pb-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-8 pt-8 md:max-w-3xl md:pt-12 lg:grid lg:max-w-7xl lg:grid-cols-2 2xl:max-w-[110rem] 2xl:gap-16 lg:items-start lg:gap-10 lg:pb-12">
       <div className="flex flex-col gap-6 lg:sticky lg:top-24">
         <header className="flex items-center justify-center gap-2.5">
           <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.oracle.title}</h1>

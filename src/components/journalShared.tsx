@@ -137,7 +137,7 @@ export function SessionGroupRow({
           </button>
         </div>
       ) : (
-        <div data-entry className="group relative flex items-center gap-1 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3">
+        <div data-entry className="group relative flex items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-2.5 transition hover:border-gold/50">
           <button
             type="button"
             onClick={() => {
@@ -150,9 +150,9 @@ export function SessionGroupRow({
           >
             <IconChevronRight
               size={16}
-              className={`shrink-0 text-parchment-dim transition-transform ${expanded ? "rotate-90" : ""}`}
+              className={`shrink-0 text-gold transition-transform ${expanded ? "rotate-90" : ""}`}
             />
-            <span className="min-w-0 flex-1 truncate text-sm font-medium uppercase tracking-wide text-parchment-dim">
+            <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
               {session.text}
             </span>
             <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
@@ -170,7 +170,8 @@ export function SessionGroupRow({
         </div>
       )}
       {expanded && (
-        <ul className="flex flex-col gap-2 pl-1">
+        // A rail down the left marks which entries belong to the session.
+        <ul className="flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3">
           <EntryList items={group.items} actions={actions} />
         </ul>
       )}
