@@ -209,6 +209,7 @@ export interface Dictionary {
     noResultsTitle: string;
     noResultsDescription: string;
     favoritesHeading: string;
+    toolTableHint: string;
     allHeading: string;
     favoriteAdd: string;
     favoriteRemove: string;
@@ -417,7 +418,6 @@ export interface Dictionary {
     toolTableTitle: string;
     moreActions: string;
     composerHintAction: string;
-    composerHintRoll: string;
     composerHintConsequence: string;
     composerHintNote: string;
     addPlaceholder: string;
@@ -425,6 +425,8 @@ export interface Dictionary {
     sendButton: string;
     kindMenuLabel: string;
     composerHintSession: string;
+    consequenceJoins: string;
+    consequenceAlone: string;
     toolDice: string;
     toolDiceTitle: string;
     diceLabelPlaceholder: string;

@@ -20,9 +20,11 @@ export const SECONDARY_BUTTON_CLASS =
 // real use case for logging a loose question here. It still exists as
 // a JournalLineKind because entries already saved (or imported from
 // another Lonelog) can have that kind.
-export type ComposerKind = Exclude<JournalLineKind, "session" | "question">;
+// "roll" is left out too: the dice tool logs your own system's rolls
+// with the actual dice; typing one by hand only wrote text.
+export type ComposerKind = Exclude<JournalLineKind, "session" | "question" | "roll">;
 
-export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "roll", "consequence"];
+export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "consequence"];
 
 /** What can be picked in the composer: the entry kinds and starting a session. */
 export type ComposerMode = ComposerKind | "session";
@@ -79,7 +81,9 @@ export function groupBySession(sortedEntries: JournalEntry[]): EntryGroup[] {
 /**
  * Groups a session's entries into blocks for display: a question, the
  * roll that answers it and the consequences right after it go
- * together; the rest (notes, actions…) stands alone.
+ * together; the rest (notes, actions…) stands alone. A consequence
+ * always joins the entry right before it, whatever its kind (an action
+ * and what comes of it are one card), so the composer can say so.
  * Grouped by position (not only by linkedRollId) so it also works with
  * imported journals, which carry no links.
  */
@@ -105,7 +109,8 @@ export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
     } else if (entry.kind === "roll") {
       open = [entry];
       blocks.push(open);
-    } else if (entry.kind === "consequence" && open) {
+    } else if (entry.kind === "consequence" && blocks.length > 0) {
+      open = blocks[blocks.length - 1];
       open.push(entry);
     } else {
       open = null;

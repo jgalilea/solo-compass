@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -25,14 +25,13 @@ type IconType = ComponentType<{ size?: number; className?: string }>;
 const MODE_ICON: Record<ComposerMode, IconType> = {
   note: IconNote,
   action: IconAction,
-  roll: IconDice,
   consequence: IconConsequence,
   session: IconSession,
 };
 
 /**
  * Composer pinned to the bottom of the journal, on a single row to
- * leave the screen to the journal: tools (oracle, table, dice), the
+ * leave the screen to the journal: tools (oracle, dice, table), the
  * entry kind as a chip inside the field, the text and send.
  *
  * The text can span several lines and the field grows with it (up to
@@ -73,7 +72,7 @@ export function JournalComposer({
   onRolled: (rollId?: string) => void;
 }) {
   const { t } = useLocaleContext();
-  const { addEntry } = useJournalContext();
+  const { entries, addEntry } = useJournalContext();
   const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
@@ -97,6 +96,20 @@ export function JournalComposer({
     if (lastWasVisible && covered > 0) window.scrollBy(0, covered);
   }, [text, inputRef]);
 
+  // What a consequence will join (see buildEntryBlocks): the latest
+  // entry, unless the session was just opened.
+  const lastEntry = useMemo(() => {
+    let last: (typeof entries)[number] | undefined;
+    for (const e of entries) {
+      if (e.adventureId === adventureId && (!last || e.timestamp >= last.timestamp)) last = e;
+    }
+    return last && last.kind !== "session" ? last : undefined;
+  }, [entries, adventureId]);
+
+  // A session title is optional (it falls back to the date); anything
+  // else needs some text.
+  const canSend = mode === "session" || text.trim() !== "";
+
   const placeholder =
     mode === "consequence"
       ? t.oracle.consequencePlaceholder
@@ -110,7 +123,7 @@ export function JournalComposer({
       addEntry(adventureId, "session", text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString());
       onModeChange("note");
     } else {
-      if (!text.trim()) return;
+      if (!canSend) return;
       addEntry(adventureId, mode, text.trim(), mode === "consequence" ? linkedRollId : undefined);
     }
     setText("");
@@ -119,8 +132,8 @@ export function JournalComposer({
 
   const tools: { id: Tool; label: string; title: string; Icon: IconType }[] = [
     { id: "oracle", label: t.journal.toolOracle, title: t.journal.toolOracleTitle, Icon: IconOracle },
-    { id: "table", label: t.journal.toolTable, title: t.journal.toolTableTitle, Icon: IconTable },
     { id: "dice", label: t.journal.toolDice, title: t.journal.toolDiceTitle, Icon: IconDice },
+    { id: "table", label: t.journal.toolTable, title: t.journal.toolTableTitle, Icon: IconTable },
   ];
   const openTool = tools.find((x) => x.id === tool);
 
@@ -135,6 +148,19 @@ export function JournalComposer({
       data-composer
       className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
+      {mode === "consequence" && (
+        <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
+          <IconConsequence size={14} className="shrink-0 text-gold" />
+          {lastEntry ? (
+            <>
+              <span className="shrink-0">{t.journal.consequenceJoins}</span>
+              <span className="min-w-0 truncate italic text-parchment">«{lastEntry.text}»</span>
+            </>
+          ) : (
+            <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
+          )}
+        </p>
+      )}
       <div className="flex items-center gap-1.5">
         {/* While typing on a narrow phone they fold away, to leave the
             width to the text (as in a messaging app). */}
@@ -180,9 +206,10 @@ export function JournalComposer({
           />
           <button
             type="submit"
+            disabled={!canSend}
             aria-label={t.journal.sendButton}
             title={t.journal.sendButton}
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold text-ink-950 transition hover:bg-gold-soft active:scale-95"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold text-ink-950 transition hover:bg-gold-soft active:scale-95 disabled:bg-ink-700 disabled:text-parchment-dim/50 disabled:active:scale-100"
           >
             <IconSend size={17} />
           </button>
@@ -229,8 +256,8 @@ export function JournalComposer({
           </div>
           <h2 className="sr-only">{openTool.title}</h2>
           {tool === "oracle" && <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />}
-          {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
           {tool === "dice" && <DiceTool adventureId={adventureId} onRolled={rolled} />}
+          {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
         </Modal>
       )}
     </div>
@@ -249,26 +276,23 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
 
   useDismiss(open, rootRef, () => setOpen(false));
 
-  const options: { mode: ComposerMode; label: string; hint: string }[] = [
-    ...COMPOSER_KINDS.map((k) => ({
-      mode: k,
-      label: {
-        note: t.journal.kindNote,
-        action: t.journal.kindAction,
-        roll: t.journal.kindRoll,
-        consequence: t.journal.kindConsequence,
-      }[k],
-      hint: {
-        note: t.journal.composerHintNote,
-        action: t.journal.composerHintAction,
-        roll: t.journal.composerHintRoll,
-        consequence: t.journal.composerHintConsequence,
-      }[k],
-    })),
-    { mode: "session", label: t.journal.newSessionButton, hint: t.journal.composerHintSession },
-  ];
-  const current = options.find((o) => o.mode === mode)!;
+  const kinds: { mode: ComposerMode; label: string; hint: string }[] = COMPOSER_KINDS.map((k) => ({
+    mode: k,
+    label: { note: t.journal.kindNote, action: t.journal.kindAction, consequence: t.journal.kindConsequence }[k],
+    hint: {
+      note: t.journal.composerHintNote,
+      action: t.journal.composerHintAction,
+      consequence: t.journal.composerHintConsequence,
+    }[k],
+  }));
+  const session = { mode: "session" as const, label: t.journal.newSessionButton, hint: t.journal.composerHintSession };
+  const current = [...kinds, session].find((o) => o.mode === mode)!;
   const CurrentIcon = MODE_ICON[mode];
+
+  function pick(next: ComposerMode) {
+    onChange(next);
+    setOpen(false);
+  }
 
   return (
     // No "relative": the menu is positioned against the whole composer
@@ -302,7 +326,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
           role="menu"
           className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
         >
-          {options.map((o) => {
+          {kinds.map((o) => {
             const Icon = MODE_ICON[o.mode];
             const selected = o.mode === mode;
             return (
@@ -311,10 +335,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                 type="button"
                 role="menuitemradio"
                 aria-checked={selected}
-                onClick={() => {
-                  onChange(o.mode);
-                  setOpen(false);
-                }}
+                onClick={() => pick(o.mode)}
                 className={[
                   "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
                   selected ? "bg-gold/10" : "",
@@ -330,6 +351,27 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
               </button>
             );
           })}
+          {/* Not one more kind of entry but a chapter break: set apart
+              below a divider and drawn as an action. */}
+          <div role="separator" className="mx-4 my-1.5 border-t border-ink-border" />
+          <button
+            type="button"
+            role="menuitemradio"
+            aria-checked={mode === "session"}
+            onClick={() => pick("session")}
+            className={[
+              "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
+              mode === "session" ? "bg-gold/10" : "",
+            ].join(" ")}
+          >
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold">
+              <IconSession size={16} />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-display text-sm font-semibold text-gold">{session.label}</span>
+              <span className="block text-xs text-parchment-dim">{session.hint}</span>
+            </span>
+          </button>
         </div>
       )}
     </div>

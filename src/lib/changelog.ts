@@ -18,6 +18,31 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-05",
+    text: {
+      es: {
+        title: "Capítulo VIII · La mesa, recogida",
+        intro: "El posadero ordenó la mesa de juego: cada cosa en su sitio y a mano.",
+        items: [
+          "Las consecuencias se unen siempre a la última entrada (también a una acción o una nota), y al escribirlas ves a cuál se van a unir.",
+          "El botón de enviar se apaga mientras no hayas escrito nada.",
+          "«Nueva sesión» va aparte en el menú de tipos de entrada, para que no parezca una entrada más. Y desaparece «Tirada»: para tirar ya están los dados.",
+          "En la mesa de juego, los dados van justo debajo del oráculo, y de las tablas solo ves la inspiración rápida y tus favoritas; el resto, con el buscador.",
+        ],
+      },
+      en: {
+        title: "Chapter VIII · A tidier table",
+        intro: "The innkeeper tidied up the game table: everything in its place and within reach.",
+        items: [
+          "Consequences always join the latest entry (an action or a note too), and while writing one you see which entry it will join.",
+          "The send button stays off until you've written something.",
+          "“New session” sits apart in the entry type menu, so it doesn't look like one more entry. And “Roll” is gone: the dice are there for rolling.",
+          "At the game table, the dice sit right below the oracle, and of the tables you only see quick inspiration and your favorites; the rest, through search.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-04",
     text: {
       es: {

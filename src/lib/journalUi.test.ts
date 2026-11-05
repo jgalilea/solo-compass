@@ -55,7 +55,16 @@ describe("buildEntryBlocks", () => {
 
   it("a standalone roll also gathers its consequences", () => {
     const blocks = buildEntryBlocks([entry("roll"), entry("consequence"), entry("action"), entry("consequence")]);
-    expect(kinds(blocks)).toEqual([["roll", "consequence"], ["action"], ["consequence"]]);
+    expect(kinds(blocks)).toEqual([["roll", "consequence"], ["action", "consequence"]]);
+  });
+
+  it("a consequence always joins the entry right before it", () => {
+    const blocks = buildEntryBlocks([entry("note"), entry("consequence"), entry("consequence"), entry("action")]);
+    expect(kinds(blocks)).toEqual([["note", "consequence", "consequence"], ["action"]]);
+  });
+
+  it("a consequence with nothing before it stands alone", () => {
+    expect(kinds(buildEntryBlocks([entry("consequence")]))).toEqual([["consequence"]]);
   });
 });
 

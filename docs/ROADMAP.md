@@ -26,6 +26,15 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 - Compartir con el menú del sistema (2026-11-04): aventura (el mismo
   .md Lonelog que la exportación) y tablas propias. Solo aparece donde
   el navegador tiene Web Share; si falla, se descarga.
+- Ajustes del composer y la mesa de juego (2026-11-05): enviar
+  desactivado con el campo vacío (salvo "Nueva sesión", que usa la
+  fecha); fuera el tipo "Tirada" del menú (solo escribía texto: para
+  eso están los dados); "Nueva sesión" separada tras una línea; una
+  consecuencia se une siempre a la entrada anterior, de cualquier tipo,
+  y el composer dice a cuál ("Se une a «…»"). Herramientas en el orden
+  oráculo, dados, tablas (panel de escritorio y hoja del móvil); la
+  herramienta de tablas solo muestra inspiración rápida, las favoritas
+  y la búsqueda para el resto.
 
 - Licencia GPL-3.0 (`LICENSE`, README, `package.json`); antes AGPL-3.0.
 - Tests con Vitest (`npm test`), que bloquean el despliegue si fallan:

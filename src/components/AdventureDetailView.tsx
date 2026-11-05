@@ -591,11 +591,11 @@ export function AdventureDetailView() {
         <PanelSection Icon={IconOracle} title={t.journal.toolOracleTitle}>
           <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
-        <PanelSection Icon={IconTable} title={t.journal.toolTableTitle}>
-          <TableTool adventureId={adventure.id} onRolled={handleRolled} />
-        </PanelSection>
         <PanelSection Icon={IconDice} title={t.journal.toolDiceTitle}>
           <DiceTool adventureId={adventure.id} onRolled={handleRolled} />
+        </PanelSection>
+        <PanelSection Icon={IconTable} title={t.journal.toolTableTitle}>
+          <TableTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
       </aside>
 
