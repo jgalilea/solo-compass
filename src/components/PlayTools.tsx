@@ -5,6 +5,7 @@ import { usePlayActions } from "../hooks/usePlayActions";
 import type { Likelihood } from "../lib/oracle";
 import type { MeaningTable } from "../lib/tables";
 import { loadFavoriteTableIds } from "../lib/tableFavorites";
+import { gameOfTable } from "../lib/tableGames";
 import { useMeaningTables } from "../hooks/useMeaningTables";
 import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
@@ -67,14 +68,22 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
 export function TableTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();
   const { rollTable, rollInspiration } = usePlayActions();
-  const { all } = useMeaningTables();
   const [query, setQuery] = useState("");
   const favorites = useMemo(() => loadFavoriteTableIds(), []);
   // Only the favourites are listed; the rest are reached by searching,
   // so a long list of tables doesn't push everything else out of sight.
+  // Likewise, only the favourites' games are loaded until you search.
   const q = normalizeForSearch(query.trim());
+  const favoriteGames = useMemo(
+    () => ["solo-compass" as const, ...[...favorites].map(gameOfTable).filter((id) => id !== undefined)],
+    [favorites],
+  );
+  const { all, blocks, inspiration } = useMeaningTables(q ? "all" : favoriteGames);
+  const loading = blocks.some((b) => b.status === "loading");
   const visible = q
-    ? all.filter((table) => normalizeForSearch(table.name).includes(q))
+    ? all.filter(
+        (table) => normalizeForSearch(table.name).includes(q) || normalizeForSearch(table.game.name).includes(q),
+      )
     : all.filter((table) => favorites.has(table.id));
 
   function roll(table: MeaningTable) {
@@ -86,7 +95,8 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
       {/* Action + theme in one go: the quickest way out of a blank. */}
       <button
         type="button"
-        onClick={() => onRolled(rollInspiration(adventureId).id)}
+        onClick={() => inspiration && onRolled(rollInspiration(inspiration, adventureId).id)}
+        disabled={!inspiration}
         title={t.tables.inspirationDescription}
         className="flex w-full items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3.5 py-2.5 text-left transition hover:bg-gold/20 active:scale-[0.99]"
       >
@@ -106,13 +116,18 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
       </label>
       {visible.length === 0 && (
         <p className="px-1 text-xs text-parchment-dim/70">
-          {q ? interpolate(t.tables.noResultsDescription, { query: query.trim() }) : t.tables.toolTableHint}
+          {loading
+            ? t.common.loading
+            : q
+              ? interpolate(t.tables.noResultsDescription, { query: query.trim() })
+              : t.tables.toolTableHint}
         </p>
       )}
       {/* Two columns when there's room (the sheet on tablet), one in the narrow panel. */}
       <ul className="grid gap-1.5 @lg:grid-cols-2">
         {visible.map((table) => (
-          <li key={table.id}>
+          // min-w-0: a long name truncates instead of widening the column.
+          <li key={table.id} className="min-w-0">
             <button
               type="button"
               onClick={() => roll(table)}
@@ -121,6 +136,8 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
             >
               {favorites.has(table.id) && <IconStar size={14} filled className="shrink-0 text-gold" />}
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">{table.name}</span>
+              {/* Two games can share a table name (Action). */}
+              {table.game.tag && <span className="shrink-0 text-xs text-parchment-dim/70">{table.game.tag}</span>}
               <span className="shrink-0 rounded-md border border-gold/40 px-1.5 py-0.5 text-xs font-medium text-gold">
                 {table.dice}
               </span>

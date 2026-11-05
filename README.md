@@ -65,7 +65,7 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. There are three original tables: **Random event** (d66), **NPC action** (d20) and **Scene descriptor** (d20). You can search them, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Solo Compass has its own generic tables, plus the 30 oracle tables of **Ironsworn** in English and Spanish, each game in its own folding block. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
@@ -151,7 +151,8 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - **Recluse** oracle by Graven Utterance (Oliver N), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://gravenutterance.itch.io/recluse>
 - **Lonelog** notation by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://lonelog.itch.io/lonelog>
 - **Tabler Icons**, MIT.
-- The meaning tables are original and written for this app.
+- Solo Compass's own meaning tables are original and written for this app.
+- **Ironsworn** oracle tables: this work is based on Ironsworn, created by Shawn Tomkin, and licensed for our use under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/). Not an official Tomkin Press or Ironsworn product. English text via [Datasworn](https://github.com/rsek/datasworn); the Spanish translation is our own, with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference.
 
 The Solo Compass code is released under the [GNU General Public License v3.0](LICENSE). You can use, study, change and share it. If you distribute a modified version, you must make its source code available under the same license.
 

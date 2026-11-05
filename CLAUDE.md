@@ -82,8 +82,9 @@ No backend; persistence is split by access pattern, not by feature:
   History auto-migrates once from a legacy `localStorage` version if found.
 - **localStorage**, for small settings read synchronously before first
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
-  language, selected oracle, favorite tables, active-adventure id
-  (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`).
+  language, selected oracle, favorite tables, unfolded table blocks,
+  active-adventure id (`activeAdventure.ts`, `theme.ts`, `mode.ts`,
+  `tableFavorites.ts`, `tableSections.ts`).
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
   browser (`navigator.storage.persist()`) not to evict its data. Never call
   it silently — Firefox shows its own permission prompt — always behind
@@ -150,8 +151,8 @@ Offered only as a discreet link in the empty-journal state (never
 created on its own, and opened without making it active). The script
 lives in the dictionaries (`t.sample.script`); rolls are given as dice
 and written with the same format as `usePlayActions` (oracle verdict via
-`judgeDice` in `oracle.ts`, table results from the real tables), then
-imported as Lonelog. A test keeps both languages' scripts in step.
+`judgeDice` in `oracle.ts`, table results from the real tables, loaded
+first with `loadMeaningTables`), then imported as Lonelog. A test keeps both languages' scripts in step.
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -171,24 +172,57 @@ skewed likelihood) lives in `src/lib/oracle.ts` and is called directly
 (via `usePlayActions`) rather than dispatched by oracle id — when a second
 oracle is added, that dispatch is the thing to introduce.
 
-### Tables (`src/lib/tables.ts`, `src/lib/customTables.ts`)
+### Tables (`src/lib/tables.ts`, `tableGames.ts`, `customTables.ts`)
 
 `DiceType` is `"d66"` (two d6 as tens/units) or any `dN`. Tables have an
 optional `game` attribution/link, favorites, and search. Built-in tables
-are original, generic tables written for the app (no content copied from
-licensed games); their texts live in the locale dictionaries
-(`tables.entries`, one string per die value in order). Adding a built-in
-table is a data change, not a structural one.
+come one game at a time, one folding block per game on the Tables screen
+(which blocks are open is a per-device localStorage setting,
+`tableSections.ts`).
+
+**Each game's data is loaded on its own, never in the main bundle.**
+`src/lib/tableData/<game>.ts` holds its tables with both languages side
+by side (rows `[from, to, en, es]`, no `es` for proper names); each file
+is a separate chunk behind a dynamic `import()` in `TABLE_GAMES`
+(`tableGames.ts`). The index there stays small: title, credit, table
+count (for the folded block) and which ids are the game's (`owns`, to
+find a favourite's game without loading). Loaded games are cached for
+the session in a tiny external store (`loadGame`, read with
+`useSyncExternalStore`); the service worker precaches every chunk, so it
+works offline. Screens say which games they need through
+`useMeaningTables(games)`: the Tables screen asks for Solo Compass's
+(quick inspiration), unfolded blocks and the favourites' games, and
+`"all"` while searching; the game table, the favourites' games until
+you search. Never import a data file statically (that pulls it back into
+the main bundle); outside React use `loadMeaningTables`. A test keeps
+each game's `count` and ids in step with its data. Adding a game: a data
+file plus its `TABLE_GAMES` entry.
+
+- Solo Compass's own (`tableData/soloCompass.ts`): original, generic
+  tables written for the app (no content copied from licensed games).
+  Their ids are listed in `SOLO_COMPASS_TABLE_IDS` (the sample script
+  refers to them).
+- Third-party tables under an open licence: Ironsworn's oracles
+  (CC BY 4.0, `tableData/ironsworn.ts`), English from Datasworn and our
+  own Spanish translation. Each carries its `game` credit, and
+  Settings → About has Tomkin Press's attribution wording verbatim.
+  Never add text that is only CC BY-NC-SA (Starforged's full rulebook,
+  Sundered Isles' tables): check each table's licence in Datasworn.
+  A third-party game has a `game.tag`: rolls are logged as
+  "Ironsworn: Action" (`tableRollName`), since names repeat across games.
 
 The player's own tables (`customTables.ts`, state in the
 `CustomTables` context) are converted to the same `MeaningTable`
-shape (`custom: true`); `useMeaningTables` returns built-in + custom,
-so screens never read either list on their own. Their text format
+shape (`custom: true`); they're read from IndexedDB only when a table
+screen asks (`load`, called by `useMeaningTables`), not at start-up.
+`useMeaningTables` returns built-in + custom, so screens never read
+either list on their own. Their text format
 (editor, import, export) is deliberately permissive: one result per
 line, optional leading ranges, list markers, Markdown tables; the .md
 export is read back by the same parser (tested). "Quick inspiration"
-(`rollInspiration` in `usePlayActions`) rolls Acción + Tema together:
-two history rolls, one journal entry.
+(`rollInspiration` in `usePlayActions`, given the tables by
+`useMeaningTables().inspiration`) rolls Acción + Tema together: two
+history rolls, one journal entry.
 
 ### Journal search and stats
 

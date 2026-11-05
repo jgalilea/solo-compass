@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { MeaningTable } from "../lib/tables";
 import { formatRange } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
+import { loadOpenTableSections, saveOpenTableSections } from "../lib/tableSections";
+import { gameOfTable, TABLE_GAMES } from "../lib/tableGames";
 import {
   exportTableToMarkdown,
   parseTablesFile,
@@ -25,6 +27,7 @@ import { TableEditorDialog } from "./TableEditorDialog";
 import { Toast } from "./Toast";
 import {
   IconAlertCircle,
+  IconChevronRight,
   IconClose,
   IconDice,
   IconDownload,
@@ -70,13 +73,12 @@ type ToastState =
  *
  * On top, the quick inspiration (action + theme in one roll); then
  * favourites, the player's own tables (create, import, edit, export,
- * share) and the built-in ones.
+ * share) and the built-in ones, one folding block per game.
  */
 export function TablesView() {
   const { adventures, activeAdventureId } = useJournalContext();
   const { rollTable, rollInspiration, addConsequence } = usePlayActions();
   const { tables: customTables, addTables, updateTable, removeTable, restoreTable } = useCustomTablesContext();
-  const { builtIn, custom } = useMeaningTables();
   const { t } = useLocaleContext();
   const [last, setLast] = useState<LastResult | null>(null);
   const [rollingId, setRollingId] = useState<string | null>(null);
@@ -84,6 +86,21 @@ export function TablesView() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() =>
     loadFavoriteTableIds(),
   );
+  const [openSections, setOpenSections] = useState<Set<string>>(() => loadOpenTableSections());
+  const q = normalizeForSearch(query.trim());
+  // Each game is loaded only when needed: Solo Compass's (quick
+  // inspiration), unfolded blocks, the favourites' games, and all of
+  // them while searching.
+  const { blocks, custom, inspiration, retry } = useMeaningTables(
+    q
+      ? "all"
+      : [
+          "solo-compass",
+          ...TABLE_GAMES.filter((g) => openSections.has(g.id)).map((g) => g.id),
+          ...[...favoriteIds].map(gameOfTable).filter((id) => id !== undefined),
+        ],
+  );
+  const builtIn = blocks.flatMap((b) => b.tables);
   const [editor, setEditor] = useState<{ id?: string; draft?: CustomTableDraft } | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,7 +123,7 @@ export function TablesView() {
       return {
         sourceId: table.id,
         rollId: entry.id,
-        title: table.name,
+        title: entry.tableName,
         detail: `${table.dice} · ${entry.rolls.join(" · ")}`,
         total: entry.total,
         text: entry.resultText,
@@ -115,14 +132,15 @@ export function TablesView() {
   }
 
   function handleInspiration() {
+    if (!inspiration) return;
     withRollPause(INSPIRATION_ID, () => {
-      const inspiration = rollInspiration();
+      const rolled = rollInspiration(inspiration);
       return {
         sourceId: INSPIRATION_ID,
-        rollId: inspiration.id,
+        rollId: rolled.id,
         title: t.tables.inspirationName,
-        detail: inspiration.detail,
-        text: inspiration.text,
+        detail: rolled.detail,
+        text: rolled.text,
       };
     });
   }
@@ -133,6 +151,16 @@ export function TablesView() {
       if (next.has(id)) next.delete(id);
       else next.add(id);
       saveFavoriteTableIds(next);
+      return next;
+    });
+  }
+
+  function toggleSection(id: string) {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      saveOpenTableSections(next);
       return next;
     });
   }
@@ -178,7 +206,6 @@ export function TablesView() {
     );
   }
 
-  const q = normalizeForSearch(query.trim());
   const matches = useCallback(
     (table: MeaningTable) =>
       !q ||
@@ -192,8 +219,12 @@ export function TablesView() {
     [custom, builtIn, favoriteIds, matches],
   );
   const otherCustom = custom.filter((x) => !favoriteIds.has(x.id) && matches(x));
-  const otherBuiltIn = builtIn.filter((x) => !favoriteIds.has(x.id) && matches(x));
-  const nothingFound = q && favoriteTables.length + otherCustom.length + otherBuiltIn.length === 0;
+  const otherBlocks = blocks.map((b) => ({ ...b, tables: b.tables.filter((x) => !favoriteIds.has(x.id) && matches(x)) }));
+  // Only once every game has been searched: not while one is still loading.
+  const nothingFound =
+    q &&
+    blocks.every((b) => b.status === "ready" || b.status === "error") &&
+    favoriteTables.length + otherCustom.length + otherBlocks.reduce((n, b) => n + b.tables.length, 0) === 0;
 
   function renderRow(table: MeaningTable) {
     return (
@@ -293,7 +324,7 @@ export function TablesView() {
           {!q && (
             <InspirationCard
               last={last?.sourceId === INSPIRATION_ID ? last : null}
-              rolling={rollingId === INSPIRATION_ID}
+              rolling={rollingId === INSPIRATION_ID || !inspiration}
               activeAdventure={activeAdventure}
               onRoll={handleInspiration}
               onSaveConsequence={addConsequence}
@@ -325,7 +356,14 @@ export function TablesView() {
 
               {/* Always there (unless searching), so creating a table is never hidden. */}
               {(!q || otherCustom.length > 0) && (
-                <TableSection title={t.tables.customHeading} actions={customActions}>
+                <FoldingSection
+                  title={t.tables.customHeading}
+                  count={q ? otherCustom.length : custom.length}
+                  open={!!q || openSections.has("custom")}
+                  searching={!!q}
+                  onToggle={() => toggleSection("custom")}
+                  actions={customActions}
+                >
                   {otherCustom.length > 0 ? (
                     <ul className="grid gap-3 2xl:grid-cols-2">{otherCustom.map(renderRow)}</ul>
                   ) : (
@@ -335,13 +373,42 @@ export function TablesView() {
                       </p>
                     )
                   )}
-                </TableSection>
+                </FoldingSection>
               )}
 
-              {otherBuiltIn.length > 0 && (
-                <TableSection title={t.tables.builtInHeading}>
-                  <ul className="grid gap-3 2xl:grid-cols-2">{otherBuiltIn.map(renderRow)}</ul>
-                </TableSection>
+              {otherBlocks.map(
+                (block) =>
+                  // While searching, a game without matches is left out once it's loaded.
+                  (!q || block.status !== "ready" || block.tables.length > 0) && (
+                    <FoldingSection
+                      key={block.id}
+                      title={block.title}
+                      note={block.note}
+                      count={q ? block.tables.length : block.count}
+                      open={!!q || openSections.has(block.id)}
+                      searching={!!q}
+                      onToggle={() => toggleSection(block.id)}
+                    >
+                      {block.status === "error" ? (
+                        <div className="flex flex-wrap items-center gap-3 px-1 text-sm text-parchment-dim">
+                          {t.tables.loadError}
+                          <button
+                            type="button"
+                            onClick={() => retry(block.id)}
+                            className="rounded-xl border border-ink-border px-3 py-1.5 text-parchment transition hover:border-gold/50 hover:text-gold"
+                          >
+                            {t.common.retry}
+                          </button>
+                        </div>
+                      ) : block.status === "ready" ? (
+                        block.tables.length > 0 && (
+                          <ul className="grid gap-3 2xl:grid-cols-2">{block.tables.map(renderRow)}</ul>
+                        )
+                      ) : (
+                        <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
+                      )}
+                    </FoldingSection>
+                  ),
               )}
             </>
           )}
@@ -407,6 +474,60 @@ function TableSection({ title, actions, children }: { title: ReactNode; actions?
         {actions}
       </div>
       {children}
+    </section>
+  );
+}
+
+/**
+ * A block of tables (yours, or one game's) that folds away. While
+ * searching it's always open: it only shows the tables that match.
+ */
+function FoldingSection({
+  title,
+  note,
+  count,
+  open,
+  searching,
+  onToggle,
+  actions,
+  children,
+}: {
+  title: string;
+  note?: string;
+  count: number;
+  open: boolean;
+  searching: boolean;
+  onToggle: () => void;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  const { t } = useLocaleContext();
+  return (
+    <section className="rounded-2xl border border-ink-border bg-ink-900/40">
+      {/* On phones the actions go under the title, so it keeps its width. */}
+      <div className="flex flex-col sm:flex-row sm:items-center">
+        <button
+          type="button"
+          onClick={onToggle}
+          disabled={searching}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-4 text-left transition enabled:hover:bg-ink-800/40 disabled:cursor-default"
+        >
+          <IconChevronRight
+            size={16}
+            className={`shrink-0 text-gold transition-transform ${open ? "rotate-90" : ""}`}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg leading-snug text-parchment">{title}</span>
+            {note && <span className="mt-0.5 block text-xs text-parchment-dim">{note}</span>}
+          </span>
+          <span className="shrink-0 text-xs text-parchment-dim/60">
+            {interpolate(t.tables.sectionCount, { count })}
+          </span>
+        </button>
+        {actions && <div className="px-4 pb-4 sm:py-0 sm:pl-0 sm:pr-3">{actions}</div>}
+      </div>
+      {open && <div className="px-3 pb-3 sm:px-4 sm:pb-4">{children}</div>}
     </section>
   );
 }

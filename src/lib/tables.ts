@@ -1,23 +1,15 @@
 /**
- * Meaning tables.
+ * Meaning tables: the shape every screen rolls on, and the dice.
  *
- * Built-in tables are original, generic content (written for Solo
- * Compass, without copying tables from any licensed game), meant to
- * work in any setting. Their texts (name, description and entries) are
- * bilingual and live in the dictionary; getMeaningTables combines them
- * with the structural data here. Entries are listed in order: the first
- * one matches the die's lowest value. Adding a built-in table is just
- * adding data here and its texts in the dictionary.
- *
- * The player's own tables (customTables.ts) are converted to the same
- * MeaningTable shape, so rolling, history and the journal don't tell
- * them apart.
+ * The tables themselves come from two sources: the built-in ones, one
+ * game at a time and loaded on demand (tableGames.ts, data in
+ * tableData/), and the player's own (customTables.ts). Both are turned
+ * into the same MeaningTable, so rolling, history and the journal don't
+ * tell them apart.
  *
  * Dice: "d66" is two d6 read as tens and units (11–16, 21–26 … 61–66);
  * any other "dN" is a single die with N faces (d6, d20, d100, d7…).
  */
-
-import type { Dictionary } from "./i18n";
 
 export type DiceType = "d66" | `d${number}`;
 
@@ -33,6 +25,12 @@ export interface GameRef {
   url?: string;
   author?: string;
   license?: string;
+  /**
+   * Short name put before the table's in the history and the journal
+   * ("Ironsworn: Action"), where tables of every game are mixed and two
+   * of them can share a name. No tag for Solo Compass's own.
+   */
+  tag?: string;
 }
 
 export interface MeaningTable {
@@ -45,8 +43,6 @@ export interface MeaningTable {
   /** Made or imported by the player (editable, not translated). */
   custom?: boolean;
 }
-
-export type TableKey = keyof Dictionary["tables"]["entries"];
 
 /** Faces of a single die ("d20" -> 20); 0 if it isn't a valid die. */
 export function diceSides(dice: string): number {
@@ -66,48 +62,9 @@ export function diceValues(dice: DiceType): number[] {
   return Array.from({ length: diceSides(dice) }, (_, i) => i + 1);
 }
 
-// Structural (language-independent) data for each table, in the order
-// they're listed: meaning (action + theme), the classics, description,
-// then generic prompts.
-const TABLE_STRUCTURE: { id: string; dice: DiceType; key: TableKey }[] = [
-  { id: "accion", dice: "d66", key: "accion" },
-  { id: "tema", dice: "d66", key: "tema" },
-  { id: "evento-aleatorio", dice: "d66", key: "eventoAleatorio" },
-  { id: "accion-pnj", dice: "d20", key: "accionPnj" },
-  { id: "descriptor-escena", dice: "d20", key: "descriptorEscena" },
-  { id: "modo", dice: "d20", key: "modo" },
-  { id: "aspecto", dice: "d20", key: "aspecto" },
-  { id: "rasgo-pnj", dice: "d20", key: "rasgoPnj" },
-  { id: "motivacion", dice: "d20", key: "motivacion" },
-  { id: "complicacion", dice: "d20", key: "complicacion" },
-  { id: "lugar", dice: "d20", key: "lugar" },
-  { id: "hallazgo", dice: "d20", key: "hallazgo" },
-  { id: "clima", dice: "d6", key: "clima" },
-];
-
-/** The two tables "Quick inspiration" rolls together (action + theme). */
-export const INSPIRATION_TABLE_IDS = ["accion", "tema"] as const;
-
-export function builtInTableId(key: TableKey): string {
-  return TABLE_STRUCTURE.find((s) => s.key === key)!.id;
-}
-
-export function getMeaningTables(t: Dictionary): MeaningTable[] {
-  return TABLE_STRUCTURE.map((s) => {
-    const texts = t.tables.entries[s.key];
-    const entries = diceValues(s.dice).map((value, i) => ({
-      range: [value, value] as [number, number],
-      text: texts[i] ?? t.tables.noEntryFallback,
-    }));
-    return {
-      id: s.id,
-      name: t.tables.names[s.key],
-      description: t.tables.descriptions[s.key],
-      dice: s.dice,
-      game: { name: t.tables.genericGame },
-      entries,
-    };
-  });
+/** How a roll on this table is named in the history and the journal. */
+export function tableRollName(table: MeaningTable): string {
+  return table.game.tag ? `${table.game.tag}: ${table.name}` : table.name;
 }
 
 export function diceMax(dice: DiceType): number {

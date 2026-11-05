@@ -21,6 +21,29 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-05",
     text: {
       es: {
+        title: "Capítulo IX · Juramentos de hierro",
+        intro: "Una viajera de las Tierras de Hierro dejó en la posada su libro de oráculos, traducido a nuestra lengua.",
+        items: [
+          "Las tablas de oráculo de Ironsworn, de Shawn Tomkin: Acción y Tema, lugares, asentamientos, personajes, nombres, giros argumentales, Pagar el precio y más. Treinta tablas, en inglés y en español.",
+          "Cada juego tiene su propio bloque en Tablas (las tuyas, las de Solo Compass y las de Ironsworn), que se pliega y se despliega. La búsqueda las encuentra todas aunque estén plegadas.",
+          "En el diario y en el historial, las tiradas de Ironsworn llevan su nombre delante («Ironsworn: Acción»), para no confundirlas con las de serie.",
+        ],
+      },
+      en: {
+        title: "Chapter IX · Iron vows",
+        intro: "A traveller from the Ironlands left her book of oracles at the inn.",
+        items: [
+          "Ironsworn's oracle tables, by Shawn Tomkin: Action and Theme, places, settlements, characters, names, plot twists, Pay the Price and more. Thirty tables, in English and Spanish.",
+          "Each game has its own block in Tables (yours, Solo Compass's and Ironsworn's), which folds and unfolds. Search finds them all, folded or not.",
+          "In the journal and the history, Ironsworn rolls carry its name in front (“Ironsworn: Action”), so they don't get mixed up with the built-in ones.",
+        ],
+      },
+    },
+  },
+  {
+    date: "2026-11-05",
+    text: {
+      es: {
         title: "Capítulo VIII · La mesa, recogida",
         intro: "El posadero ordenó la mesa de juego: cada cosa en su sitio y a mano.",
         items: [

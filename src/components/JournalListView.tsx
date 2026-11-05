@@ -6,6 +6,7 @@ import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
+import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import { searchEntries } from "../lib/journalSearch";
 import { normalizeForSearch } from "../lib/text";
@@ -42,7 +43,7 @@ export function JournalListView() {
     importAdventure,
     retry,
   } = useJournalContext();
-  const { t } = useLocaleContext();
+  const { t, locale } = useLocaleContext();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -165,10 +166,16 @@ export function JournalListView() {
 
   // The sample opens without being activated: oracle and table rolls
   // mustn't end up in it unless you ask for it.
+  // Its table rolls come from Solo Compass's tables, loaded on demand.
+  // If they can't be loaded, the link just does nothing.
   function handleOpenSample() {
-    const { name, markdown } = buildSampleAdventure(t);
-    const adventure = importAdventure(name, markdown);
-    navigate(`/diario/${adventure.id}`);
+    loadMeaningTables("solo-compass", t, locale)
+      .then((tables) => {
+        const { name, markdown } = buildSampleAdventure(t, tables);
+        const adventure = importAdventure(name, markdown);
+        navigate(`/diario/${adventure.id}`);
+      })
+      .catch(() => undefined);
   }
 
   const hasAnyAdventures = adventures.length > 0;

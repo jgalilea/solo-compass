@@ -25,6 +25,7 @@ import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
+import { IRONSWORN_LICENSE_URL, IRONSWORN_URL } from "../lib/tableGames";
 import { backupFilename, BackupError, buildBackup, downloadBackupFile, restoreBackup } from "../lib/backup";
 import {
   formatSince,
@@ -456,6 +457,24 @@ function AboutSettings() {
         licenseUrl={oracle.licenseUrl}
         url={oracle.url}
       />
+
+      <Credit
+        label={t.about.tablesUsedBy}
+        name="Ironsworn"
+        author="Shawn Tomkin"
+        license="CC BY 4.0"
+        licenseUrl={IRONSWORN_LICENSE_URL}
+        url={IRONSWORN_URL}
+      >
+        {/* The wording Tomkin Press asks for, in English as published. */}
+        <p className="mt-3 text-xs italic text-parchment-dim">
+          This work is based on Ironsworn, created by Shawn Tomkin, and licensed for our use under the Creative
+          Commons Attribution 4.0 International License.
+        </p>
+        <p className="mt-2 text-xs text-parchment-dim">
+          {t.about.notOfficial} {t.about.translationNote}
+        </p>
+      </Credit>
 
       <Credit
         label={t.about.journalUsedBy}

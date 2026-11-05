@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DICTIONARIES } from "./i18n";
+import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";
 import { parseMarkdownToEntries } from "./lonelog";
 import { splitRollText } from "./journalUi";
@@ -14,9 +15,9 @@ describe("sample adventure", () => {
   });
 
   for (const lang of ["es", "en"] as const) {
-    it(`imports in full with the oracle answers recognised (${lang})`, () => {
+    it(`imports in full with the oracle answers recognised (${lang})`, async () => {
       const t = DICTIONARIES[lang];
-      const { markdown } = buildSampleAdventure(t);
+      const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
       expect(markdown).not.toMatch(/undefined|\{\w+\}/);
 
       const entries = parseMarkdownToEntries(markdown, "a", 0);

@@ -1,4 +1,5 @@
 import type { Answer, Likelihood, Qualifier } from "../oracle";
+import type { SoloCompassTableId } from "../tableGames";
 import type { ThemeId } from "../theme";
 
 // Duplicated on purpose instead of importing it from components/Die.tsx,
@@ -22,7 +23,7 @@ export const LOCALES: Locale[] = ["es", "en"];
 export type SampleLine =
   | { kind: "note" | "action" | "question" | "consequence" | "session" | "roll"; text: string }
   | { oracle: [white: number, black: number] }
-  | { table: keyof Dictionary["tables"]["entries"]; roll: number[] };
+  | { table: SoloCompassTableId; roll: number[] };
 
 export interface Dictionary {
   common: {
@@ -149,6 +150,10 @@ export interface Dictionary {
     description: string;
     oracleUsedBy: string;
     journalUsedBy: string;
+    /** Ironsworn credit card: its tables, the "not official" notice and who translated them. */
+    tablesUsedBy: string;
+    notOfficial: string;
+    translationNote: string;
     creditBy: string;
     legendTitle: string;
     legendAction: string;
@@ -231,6 +236,12 @@ export interface Dictionary {
     /** Name the combined roll gets in the journal and history panel. */
     inspirationName: string;
     builtInHeading: string;
+    /** Credit under the Ironsworn block's title. */
+    ironswornNote: string;
+    /** Number of tables in a folded block. */
+    sectionCount: string;
+    /** A game's tables couldn't be loaded (e.g. offline before the app was cached). */
+    loadError: string;
     customHeading: string;
     customEmpty: string;
     /** Badge of a custom table with no source. */
@@ -277,51 +288,6 @@ export interface Dictionary {
       errorRanges: string;
       errorMixed: string;
       errorD66Lines: string;
-    };
-    entries: {
-      accion: string[];
-      tema: string[];
-      eventoAleatorio: string[];
-      accionPnj: string[];
-      descriptorEscena: string[];
-      modo: string[];
-      aspecto: string[];
-      rasgoPnj: string[];
-      motivacion: string[];
-      complicacion: string[];
-      lugar: string[];
-      hallazgo: string[];
-      clima: string[];
-    };
-    names: {
-      accion: string;
-      tema: string;
-      eventoAleatorio: string;
-      accionPnj: string;
-      descriptorEscena: string;
-      modo: string;
-      aspecto: string;
-      rasgoPnj: string;
-      motivacion: string;
-      complicacion: string;
-      lugar: string;
-      hallazgo: string;
-      clima: string;
-    };
-    descriptions: {
-      accion: string;
-      tema: string;
-      eventoAleatorio: string;
-      accionPnj: string;
-      descriptorEscena: string;
-      modo: string;
-      aspecto: string;
-      rasgoPnj: string;
-      motivacion: string;
-      complicacion: string;
-      lugar: string;
-      hallazgo: string;
-      clima: string;
     };
   };
   history: {

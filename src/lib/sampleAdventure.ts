@@ -7,19 +7,22 @@
  * are given as dice and written here in the same format as
  * `usePlayActions` (oracle with its answer, table with its result), so
  * the sample looks exactly like a real game. It's returned as Lonelog
- * and goes in through the normal import.
+ * and goes in through the normal import. The caller passes Solo
+ * Compass's own tables, already loaded (they aren't in the main bundle).
  */
 
 import type { Dictionary } from "./i18n";
 import { formatAnswer } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
-import { builtInTableId, getMeaningTables, lookupEntry } from "./tables";
+import { lookupEntry, type MeaningTable } from "./tables";
 import { formatLine } from "./lonelog";
 
-export function buildSampleAdventure(t: Dictionary): { name: string; markdown: string } {
+export function buildSampleAdventure(
+  t: Dictionary,
+  tables: MeaningTable[],
+): { name: string; markdown: string } {
   const oracleName = getOracle(DEFAULT_ORACLE_ID).name;
-  const tables = getMeaningTables(t);
 
   const lines = t.sample.script.map((line) => {
     if ("oracle" in line) {
@@ -29,7 +32,7 @@ export function buildSampleAdventure(t: Dictionary): { name: string; markdown: s
       return formatLine({ kind: "roll", text });
     }
     if ("table" in line) {
-      const table = tables.find((x) => x.id === builtInTableId(line.table))!;
+      const table = tables.find((x) => x.id === line.table)!;
       const total = line.roll.length === 2 ? line.roll[0] * 10 + line.roll[1] : line.roll[0];
       const result = lookupEntry(table, total)?.text ?? t.tables.noEntryFallback;
       return formatLine({ kind: "roll", text: `${table.name} ${line.roll.join("/")} -> ${result}` });

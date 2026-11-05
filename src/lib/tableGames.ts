@@ -1,0 +1,192 @@
+/**
+ * The built-in meaning tables, one game at a time.
+ *
+ * Each game's tables live in their own data file (src/lib/tableData/),
+ * which the build turns into its own chunk: none of them is in the app's
+ * main bundle, and a game is only downloaded when a screen needs it
+ * (e.g. Ironsworn when its block on the Tables screen is unfolded). What
+ * stays here is the small index: names, credits, how many tables each
+ * game has and which table ids belong to it, enough to draw a folded
+ * block or find a favourite's game without loading anything.
+ *
+ * Loaded games are kept for the whole session (the service worker
+ * caches every chunk, so this works offline too). The player's own
+ * tables are a separate source, loaded from IndexedDB (customTables.ts).
+ */
+
+import type { Dictionary, Locale } from "./i18n";
+import type { DiceType, GameRef, MeaningTable } from "./tables";
+
+/** A data file's row: the range and its text in each language. */
+export type TableRow = [from: number, to: number, en: string, es?: string];
+
+/**
+ * A table as the data files ship it, with both languages side by side.
+ * A row without Spanish (proper names) reads the same in both.
+ */
+export interface TableData {
+  id: string;
+  dice: DiceType;
+  name: Record<Locale, string>;
+  description: Record<Locale, string>;
+  rows: TableRow[];
+}
+
+export type GameId = "solo-compass" | "ironsworn";
+
+export interface TableGame {
+  id: GameId;
+  /** Title of its block on the Tables screen. */
+  title: (t: Dictionary) => string;
+  /** Credit under the title. */
+  note?: (t: Dictionary) => string;
+  game: (t: Dictionary) => GameRef;
+  /** How many tables it has, shown on its folded block (a test keeps it in step). */
+  count: number;
+  /** Whether a table id (a favourite, say) is one of this game's. */
+  owns: (tableId: string) => boolean;
+  load: () => Promise<TableData[]>;
+}
+
+/** Ids of Solo Compass's own tables (a test keeps them in step with the data). */
+export const SOLO_COMPASS_TABLE_IDS = [
+  "accion",
+  "tema",
+  "evento-aleatorio",
+  "accion-pnj",
+  "descriptor-escena",
+  "modo",
+  "aspecto",
+  "rasgo-pnj",
+  "motivacion",
+  "complicacion",
+  "lugar",
+  "hallazgo",
+  "clima",
+] as const;
+
+export type SoloCompassTableId = (typeof SOLO_COMPASS_TABLE_IDS)[number];
+
+/** The two tables "Quick inspiration" rolls together (action + theme). */
+export const INSPIRATION_TABLE_IDS: SoloCompassTableId[] = ["accion", "tema"];
+
+const SOLO_COMPASS_IDS = new Set<string>(SOLO_COMPASS_TABLE_IDS);
+
+export const IRONSWORN_URL = "https://www.ironswornrpg.com";
+export const IRONSWORN_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/";
+
+const IRONSWORN_GAME: GameRef = {
+  name: "Ironsworn",
+  url: IRONSWORN_URL,
+  author: "Shawn Tomkin",
+  license: "CC BY 4.0",
+  tag: "Ironsworn",
+};
+
+export const TABLE_GAMES: TableGame[] = [
+  {
+    id: "solo-compass",
+    title: (t) => t.tables.builtInHeading,
+    game: (t) => ({ name: t.tables.genericGame }),
+    count: SOLO_COMPASS_TABLE_IDS.length,
+    owns: (id) => SOLO_COMPASS_IDS.has(id),
+    load: () => import("./tableData/soloCompass").then((m) => m.TABLES),
+  },
+  {
+    id: "ironsworn",
+    title: () => IRONSWORN_GAME.name,
+    note: (t) => t.tables.ironswornNote,
+    game: () => IRONSWORN_GAME,
+    count: 30,
+    owns: (id) => id.startsWith("ironsworn-"),
+    load: () => import("./tableData/ironsworn").then((m) => m.TABLES),
+  },
+];
+
+/** The game a built-in table belongs to; undefined for the player's own. */
+export function gameOfTable(tableId: string): GameId | undefined {
+  return TABLE_GAMES.find((g) => g.owns(tableId))?.id;
+}
+
+const ROW_TEXT: Record<Locale, (row: TableRow) => string> = {
+  en: (row) => row[2],
+  es: (row) => row[3] ?? row[2],
+};
+
+/** A game's data, as the MeaningTables every screen rolls on. */
+export function toMeaningTables(
+  game: TableGame,
+  data: TableData[],
+  t: Dictionary,
+  locale: Locale,
+): MeaningTable[] {
+  const ref = game.game(t);
+  return data.map((table) => ({
+    id: table.id,
+    name: table.name[locale],
+    description: table.description[locale],
+    dice: table.dice,
+    game: ref,
+    entries: table.rows.map((row) => ({ range: [row[0], row[1]], text: ROW_TEXT[locale](row) })),
+  }));
+}
+
+/** Loads a game (if it isn't yet) and returns its tables in this language. */
+export async function loadMeaningTables(id: GameId, t: Dictionary, locale: Locale): Promise<MeaningTable[]> {
+  const data = await loadGame(id);
+  return toMeaningTables(TABLE_GAMES.find((g) => g.id === id)!, data, t, locale);
+}
+
+// --- Loading ----------------------------------------------------------
+
+export type GameStatus = "idle" | "loading" | "ready" | "error";
+
+export interface GameState {
+  status: GameStatus;
+  data?: TableData[];
+}
+
+// Replaced (never changed in place) on every update, so it works as a
+// useSyncExternalStore snapshot.
+let states: ReadonlyMap<GameId, GameState> = new Map();
+const listeners = new Set<() => void>();
+
+function setState(id: GameId, state: GameState) {
+  states = new Map(states).set(id, state);
+  for (const listener of listeners) listener();
+}
+
+/** For useSyncExternalStore: notified every time a game starts or ends loading. */
+export function subscribeToGames(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function gamesSnapshot(): ReadonlyMap<GameId, GameState> {
+  return states;
+}
+
+export function gameState(id: GameId, snapshot = states): GameState {
+  return snapshot.get(id) ?? { status: "idle" };
+}
+
+/**
+ * Starts loading a game's tables, unless they're already loaded or on
+ * their way. A failed load can be asked for again (retry).
+ */
+export function loadGame(id: GameId): Promise<TableData[]> {
+  const current = gameState(id);
+  if (current.status === "ready") return Promise.resolve(current.data!);
+  const game = TABLE_GAMES.find((g) => g.id === id)!;
+  if (current.status !== "loading") setState(id, { status: "loading" });
+  return game.load().then(
+    (data) => {
+      setState(id, { status: "ready", data });
+      return data;
+    },
+    (err: unknown) => {
+      setState(id, { status: "error" });
+      throw err;
+    },
+  );
+}

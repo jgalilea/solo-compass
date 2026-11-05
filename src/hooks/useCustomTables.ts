@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createCustomTable,
   CustomTablesStorageError,
@@ -9,20 +9,34 @@ import {
 } from "../lib/customTables";
 import { useLocaleContext } from "./useLocaleContext";
 
-export type CustomTablesStatus = "loading" | "ready" | "error";
+export type CustomTablesStatus = "idle" | "loading" | "ready" | "error";
 
-/** The player's own tables (see src/lib/customTables.ts). */
+/**
+ * The player's own tables (see src/lib/customTables.ts). Like the
+ * built-in games, they aren't read at start-up: only once a screen that
+ * shows tables asks for them (`load`).
+ */
 export function useCustomTables() {
   const { t } = useLocaleContext();
-  const [status, setStatus] = useState<CustomTablesStatus>("loading");
+  const [requested, setRequested] = useState(false);
+  const [status, setStatus] = useState<CustomTablesStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [tables, setTables] = useState<CustomTable[]>([]);
+  // Changes before the stored tables are in would overwrite them with an empty list.
+  const readyRef = useRef(false);
+
+  const load = useCallback(() => {
+    setRequested(true);
+    setStatus((prev) => (prev === "idle" ? "loading" : prev));
+  }, []);
 
   useEffect(() => {
+    if (!requested) return;
     let cancelled = false;
     loadCustomTables(t)
       .then((loaded) => {
         if (cancelled) return;
+        readyRef.current = true;
         setTables(loaded);
         setStatus("ready");
       })
@@ -34,12 +48,13 @@ export function useCustomTables() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [requested, t]);
 
   // Functional setState, as in useJournal: several changes in the same
   // event (e.g. importing a file with many tables) don't overwrite each other.
   const update = useCallback(
     (updater: (prev: CustomTable[]) => CustomTable[]) => {
+      if (!readyRef.current) return;
       setTables((prev) => {
         const next = updater(prev);
         saveCustomTables(t, next).catch((err: unknown) => {
@@ -87,5 +102,5 @@ export function useCustomTables() {
     [update],
   );
 
-  return { status, error, tables, addTables, updateTable, removeTable, restoreTable };
+  return { status, error, tables, load, addTables, updateTable, removeTable, restoreTable };
 }
