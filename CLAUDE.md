@@ -212,7 +212,10 @@ file plus its `TABLE_GAMES` entry.
   Isles' tables): check each table's licence in Datasworn.
   A third-party game has a `game.tag`: rolls are logged as
   "Ironsworn: Action" (`tableRollName`), since names repeat across games.
-  Personal names (given/family) are never translated.
+  Personal names (given/family) are never translated. A table that is an
+  exact copy of another game's is left out (the original game keeps it;
+  a test checks it); expanded versions (Starsmith's d300) stay. Within a
+  game, identical tables the book gives for different contexts stay too.
 
 Every built-in table has a `theme` (`TABLE_THEMES` in `tables.ts`:
 inspiration, plot, characters, names, places…), shared by all games and

@@ -399,24 +399,25 @@ export function TablesView() {
                 </TableSection>
               )}
 
-              {/* Always there (unless searching or filtering), so creating a table is never hidden. */}
+              {/* Always there (unless searching or filtering): creating or
+                  importing a table is one unfold away. Folded, it's just a line. */}
               {(!filtering || otherCustom.length > 0) && (
                 <FoldingSection
                   title={t.tables.customHeading}
                   count={filtering ? otherCustom.length : custom.length}
                   open={isOpen("custom")}
                   onToggle={() => toggleSection("custom")}
-                  actions={customActions}
                 >
-                  {otherCustom.length > 0 ? (
-                    renderTables(otherCustom)
-                  ) : (
-                    custom.length === 0 && (
-                      <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
-                        {t.tables.customEmpty}
-                      </p>
-                    )
-                  )}
+                  <div className="flex flex-col gap-4">
+                    {customActions}
+                    {otherCustom.length > 0
+                      ? renderTables(otherCustom)
+                      : custom.length === 0 && (
+                          <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
+                            {t.tables.customEmpty}
+                          </p>
+                        )}
+                  </div>
                 </FoldingSection>
               )}
 
@@ -566,7 +567,6 @@ function FoldingSection({
   count,
   open,
   onToggle,
-  actions,
   children,
 }: {
   title: string;
@@ -574,34 +574,29 @@ function FoldingSection({
   count: number;
   open: boolean;
   onToggle: () => void;
-  actions?: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useLocaleContext();
   return (
     <section className="rounded-2xl border border-ink-border bg-ink-900/40">
-      {/* On phones the actions go under the title, so it keeps its width. */}
-      <div className="flex flex-col sm:flex-row sm:items-center">
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={open}
-          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-4 text-left transition hover:bg-ink-800/40"
-        >
-          <IconChevronRight
-            size={16}
-            className={`shrink-0 text-gold transition-transform ${open ? "rotate-90" : ""}`}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-lg leading-snug text-parchment">{title}</span>
-            {note && <span className="mt-0.5 block text-xs text-parchment-dim">{note}</span>}
-          </span>
-          <span className="shrink-0 text-xs text-parchment-dim/60">
-            {interpolate(t.tables.sectionCount, { count })}
-          </span>
-        </button>
-        {actions && <div className="px-4 pb-4 sm:py-0 sm:pl-0 sm:pr-3">{actions}</div>}
-      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2.5 rounded-2xl p-4 text-left transition hover:bg-ink-800/40"
+      >
+        <IconChevronRight
+          size={16}
+          className={`shrink-0 text-gold transition-transform ${open ? "rotate-90" : ""}`}
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-lg leading-snug text-parchment">{title}</span>
+          {note && <span className="mt-0.5 block text-xs text-parchment-dim">{note}</span>}
+        </span>
+        <span className="shrink-0 text-xs text-parchment-dim/60">
+          {interpolate(t.tables.sectionCount, { count })}
+        </span>
+      </button>
       {open && <div className="px-3 pb-3 sm:px-4 sm:pb-4">{children}</div>}
     </section>
   );

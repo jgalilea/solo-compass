@@ -76,6 +76,20 @@ describe("built-in tables, all games", () => {
     for (const theme of TABLE_THEMES) expect(all.some((t) => t.theme === theme), theme).toBe(true);
   });
 
+  // A game that reprints another's table (Starsmith with Starforged's)
+  // leaves it to the original game: it would only show up twice.
+  it("no table is an exact copy of another game's", () => {
+    const owners = new Map<string, string>();
+    for (const { game, data } of loaded) {
+      for (const table of data) {
+        const key = JSON.stringify(table.rows.map((r) => r.slice(0, 3)));
+        const other = owners.get(key);
+        if (other && !other.startsWith(game.id + ":")) throw new Error(`${table.id} repeats ${other}`);
+        owners.set(key, `${game.id}:${table.id}`);
+      }
+    }
+  });
+
   it("ids are unique across games", () => {
     const ids = all.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);

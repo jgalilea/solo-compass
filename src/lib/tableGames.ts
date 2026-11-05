@@ -242,7 +242,7 @@ export const TABLE_GAMES: TableGame[] = [
     title: () => STARSMITH_GAME.name,
     note: (t) => creditNote(t, STARSMITH_GAME),
     game: () => STARSMITH_GAME,
-    count: 195,
+    count: 194,
     owns: (id) => id.startsWith("starsmith-"),
     load: () => import("./tableData/starsmith").then((m) => m.TABLES),
   },

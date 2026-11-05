@@ -228,7 +228,7 @@ atribuciones literales, en Ajustes → Acerca de y en el README.
 | Ironsworn | 30 | CC BY 4.0 | Datasworn (`ironsworn-classic`); el módulo de GatoMalefico (GPL-3.0) solo como vocabulario: su orden de filas no es el de la edición actual |
 | Ironsworn: Delve | 42 | CC BY 4.0 | Datasworn (`ironsworn-classic-delve`) |
 | Ironsworn: Starforged | 249 | CC BY 4.0 (Reference Guide; Datasworn las marca todas así) | Datasworn (`starforged`) |
-| Starsmith (Eric Bright) | 195 (8 duplicadas fuera) | CC BY 4.0 según el autor; la ficha de Lulu dice CC BY-SA, así que nuestra traducción va como CC BY-SA | Datasworn (`starsmith`) |
+| Starsmith (Eric Bright) | 194 (fuera 8 que repite con otro nombre y 1 idéntica a Starforged; sus versiones ampliadas d300 se quedan) | CC BY 4.0 según el autor; la ficha de Lulu dice CC BY-SA, así que nuestra traducción va como CC BY-SA | Datasworn (`starsmith`) |
 | Loner v2.3 (R. Bisceglie) | 19 | CC BY-SA 4.0 (traducción también BY-SA) | Edición Keeper (`farirpgs/keeper`) |
 | Knave 1.ª ed. (Ben Milton) | 11 (rasgos) | CC BY 4.0 (comprobado en el PDF) | PDF oficial |
 | Lazy GM's Resource Document | 65 | CC BY 4.0 (+ atribución del SRD 5.1) | slyflourish.com; fuera las tablas de reglas 5e |
