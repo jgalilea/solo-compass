@@ -11,6 +11,8 @@
  * any other "dN" is a single die with N faces (d6, d20, d100, d7…).
  */
 
+import { normalizeForSearch } from "./text";
+
 export type DiceType = "d66" | `d${number}`;
 
 /**
@@ -119,4 +121,68 @@ export function lookupEntry(table: MeaningTable, total: number): TableEntry | un
 /** "5" or "1–3": how a table entry's range is shown. */
 export function formatRange([from, to]: [number, number]): string {
   return from === to ? String(from) : `${from}–${to}`;
+}
+
+// --- Results that send you to roll again -------------------------------
+
+/** "Roll twice" and the like: roll that many more times on the same table. */
+const ROLL_AGAIN: [RegExp, number][] = [
+  [/^(roll twice|tira dos veces)\.?$/i, 2],
+  [/^(roll three times|tira tres veces)\.?$/i, 3],
+  [/^(roll twice more on this table|tira dos veces más en esta tabla)\b/i, 2],
+];
+/** "{Table name}" inside a result: a roll on that table goes there. */
+const TABLE_REFERENCE = /\{([^{}\n]{1,80})\}/g;
+const MAX_DEPTH = 3;
+
+function rollAgainCount(text: string): number {
+  return ROLL_AGAIN.find(([re]) => re.test(text.trim()))?.[1] ?? 0;
+}
+
+/**
+ * The text of a table result, following what it asks for (kept light:
+ * no rules engine, just the two common cases):
+ *
+ * - "Roll twice" / "Tira dos veces" (and three times, and Ironsworn's
+ *   "Roll twice more on this table…"): rolls that many more times on
+ *   the same table and adds them, "Roll twice → Ruins · Cave". An
+ *   extra that's another "roll twice" is rolled again.
+ * - "{Name}": a roll on the table called that (by name, "Game: name" or
+ *   id, accents and case ignored) among `tables`, the ones loaded right
+ *   now; mostly for the player's own tables. Left as written if there's
+ *   no such table.
+ *
+ * "→", not "->": the journal splits a roll's text at its last "->".
+ */
+export function resolveResult(
+  table: MeaningTable,
+  total: number,
+  tables: MeaningTable[] = [],
+  fallback = "",
+  depth = 0,
+): string {
+  const text = lookupEntry(table, total)?.text ?? fallback;
+  if (depth >= MAX_DEPTH) return text;
+  let result = text.replace(TABLE_REFERENCE, (whole, name: string) => {
+    const wanted = normalize(name);
+    const target = tables.find(
+      (x) => normalize(x.name) === wanted || normalize(tableRollName(x)) === wanted || x.id === name.trim(),
+    );
+    return target ? resolveResult(target, rollForTable(target.dice).total, tables, fallback, depth + 1) : whole;
+  });
+  const again = rollAgainCount(text);
+  if (again > 0) {
+    const extras: string[] = [];
+    for (let tries = 0; extras.length < again && tries < 20; tries++) {
+      const roll = rollForTable(table.dice).total;
+      if (rollAgainCount(lookupEntry(table, roll)?.text ?? "") > 0) continue;
+      extras.push(resolveResult(table, roll, tables, fallback, depth + 1));
+    }
+    result = `${result} → ${extras.join(" · ")}`;
+  }
+  return result;
+}
+
+function normalize(s: string): string {
+  return normalizeForSearch(s).replace(/\s+/g, " ").trim();
 }

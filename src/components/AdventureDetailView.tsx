@@ -9,6 +9,8 @@ import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
 import { searchEntries } from "../lib/journalSearch";
 import { buildCast } from "../lib/lonelogTags";
+import { exportAdventureToHtml } from "../lib/htmlExport";
+import { readExportTheme } from "../lib/htmlExportTheme";
 import { canShare, shareTextFile } from "../lib/share";
 import { AdventureNotebook } from "./AdventureNotebook";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
@@ -50,6 +52,7 @@ import {
   IconStar,
   IconTable,
   IconTrash,
+  IconWebPage,
 } from "./icons/Icons";
 
 /**
@@ -304,6 +307,21 @@ export function AdventureDetailView() {
     setExportedFilename(filename);
   }
 
+  // A page to read or share, in the theme on screen (htmlExport.ts).
+  async function handleExportHtml() {
+    const html = exportAdventureToHtml({
+      t,
+      name: adventure!.name,
+      entries: adventureEntries,
+      notes: adventure!.notes,
+      theme: await readExportTheme(),
+      answerFor: entryActions.answerFor,
+    });
+    const filename = `${sanitizeFilename(adventure!.name)}.html`;
+    downloadTextFile(filename, html, "text/html");
+    setExportedFilename(filename);
+  }
+
   // The same Lonelog .md as the export, through the system's share
   // sheet; if it fails (not just cancelled), it's downloaded instead.
   function handleShare() {
@@ -367,6 +385,13 @@ export function AdventureDetailView() {
       onLog={(text) => {
         addEntry(adventure.id, "note", text);
         handleLogged();
+      }}
+      onRoll={(text) => {
+        // Like any roll: the sheet closes so the result is in sight,
+        // and the composer moves on to "Consequence".
+        addEntry(adventure.id, "roll", text);
+        setNotebookOpen(false);
+        handleRolled();
       }}
     />
   );
@@ -479,6 +504,7 @@ export function AdventureDetailView() {
                   { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
                   { label: t.journal.statsButton, Icon: IconChart, onSelect: () => setStatsOpen(true) },
                   { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
+                  { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: () => void handleExportHtml() },
                   ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: handleShare }] : []),
                   isArchived
                     ? {
@@ -841,7 +867,9 @@ function SessionMenu({
   return (
     // No "relative" on phones: the dropdown takes the header's width
     // instead of overflowing to the left from the button.
-    <div ref={rootRef} className={`${className} shrink-0 sm:relative`}>
+    // flex: as a block, its line height pushed the button 2px out of
+    // line with the search and notebook buttons beside it.
+    <div ref={rootRef} className={`${className} flex shrink-0 sm:relative`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

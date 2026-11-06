@@ -17,6 +17,7 @@ import {
   type JournalLineKind,
 } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
+import { forgetDeletions, recordDeletions } from "../lib/deletions";
 import { useLocaleContext } from "./useLocaleContext";
 
 export type JournalStatus = "loading" | "ready" | "error";
@@ -192,7 +193,11 @@ export function useJournal(): UseJournalResult {
   const deleteAdventure = useCallback(
     (id: string) => {
       updateAdventures((prev) => prev.filter((a) => a.id !== id));
-      updateEntries((prev) => prev.filter((e) => e.adventureId !== id));
+      updateEntries((prev) => {
+        // Recorded so a merged backup from another device doesn't bring them back.
+        recordDeletions([id, ...prev.filter((e) => e.adventureId === id).map((e) => e.id)]);
+        return prev.filter((e) => e.adventureId !== id);
+      });
       if (activeAdventureId === id) setActiveAdventureId(null);
     },
     [activeAdventureId, updateAdventures, updateEntries, setActiveAdventureId],
@@ -216,7 +221,7 @@ export function useJournal(): UseJournalResult {
   // stays as it was, so the adventure doesn't jump in the list).
   const setAdventureNotes = useCallback(
     (id: string, notes: string) => {
-      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, notes } : a)));
+      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, notes, notesUpdatedAt: Date.now() } : a)));
     },
     [updateAdventures],
   );
@@ -242,12 +247,14 @@ export function useJournal(): UseJournalResult {
   const removeEntry = useCallback(
     (id: string) => {
       updateEntries((prev) => prev.filter((e) => e.id !== id));
+      recordDeletions([id]);
     },
     [updateEntries],
   );
 
   const restoreEntry = useCallback(
     (entry: JournalEntry) => {
+      forgetDeletions([entry.id]);
       updateEntries((prev) => (prev.some((e) => e.id === entry.id) ? prev : [...prev, entry]));
     },
     [updateEntries],
@@ -255,7 +262,7 @@ export function useJournal(): UseJournalResult {
 
   const editEntry = useCallback(
     (id: string, text: string) => {
-      updateEntries((prev) => prev.map((e) => (e.id === id ? { ...e, text } : e)));
+      updateEntries((prev) => prev.map((e) => (e.id === id ? { ...e, text, editedAt: Date.now() } : e)));
     },
     [updateEntries],
   );

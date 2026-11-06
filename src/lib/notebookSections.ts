@@ -1,11 +1,11 @@
 /**
- * Which cast lists of the adventure notebook (characters, places) are
- * folded, so a long cast takes less room in the sidebar. Per device,
+ * Which lists of the adventure notebook (characters, places, threads,
+ * clocks) are folded, so a long cast takes less room in the sidebar. Per device,
  * the same for every adventure. Best-effort storage, like the Tables
  * screen's blocks: if localStorage fails, they just start unfolded.
  */
 
-export type NotebookSection = "characters" | "places";
+export type NotebookSection = "characters" | "places" | "threads" | "progress";
 
 const STORAGE_KEY = "solo-compass:notebook-sections-folded";
 

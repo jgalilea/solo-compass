@@ -110,6 +110,21 @@ describe("parseMarkdownToEntries", () => {
     ]);
   });
 
+  it("an indented line that opens an entry is one, as in Lonelog's own examples", () => {
+    const md = "```\n@ Search the archives\n    d: Investigation d6=5 vs TN 4 -> Success\n    => I find the manifests. [L:Archive|searched]\n    [N:Viktor|implicated]\n```\n";
+    expect(parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text])).toEqual([
+      ["action", "Search the archives"],
+      ["roll", "Investigation d6=5 vs TN 4 -> Success"],
+      ["consequence", "I find the manifests. [L:Archive|searched]\n[N:Viktor|implicated]"],
+    ]);
+  });
+
+  it("escapes a continuation line that starts with a symbol", () => {
+    expect(formatLine({ kind: "consequence", text: "Cede\n@ algo respira\n\\barra" })).toBe(
+      "=> Cede\n  \\@ algo respira\n  \\\\barra",
+    );
+  });
+
   it("in a foreign file, an indented line continues the previous entry", () => {
     const parsed = parseMarkdownToEntries("d: 2d6 -> 4\n    -> Fallo\nTexto suelto\n=== S1 ===\n  sangrado tras sesión", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([

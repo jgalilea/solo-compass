@@ -24,6 +24,8 @@ export interface Adventure {
    * log's order. Exported as the .md's front matter (lonelog.ts).
    */
   notes?: string;
+  /** Last edit of the notes (ms): the newer notes win on a merge. */
+  notesUpdatedAt?: number;
 }
 
 // Same as the history: no natural size cap, so it goes in IndexedDB

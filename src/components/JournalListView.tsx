@@ -154,7 +154,7 @@ export function JournalListView() {
     if (!file) return;
     try {
       const text = await file.text();
-      const name = file.name.replace(/\.md$/i, "");
+      const name = file.name.replace(/\.(md|markdown|txt)$/i, "");
       const adventure = importAdventure(name, text);
       setActiveAdventureId(adventure.id);
       navigate(`/diario/${adventure.id}`);
@@ -241,7 +241,7 @@ export function JournalListView() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".md,text/markdown,text/plain"
+                accept=".md,.markdown,.txt,text/markdown,text/plain"
                 className="hidden"
                 onChange={handleImportFile}
               />

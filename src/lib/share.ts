@@ -26,9 +26,14 @@ function isChromium(): boolean {
   return "userAgentData" in navigator;
 }
 
-export async function shareTextFile(filename: string, content: string, title: string): Promise<ShareOutcome> {
-  const asText = new File([content], filename.replace(/\.md$/, ".txt"), { type: "text/plain" });
-  const candidates = isChromium() ? [asText] : [new File([content], filename, { type: "text/markdown" }), asText];
+export async function shareTextFile(
+  filename: string,
+  content: string,
+  title: string,
+  type = "text/markdown",
+): Promise<ShareOutcome> {
+  const asText = new File([content], filename.replace(/\.(md|json)$/, ".txt"), { type: "text/plain" });
+  const candidates = isChromium() ? [asText] : [new File([content], filename, { type }), asText];
   // As a last resort, the text itself instead of a file.
   const file = candidates.find((f) => navigator.canShare?.({ files: [f] }));
   try {

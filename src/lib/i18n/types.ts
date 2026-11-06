@@ -168,17 +168,24 @@ export interface Dictionary {
     legendIntro: string;
     dataSectionTitle: string;
     dataSectionDescription: string;
+    /** Under the backup buttons: what the copy holds vs. exporting one adventure. */
+    dataSectionHint: string;
     exportAllButton: string;
     exportedAllConfirmation: string;
     /** "Last backup: {when}" ({when} = "3 days ago"). */
     lastBackup: string;
     noBackupYet: string;
     importAllButton: string;
-    importAllConfirmTitle: string;
-    importAllConfirmDescription: string;
-    importAllConfirmButton: string;
     importAllError: string;
     importAllSuccessReloading: string;
+    shareAllButton: string;
+    shareAllTitle: string;
+    restoreChoiceTitle: string;
+    restoreChoiceDescription: string;
+    restoreMergeLabel: string;
+    restoreMergeDescription: string;
+    restoreReplaceLabel: string;
+    restoreReplaceDescription: string;
   };
   oracleSwitcher: {
     triggerLabel: string;
@@ -410,6 +417,12 @@ export interface Dictionary {
     diceHint: string;
     diceLog: string;
     diceClear: string;
+    diceAdvantage: string;
+    diceDisadvantage: string;
+    diceFormulaLabel: string;
+    diceFormulaPlaceholder: string;
+    diceFormulaRoll: string;
+    diceFormulaError: string;
     entryDeleted: string;
     sessionsHeading: string;
     prologueLabel: string;
@@ -447,6 +460,10 @@ export interface Dictionary {
       empty: string;
     };
     exportButton: string;
+    exportHtmlButton: string;
+    htmlExportedOn: string;
+    /** Comment over the colours in an exported HTML page. */
+    htmlThemeComment: string;
     exportedToastTitle: string;
     exportedToastDescription: string;
     importButton: string;
@@ -467,9 +484,23 @@ export interface Dictionary {
     notesDone: string;
     castTitle: string;
     castEmpty: string;
-    kindPc: string;
-    kindNpc: string;
-    kindPlace: string;
+    /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */
+    kinds: Record<"pc" | "npc" | "place" | "thread" | "clock" | "track" | "timer", string>;
+    /** What a clock, a track and a timer are for (the add form). */
+    kindHints: Record<"clock" | "track" | "timer", string>;
+    statuses: Record<"open" | "closed" | "abandoned", string>;
+    threadsTitle: string;
+    threadsEmpty: string;
+    groupThreads: string;
+    groupProgress: string;
+    closeThread: string;
+    reopenThread: string;
+    increase: string;
+    decrease: string;
+    segmentsLabel: string;
+    timerStartLabel: string;
+    rollList: string;
+    addThreadButton: string;
     groupCharacters: string;
     groupPlaces: string;
     mentionCount: string;

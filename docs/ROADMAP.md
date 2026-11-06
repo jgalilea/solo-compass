@@ -5,11 +5,25 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-06 (cuaderno de la aventura, etiquetas de Lonelog, Cairn).
+Última revisión: 2026-11-06 (hilos y relojes, dados con fórmula, tablas que remiten, HTML, sincronización).
 
 ## Hecho recientemente
 
-- Cuaderno de la aventura (2026-11-06, puntos 1 y 9): a la izquierda
+- Enviar la copia y juntarla al restaurar (2026-11-06, punto 9).
+- Hilos y relojes (2026-11-06, punto 1): `[Thread:]`, `[Clock:]` (y
+  `[E:]`), `[Track:]` y `[Timer:]` en el cuaderno ("Hilos y relojes"),
+  con −/+ que apuntan el nuevo valor, cerrar/reabrir hilos y "tirar en
+  la lista" (PNJ, lugares, hilos abiertos). Listas plegables.
+- Importación de Lonelog fiel a la spec (2026-11-06, punto 7): una
+  línea sangrada que empieza por símbolo es una entrada nueva; se
+  ignoran los bloques de código.
+- Dados con fórmula (2026-11-06): `2d6+3`, `4d6kh3`, `2d20kl1`,
+  `5d6>=5`, botones de ventaja y desventaja.
+- Tablas que remiten (2026-11-06): "Tira dos veces" (y tres) en las
+  tablas de serie y `{Nombre de tabla}` en las propias.
+- Exportar como página web (2026-11-06): un HTML autónomo con el tema
+  activo (colores editables arriba, letra incrustada) y el cuaderno.
+- Cuaderno de la aventura (2026-11-06, puntos 1 y 10): a la izquierda
   del diario en xl, en una hoja desde la cabecera por debajo.
   - Notas fijas: texto libre editado en el sitio, guardado solo, con
     casillas `- [ ]` que se marcan. Campo `notes` de `Adventure` (va en
@@ -130,9 +144,14 @@ entradas (`lonelogTags.ts`), no se guardan aparte. Corresponde a las
 fases 1–3 de abajo (chips, panel derivado y menciones: desde el
 cuaderno y con autocompletado al escribir `[` en el composer).
 
-**Pendiente:** hilos `[Thread:]`, eventos y relojes `[E:x/y]` (y los
-botones −/+), fichas editables (descripción, alias) y "tirar en la
-lista". El autocompletado podría sugerir también hilos cuando existan.
+**Hecho también (2026-11-06):** hilos `[Thread:]` (un estado a la vez:
+abierto, cerrado, abandonado), relojes `[Clock:]`/`[E:]`, progresos
+`[Track:]` y cuentas atrás `[Timer:]` con botones −/+, y "tirar en la
+lista". El autocompletado sugiere también hilos y relojes.
+
+**Pendiente:** fichas editables (descripción, alias), salas de
+mazmorra `[R:]` (add-on), y quizá juntar varios −/+ seguidos de un
+reloj en una sola entrada si en uso real ensucian el diario.
 
 Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
 la mesa: modelo mixto. Los cambios de estado salen de las entradas
@@ -362,16 +381,15 @@ ni errores de consola.
 varias líneas (solo etiquetas de varias líneas, que ya se leen), así
 que la sangría de continuación se queda.
 
-**Pendiente (P2): la sangría choca con la spec al importar.** La spec
-(§2.3) dice que la sangría es opcional y no tiene significado
-estructural, y sus ejemplos sangran los `d:` y `=>` bajo su `@`. Hoy
-toda línea sangrada se une a la entrada anterior, así que un log
-escrito así entra como una sola entrada. Propuesta: una línea sangrada
-que empieza por un símbolo es una entrada nueva; al exportar, las
-líneas de continuación que empiezan por un símbolo se escapan con `\`
-(como ya se hace con las notas). Coste: los `.md` exportados antes con
-una continuación que empieza por símbolo se partirían en dos al
-reimportarlos (caso raro).
+**Corregido (2026-11-06): la sangría chocaba con la spec al importar.**
+La spec (§2.3) dice que la sangría es solo visual, y sus ejemplos
+sangran los `d:` y `=>` bajo su `@`. Ahora una línea sangrada que
+empieza por un símbolo es una entrada nueva, y al exportar las líneas
+de continuación que empiezan por un símbolo se escapan con `\`. Coste
+asumido: los `.md` exportados antes con una continuación que empezaba
+por símbolo se parten en dos al reimportarlos (caso raro). También se
+ignoran los bloques de código (la spec envuelve la notación en ellos en
+formato digital).
 
 ## 8. Decisiones pendientes
 
@@ -384,7 +402,41 @@ reimportarlos (caso raro).
   (exige reescribirlo y forzar el push) y si los commits nuevos la
   llevan.
 
-## 9. Otras ideas (P3)
+## 9. Usar la app en varios dispositivos (investigado el 2026-11-06)
+
+Hoy todo vive en un navegador. Para pasar a otro hace falta la copia de
+seguridad (Ajustes → Exportar todo / Restaurar). Opciones sin servidor
+propio, de menos a más trabajo:
+
+| Opción | Navegadores | Qué hace falta | Notas |
+|---|---|---|---|
+| Compartir la copia con el menú del sistema (Web Share) y restaurarla en el otro | Todos los que tienen Web Share; si no, descarga | Nada nuevo: botón "Enviar a otro dispositivo" | Manual, pero cubre el caso "móvil ↔ ordenador" hoy mismo. Sin fusión: restaurar sustituye |
+| Carpeta local sincronizada (File System Access: el usuario elige una carpeta de Dropbox/Drive/iCloud en su disco) | Chrome/Edge de escritorio; Chrome Android a medias. Firefox y Safari se oponen | Permiso de carpeta por sesión | No sirve en iPhone ni Firefox: descartado como solución general |
+| Google Drive, carpeta oculta de la app (`drive.appdata`) | Todos | Proyecto en Google Cloud, ID de cliente OAuth con el origen de GitHub Pages, pantalla de consentimiento | El ámbito `drive.appdata` es "no sensible": verificación básica, sin auditoría de seguridad. El token dura una hora (reconectar sin molestar). Los datos quedan en el Drive del usuario, no en un servidor nuestro |
+| Dropbox, carpeta de la app (OAuth con PKCE en el navegador) | Todos | App en Dropbox; en modo desarrollo hasta 50 usuarios, luego aprobación de producción | Más fricción que Google para llegar a todos |
+| WebDAV / Nextcloud, remoteStorage | Todos | Que el servidor del usuario permita CORS | Para entendidos; no como opción principal |
+
+Para cualquier sincronización real hace falta además **fusionar** dos
+copias en vez de sustituir: entradas por id (ya tienen id y fecha),
+borrados con lápida para que no "resuciten", aventuras y notas con "el
+último cambio gana". Es la parte de más trabajo y la que hay que hacer
+bien antes de conectar ningún servicio.
+
+**Paso 1 hecho (2026-11-06):** "Enviar" en Ajustes (la copia por el
+menú del sistema; como .txt en Chromium) y restaurar con la opción de
+**juntar** (`backupMerge.ts`) o sustituir. Los borrados se registran por
+id (`deletions.ts`, esquema de copia 4) y las ediciones llevan fecha
+(`editedAt`, `notesUpdatedAt`), así que la fusión ya está lista para
+una sincronización automática.
+
+Recomendación: 1) hecho; 2) después,
+Google Drive (`drive.appdata`) como sincronización opcional y
+explícita, sin cambiar la promesa de "todo en tu dispositivo" para
+quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth),
+[soporte de showDirectoryPicker](https://caniuse.com/mdn-api_window_showdirectorypicker),
+[límites de desarrollo de Dropbox](https://www.dropboxforum.com/discussions/101000014/does-a-dropbox-app-have-a-limit-on-development-users/846671).
+
+## 10. Otras ideas (P3)
 
 - **Notas fijas por aventura — HECHO (2026-11-06)**, como una sola nota
   con casillas, dentro del cuaderno de la aventura (ver "Hecho
@@ -408,12 +460,13 @@ reimportarlos (caso raro).
     (revisar si la spec 1.5.0 define algo para esto antes de inventarlo).
   - Encaja con el punto 1: el panel "Reparto y tramas" iría en el mismo
     sitio, y la nota podría ser su primera versión manual.
-- **"En el capítulo anterior…" (dudoso).** Resumen plegable al volver a
-  una aventura (últimas consecuencias y la última pregunta). Aplazado y
-  sin decidir si merece la pena: las sesiones anteriores ya se pueden
-  leer, y la búsqueda ayuda a encontrar lo concreto.
-- Exportar también a PDF o HTML legible para compartir una partida.
+- **"En el capítulo anterior…" — descartado (2026-11-06).** El cuaderno
+  (notas, personajes, lugares, hilos y relojes) ya cumple esa función.
+- Exportar a HTML legible — HECHO (2026-11-06). Para PDF basta imprimir
+  ese HTML desde el navegador (tiene estilos de impresión).
 - Probabilidad "a ojo" del oráculo (mostrar % aproximado de Sí/No).
-- Escenas y factor de caos (estilo Mythic) como add-on opcional.
+- Escenas y factor de caos (estilo Mythic) como add-on opcional. Una
+  tirada de arranque de escena (transcurre / cambia / se interrumpe)
+  quedó en pausa el 2026-11-06: de momento se resuelve con tablas.
 - Más idiomas si la comunidad lo pide (el sistema de diccionarios ya lo
   permite).

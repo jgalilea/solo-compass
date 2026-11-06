@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { rollOracle, type Likelihood, type OracleRoll } from "../lib/oracle";
-import { lookupEntry, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
+import { resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
 import type { TableRollEntry } from "../lib/history";
 import { getOracle } from "../lib/oracles";
 import { formatAnswer } from "../lib/i18n/answerText";
@@ -55,7 +55,7 @@ export function usePlayActions() {
 
   // A table roll as a history entry (not saved yet).
   const buildTableRoll = useCallback(
-    (table: MeaningTable): TableRollEntry => {
+    (table: MeaningTable, tables: MeaningTable[] = []): TableRollEntry => {
       const { rolls, total } = rollForTable(table.dice);
       return {
         kind: "tabla",
@@ -65,7 +65,8 @@ export function usePlayActions() {
         tableName: tableRollName(table),
         rolls,
         total,
-        resultText: lookupEntry(table, total)?.text ?? t.tables.noEntryFallback,
+        // Follows "Roll twice" and "{Other table}" (see resolveResult).
+        resultText: resolveResult(table, total, tables, t.tables.noEntryFallback),
         favorite: false,
       };
     },
@@ -73,8 +74,8 @@ export function usePlayActions() {
   );
 
   const rollTable = useCallback(
-    (table: MeaningTable, adventureId = activeAdventureId): TableRollEntry => {
-      const entry = buildTableRoll(table);
+    (table: MeaningTable, adventureId = activeAdventureId, tables: MeaningTable[] = []): TableRollEntry => {
+      const entry = buildTableRoll(table, tables);
       addHistoryEntry(entry);
       if (adventureId) {
         const diceText = `${entry.tableName} ${entry.rolls.join("/")} -> ${entry.resultText}`;
@@ -93,7 +94,7 @@ export function usePlayActions() {
    */
   const rollInspiration = useCallback(
     (tables: MeaningTable[], adventureId = activeAdventureId): Inspiration => {
-      const rolls = tables.map(buildTableRoll);
+      const rolls = tables.map((table) => buildTableRoll(table));
       for (const roll of rolls) addHistoryEntry(roll);
       const inspiration: Inspiration = {
         id: rolls[0].id,

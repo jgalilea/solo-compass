@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { forgetDeletions, recordDeletions } from "../lib/deletions";
 import {
   createCustomTable,
   CustomTablesStorageError,
@@ -85,6 +86,7 @@ export function useCustomTables() {
   const removeTable = useCallback(
     (id: string) => {
       update((prev) => prev.filter((x) => x.id !== id));
+      recordDeletions([id]);
     },
     [update],
   );
@@ -92,6 +94,7 @@ export function useCustomTables() {
   /** Puts a deleted table (Undo) back where it was. */
   const restoreTable = useCallback(
     (table: CustomTable, index: number) => {
+      forgetDeletions([table.id]);
       update((prev) => {
         if (prev.some((x) => x.id === table.id)) return prev;
         const next = [...prev];

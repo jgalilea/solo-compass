@@ -109,9 +109,15 @@ No backend; persistence is split by access pattern, not by feature:
   snoozed 7 days once Settings is opened. Deliberately no toast or
   dialog.
 - **Full backup/restore** (`backup.ts`, wired into `SettingsDialog`): exports
-  everything above into one `.json`, and can restore it (overwriting
-  current data, then reloading the app so every context picks up the
-  restored state).
+  everything above into one `.json` (download, or "Send" through the
+  share sheet, as `.txt` on Chromium), and restores it either by
+  **merging** with this device's data (`backupMerge.ts`: union by id,
+  newer edit wins via `editedAt`/`updatedAt`/`notesUpdatedAt`) or by
+  replacing it; then reloads so every context picks up the result.
+  Deletions are recorded by id (`deletions.ts`, also in the backup) so a
+  merge doesn't bring back what was deleted on either device: anything
+  new that deletes data must call `recordDeletions` (and its undo
+  `forgetDeletions`).
 
 ### Lonelog (`src/lib/lonelog.ts`)
 
@@ -123,9 +129,18 @@ directions:
 - `exportAdventureToMarkdown` — produces a `.md` valid for any
   Lonelog-compatible tool, not just this app.
 - `parseMarkdownToEntries` — deliberately permissive: any line that doesn't
-  match a recognized Lonelog symbol (free prose, `[N:...]` NPC/place/clock
-  tags this app doesn't interpret yet) is kept as a note instead of failing
-  the import.
+  match a recognized Lonelog symbol (free prose, tags) is kept as a note
+  instead of failing the import. Indentation is only visual in Lonelog
+  (§2.3): an indented line continues the previous entry unless it starts
+  with a symbol (`d:` under its `@` is its own entry); continuation lines
+  that start with one are exported escaped with `\`. Code fences (how
+  Lonelog wraps notation in digital logs) are skipped.
+
+There's also a read-only **HTML export** (`htmlExport.ts`, theme read
+by `htmlExportTheme.ts`): one self-contained page in the theme on
+screen (colours as editable CSS variables at the top, display font
+embedded), with the notebook beside the journal. Lonelog stays the
+interchange format.
 
 ### Rolling from several screens (`src/hooks/usePlayActions.ts`)
 
@@ -178,8 +193,14 @@ header below that.
   composer or while editing an entry suggests the cast and offers a
   new one (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
   `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
-  adventure uses tags and has pinned notes (`t.sample.notes`). Threads and clocks
-  aren't read yet (roadmap).
+  adventure uses tags and has pinned notes (`t.sample.notes`).
+- **Threads and progress** are tags too: `[Thread:…|Open]` (one state
+  at a time, English or Spanish words, `threadStatus`), clocks
+  `[Clock:Name 2/6]` (and the older `[E:…]`), tracks `[Track:…]` and
+  timers `[Timer:Name 3]`; the number is read from the name
+  (`progress`, also "+1"/"-1"). The notebook's −/+ log the new value as
+  an entry (the journal is a record). "Roll on the list" (NPCs, places,
+  open threads) logs a `roll` entry and closes the sheet like any roll.
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -270,6 +291,19 @@ export is read back by the same parser (tested). "Quick inspiration"
 (`rollInspiration` in `usePlayActions`, given the tables by
 `useMeaningTables().inspiration`) rolls Acción + Tema together: two
 history rolls, one journal entry.
+
+A table result can ask for more rolls (`resolveResult` in `tables.ts`,
+kept light on purpose): "Roll twice"/"Tira dos veces" (and three times,
+and Ironsworn's "Roll twice more on this table…") rolls again on the
+same table; `{Table name}` inside a result rolls on that table among
+the ones currently loaded (mostly for the player's own tables). The
+extra results are joined with "→" and "·", never "->" (the journal
+splits a roll's text at its last "->").
+
+The game table's dice (`DiceTool`) also take a formula (`rollFormula`
+in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
+advantage/disadvantage buttons) and success pools (`5d6>=5`), written
+so the journal shows them die by die like the buttons' rolls.
 
 ### Journal search and stats
 

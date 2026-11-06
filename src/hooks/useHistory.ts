@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { forgetDeletions, recordDeletions } from "../lib/deletions";
 import {
   clearHistory,
   HistoryStorageError,
@@ -97,12 +98,14 @@ export function useHistory(): UseHistoryResult {
   const removeEntry = useCallback(
     (id: string) => {
       persist((prev) => prev.filter((e) => e.id !== id));
+      recordDeletions([id]);
     },
     [persist],
   );
 
   const restoreEntry = useCallback(
     (entry: HistoryEntry) => {
+      forgetDeletions([entry.id]);
       persist((prev) =>
         prev.some((e) => e.id === entry.id)
           ? prev
@@ -122,6 +125,8 @@ export function useHistory(): UseHistoryResult {
   );
 
   const clear = useCallback(() => {
+    // So a merged backup from another device doesn't bring them back.
+    recordDeletions(entries.map((e) => e.id));
     clearHistory(t)
       .then(() => {
         setEntries([]);
@@ -134,7 +139,7 @@ export function useHistory(): UseHistoryResult {
         );
         setStatus("error");
       });
-  }, [t]);
+  }, [t, entries]);
 
   return {
     status,

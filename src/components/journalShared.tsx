@@ -2,7 +2,7 @@ import { useRef, useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
-import { castKey, splitTags, type CastMember } from "../lib/lonelogTags";
+import { castKey, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
@@ -369,11 +369,12 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
   if (parts.length === 1 && !parts[0].tag) return text;
   return parts.map((part, i) => {
     if (!part.tag) return part.text;
-    const { kind, name, details } = part.tag;
+    const { kind, name, details, progress } = part.tag;
     const content = (
       <>
         <CastIcon kind={kind} size={13} className="shrink-0 self-center text-gold" />
         <span className="font-medium text-parchment">{name}</span>
+        {progress && <span className="text-[0.85em] font-medium text-gold">{progressText(progress)}</span>}
         {details.length > 0 && <span className="text-[0.85em] text-parchment-dim">{details.join(" · ")}</span>}
       </>
     );

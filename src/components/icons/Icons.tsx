@@ -243,3 +243,21 @@ export function IconCheckboxChecked(props: IconProps) {
 export function IconMention(props: IconProps) {
   return <TablerIcon icon={Tabler.IconAt} {...props} />;
 }
+// Lonelog threads and progress: a plot thread, a clock (threat), a
+// track (progress) and a timer (countdown).
+export function IconThread(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconNeedleThread} {...props} />;
+}
+export function IconClock(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconClockHour4} {...props} />;
+}
+export function IconTrack(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconFlag} {...props} />;
+}
+export function IconTimer(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconHourglass} {...props} />;
+}
+// Exporting an adventure as a readable web page.
+export function IconWebPage(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconBrowser} {...props} />;
+}

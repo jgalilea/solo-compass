@@ -2,8 +2,18 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { JournalEntry } from "../lib/lonelog";
-import { buildCast, formatTag, tagsToPlainText, type CastKind, type CastMember } from "../lib/lonelogTags";
-import { INPUT_CLASS } from "../lib/journalUi";
+import {
+  buildCast,
+  formatProgressTag,
+  formatTag,
+  PROGRESS_KINDS,
+  progressText,
+  tagsToPlainText,
+  threadStatus,
+  type CastKind,
+  type CastMember,
+} from "../lib/lonelogTags";
+import { groupBySession, INPUT_CLASS } from "../lib/journalUi";
 import { loadFoldedNotebookSections, saveFoldedNotebookSections, type NotebookSection } from "../lib/notebookSections";
 import { CastIcon } from "./CastIcon";
 import {
@@ -11,10 +21,13 @@ import {
   IconCheckbox,
   IconCheckboxChecked,
   IconChevronRight,
+  IconDice,
   IconMention,
+  IconMinus,
   IconPencil,
   IconPinned,
   IconPlus,
+  IconThread,
 } from "./icons/Icons";
 
 /**
@@ -22,10 +35,14 @@ import {
  *
  * - Pinned notes: free text edited in place (inventory, clues, to-dos),
  *   with "- [ ]" checkboxes you can tick. Saved on its own as you type.
- * - Characters and places: derived from the journal's Lonelog tags
- *   ([N:…], [PC:…], [L:…]), each with its current traits and every
- *   entry that mentions it. Nothing is stored apart: adding one or
- *   logging a change writes a tag entry in the journal.
+ * - Characters and places, threads and clocks: derived from the
+ *   journal's Lonelog tags ([N:…], [PC:…], [L:…], [Thread:…],
+ *   [Clock:…], [Track:…], [Timer:…]), each with its current state and
+ *   every entry that mentions it. Nothing is stored apart: adding one,
+ *   logging a change, ticking a clock or closing a thread writes a tag
+ *   entry in the journal.
+ * - Rolling on a list (NPCs, places, open threads) picks one at random
+ *   and logs it as a roll, for when the oracle asks "who?" or "which?".
  *
  * Wide desktop (xl): in the left column, under the session index.
  * Elsewhere: a sheet opened from the adventure header.
@@ -39,6 +56,7 @@ export function AdventureNotebook({
   onJump,
   onMention,
   onLog,
+  onRoll,
 }: {
   notes: string;
   onNotesChange: (notes: string) => void;
@@ -53,19 +71,52 @@ export function AdventureNotebook({
   onMention: (text: string) => void;
   /** Log this text as a journal note. */
   onLog: (text: string) => void;
+  /** Log this text as a roll (a list was rolled on). */
+  onRoll: (text: string) => void;
 }) {
   const { t } = useLocaleContext();
   const cast = useMemo(() => buildCast(entries), [entries]);
-  const characters = cast.filter((c) => c.kind !== "place");
-  const places = cast.filter((c) => c.kind === "place");
-  const [adding, setAdding] = useState(false);
+  // The session each entry is in, to say where every mention is.
+  const sessionOf = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const group of groupBySession(entries)) {
+      for (const entry of group.items) map.set(entry.id, group.sessionEntry?.text ?? null);
+    }
+    return map;
+  }, [entries]);
+  const [adding, setAdding] = useState<"cast" | "threads" | null>(null);
   const [folded, setFolded] = useState(loadFoldedNotebookSections);
+
+  const lists: Record<NotebookSection, CastMember[]> = {
+    characters: cast.filter((c) => c.kind === "pc" || c.kind === "npc"),
+    places: cast.filter((c) => c.kind === "place"),
+    // Open ones first: the closed are history.
+    threads: [
+      ...cast.filter((c) => c.kind === "thread" && threadStatus(c) === "open"),
+      ...cast.filter((c) => c.kind === "thread" && threadStatus(c) !== "open"),
+    ],
+    progress: cast.filter((c) => PROGRESS_KINDS.has(c.kind)),
+  };
+  // What "roll on the list" picks from: NPCs (not the PC), places, open threads.
+  const rollable: Record<NotebookSection, CastMember[]> = {
+    characters: lists.characters.filter((c) => c.kind === "npc"),
+    places: lists.places,
+    threads: lists.threads.filter((c) => threadStatus(c) === "open"),
+    progress: [],
+  };
+  const titles: Record<NotebookSection, string> = {
+    characters: t.notebook.groupCharacters,
+    places: t.notebook.groupPlaces,
+    threads: t.notebook.groupThreads,
+    progress: t.notebook.groupProgress,
+  };
+
   // A chip tapped in the journal unfolds the list its element is in.
   const [seenTick, setSeenTick] = useState(focusTick);
   if (seenTick !== focusTick) {
     setSeenTick(focusTick);
-    const section = cast.find((c) => c.key === focusKey)?.kind === "place" ? "places" : "characters";
-    if (focusKey && folded.has(section)) {
+    const section = (Object.keys(lists) as NotebookSection[]).find((id) => lists[id].some((c) => c.key === focusKey));
+    if (section && folded.has(section)) {
       const next = new Set(folded);
       next.delete(section);
       setFolded(next);
@@ -79,6 +130,90 @@ export function AdventureNotebook({
     setFolded(next);
     saveFoldedNotebookSections(next);
   }
+
+  function rollOn(id: NotebookSection) {
+    const members = rollable[id];
+    if (members.length === 0) return;
+    const roll = Math.floor(Math.random() * members.length) + 1;
+    onRoll(`${titles[id]} d${members.length} -> ${members[roll - 1].name}`);
+  }
+
+  function group(id: NotebookSection) {
+    const members = lists[id];
+    if (members.length === 0) return null;
+    const isFolded = folded.has(id);
+    return (
+      <div key={id} className="flex flex-col gap-1">
+        <div className="flex items-center gap-1">
+          <h3 className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => toggleSection(id)}
+              aria-expanded={!isFolded}
+              className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-dim/70 transition hover:text-parchment"
+            >
+              <IconChevronRight size={12} className={`shrink-0 transition-transform ${isFolded ? "" : "rotate-90"}`} />
+              <span className="flex-1">{titles[id]}</span>
+              <span className="text-parchment-dim/50">{members.length}</span>
+            </button>
+          </h3>
+          {rollable[id].length > 1 && (
+            <button
+              type="button"
+              onClick={() => rollOn(id)}
+              aria-label={interpolate(t.notebook.rollList, { list: titles[id] })}
+              title={interpolate(t.notebook.rollList, { list: titles[id] })}
+              className="shrink-0 rounded-md p-1 text-parchment-dim/70 transition hover:text-gold"
+            >
+              <IconDice size={14} />
+            </button>
+          )}
+        </div>
+        {!isFolded && (
+          <ul className="flex flex-col gap-1">
+            {members.map((member) => (
+              <CastItem
+                key={member.key}
+                member={member}
+                entries={entries}
+                sessionOf={sessionOf}
+                focused={member.key === focusKey}
+                focusTick={focusTick}
+                onJump={onJump}
+                onMention={onMention}
+                onLog={onLog}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  function addButton(section: "cast" | "threads", label: string) {
+    return adding === section ? (
+      <AddCastForm
+        kinds={section === "cast" ? ["npc", "pc", "place"] : ["thread", "clock", "track", "timer"]}
+        onAdd={(text) => {
+          onLog(text);
+          setAdding(null);
+        }}
+        onCancel={() => setAdding(null)}
+      />
+    ) : (
+      <button
+        type="button"
+        onClick={() => setAdding(section)}
+        className="flex items-center gap-1.5 self-start rounded-lg px-1 py-1 text-xs font-medium text-gold transition hover:text-gold-soft"
+      >
+        <IconPlus size={14} />
+        {label}
+      </button>
+    );
+  }
+
+  const hasCast = lists.characters.length + lists.places.length > 0;
+  const hasThreads = lists.threads.length + lists.progress.length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -95,66 +230,21 @@ export function AdventureNotebook({
           <IconCast size={15} className="text-gold" />
           {t.notebook.castTitle}
         </h2>
-        {cast.length === 0 && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
-        {[
-          { id: "characters" as const, title: t.notebook.groupCharacters, members: characters },
-          { id: "places" as const, title: t.notebook.groupPlaces, members: places },
-        ].map(
-          ({ id, title, members }) =>
-            members.length > 0 && (
-              <div key={id} className="flex flex-col gap-1">
-                <h3>
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(id)}
-                    aria-expanded={!folded.has(id)}
-                    className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-dim/70 transition hover:text-parchment"
-                  >
-                    <IconChevronRight
-                      size={12}
-                      className={`shrink-0 transition-transform ${folded.has(id) ? "" : "rotate-90"}`}
-                    />
-                    <span className="flex-1">{title}</span>
-                    <span className="text-parchment-dim/50">{members.length}</span>
-                  </button>
-                </h3>
-                {!folded.has(id) && (
-                  <ul className="flex flex-col gap-1">
-                    {members.map((member) => (
-                      <CastItem
-                        key={member.key}
-                        member={member}
-                        entries={entries}
-                        focused={member.key === focusKey}
-                        focusTick={focusTick}
-                        onJump={onJump}
-                        onMention={onMention}
-                        onLog={onLog}
-                      />
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ),
-        )}
-        {adding ? (
-          <AddCastForm
-            onAdd={(text) => {
-              onLog(text);
-              setAdding(false);
-            }}
-            onCancel={() => setAdding(false)}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className="flex items-center gap-1.5 self-start rounded-lg px-1 py-1 text-xs font-medium text-gold transition hover:text-gold-soft"
-          >
-            <IconPlus size={14} />
-            {t.notebook.addButton}
-          </button>
-        )}
+        {!hasCast && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
+        {group("characters")}
+        {group("places")}
+        {addButton("cast", t.notebook.addButton)}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+          <IconThread size={15} className="text-gold" />
+          {t.notebook.threadsTitle}
+        </h2>
+        {!hasThreads && <p className="text-xs text-parchment-dim/80">{t.notebook.threadsEmpty}</p>}
+        {group("threads")}
+        {group("progress")}
+        {addButton("threads", t.notebook.addThreadButton)}
       </section>
     </div>
   );
@@ -314,6 +404,7 @@ function PinnedNotes({ notes, onChange }: { notes: string; onChange: (notes: str
 function CastItem({
   member,
   entries,
+  sessionOf,
   focused,
   focusTick,
   onJump,
@@ -322,6 +413,7 @@ function CastItem({
 }: {
   member: CastMember;
   entries: JournalEntry[];
+  sessionOf: Map<string, string | null>;
   focused: boolean;
   focusTick: number;
   onJump: (entryId: string) => void;
@@ -346,8 +438,21 @@ function CastItem({
   }, [focused, focusTick]);
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
-  const kindLabel = { pc: t.notebook.kindPc, npc: t.notebook.kindNpc, place: t.notebook.kindPlace }[member.kind];
+  const dateFormat = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "short", year: "numeric" });
+  const kindLabel = t.notebook.kinds[member.kind];
   const count = member.mentions.length;
+  const status = member.kind === "thread" ? threadStatus(member) : null;
+  const progress = member.progress;
+  const isProgress = PROGRESS_KINDS.has(member.kind);
+
+  // −/+ on a clock writes its new value as a journal entry (the log is
+  // a record: nothing is edited in place). Clocks and tracks stay
+  // within their size, timers don't go below zero.
+  function step(delta: number) {
+    const value = (progress?.value ?? 0) + delta;
+    if (value < 0 || (progress?.max !== undefined && value > progress.max)) return;
+    onLog(formatProgressTag(member.kind, member.name, value, progress?.max));
+  }
 
   function logChange(e: FormEvent) {
     e.preventDefault();
@@ -368,28 +473,67 @@ function CastItem({
         open ? "border-ink-border bg-ink-800/50" : "border-transparent",
       ].join(" ")}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-ink-700/50"
-      >
-        <CastIcon kind={member.kind} size={16} className="shrink-0 text-gold" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-parchment">{member.name}</span>
-          {member.tags.length > 0 && (
-            <span className="block truncate text-xs text-parchment-dim">{member.tags.join(" · ")}</span>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-ink-700/50"
+        >
+          <CastIcon kind={member.kind} size={16} className={`shrink-0 ${status && status !== "open" ? "text-parchment-dim" : "text-gold"}`} />
+          <span className="min-w-0 flex-1">
+            <span
+              className={[
+                "block truncate text-sm font-medium",
+                status && status !== "open" ? "text-parchment-dim line-through" : "text-parchment",
+              ].join(" ")}
+            >
+              {member.name}
+            </span>
+            {isProgress ? (
+              <ProgressBar kind={member.kind} progress={progress} />
+            ) : (
+              member.tags.length > 0 && (
+                <span className="block truncate text-xs text-parchment-dim">{member.tags.join(" · ")}</span>
+              )
+            )}
+          </span>
+          {(member.kind === "pc" || isProgress) && (
+            <span className="shrink-0 rounded border border-gold/40 px-1 text-[0.65rem] font-medium text-gold">
+              {isProgress && progress ? progressText(progress) : kindLabel}
+            </span>
           )}
-        </span>
-        {member.kind === "pc" && (
-          <span className="shrink-0 rounded border border-gold/40 px-1 text-[0.65rem] font-medium text-gold">{kindLabel}</span>
+          {!isProgress && (
+            <IconChevronRight size={14} className={`shrink-0 text-parchment-dim transition-transform ${open ? "rotate-90" : ""}`} />
+          )}
+        </button>
+        {isProgress && (
+          <div className="flex shrink-0 items-center pr-1">
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label={interpolate(t.notebook.decrease, { name: member.name })}
+              title={interpolate(t.notebook.decrease, { name: member.name })}
+              className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
+            >
+              <IconMinus size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label={interpolate(t.notebook.increase, { name: member.name })}
+              title={interpolate(t.notebook.increase, { name: member.name })}
+              className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
+            >
+              <IconPlus size={14} />
+            </button>
+          </div>
         )}
-        <IconChevronRight size={14} className={`shrink-0 text-parchment-dim transition-transform ${open ? "rotate-90" : ""}`} />
-      </button>
+      </div>
 
       {open && (
         <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">
-          {member.tags.length > 0 && (
+          {!isProgress && member.tags.length > 0 && (
             <ul className="flex flex-wrap gap-1">
               {member.tags.map((tag) => (
                 <li key={tag} className="rounded-md border border-ink-border px-1.5 py-0.5 text-xs text-parchment">
@@ -415,6 +559,10 @@ function CastItem({
                   >
                     {/* Clamped inside: on the padded button a third line peeked out. */}
                     <span className="line-clamp-2">{tagsToPlainText(entry.text)}</span>
+                    {/* Where it is, as in the journal search. */}
+                    <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-dim/60">
+                      {sessionOf.get(id) ?? t.journal.prologueLabel} · {dateFormat.format(entry.timestamp)}
+                    </span>
                   </button>
                 </li>
               );
@@ -450,6 +598,17 @@ function CastItem({
             </form>
           ) : (
             <div className="flex flex-wrap gap-1.5">
+              {status && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onLog(formatTag("thread", member.name, [t.notebook.statuses[status === "open" ? "closed" : "open"]]))
+                  }
+                  className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                >
+                  {status === "open" ? t.notebook.closeThread : t.notebook.reopenThread}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => onMention(formatTag(member.kind, member.name, [], true))}
@@ -475,24 +634,62 @@ function CastItem({
   );
 }
 
-/** A new character or place, logged as its tag: "[N:Odile|innkeeper]". */
-function AddCastForm({ onAdd, onCancel }: { onAdd: (text: string) => void; onCancel: () => void }) {
+/**
+ * Draws where a clock, track or timer stands: a segmented bar when it
+ * has a size, nothing more for a timer (its number is beside it).
+ */
+function ProgressBar({ kind, progress }: { kind: CastKind; progress: CastMember["progress"] }) {
+  if (!progress?.max) return null;
+  const segments = Math.min(progress.max, 12);
+  const filled = Math.round((Math.min(progress.value, progress.max) / progress.max) * segments);
+  return (
+    <span aria-hidden className="mt-1 flex gap-0.5">
+      {Array.from({ length: segments }, (_, i) => (
+        <span
+          key={i}
+          className={[
+            "h-1.5 flex-1 rounded-full",
+            i < filled ? (kind === "clock" ? "bg-no/80" : "bg-gold") : "bg-ink-700",
+          ].join(" ")}
+        />
+      ))}
+    </span>
+  );
+}
+
+/**
+ * A new element, logged as its tag: "[N:Odile|innkeeper]",
+ * "[Thread:The box|Open]", "[Clock:Alarm 0/6]", "[Timer:Dawn 6]".
+ */
+function AddCastForm({
+  kinds,
+  onAdd,
+  onCancel,
+}: {
+  kinds: CastKind[];
+  onAdd: (text: string) => void;
+  onCancel: () => void;
+}) {
   const { t } = useLocaleContext();
-  const [kind, setKind] = useState<CastKind>("npc");
+  const [kind, setKind] = useState<CastKind>(kinds[0]);
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
-  const kinds: { id: CastKind; label: string }[] = [
-    { id: "npc", label: t.notebook.kindNpc },
-    { id: "pc", label: t.notebook.kindPc },
-    { id: "place", label: t.notebook.kindPlace },
-  ];
+  const [size, setSize] = useState(6);
+  const hint = kind === "clock" || kind === "track" || kind === "timer" ? t.notebook.kindHints[kind] : t.notebook.addHint;
+
+  function tag(): string {
+    if (kind === "thread") return formatTag("thread", name, [t.notebook.statuses.open]);
+    if (kind === "clock" || kind === "track") return formatProgressTag(kind, name, 0, size);
+    if (kind === "timer") return formatProgressTag(kind, name, size);
+    return formatTag(kind, name, details.split(","));
+  }
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         if (!name.trim()) return;
-        onAdd(formatTag(kind, name, details.split(",")));
+        onAdd(tag());
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
@@ -502,21 +699,23 @@ function AddCastForm({ onAdd, onCancel }: { onAdd: (text: string) => void; onCan
       }}
       className="flex flex-col gap-2 rounded-xl border border-ink-border bg-ink-800/50 p-2.5"
     >
-      <div role="radiogroup" aria-label={t.notebook.addKindLabel} className="flex gap-1 rounded-lg bg-ink-900/60 p-1">
-        {kinds.map((k) => (
+      <div role="radiogroup" aria-label={t.notebook.addKindLabel} className="grid grid-cols-2 gap-1 rounded-lg bg-ink-900/60 p-1">
+        {kinds.map((id) => (
           <button
-            key={k.id}
+            key={id}
             type="button"
             role="radio"
-            aria-checked={kind === k.id}
-            onClick={() => setKind(k.id)}
+            aria-checked={kind === id}
+            onClick={() => setKind(id)}
             className={[
-              "flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition",
-              kind === k.id ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
+              "flex min-w-0 items-center justify-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium transition",
+              // With three, the last one takes the whole row.
+              kinds.length % 2 === 1 && id === kinds.at(-1) ? "col-span-2" : "",
+              kind === id ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
             ].join(" ")}
           >
-            <CastIcon kind={k.id} size={13} className="shrink-0" />
-            {k.label}
+            <CastIcon kind={id} size={13} className="shrink-0" />
+            <span className="truncate">{t.notebook.kinds[id]}</span>
           </button>
         ))}
       </div>
@@ -528,14 +727,29 @@ function AddCastForm({ onAdd, onCancel }: { onAdd: (text: string) => void; onCan
         aria-label={t.notebook.addNameLabel}
         className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
       />
-      <input
-        value={details}
-        onChange={(e) => setDetails(e.target.value)}
-        placeholder={t.notebook.addDetailsLabel}
-        aria-label={t.notebook.addDetailsLabel}
-        className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
-      />
-      <p className="text-[0.7rem] text-parchment-dim/70">{t.notebook.addHint}</p>
+      {(kind === "pc" || kind === "npc" || kind === "place") && (
+        <input
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+          placeholder={t.notebook.addDetailsLabel}
+          aria-label={t.notebook.addDetailsLabel}
+          className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
+        />
+      )}
+      {(kind === "clock" || kind === "track" || kind === "timer") && (
+        <label className="flex items-center gap-2 text-xs text-parchment-dim">
+          <span className="flex-1">{kind === "timer" ? t.notebook.timerStartLabel : t.notebook.segmentsLabel}</span>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            value={size}
+            onChange={(e) => setSize(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
+            className={`${INPUT_CLASS} w-20 flex-none bg-ink-900/70 py-1.5 text-sm`}
+          />
+        </label>
+      )}
+      <p className="text-[0.7rem] text-parchment-dim/70">{hint}</p>
       <div className="flex justify-end gap-1.5">
         <button
           type="button"

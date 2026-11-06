@@ -11,6 +11,7 @@ import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { DiceRoller } from "./DiceRoller";
+import { rollFormula } from "../lib/dice";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 
@@ -90,7 +91,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
     : all.filter((table) => favorites.has(table.id));
 
   function roll(table: MeaningTable) {
-    onRolled(rollTable(table, adventureId).id);
+    onRolled(rollTable(table, adventureId, all).id);
   }
 
   return (
@@ -155,13 +156,27 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
 /**
  * Rolls from your own system: they accumulate ("d20 -> 14, d6 -> 3")
  * with an optional text in front, and are logged together as a single
- * "Roll" entry — so they show up in the journal as one group.
+ * "Roll" entry — so they show up in the journal as one group. Besides
+ * the single dice, advantage/disadvantage and a typed formula
+ * ("2d6+3", "4d6kh3", "5d6>=5"; see rollFormula).
  */
 export function DiceTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();
   const { addEntry } = useJournalContext();
   const [label, setLabel] = useState("");
   const [rolls, setRolls] = useState<string[]>([]);
+  const [formula, setFormula] = useState("");
+  const [formulaError, setFormulaError] = useState(false);
+
+  function add(roll: string) {
+    setRolls((prev) => [...prev, roll]);
+  }
+
+  function rollTyped() {
+    const roll = rollFormula(formula);
+    setFormulaError(!roll);
+    if (roll) add(roll);
+  }
 
   function log() {
     if (rolls.length === 0) return;
@@ -179,7 +194,58 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         placeholder={t.journal.diceLabelPlaceholder}
         className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
       />
-      <DiceRoller onRoll={(r) => setRolls((prev) => [...prev, r])} ariaLabel={t.journal.diceRollerLabel} />
+      <DiceRoller onRoll={add} ariaLabel={t.journal.diceRollerLabel} />
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          { label: t.journal.diceAdvantage, formula: "2d20kh1" },
+          { label: t.journal.diceDisadvantage, formula: "2d20kl1" },
+        ].map((d) => (
+          <button
+            key={d.formula}
+            type="button"
+            onClick={() => add(rollFormula(d.formula)!)}
+            title={d.formula}
+            className="rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+      <form
+        className="flex gap-1.5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          rollTyped();
+        }}
+      >
+        <input
+          value={formula}
+          onChange={(e) => {
+            setFormula(e.target.value);
+            setFormulaError(false);
+          }}
+          placeholder={t.journal.diceFormulaPlaceholder}
+          aria-label={t.journal.diceFormulaLabel}
+          aria-invalid={formulaError}
+          enterKeyHint="go"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 text-sm`}
+        />
+        <button
+          type="submit"
+          disabled={!formula.trim()}
+          className="shrink-0 rounded-lg border border-gold/50 px-3 text-xs font-semibold text-gold transition hover:bg-gold/10 disabled:border-ink-border disabled:text-parchment-dim/50"
+        >
+          {t.journal.diceFormulaRoll}
+        </button>
+      </form>
+      {formulaError && (
+        <p role="alert" className="text-xs text-no">
+          {t.journal.diceFormulaError}
+        </p>
+      )}
       {rolls.length === 0 ? (
         <p className="text-xs text-parchment-dim/70">{t.journal.diceHint}</p>
       ) : (

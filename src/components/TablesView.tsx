@@ -93,7 +93,7 @@ export function TablesView() {
   // Each game is loaded only when needed: Solo Compass's (quick
   // inspiration), unfolded blocks, the favourites' games, and all of
   // them while searching or filtering.
-  const { blocks, custom, inspiration, retry } = useMeaningTables(
+  const { all, blocks, custom, inspiration, retry } = useMeaningTables(
     filtering
       ? "all"
       : [
@@ -121,7 +121,7 @@ export function TablesView() {
 
   function handleRoll(table: MeaningTable) {
     withRollPause(table.id, () => {
-      const entry = rollTable(table);
+      const entry = rollTable(table, undefined, all);
       return {
         sourceId: table.id,
         rollId: entry.id,

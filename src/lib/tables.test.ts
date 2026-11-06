@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { diceMax, lookupEntry, rollForTable, type MeaningTable } from "./tables";
+import { diceMax, lookupEntry, resolveResult, rollForTable, type MeaningTable } from "./tables";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -31,5 +31,40 @@ describe("dice and lookup", () => {
       expect(total).toBeGreaterThanOrEqual(1);
       expect(total).toBeLessThanOrEqual(diceMax(dice));
     }
+  });
+});
+
+describe("results that roll again", () => {
+  const table = (id: string, name: string, texts: string[], tag?: string): MeaningTable => ({
+    id,
+    name,
+    description: "",
+    dice: `d${texts.length}`,
+    game: { name: "Test", ...(tag ? { tag } : {}) },
+    entries: texts.map((text, i) => ({ range: [i + 1, i + 1], text })),
+  });
+  // Faces in order (1-based), for a die of `sides`.
+  const faces = (sides: number, ...values: number[]) => {
+    const spy = vi.spyOn(Math, "random");
+    for (const v of values) spy.mockReturnValueOnce((v - 1) / sides + 0.001);
+  };
+
+  it("rolls twice more on the same table, skipping another roll twice", () => {
+    const places = table("p", "Places", ["Ruins", "Cave", "Tira dos veces"]);
+    faces(3, 3, 1, 2);
+    expect(resolveResult(places, 3)).toBe("Tira dos veces → Ruins · Cave");
+  });
+
+  it("fills {Table} with a roll on that table, by name or game tag, accents ignored", () => {
+    const npcs = table("n", "Nombre", ["Odile", "Bram"], "PNJ");
+    const own = table("o", "Guardia", ["Un {pnj: nombre} vigila", "{Nada} aquí"]);
+    faces(2, 2);
+    expect(resolveResult(own, 1, [npcs, own])).toBe("Un Bram vigila");
+    expect(resolveResult(own, 2, [npcs, own])).toBe("{Nada} aquí");
+  });
+
+  it("stops following references after a few levels", () => {
+    const loop = table("l", "Loop", ["again {Loop}"]);
+    expect(resolveResult(loop, 1, [loop])).toBe("again again again again {Loop}");
   });
 });

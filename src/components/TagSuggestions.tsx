@@ -33,7 +33,7 @@ export function TagSuggestions({
         state.options.map((option, i) => {
           const existing = "member" in option;
           const kind = existing ? option.member.kind : option.kind;
-          const kindLabel = { pc: t.notebook.kindPc, npc: t.notebook.kindNpc, place: t.notebook.kindPlace }[kind];
+          const kindLabel = t.notebook.kinds[kind];
           const name = existing ? option.member.name : option.name;
           const detail = existing
             ? option.member.tags.join(" · ") || kindLabel

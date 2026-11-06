@@ -21,6 +21,39 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-06",
     text: {
       es: {
+        title: "Capítulo XII · Hilos sueltos y relojes que corren",
+        intro: "En el cuaderno de Mara ya no caben solo nombres: también las preguntas sin respuesta y lo que se agota.",
+        items: [
+          "Hilos y relojes en el cuaderno: tramas abiertas ([Thread:La caja sellada|Abierto]), relojes de amenaza ([Clock:Alarma 2/6]), progresos ([Track:Huida 3/8]) y cuentas atrás ([Timer:Amanecer 3]). Súmales o réstales uno con un toque, y cierra un hilo cuando se resuelva.",
+          "Tirar en la lista: un dado junto a Personajes, Lugares e Hilos elige uno al azar para cuando el oráculo pregunta «¿quién?» o «¿cuál?».",
+          "Dados con fórmula en la mesa de juego: 2d6+3, 4d6kh3 (los tres mayores), 5d6>=5 (cuenta éxitos), y botones de ventaja y desventaja.",
+          "Las tablas que dicen «Tira dos veces» ya tiran solas, y en tus tablas un resultado puede tirar en otra escribiendo su nombre entre llaves: «Un {PNJ: nombre} vigila».",
+          "Exporta una aventura como página web para leerla o compartirla, con los colores y la letra del tema que estés usando.",
+          "Los diarios de Lonelog con las tiradas sangradas bajo su acción, como en los ejemplos de la notación, se importan bien.",
+          "Juega en el móvil y en el ordenador: en Ajustes, «Enviar» manda tu copia al otro dispositivo, y al restaurarla puedes juntarla con lo que ya tenías en vez de sustituirlo. Lo que borres en uno no reaparece en el otro.",
+          "Bajo cada mención de un personaje o lugar se ve en qué sesión está.",
+        ],
+      },
+      en: {
+        title: "Chapter XII · Loose threads and ticking clocks",
+        intro: "Mara's notebook no longer holds just names: also the unanswered questions and what's running out.",
+        items: [
+          "Threads and clocks in the notebook: open plot threads ([Thread:The sealed box|Open]), threat clocks ([Clock:Alarm 2/6]), tracks ([Track:Escape 3/8]) and timers ([Timer:Dawn 3]). Add or take one with a tap, and close a thread once it's resolved.",
+          "Roll on the list: a die beside Characters, Places and Threads picks one at random, for when the oracle asks “who?” or “which?”.",
+          "Dice formulas at the game table: 2d6+3, 4d6kh3 (highest three), 5d6>=5 (counts successes), and advantage and disadvantage buttons.",
+          "Tables that say “Roll twice” now roll by themselves, and in your own tables a result can roll on another by writing its name in braces: “A {NPC: Name} keeps watch”.",
+          "Export an adventure as a web page to read or share, in the colours and font of the theme you're using.",
+          "Lonelog journals with rolls indented under their action, as in the notation's examples, now import correctly.",
+          "Play on your phone and your computer: in Settings, “Send” passes your backup to the other device, and when restoring it you can merge it with what you already had instead of replacing it. What you delete on one doesn't come back on the other.",
+          "Each mention of a character or place shows which session it's in.",
+        ],
+      },
+    },
+  },
+  {
+    date: "2026-11-06",
+    text: {
+      es: {
         title: "Capítulo XI · El cuaderno del viajero",
         intro: "Mara se compró un cuaderno en el mercado del cruce. Ahí apunta a quién ha conocido, dónde ha estado y lo que no quiere olvidar.",
         items: [

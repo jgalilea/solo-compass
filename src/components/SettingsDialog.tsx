@@ -6,6 +6,7 @@ import {
   IconConsequence,
   IconDice,
   IconDownload,
+  IconShare,
   IconExternalLink,
   IconHeart,
   IconNote,
@@ -27,7 +28,16 @@ import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
 import { TABLE_CREDITS } from "../lib/tableGames";
-import { backupFilename, BackupError, buildBackup, downloadBackupFile, restoreBackup } from "../lib/backup";
+import {
+  backupFilename,
+  BackupError,
+  backupText,
+  buildBackup,
+  downloadBackupFile,
+  restoreBackup,
+  type RestoreMode,
+} from "../lib/backup";
+import { canShare, shareTextFile } from "../lib/share";
 import {
   formatSince,
   loadLastBackupAt,
@@ -36,7 +46,6 @@ import {
   shouldNudgeBackup,
 } from "../lib/backupReminder";
 import { ChangelogDialog } from "./ChangelogDialog";
-import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
 import { InstallAppSettings } from "./InstallApp";
 import { Modal } from "./Modal";
@@ -334,19 +343,40 @@ function BackupSettings() {
     [entries, lastBackupAt],
   );
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
-  const [pendingRestore, setPendingRestore] = useState<string | null>(null);
+  // The backup file just picked, waiting for "merge" or "replace".
+  const [pendingRestore, setPendingRestore] = useState<{ text: string; date: string | null } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function markBackedUp() {
+    const now = Date.now();
+    saveLastBackupAt(now);
+    setLastBackupAt(now);
+  }
 
   async function handleExportAll() {
     const payload = await buildBackup(t);
     const filename = backupFilename();
     downloadBackupFile(filename, payload);
     setExportedFilename(filename);
-    const now = Date.now();
-    saveLastBackupAt(now);
-    setLastBackupAt(now);
+    markBackedUp();
+  }
+
+  // Straight to another device through the system's share sheet; if
+  // sharing fails (not just cancelled), it's downloaded instead.
+  async function handleShareAll() {
+    const payload = await buildBackup(t);
+    const filename = backupFilename();
+    try {
+      if ((await shareTextFile(filename, backupText(payload), t.about.shareAllTitle, "application/json")) === "shared") {
+        markBackedUp();
+      }
+    } catch {
+      downloadBackupFile(filename, payload);
+      setExportedFilename(filename);
+      markBackedUp();
+    }
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -355,14 +385,23 @@ function BackupSettings() {
     if (!file) return;
     const text = await file.text();
     setImportError(null);
-    setPendingRestore(text);
+    let date: string | null = null;
+    try {
+      const exportedAt = Date.parse((JSON.parse(text) as { exportedAt?: string }).exportedAt ?? "");
+      if (Number.isFinite(exportedAt)) {
+        date = new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(exportedAt);
+      }
+    } catch {
+      // Not readable: restoreBackup says so when it's tried.
+    }
+    setPendingRestore({ text, date });
   }
 
-  async function confirmRestore() {
+  async function confirmRestore(mode: RestoreMode) {
     if (!pendingRestore || restoring) return;
     setRestoring(true);
     try {
-      await restoreBackup(t, pendingRestore);
+      await restoreBackup(t, pendingRestore.text, mode);
       // Full reload on purpose: history/journal/theme/locale… are
       // spread across several React contexts that are already mounted,
       // and the simplest, most reliable way for all of them to reflect
@@ -396,19 +435,29 @@ function BackupSettings() {
       )}
       {importError && <p className="mt-2 text-xs text-no">{importError}</p>}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={handleExportAll}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gold py-2.5 text-sm font-medium text-ink-950 transition hover:bg-gold-soft"
+          className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-gold px-3 py-2.5 text-sm font-medium text-ink-950 transition hover:bg-gold-soft"
         >
           <IconDownload size={16} />
           {t.about.exportAllButton}
         </button>
+        {canShare() && (
+          <button
+            type="button"
+            onClick={() => void handleShareAll()}
+            className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-gold/50 px-3 py-2.5 text-sm font-medium text-gold transition hover:bg-gold/10"
+          >
+            <IconShare size={16} />
+            {t.about.shareAllButton}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-ink-border py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-ink-border px-3 py-2.5 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
         >
           <IconUpload size={16} />
           {t.about.importAllButton}
@@ -416,22 +465,59 @@ function BackupSettings() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".json,application/json"
+          // .txt too: shared from Chromium, the backup arrives as text.
+          accept=".json,.txt,application/json,text/plain"
           className="hidden"
           onChange={handleImportFile}
         />
       </div>
+      <p className="mt-3 text-xs leading-relaxed text-parchment-dim">{t.about.dataSectionHint}</p>
 
       {pendingRestore && (
-        <ConfirmDialog
-          title={t.about.importAllConfirmTitle}
-          description={
-            restoring ? t.about.importAllSuccessReloading : t.about.importAllConfirmDescription
-          }
-          confirmLabel={t.about.importAllConfirmButton}
-          onConfirm={confirmRestore}
-          onCancel={() => setPendingRestore(null)}
-        />
+        <Modal
+          onClose={() => setPendingRestore(null)}
+          labelledBy="restore-choice-title"
+          centered
+          className="w-full max-w-md rounded-2xl border border-ink-border bg-ink-800 p-6 shadow-2xl"
+        >
+          <h2 id="restore-choice-title" className="font-display text-lg text-parchment">
+            {t.about.restoreChoiceTitle}
+          </h2>
+          {pendingRestore.date && (
+            <p className="mt-1 text-sm text-parchment-dim">
+              {interpolate(t.about.restoreChoiceDescription, { date: pendingRestore.date })}
+            </p>
+          )}
+          {restoring ? (
+            <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>
+          ) : (
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => void confirmRestore("merge")}
+                className="rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-left transition hover:bg-gold/20"
+              >
+                <span className="block text-sm font-semibold text-gold">{t.about.restoreMergeLabel}</span>
+                <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreMergeDescription}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmRestore("replace")}
+                className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
+              >
+                <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>
+                <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreReplaceDescription}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPendingRestore(null)}
+                className="self-end rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
+              >
+                {t.common.cancel}
+              </button>
+            </div>
+          )}
+        </Modal>
       )}
     </div>
   );

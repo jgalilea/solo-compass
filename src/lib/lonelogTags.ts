@@ -1,9 +1,11 @@
 /**
- * Lonelog's persistent-element tags for characters and places
- * (spec 1.5.0, §4.1): `[N:Jonah|friendly|wounded]` for an NPC,
- * `[PC:Alex|HP 8]` for the player character, `[L:Lighthouse|ruined]`
- * for a location, and `[#N:Jonah]` to refer back to one without
- * restating it. Threads, clocks and events aren't read yet.
+ * Lonelog's persistent-element tags (spec 1.5.0, §4.1–4.2):
+ * `[N:Jonah|friendly|wounded]` for an NPC, `[PC:Alex|HP 8]` for the
+ * player character, `[L:Lighthouse|ruined]` for a location,
+ * `[Thread:The box|Open]` for a story thread, and progress: clocks
+ * `[Clock:Ritual 5/12]` (also the older `[E:Plot 2/6]`), tracks
+ * `[Track:Escape 3/8]` and timers `[Timer:Dawn 3]`. `[#N:Jonah]`
+ * refers back to one without restating it.
  *
  * Tags stay in the entry's text as written, so the .md keeps them
  * as is in both directions. What this module adds is reading them:
@@ -23,10 +25,40 @@
 import { normalizeForSearch } from "./text";
 import type { JournalEntry } from "./lonelog";
 
-export type CastKind = "pc" | "npc" | "place";
+export type CastKind = "pc" | "npc" | "place" | "thread" | "clock" | "track" | "timer";
 
-const PREFIX: Record<CastKind, string> = { pc: "PC", npc: "N", place: "L" };
-const KIND_OF_PREFIX: Record<string, CastKind> = { PC: "pc", N: "npc", L: "place" };
+/** Kinds whose name carries a number: "Ritual 5/12", "Dawn 3". */
+export const PROGRESS_KINDS: ReadonlySet<CastKind> = new Set(["clock", "track", "timer"]);
+
+const PREFIX: Record<CastKind, string> = {
+  pc: "PC",
+  npc: "N",
+  place: "L",
+  thread: "Thread",
+  clock: "Clock",
+  track: "Track",
+  timer: "Timer",
+};
+const KIND_OF_PREFIX: Record<string, CastKind> = {
+  PC: "pc",
+  N: "npc",
+  L: "place",
+  Thread: "thread",
+  Clock: "clock",
+  Track: "track",
+  Timer: "timer",
+  // Events (§4.1.3) are the clocks of earlier versions of the spec.
+  E: "clock",
+};
+const PREFIXES = "PC|N|L|Thread|Clock|Track|Timer|E";
+
+/** A clock's, track's or timer's number: "5/12" sets it, "+1" changes it. */
+export interface Progress {
+  value: number;
+  max?: number;
+  /** "+1"/"-2": relative to the value it had. */
+  relative?: boolean;
+}
 
 export interface TagRef {
   kind: CastKind;
@@ -35,32 +67,46 @@ export interface TagRef {
   reference: boolean;
   /** What comes after the name, one item per "|" (may be updates). */
   details: string[];
+  progress?: Progress;
 }
 
 export type TextPart = { text: string; tag?: undefined } | { text: string; tag: TagRef };
 
 // "[", optional "#", the type, ":", the name (one line), then optional
 // "|"-separated details, which may span lines (multi-line tags, §4.1.8).
-const TAG = /\[(#?)(PC|N|L):[ \t]*([^\]|\n]*?)[ \t]*((?:\s*\|[^\]]*)?)\]/g;
+const TAG = new RegExp(`\\[(#?)(${PREFIXES}):[ \\t]*([^\\]|\\n]*?)[ \\t]*((?:\\s*\\|[^\\]]*)?)\\]`, "g");
+
+// "Ritual 5/12", "Dawn 3", "Ritual +1".
+const PROGRESS_NAME = /^(.*?\S)\s*(?:([+-])\s*(\d+)|(\d+)(?:\s*\/\s*(\d+))?)$/;
+
+function readProgress(raw: string): { name: string; progress?: Progress } {
+  const m = raw.match(PROGRESS_NAME);
+  if (!m) return { name: raw };
+  if (m[2]) return { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } };
+  return { name: m[1], progress: { value: Number(m[4]), ...(m[5] ? { max: Number(m[5]) } : {}) } };
+}
 
 /** Splits a text into prose and character/place tags, in order. */
 export function splitTags(text: string): TextPart[] {
   const parts: TextPart[] = [];
   let last = 0;
   for (const match of text.matchAll(TAG)) {
-    const name = match[3].trim();
-    if (!name) continue;
+    const raw = match[3].trim();
+    if (!raw) continue;
+    const kind = KIND_OF_PREFIX[match[2]];
+    const { name, progress } = PROGRESS_KINDS.has(kind) ? readProgress(raw) : { name: raw };
     if (match.index > last) parts.push({ text: text.slice(last, match.index) });
     parts.push({
       text: match[0],
       tag: {
-        kind: KIND_OF_PREFIX[match[2]],
+        kind,
         name,
         reference: match[1] === "#",
         details: match[4]
           .split("|")
           .map((d) => d.replace(/\s+/g, " ").trim())
           .filter(Boolean),
+        ...(progress ? { progress } : {}),
       },
     });
     last = match.index + match[0].length;
@@ -72,6 +118,11 @@ export function splitTags(text: string): TextPart[] {
 /** "Jonah", "jonah" and "Jónah" are the same element. */
 export function castKey(kind: CastKind, name: string): string {
   return `${kind}:${normalizeForSearch(name.trim())}`;
+}
+
+/** A clock, track or timer with its number: `[Clock:Ritual 6/12]`, `[Timer:Dawn 2]`. */
+export function formatProgressTag(kind: CastKind, name: string, value: number, max?: number): string {
+  return formatTag(kind, `${name.replace(/[[\]|]/g, " ").trim()} ${value}${max !== undefined ? `/${max}` : ""}`);
 }
 
 /** Writes a tag the way the spec does: `[N:Name|a|b]` or `[#N:Name]`. */
@@ -154,10 +205,41 @@ export interface CastMember {
   tags: string[];
   /** Ids of the entries that mention it, in journal order. */
   mentions: string[];
+  /** Clocks, tracks and timers: where they stand now. */
+  progress?: { value: number; max?: number };
+}
+
+export type ThreadStatus = "open" | "closed" | "abandoned";
+
+// The spec's thread states (§4.1.4), in English and Spanish.
+const THREAD_STATES: Record<string, ThreadStatus> = {
+  open: "open",
+  abierto: "open",
+  abierta: "open",
+  closed: "closed",
+  cerrado: "closed",
+  cerrada: "closed",
+  resolved: "closed",
+  resuelto: "closed",
+  resuelta: "closed",
+  abandoned: "abandoned",
+  abandonado: "abandoned",
+  abandonada: "abandoned",
+};
+
+const stateOf = (tag: string) => THREAD_STATES[normalizeForSearch(tag.replace(/^[+]/, "").trim())];
+
+/** A thread's state: its last state tag (open if none). */
+export function threadStatus(member: CastMember): ThreadStatus {
+  for (const tag of [...member.tags].reverse()) {
+    const state = stateOf(tag);
+    if (state) return state;
+  }
+  return "open";
 }
 
 /**
- * The adventure's characters and places, derived from its entries (the
+ * The adventure's characters, places, threads and progress, derived from its entries (the
  * journal is the only source of truth: nothing is stored apart). Roll
  * entries are skipped: a `[...]` inside `d:` is roll context (§4.1.9),
  * not a persistent element. In order of first appearance.
@@ -169,24 +251,39 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
     if (entry.kind === "roll" || entry.kind === "session") continue;
     for (const part of splitTags(entry.text)) {
       if (!part.tag) continue;
-      const { kind, name, details } = part.tag;
+      const { kind, name, details, progress } = part.tag;
       const key = castKey(kind, name);
       let member = byKey.get(key);
       if (!member) {
         member = { key, kind, name, tags: [], mentions: [] };
         byKey.set(key, member);
       }
-      member.tags = applyTagUpdates(member.tags, details);
+      // A thread has one state at a time: a new one replaces the old.
+      const current =
+        kind === "thread" && details.some(stateOf) ? member.tags.filter((t) => !stateOf(t)) : member.tags;
+      member.tags = applyTagUpdates(current, details);
+      if (progress) {
+        const before = member.progress;
+        member.progress = progress.relative
+          ? { value: (before?.value ?? 0) + progress.value, ...(before?.max !== undefined ? { max: before.max } : {}) }
+          : { value: progress.value, ...((progress.max ?? before?.max) !== undefined ? { max: progress.max ?? before!.max } : {}) };
+      }
       if (member.mentions.at(-1) !== entry.id) member.mentions.push(entry.id);
     }
   }
   return [...byKey.values()];
 }
 
+/** "5/12", "3", "+1". */
+export function progressText(progress: Progress | { value: number; max?: number }): string {
+  if ("relative" in progress && progress.relative) return `${progress.value >= 0 ? "+" : ""}${progress.value}`;
+  return `${progress.value}${progress.max !== undefined ? `/${progress.max}` : ""}`;
+}
+
 /** The text with each tag as just its name, for short previews. */
 export function tagsToPlainText(text: string): string {
   return splitTags(text)
-    .map((part) => (part.tag ? part.tag.name : part.text))
+    .map((part) => (part.tag ? part.tag.name + (part.tag.progress ? ` ${progressText(part.tag.progress)}` : "") : part.text))
     .join("");
 }
 
@@ -200,7 +297,7 @@ export interface TagQuery {
 }
 
 // An unclosed "[" right before the caret, with an optional type.
-const OPEN_TAG = /\[(#?)(?:(PC|N|L):)?([^[\]|\n]*)$/;
+const OPEN_TAG = new RegExp(`\\[(#?)(?:(${PREFIXES}):)?([^[\\]|\\n]*)$`);
 
 /**
  * The tag being typed just before the caret, for the composer's

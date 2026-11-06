@@ -90,6 +90,17 @@ describe("splitRollText", () => {
 });
 
 describe("splitRollSeries", () => {
+  it("reads dice formulas too", () => {
+    expect(splitRollSeries("Ataque 2d20kh1 -> 17 (17, 5✗), 1d8+3 -> 7 (4 + 3), 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)")).toEqual({
+      label: "Ataque",
+      rolls: [
+        { die: "2d20kh1", result: "17 (17, 5✗)" },
+        { die: "1d8+3", result: "7 (4 + 3)" },
+        { die: "5d6>=5", result: "2 (6✓ 5✓ 3 2 1)" },
+      ],
+    });
+  });
+
   it("splits each die from its result, with or without commas", () => {
     const rolls = [
       { die: "d10", result: "9" },

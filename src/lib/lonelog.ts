@@ -38,6 +38,8 @@ export interface JournalEntry {
   text: string;
   /** If the entry comes from an app roll, its id in the history. */
   linkedRollId?: string;
+  /** Last edit (ms), if it was edited: the newer edit wins on a merge. */
+  editedAt?: number;
 }
 
 const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
@@ -55,12 +57,17 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
  */
 const NEEDS_ESCAPE = /^(@|\?|d:|=>|===|#|>|\\)/;
 
+/** What opens an entry of its own, even on an indented line. */
+const STARTS_ENTRY = /^(@|\?|d:|=>|===)/;
+
 /**
  * Entries can span several lines (the editor allows it). Continuation
  * lines are exported indented by two spaces: in Markdown they're still
  * the same paragraph, and on import the indent says they belong to the
- * previous entry even if they start with a symbol. Blank lines in
- * between are kept.
+ * previous entry. One that starts with a symbol is escaped with "\\"
+ * too: Lonelog's indentation is only visual (§2.3), so on import an
+ * indented "d:" or "=>" is an entry of its own. Blank lines in between
+ * are kept.
  */
 export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   if (entry.kind === "session") {
@@ -72,7 +79,9 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
     entry.kind === "note"
       ? NEEDS_ESCAPE.test(first) ? `\\${first}` : first
       : `${PREFIX[entry.kind]}${first}`;
-  return [head, ...rest.map((line) => (line.trim() ? `  ${line}` : ""))].join("\n");
+  const continuation = (line: string) =>
+    line.trim() ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}` : "";
+  return [head, ...rest.map(continuation)].join("\n");
 }
 
 export const LONELOG_URL = "https://lonelog.itch.io/lonelog";
@@ -188,6 +197,8 @@ export function parseNotesFromMarkdown(text: string): string {
 }
 
 const ROLL_PREFIX = /^d:\s?/;
+/** "```" or "~~~", with or without a language. */
+const CODE_FENCE = /^(```|~~~)/;
 /** An indented line continues the previous entry (see formatLine). */
 const CONTINUATION_LINE = /^[ \t]+\S/;
 const ACTION_PREFIX = /^@\s?/;
@@ -214,7 +225,10 @@ const H1_TITLE_LINE = /^#(?!#)/;
  * - Sessions are recognised in "=== Title ===" (what we export) and
  *   also in "## Title", in case the file comes from elsewhere.
  * - An indented line continues the previous entry (multi-line
- *   entries); a leading "\\" escapes a note that starts with a symbol.
+ *   entries), unless it starts with a symbol; a leading "\\" escapes a
+ *   note or a continuation line that starts with one.
+ * - Code fences (Lonelog's digital format wraps notation in them) are
+ *   skipped.
  */
 export function parseMarkdownToEntries(
   text: string,
@@ -240,9 +254,22 @@ export function parseMarkdownToEntries(
       continue;
     }
 
+    // Lonelog wraps its notation in code fences in digital logs (§2.1):
+    // the fences themselves aren't content.
+    if (CODE_FENCE.test(line)) continue;
+
     const previous = entries[entries.length - 1];
-    if (previous && previous.kind !== "session" && CONTINUATION_LINE.test(rawLine)) {
-      previous.text += "\n".repeat(pendingBlankLines + 1) + line;
+    // An indented line continues the previous entry, unless it opens
+    // one ("    d: …" under its "@", as Lonelog's examples indent them);
+    // "\\" escapes a continuation that starts with a symbol.
+    if (
+      previous &&
+      previous.kind !== "session" &&
+      CONTINUATION_LINE.test(rawLine) &&
+      (line.startsWith("\\") || !STARTS_ENTRY.test(line))
+    ) {
+      const content = line.startsWith("\\") ? line.slice(1) : line;
+      previous.text += "\n".repeat(pendingBlankLines + 1) + content;
       pendingBlankLines = 0;
       continue;
     }

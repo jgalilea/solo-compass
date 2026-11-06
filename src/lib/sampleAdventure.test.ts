@@ -42,7 +42,7 @@ describe("sample adventure cast", () => {
       const t = DICTIONARIES[lang];
       const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
       const cast = buildCast(parseMarkdownToEntries(markdown, "a", 0));
-      expect(cast.map((c) => c.kind)).toEqual(["pc", "place", "npc", "npc", "place", "npc"]);
+      expect(cast.map((c) => c.kind)).toEqual(["pc", "place", "npc", "npc", "place", "npc", "thread", "clock"]);
       expect(cast[0].tags.at(-1)).toMatch(/ 3$/);
       expect(cast[2].mentions).toHaveLength(4);
       expect(cast[3].mentions).toHaveLength(3);

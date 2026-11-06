@@ -38,12 +38,12 @@ export const SYMBOL: Record<JournalLineKind, string> = {
   session: "",
 };
 
-export function downloadTextFile(filename: string, content: string) {
+export function downloadTextFile(filename: string, content: string, type = "text/markdown") {
   // Once downloaded, the file is left with just bytes + extension —
   // the blob's "charset=utf-8" doesn't travel with it. Without a BOM,
   // some viewers (iOS especially) guess the encoding wrong and show
   // broken accents/symbols when it's opened outside the app.
-  const blob = new Blob(["﻿" + content], { type: "text/markdown;charset=utf-8" });
+  const blob = new Blob(["﻿" + content], { type: `${type};charset=utf-8` });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -152,8 +152,12 @@ export function splitRollText(text: string): {
   return { detail, result, answer };
 }
 
-/** One die from the generic roller: "d10", "2d6", "d%", "4dF". */
-const DIE = String.raw`\d*d(?:\d+|%|F)`;
+/**
+ * One die or formula from the generic roller: "d10", "2d6", "d%",
+ * "4dF", "2d6+3", "4d6kh3", "5d6>=5" (see rollFormula in dice.ts).
+ */
+const DICE = String.raw`\d*d(?:\d+|%|F)(?:k[hl]?\d+)?`;
+const DIE = String.raw`${DICE}(?:[+-](?:${DICE}|\d+))*(?:[<>]=?\d+)?`;
 const ROLL_SEGMENT = new RegExp(
   String.raw`(${DIE})\s*->\s*(.+?)(?=\s*,?\s+${DIE}\s*->|\s*$)`,
   "g",

@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { applyTagUpdates, buildCast, castKey, findTagQuery, formatTag, splitTags, suggestCast } from "./lonelogTags";
+import {
+  applyTagUpdates,
+  buildCast,
+  castKey,
+  findTagQuery,
+  formatProgressTag,
+  formatTag,
+  splitTags,
+  suggestCast,
+  tagsToPlainText,
+  threadStatus,
+} from "./lonelogTags";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 function entry(kind: JournalLineKind, text: string, i: number): JournalEntry {
@@ -33,9 +44,22 @@ describe("splitTags", () => {
     });
   });
 
-  it("leaves other brackets alone (threads, clocks, plain text)", () => {
-    const text = "[Thread:The box|Open] [E:Alarm 2/6] [a note] [N:]";
+  it("leaves other brackets alone (unknown types, plain text, empty names)", () => {
+    const text = "[Faction:Guild|rising] [a note] [N:] [R:1|cleared]";
     expect(splitTags(text)).toEqual([{ text }]);
+  });
+
+  it("reads threads and the number of clocks, tracks and timers", () => {
+    const tags = splitTags("[Thread:The box|Open] [Clock:Ritual 5/12] [E:Alarm 2/6] [Track:Escape 3/8] [Timer:Dawn 3] [Clock:Ritual+1] [#Clock:Ritual]").flatMap((p) => (p.tag ? [p.tag] : []));
+    expect(tags.map((t) => [t.kind, t.name, t.progress])).toEqual([
+      ["thread", "The box", undefined],
+      ["clock", "Ritual", { value: 5, max: 12 }],
+      ["clock", "Alarm", { value: 2, max: 6 }],
+      ["track", "Escape", { value: 3, max: 8 }],
+      ["timer", "Dawn", { value: 3 }],
+      ["clock", "Ritual", { value: 1, relative: true }],
+      ["clock", "Ritual", undefined],
+    ]);
   });
 });
 
@@ -81,6 +105,30 @@ describe("buildCast", () => {
   });
 });
 
+describe("threads and progress", () => {
+  it("a thread keeps one state, in either language", () => {
+    const [thread] = buildCast([
+      entry("note", "[Thread:La caja sellada|Abierto|urgente]", 1),
+      entry("note", "[Thread:la caja sellada|Closed]", 2),
+    ]);
+    expect(thread.tags).toEqual(["urgente", "Closed"]);
+    expect(threadStatus(thread)).toBe("closed");
+    expect(threadStatus(buildCast([entry("note", "[Thread:Otra]", 3)])[0])).toBe("open");
+  });
+
+  it("clocks follow their last value, relative changes and keep their size", () => {
+    const [clock, timer] = buildCast([
+      entry("note", "[Clock:Ritual 2/6] [Timer:Alba 3]", 1),
+      entry("note", "[Clock:Ritual+2] [Timer:Alba 2]", 2),
+      entry("note", "[Clock:Ritual 5] [#Clock:Ritual]", 3),
+    ]);
+    expect(clock.progress).toEqual({ value: 5, max: 6 });
+    expect(timer.progress).toEqual({ value: 2 });
+    expect(formatProgressTag("clock", "Ritual", 6, 6)).toBe("[Clock:Ritual 6/6]");
+    expect(tagsToPlainText("Sube [Clock:Ritual 6/6]")).toBe("Sube Ritual 6/6");
+  });
+});
+
 describe("formatTag", () => {
   it("writes tags the way the spec does, and they read back", () => {
     expect(formatTag("npc", "Odile", ["innkeeper", " wary "])).toBe("[N:Odile|innkeeper|wary]");
@@ -103,7 +151,7 @@ describe("findTagQuery", () => {
   it("ignores closed tags, checkboxes and other kinds of tag", () => {
     expect(findTagQuery("[N:Odile] y")).toBeNull();
     expect(findTagQuery("- [ ")).toBeNull();
-    expect(findTagQuery("[Thread:La caja")).toBeNull();
+    expect(findTagQuery("[Faction:La caja")).toBeNull();
     expect(findTagQuery("[N:Odile|herida")).toBeNull();
     expect(findTagQuery("sin corchete")).toBeNull();
   });

@@ -65,19 +65,20 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings nearly 700 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings nearly 700 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
 Create adventures, split them into sessions, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
 
 - Only one adventure is **active** at a time. Rolls go there, and the chip in the header shows which one it is from every screen.
-- Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, and 4dF for Fate/Fudge. This lets you log rolls from your own system without leaving the app.
+- Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, 4dF for Fate/Fudge, advantage and disadvantage, and typed formulas such as `2d6+3`, `4d6kh3` (keep the highest three) or `5d6>=5` (count successes). This lets you log rolls from your own system without leaving the app.
 - Each adventure has a **notebook** (beside the journal on wide screens, behind the notebook button elsewhere):
   - **Pinned notes** for what you want at hand: inventory, clues, loose ends. They're edited in place, and `- [ ]` lines become checkboxes you can tick.
   - **Characters and places**: name them in any entry with Lonelog tags, like `[N:Odile|wary]`, `[PC:Mara|coins 9]` or `[L:The mill|idle]`. They show as chips in the journal and are gathered in the notebook with their current traits and every entry that mentions them. Changes such as `[N:Odile|+captured|-wary]` or `[PC:Mara|coins-6]` update them. Typing `[` in the journal field (or while editing an entry) suggests the ones you already have, or makes a new one from the name you type, so you don't need to know the syntax. You can also add them, log a change or mention them from the notebook.
+  - **Threads and clocks**: open plot threads (`[Thread:The sealed box|Open]`), threat clocks (`[Clock:Alarm 2/6]`), tracks (`[Track:Escape 3/8]`) and timers (`[Timer:Dawn 3]`), ticked up or down with a tap. A die beside Characters, Places and Threads **rolls on the list** to pick one at random.
 - Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
-- **Export** an adventure as Lonelog Markdown, or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
+- **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
 
 <p align="center">
   <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with the one-row composer; and the meaning tables list" width="860">
@@ -111,7 +112,7 @@ Solo Compass has no server. Your adventures, rolls and settings are stored only 
 
 There are three ways to keep your data safe, all in **Settings**:
 
-- **Backup:** *Export everything* downloads a single `.json` file with your journal, history and settings. *Restore* loads such a file and replaces what's currently on the device (it asks first).
+- **Backup:** *Export everything* downloads a single `.json` file with your journal, history and settings; *Send* hands it straight to another device or app through your system's share menu. *Restore* loads such a file and asks whether to **merge** it with what's on this device (to carry a game between your phone and your computer: what's new on either side is kept, the latest change wins and deletions stay deleted) or to **replace** everything.
 - **Storage protection:** asks the browser not to clear the app's data when space runs low. It's only requested when you press the button, because some browsers show their own permission prompt.
 - **Backup reminder:** a small dot appears on the Settings button only when you've written 10 or more entries since your last backup and it's been at least 14 days. There are no pop-ups.
 
