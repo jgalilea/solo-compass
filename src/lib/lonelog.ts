@@ -113,7 +113,7 @@ export function exportAdventureToMarkdown(
  * and checkboxes as written, and Markdown viewers (Obsidian too) show
  * it as the file's properties instead of as text.
  */
-function formatFrontMatter(notes: string): string {
+export function formatFrontMatter(notes: string): string {
   const text = notes.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
   if (!text.trim()) return "";
   const body = text

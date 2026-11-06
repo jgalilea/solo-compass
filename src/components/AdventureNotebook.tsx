@@ -4,7 +4,7 @@ import { interpolate } from "../lib/i18n";
 import type { JournalEntry } from "../lib/lonelog";
 import { buildCast, formatTag, tagsToPlainText, type CastKind, type CastMember } from "../lib/lonelogTags";
 import { INPUT_CLASS } from "../lib/journalUi";
-import { CastIcon } from "./journalShared";
+import { CastIcon } from "./CastIcon";
 import {
   IconCast,
   IconCheckbox,
@@ -324,10 +324,11 @@ function CastItem({
   return (
     <li
       ref={rootRef}
+      // No extra mark for the focused one: it opens (border and
+      // background) and scrolls into view, and closed ones all look alike.
       className={[
         "scroll-my-4 rounded-xl border transition",
         open ? "border-ink-border bg-ink-800/50" : "border-transparent",
-        focused ? "ring-1 ring-gold/50" : "",
       ].join(" ")}
     >
       <button

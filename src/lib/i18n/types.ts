@@ -500,6 +500,8 @@ export interface Dictionary {
     /** Discreet link under "You don't have any adventures yet". */
     offer: string;
     name: string;
+    /** Its pinned notes (in the .md's front matter). */
+    notes: string;
     script: SampleLine[];
   };
   dateLocale: string;

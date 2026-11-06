@@ -223,3 +223,27 @@ export function suggestCast(cast: CastMember[], query: TagQuery, limit = 6): Cas
   const starts = fits.filter((m) => normalizeForSearch(m.name).startsWith(q));
   return [...starts, ...fits.filter((m) => !starts.includes(m))].slice(0, limit);
 }
+
+/** An item of the "[" list: someone already in the cast, or a new one. */
+export type TagOption = { member: CastMember } | { kind: CastKind; name: string };
+
+/**
+ * What "[" offers: the characters and places that fit what's typed
+ * and, unless one is called exactly that, a new one with that name of
+ * each kind (or only the kind already typed, "[L:…").
+ */
+export function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
+  const found = suggestCast(cast, query);
+  const name = query.text.trim();
+  if (!name) return found.map((member) => ({ member }));
+  const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
+  const kinds: CastKind[] = query.kind ? [query.kind] : ["npc", "place", "pc"];
+  return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
+}
+
+/** The text a picked option writes: a reference to an existing one, or a new tag. */
+export function tagOptionText(option: TagOption): string {
+  return "member" in option
+    ? formatTag(option.member.kind, option.member.name, [], true)
+    : formatTag(option.kind, option.name);
+}

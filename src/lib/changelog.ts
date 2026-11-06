@@ -26,8 +26,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         items: [
           "Cada aventura tiene ahora su cuaderno: en pantallas anchas, a la izquierda del diario; en el móvil, en el botón del cuaderno de la cabecera.",
           "Notas fijas: lo que quieras tener a mano (inventario, pistas, cabos sueltos), siempre a la vista y sin fecha. Una línea que empieza por «- [ ]» se convierte en una casilla que puedes marcar.",
-          "Personajes y lugares: nómbralos en el diario con etiquetas de Lonelog, como [N:Odile|desconfiada] o [L:El molino], y aparecerán resaltados. El cuaderno los reúne con sus rasgos de ahora y todas las entradas donde salen. Al escribir «[» en el diario te sugiere los que ya tienes, o crea uno nuevo con el nombre que escribas, sin aprenderte la notación. También puedes añadirlos, apuntar un cambio o mencionarlos desde el cuaderno.",
-          "Las notas fijas viajan dentro del .md al exportar e importar una aventura.",
+          "Personajes y lugares: nómbralos en el diario con etiquetas de Lonelog, como [N:Odile|desconfiada] o [L:El molino], y aparecerán resaltados. El cuaderno los reúne con sus rasgos de ahora y todas las entradas donde salen. Al escribir «[» en el diario, o al editar una entrada, te sugiere los que ya tienes, o crea uno nuevo con el nombre que escribas, sin aprenderte la notación. También puedes añadirlos, apuntar un cambio o mencionarlos desde el cuaderno.",
+          "Las notas fijas viajan dentro del .md al exportar e importar una aventura. La aventura de ejemplo trae personajes, lugares y notas para verlo en marcha.",
           "Llegan a la biblioteca 82 tablas de Cairn, de Yochai Gal: facciones, terrenos y parajes, mazmorras, bosques, el tiempo (también el insólito), PNJ, rasgos de personaje, vínculos y presagios. En inglés y en español.",
           "La pregunta de ejemplo del oráculo es más corta y ya cabe entera en los móviles pequeños.",
         ],
@@ -38,8 +38,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         items: [
           "Every adventure now has its notebook: on wide screens, to the left of the journal; on phones, behind the notebook button in the header.",
           "Pinned notes: what you want at hand (inventory, clues, loose ends), always in sight and undated. A line starting with “- [ ]” becomes a checkbox you can tick.",
-          "Characters and places: name them in the journal with Lonelog tags, like [N:Odile|wary] or [L:The mill], and they stand out. The notebook gathers them with their current traits and every entry they appear in. Typing “[” in the journal suggests the ones you already have, or makes a new one from the name you type, without learning the notation. You can also add them, log a change or mention them from the notebook.",
-          "Pinned notes travel inside the .md when you export and import an adventure.",
+          "Characters and places: name them in the journal with Lonelog tags, like [N:Odile|wary] or [L:The mill], and they stand out. The notebook gathers them with their current traits and every entry they appear in. Typing “[” in the journal, or while editing an entry, suggests the ones you already have, or makes a new one from the name you type, without learning the notation. You can also add them, log a change or mention them from the notebook.",
+          "Pinned notes travel inside the .md when you export and import an adventure. The sample adventure comes with characters, places and notes to see it at work.",
           "82 tables from Cairn, by Yochai Gal, join the library: factions, terrain and landmarks, dungeons, forests, weather (the unusual kind too), NPCs, character traits, bonds and omens. In English and Spanish.",
           "The oracle's example question is shorter and now fits on small phones.",
         ],

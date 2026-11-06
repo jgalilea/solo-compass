@@ -1,8 +1,11 @@
-import { useState, type ComponentType } from "react";
+import { useRef, useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
-import { castKey, splitTags, type CastKind } from "../lib/lonelogTags";
+import { castKey, splitTags, type CastMember } from "../lib/lonelogTags";
+import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
+import { CastIcon } from "./CastIcon";
+import { TagSuggestions } from "./TagSuggestions";
 import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
@@ -13,10 +16,7 @@ import {
   IconConsequence,
   IconDice,
   IconNote,
-  IconNpc,
-  IconPc,
   IconPencil,
-  IconPlace,
   IconQuestion,
   IconSession,
   IconTrash,
@@ -57,6 +57,8 @@ export interface EntryActions {
   highlightedId?: string | null;
   /** A character/place chip was tapped (its castKey). */
   onTagClick?: (key: string) => void;
+  /** The adventure's characters and places, suggested on "[" while editing. */
+  cast?: CastMember[];
 }
 
 const KIND_ICON: Record<Exclude<JournalLineKind, "session">, ComponentType<{ size?: number; className?: string }>> = {
@@ -190,6 +192,15 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   const { t } = useLocaleContext();
   const [value, setValue] = useState(entry.text);
   const editing = actions.editingId === entry.id;
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Not in a roll: a "[...]" there is roll context, not a character.
+  const tags = useTagAutocomplete({
+    text: value,
+    setText: setValue,
+    inputRef,
+    cast: actions.cast ?? [],
+    enabled: editing && entry.kind !== "roll",
+  });
   const Icon = KIND_ICON[entry.kind === "session" ? "note" : entry.kind];
   const kindLabel = {
     action: t.journal.kindAction,
@@ -220,17 +231,26 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     return (
       <div className="flex items-start gap-2.5">
         {icon}
-        <textarea
-          autoFocus
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
-            if (e.key === "Escape") actions.onStopEdit();
-          }}
-          rows={2}
-          className="min-w-0 flex-1 resize-none rounded-lg border border-ink-border bg-ink-800/70 px-2.5 py-1.5 text-base text-parchment focus:border-gold focus:outline-none"
-        />
+        <div className="relative min-w-0 flex-1">
+          <textarea
+            ref={inputRef}
+            autoFocus
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              tags.onChange(e.target);
+            }}
+            {...tags.inputProps}
+            onKeyDown={(e) => {
+              if (tags.onKeyDown(e)) return;
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
+              if (e.key === "Escape") actions.onStopEdit();
+            }}
+            rows={2}
+            className="block w-full resize-none rounded-lg border border-ink-border bg-ink-800/70 px-2.5 py-1.5 text-base text-parchment focus:border-gold focus:outline-none"
+          />
+          <TagSuggestions state={tags.suggestions} placement="below" />
+        </div>
         <button type="button" onClick={commit} className="-m-2 shrink-0 p-2 text-sm font-medium text-gold">
           {t.common.save}
         </button>
@@ -336,18 +356,6 @@ function EntryContent({
       <TaggedText text={entry.text} onTagClick={onTagClick} />
     </p>
   );
-}
-
-const CAST_ICON: Record<CastKind, ComponentType<{ size?: number; className?: string }>> = {
-  pc: IconPc,
-  npc: IconNpc,
-  place: IconPlace,
-};
-
-/** The icon of a character (PC or NPC) or place. */
-export function CastIcon({ kind, size, className }: { kind: CastKind; size?: number; className?: string }) {
-  const Icon = CAST_ICON[kind];
-  return <Icon size={size} className={className} />;
 }
 
 /**

@@ -7,7 +7,8 @@
  * are given as dice and written here in the same format as
  * `usePlayActions` (oracle with its answer, table with its result), so
  * the sample looks exactly like a real game. It's returned as Lonelog
- * and goes in through the normal import. The caller passes Solo
+ * (with its pinned notes as front matter) and goes in through the
+ * normal import. The caller passes Solo
  * Compass's own tables, already loaded (they aren't in the main bundle).
  */
 
@@ -16,7 +17,7 @@ import { formatAnswer } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
 import { lookupEntry, type MeaningTable } from "./tables";
-import { formatLine } from "./lonelog";
+import { formatFrontMatter, formatLine } from "./lonelog";
 
 export function buildSampleAdventure(
   t: Dictionary,
@@ -40,5 +41,5 @@ export function buildSampleAdventure(
     return formatLine(line);
   });
 
-  return { name: t.sample.name, markdown: lines.join("\n\n") + "\n" };
+  return { name: t.sample.name, markdown: formatFrontMatter(t.sample.notes) + lines.join("\n\n") + "\n" };
 }

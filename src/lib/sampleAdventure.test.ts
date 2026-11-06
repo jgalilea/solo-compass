@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DICTIONARIES } from "./i18n";
 import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";
-import { parseMarkdownToEntries } from "./lonelog";
+import { parseMarkdownToEntries, parseNotesFromMarkdown } from "./lonelog";
 import { splitRollText } from "./journalUi";
 import { buildCast } from "./lonelogTags";
 
@@ -42,9 +42,12 @@ describe("sample adventure cast", () => {
       const t = DICTIONARIES[lang];
       const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
       const cast = buildCast(parseMarkdownToEntries(markdown, "a", 0));
-      expect(cast.map((c) => c.kind)).toEqual(["pc", "place", "npc", "npc", "place"]);
+      expect(cast.map((c) => c.kind)).toEqual(["pc", "place", "npc", "npc", "place", "npc"]);
       expect(cast[0].tags.at(-1)).toMatch(/ 3$/);
-      expect(cast[2].mentions).toHaveLength(2);
+      expect(cast[2].mentions).toHaveLength(4);
+      expect(cast[3].mentions).toHaveLength(3);
+      expect(cast[4].tags).toHaveLength(2);
+      expect(parseNotesFromMarkdown(markdown)).toBe(t.sample.notes);
     });
   }
 });

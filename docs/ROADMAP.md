@@ -19,9 +19,9 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     `[L:]`, `[#N:]`): chips en el diario y lista en el cuaderno con sus
     rasgos actuales y las entradas donde salen. Añadir, anotar un
     cambio y mencionar desde el cuaderno, sin saber la sintaxis.
-    Autocompletado en el composer: al escribir `[` sugiere los que ya
+    Autocompletado en el composer y al editar una entrada: al escribir `[` sugiere los que ya
     hay y ofrece crear uno nuevo (PNJ, lugar o PJ) con lo escrito. La
-    aventura de ejemplo ya las usa.
+    aventura de ejemplo ya las usa y trae notas fijas.
 - Tablas de Cairn 2.ª ed. (2026-11-06): 82, CC BY-SA 4.0 (ver punto 5).
 - Placeholder del oráculo más corto (2026-11-06): cabe en un iPhone SE.
 - Tablas de seis juegos más y temáticas (2026-11-05): ver punto 5.

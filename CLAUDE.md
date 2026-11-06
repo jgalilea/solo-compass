@@ -174,8 +174,10 @@ header below that.
   context and are skipped. Adding one or logging a change from the
   notebook writes a tag note in the journal; "Mention" inserts
   `[#N:Name]` into the composer (`insertRef`). Typing `[` in the
-  composer suggests the cast and offers a new one (`findTagQuery`,
-  `suggestCast`). Threads and clocks
+  composer or while editing an entry suggests the cast and offers a
+  new one (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
+  `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
+  adventure uses tags and has pinned notes (`t.sample.notes`). Threads and clocks
   aren't read yet (roadmap).
 
 ### Journal rendering (`src/components/journalShared.tsx`)
