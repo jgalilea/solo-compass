@@ -4,6 +4,7 @@ import { interpolate } from "../lib/i18n";
 import type { JournalEntry } from "../lib/lonelog";
 import { buildCast, formatTag, tagsToPlainText, type CastKind, type CastMember } from "../lib/lonelogTags";
 import { INPUT_CLASS } from "../lib/journalUi";
+import { loadFoldedNotebookSections, saveFoldedNotebookSections, type NotebookSection } from "../lib/notebookSections";
 import { CastIcon } from "./CastIcon";
 import {
   IconCast,
@@ -58,6 +59,26 @@ export function AdventureNotebook({
   const characters = cast.filter((c) => c.kind !== "place");
   const places = cast.filter((c) => c.kind === "place");
   const [adding, setAdding] = useState(false);
+  const [folded, setFolded] = useState(loadFoldedNotebookSections);
+  // A chip tapped in the journal unfolds the list its element is in.
+  const [seenTick, setSeenTick] = useState(focusTick);
+  if (seenTick !== focusTick) {
+    setSeenTick(focusTick);
+    const section = cast.find((c) => c.key === focusKey)?.kind === "place" ? "places" : "characters";
+    if (focusKey && folded.has(section)) {
+      const next = new Set(folded);
+      next.delete(section);
+      setFolded(next);
+    }
+  }
+
+  function toggleSection(id: NotebookSection) {
+    const next = new Set(folded);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setFolded(next);
+    saveFoldedNotebookSections(next);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -76,27 +97,43 @@ export function AdventureNotebook({
         </h2>
         {cast.length === 0 && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
         {[
-          { title: t.notebook.groupCharacters, members: characters },
-          { title: t.notebook.groupPlaces, members: places },
+          { id: "characters" as const, title: t.notebook.groupCharacters, members: characters },
+          { id: "places" as const, title: t.notebook.groupPlaces, members: places },
         ].map(
-          ({ title, members }) =>
+          ({ id, title, members }) =>
             members.length > 0 && (
-              <div key={title} className="flex flex-col gap-1">
-                <h3 className="px-1 text-[0.7rem] font-medium text-parchment-dim/70">{title}</h3>
-                <ul className="flex flex-col gap-1">
-                  {members.map((member) => (
-                    <CastItem
-                      key={member.key}
-                      member={member}
-                      entries={entries}
-                      focused={member.key === focusKey}
-                      focusTick={focusTick}
-                      onJump={onJump}
-                      onMention={onMention}
-                      onLog={onLog}
+              <div key={id} className="flex flex-col gap-1">
+                <h3>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(id)}
+                    aria-expanded={!folded.has(id)}
+                    className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-dim/70 transition hover:text-parchment"
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className={`shrink-0 transition-transform ${folded.has(id) ? "" : "rotate-90"}`}
                     />
-                  ))}
-                </ul>
+                    <span className="flex-1">{title}</span>
+                    <span className="text-parchment-dim/50">{members.length}</span>
+                  </button>
+                </h3>
+                {!folded.has(id) && (
+                  <ul className="flex flex-col gap-1">
+                    {members.map((member) => (
+                      <CastItem
+                        key={member.key}
+                        member={member}
+                        entries={entries}
+                        focused={member.key === focusKey}
+                        focusTick={focusTick}
+                        onJump={onJump}
+                        onMention={onMention}
+                        onLog={onLog}
+                      />
+                    ))}
+                  </ul>
+                )}
               </div>
             ),
         )}

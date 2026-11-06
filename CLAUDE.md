@@ -83,8 +83,9 @@ No backend; persistence is split by access pattern, not by feature:
 - **localStorage**, for small settings read synchronously before first
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
   language, selected oracle, favorite tables, unfolded table blocks,
-  active-adventure id (`activeAdventure.ts`, `theme.ts`, `mode.ts`,
-  `tableFavorites.ts`, `tableSections.ts`).
+  folded notebook lists, active-adventure id (`activeAdventure.ts`,
+  `theme.ts`, `mode.ts`, `tableFavorites.ts`, `tableSections.ts`,
+  `notebookSections.ts`).
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
   browser (`navigator.storage.persist()`) not to evict its data. Never call
   it silently — Firefox shows its own permission prompt — always behind

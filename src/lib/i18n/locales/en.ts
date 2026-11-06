@@ -142,7 +142,8 @@ export const en: Dictionary = {
     oracleUsedBy: "The oracle uses",
     journalUsedBy: "The journal is written in",
     tablesUsedBy: "Tables from other games",
-    notOfficial: "Not an official Tomkin Press or Ironsworn product.",
+    notOfficial:
+      "Solo Compass is an independent, unofficial project: it isn't an official product of, nor affiliated with, endorsed or sponsored by, any of the authors, publishers or games credited here (including Tomkin Press and Ironsworn).",
     translationNote: "The Spanish translations are by Solo Compass (Ironsworn's with GatoMalefico's as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0 too.",
     creditBy: "by {author}, licensed under",
     legendTitle: "Journal symbols",

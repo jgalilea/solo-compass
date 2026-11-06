@@ -142,7 +142,8 @@ export const es: Dictionary = {
     oracleUsedBy: "El oráculo usa",
     journalUsedBy: "El diario se escribe en notación",
     tablesUsedBy: "Tablas de otros juegos",
-    notOfficial: "No es un producto oficial de Tomkin Press ni de Ironsworn.",
+    notOfficial:
+      "Solo Compass es un proyecto independiente y no oficial: no es un producto oficial ni está afiliado, respaldado o patrocinado por ninguno de los autores, editoriales o juegos que se citan aquí (entre ellos, Tomkin Press e Ironsworn).",
     translationNote: "Las traducciones al español son de Solo Compass (las de Ironsworn, con la de GatoMalefico como referencia); las de Loner, Starsmith y Cairn se comparten también bajo CC BY-SA 4.0.",
     creditBy: "de {author}, bajo licencia",
     legendTitle: "Símbolos del diario",
