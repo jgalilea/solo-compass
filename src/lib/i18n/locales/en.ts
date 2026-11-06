@@ -547,7 +547,7 @@ export const en: Dictionary = {
     addHint: "It goes in the journal as a Lonelog tag.",
     tagChipLabel: "{name}: see in the notebook",
     suggestLabel: "The adventure's characters, places, threads and clocks",
-    suggestHint: "Type a name to tag a character or a place.",
+    suggestHint: "Type a name to tag a character, a place or a thread. For a clock, start with \"[Clock:\".",
     suggestNew: "New: {kind}",
   },
   error: {

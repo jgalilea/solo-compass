@@ -207,6 +207,8 @@ export interface CastMember {
   mentions: string[];
   /** Clocks, tracks and timers: where they stand now. */
   progress?: { value: number; max?: number };
+  /** When it was last mentioned (the entry's timestamp). */
+  lastSeen: number;
 }
 
 export type ThreadStatus = "open" | "closed" | "abandoned";
@@ -255,7 +257,7 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
       const key = castKey(kind, name);
       let member = byKey.get(key);
       if (!member) {
-        member = { key, kind, name, tags: [], mentions: [] };
+        member = { key, kind, name, tags: [], mentions: [], lastSeen: entry.timestamp };
         byKey.set(key, member);
       }
       // A thread has one state at a time: a new one replaces the old.
@@ -268,6 +270,7 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
           ? { value: (before?.value ?? 0) + progress.value, ...(before?.max !== undefined ? { max: before.max } : {}) }
           : { value: progress.value, ...((progress.max ?? before?.max) !== undefined ? { max: progress.max ?? before!.max } : {}) };
       }
+      member.lastSeen = entry.timestamp;
       if (member.mentions.at(-1) !== entry.id) member.mentions.push(entry.id);
     }
   }
@@ -313,34 +316,52 @@ export function findTagQuery(beforeCaret: string): TagQuery | null {
   return { start: match.index!, kind: match[2] ? KIND_OF_PREFIX[match[2]] : undefined, text };
 }
 
-/** The cast members that fit what's typed: names starting with it first. */
+/**
+ * The cast members that fit what's typed: names starting with it first,
+ * then the most recently mentioned. Closed threads go last, and with
+ * nothing typed yet they're left out.
+ */
 export function suggestCast(cast: CastMember[], query: TagQuery, limit = 6): CastMember[] {
   const q = normalizeForSearch(query.text.trim());
-  const fits = cast.filter((m) => (!query.kind || m.kind === query.kind) && normalizeForSearch(m.name).includes(q));
-  const starts = fits.filter((m) => normalizeForSearch(m.name).startsWith(q));
-  return [...starts, ...fits.filter((m) => !starts.includes(m))].slice(0, limit);
+  const done = (m: CastMember) => m.kind === "thread" && threadStatus(m) !== "open";
+  const fits = cast.filter(
+    (m) => (!query.kind || m.kind === query.kind) && normalizeForSearch(m.name).includes(q) && (q || !done(m)),
+  );
+  const rank = (m: CastMember) => (done(m) ? 2 : 0) + (normalizeForSearch(m.name).startsWith(q) ? 0 : 1);
+  return fits.sort((a, b) => rank(a) - rank(b) || b.lastSeen - a.lastSeen).slice(0, limit);
 }
 
 /** An item of the "[" list: someone already in the cast, or a new one. */
 export type TagOption = { member: CastMember } | { kind: CastKind; name: string };
 
 /**
- * What "[" offers: the characters and places that fit what's typed
- * and, unless one is called exactly that, a new one with that name of
- * each kind (or only the kind already typed, "[L:…").
+ * What "[" offers: the cast members that fit what's typed and, unless
+ * one is called exactly that, a new one with that name: character,
+ * place or thread (or only the kind already typed, "[L:…", which is
+ * also how to start a clock, track or timer).
  */
 export function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
   const found = suggestCast(cast, query);
   const name = query.text.trim();
   if (!name) return found.map((member) => ({ member }));
   const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
-  const kinds: CastKind[] = query.kind ? [query.kind] : ["npc", "place", "pc"];
+  const kinds: CastKind[] = query.kind ? [query.kind] : ["npc", "place", "pc", "thread"];
   return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
 }
 
-/** The text a picked option writes: a reference to an existing one, or a new tag. */
+/** Size a new clock, track or timer starts with when none is typed (as in the notebook). */
+const NEW_PROGRESS_SIZE = 6;
+
+/**
+ * The text a picked option writes: a reference to an existing one, or a
+ * new tag (a new clock or track starts empty, a timer full, unless a
+ * number was typed).
+ */
 export function tagOptionText(option: TagOption): string {
-  return "member" in option
-    ? formatTag(option.member.kind, option.member.name, [], true)
-    : formatTag(option.kind, option.name);
+  if ("member" in option) return formatTag(option.member.kind, option.member.name, [], true);
+  const { kind, name } = option;
+  if (!PROGRESS_KINDS.has(kind) || readProgress(name).progress) return formatTag(kind, name);
+  return kind === "timer"
+    ? formatProgressTag(kind, name, NEW_PROGRESS_SIZE)
+    : formatProgressTag(kind, name, 0, NEW_PROGRESS_SIZE);
 }

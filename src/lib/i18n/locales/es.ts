@@ -551,7 +551,7 @@ export const es: Dictionary = {
     addHint: "Se apunta en el diario como una etiqueta de Lonelog.",
     tagChipLabel: "{name}: ver en el cuaderno",
     suggestLabel: "Personajes, lugares, hilos y relojes de la aventura",
-    suggestHint: "Escribe un nombre para nombrar a un personaje o un lugar.",
+    suggestHint: "Escribe un nombre para nombrar a un personaje, un lugar o un hilo. Para un reloj, empieza por «[Clock:».",
     suggestNew: "Nuevo: {kind}",
   },
   error: {

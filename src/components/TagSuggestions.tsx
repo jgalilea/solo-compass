@@ -1,6 +1,7 @@
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import type { TagSuggestionsState } from "../hooks/useTagAutocomplete";
 import { interpolate } from "../lib/i18n";
+import { progressText } from "../lib/lonelogTags";
 import { CastIcon } from "./CastIcon";
 
 /**
@@ -35,8 +36,9 @@ export function TagSuggestions({
           const kind = existing ? option.member.kind : option.kind;
           const kindLabel = t.notebook.kinds[kind];
           const name = existing ? option.member.name : option.name;
+          const progress = existing && option.member.progress ? progressText(option.member.progress) : "";
           const detail = existing
-            ? option.member.tags.join(" · ") || kindLabel
+            ? [progress, ...option.member.tags].filter(Boolean).join(" · ") || kindLabel
             : interpolate(t.notebook.suggestNew, { kind: kindLabel });
           return (
             <button

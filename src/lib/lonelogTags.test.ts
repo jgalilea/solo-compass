@@ -8,6 +8,8 @@ import {
   formatTag,
   splitTags,
   suggestCast,
+  tagOptions,
+  tagOptionText,
   tagsToPlainText,
   threadStatus,
 } from "./lonelogTags";
@@ -94,8 +96,8 @@ describe("buildCast", () => {
       entry("session", "[L:Not a tag here]", 5),
     ]);
     expect(cast).toEqual([
-      { key: castKey("npc", "Jonah"), kind: "npc", name: "Jonah", tags: ["friendly", "captured"], mentions: ["e1", "e3", "e4"] },
-      { key: castKey("place", "Lighthouse"), kind: "place", name: "Lighthouse", tags: ["ruined"], mentions: ["e1"] },
+      { key: castKey("npc", "Jonah"), kind: "npc", name: "Jonah", tags: ["friendly", "captured"], mentions: ["e1", "e3", "e4"], lastSeen: 1004 },
+      { key: castKey("place", "Lighthouse"), kind: "place", name: "Lighthouse", tags: ["ruined"], mentions: ["e1"], lastSeen: 1001 },
     ]);
   });
 
@@ -168,5 +170,28 @@ describe("suggestCast", () => {
 
   it("only offers the type already typed", () => {
     expect(suggestCast(cast, findTagQuery("[L:")!).map((m) => m.name)).toEqual(["Molino"]);
+  });
+  it("puts the most recently mentioned first and leaves closed threads out until typed", () => {
+    const later = buildCast([
+      entry("note", "[N:Odile] [Thread:La caja|Open] [Thread:El robo|Closed]", 1),
+      entry("note", "[Clock:Alerta 1/4]", 2),
+    ]);
+    expect(suggestCast(later, findTagQuery("[")!).map((m) => m.name)).toEqual(["Alerta", "Odile", "La caja"]);
+    expect(suggestCast(later, findTagQuery("[el")!).map((m) => m.name)).toEqual(["El robo"]);
+  });
+});
+
+describe("tagOptions", () => {
+  it("offers a new character, place or thread, and only the typed kind after a prefix", () => {
+    const kinds = (q: string) => tagOptions([], findTagQuery(q)!).map((o) => ("kind" in o ? o.kind : ""));
+    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread"]);
+    expect(kinds("[Clock:Torre")).toEqual(["clock"]);
+  });
+
+  it("starts a new clock or timer with a size unless one is typed", () => {
+    expect(tagOptionText({ kind: "clock", name: "Torre" })).toBe("[Clock:Torre 0/6]");
+    expect(tagOptionText({ kind: "timer", name: "Torre" })).toBe("[Timer:Torre 6]");
+    expect(tagOptionText({ kind: "clock", name: "Torre 2/4" })).toBe("[Clock:Torre 2/4]");
+    expect(tagOptionText({ kind: "thread", name: "Torre" })).toBe("[Thread:Torre]");
   });
 });
