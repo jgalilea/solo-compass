@@ -190,9 +190,10 @@ header below that.
   context and are skipped. Adding one or logging a change from the
   notebook writes a tag note in the journal; "Mention" inserts
   `[#N:Name]` into the composer (`insertRef`). Typing `[` in the
-  composer or while editing an entry suggests the cast (every kind,
-  most recently mentioned first, closed threads only when typed) and
-  offers a new one (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
+  composer or while editing an entry suggests the cast (every kind, no
+  limit, in a scrolling list: the last three named first, then
+  alphabetical) and offers a new one of any kind
+  (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
   `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
   adventure uses tags and has pinned notes (`t.sample.notes`).
 - **Threads and progress** are tags too: `[Thread:…|Open]` (one state

@@ -12,6 +12,7 @@ import {
   tagOptionText,
   tagsToPlainText,
   threadStatus,
+  type TagOption,
 } from "./lonelogTags";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
@@ -162,29 +163,57 @@ describe("findTagQuery", () => {
 describe("suggestCast", () => {
   const cast = buildCast([entry("note", "[N:Odile] [L:Molino] [N:Bram el molinero] [PC:Mara]", 1)]);
 
-  it("filters by name (accents and case ignored), names starting with it first", () => {
-    expect(suggestCast(cast, findTagQuery("[mo")!).map((m) => m.name)).toEqual(["Molino", "Bram el molinero"]);
+  it("filters by name (accents and case ignored), in alphabetical order", () => {
+    expect(suggestCast(cast, findTagQuery("[mo")!).map((m) => m.name)).toEqual(["Bram el molinero", "Molino"]);
     expect(suggestCast(cast, findTagQuery("[ÓD")!).map((m) => m.name)).toEqual(["Odile"]);
-    expect(suggestCast(cast, findTagQuery("[")!)).toHaveLength(4);
+    expect(suggestCast(cast, findTagQuery("[")!).map((m) => m.name)).toEqual(["Bram el molinero", "Mara", "Molino", "Odile"]);
   });
 
   it("only offers the type already typed", () => {
     expect(suggestCast(cast, findTagQuery("[L:")!).map((m) => m.name)).toEqual(["Molino"]);
   });
-  it("puts the most recently mentioned first and leaves closed threads out until typed", () => {
-    const later = buildCast([
+  it("lists every match with no limit, closed threads too", () => {
+    const more = buildCast([
       entry("note", "[N:Odile] [Thread:La caja|Open] [Thread:El robo|Closed]", 1),
-      entry("note", "[Clock:Alerta 1/4]", 2),
+      entry("note", "[Clock:Alerta 1/4] [N:B] [N:C] [N:D] [N:E] [N:F]", 2),
     ]);
-    expect(suggestCast(later, findTagQuery("[")!).map((m) => m.name)).toEqual(["Alerta", "Odile", "La caja"]);
-    expect(suggestCast(later, findTagQuery("[el")!).map((m) => m.name)).toEqual(["El robo"]);
+    expect(suggestCast(more, findTagQuery("[")!)).toHaveLength(9);
+    expect(suggestCast(more, findTagQuery("[el")!).map((m) => m.name)).toEqual(["El robo"]);
   });
 });
 
 describe("tagOptions", () => {
-  it("offers a new character, place or thread, and only the typed kind after a prefix", () => {
+  it("takes a prefix in any case and writes the notation's own", () => {
+    const query = findTagQuery("Pienso en [clock:Huida")!;
+    expect(query.kind).toBe("clock");
+    expect(tagOptions([], query).map(tagOptionText)).toEqual(["[Clock:Huida 0/6]"]);
+    expect(findTagQuery("[#n:Od")?.kind).toBe("npc");
+    expect(findTagQuery("[THREAD:La")?.kind).toBe("thread");
+  });
+
+  const names = (options: TagOption[]) => options.map((o) => ("member" in o ? o.member.name : `new ${o.kind}`));
+
+  it("puts the last three named first, then everything in alphabetical order", () => {
+    const cast = buildCast([
+      entry("note", "[N:Odile] [L:Molino] [N:Bram] [Thread:La caja|Open]", 1),
+      entry("note", "[PC:Mara]", 2),
+      entry("note", "[Clock:Alerta 1/4]", 3),
+      entry("note", "[#N:Odile]", 4),
+    ]);
+    const options = tagOptions(cast, findTagQuery("[")!);
+    expect(names(options)).toEqual(["Odile", "Alerta", "Mara", "Bram", "La caja", "Molino"]);
+    expect(options.map((o) => "member" in o && !!o.recent)).toEqual([true, true, true, false, false, false]);
+  });
+
+  it("is only alphabetical once a name is typed, or when the cast is short", () => {
+    const cast = buildCast([entry("note", "[N:Odile] [L:Molino]", 1), entry("note", "[N:Bram el molinero]", 2)]);
+    expect(names(tagOptions(cast, findTagQuery("[")!))).toEqual(["Bram el molinero", "Molino", "Odile"]);
+    expect(names(tagOptions(cast, findTagQuery("[mo")!)).slice(0, 2)).toEqual(["Bram el molinero", "Molino"]);
+  });
+
+  it("offers a new one of every kind, or only the typed kind after a prefix", () => {
     const kinds = (q: string) => tagOptions([], findTagQuery(q)!).map((o) => ("kind" in o ? o.kind : ""));
-    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread"]);
+    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread", "clock", "track", "timer"]);
     expect(kinds("[Clock:Torre")).toEqual(["clock"]);
   });
 

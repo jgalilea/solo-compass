@@ -32,7 +32,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Los diarios de Lonelog con las tiradas sangradas bajo su acción, como en los ejemplos de la notación, se importan bien.",
           "Juega en el móvil y en el ordenador: en Ajustes, «Enviar» manda tu copia al otro dispositivo, y al restaurarla puedes juntarla con lo que ya tenías en vez de sustituirlo. Lo que borres en uno no reaparece en el otro.",
           "Bajo cada mención de un personaje o lugar se ve en qué sesión está.",
-          "Al escribir «[» también salen los hilos y relojes, primero lo último que has nombrado. Puedes abrir un hilo nuevo desde ahí, o un reloj escribiendo «[Clock:».",
+          "Al escribir «[» salen también los hilos y relojes: primero los tres últimos que has nombrado y después todo por orden alfabético. Desde ahí puedes crear cualquiera nuevo: personaje, lugar, hilo, reloj, progreso o cuenta atrás. Puedes teclear «[clock:» en minúsculas: se escribe como manda la notación.",
         ],
       },
       en: {
@@ -47,7 +47,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Lonelog journals with rolls indented under their action, as in the notation's examples, now import correctly.",
           "Play on your phone and your computer: in Settings, “Send” passes your backup to the other device, and when restoring it you can merge it with what you already had instead of replacing it. What you delete on one doesn't come back on the other.",
           "Each mention of a character or place shows which session it's in.",
-          "Typing “[” now offers threads and clocks too, the last one you named first. You can open a new thread from there, or a clock by typing “[Clock:”.",
+          "Typing “[” now offers threads and clocks too: the last three you named first, then everything in alphabetical order. You can create any new one from there: character, place, thread, clock, track or timer. You can type “[clock:” in lower case: it’s written the way the notation says.",
         ],
       },
     },

@@ -207,7 +207,7 @@ export interface CastMember {
   mentions: string[];
   /** Clocks, tracks and timers: where they stand now. */
   progress?: { value: number; max?: number };
-  /** When it was last mentioned (the entry's timestamp). */
+  /** When it was last mentioned (that entry's timestamp). */
   lastSeen: number;
 }
 
@@ -300,7 +300,10 @@ export interface TagQuery {
 }
 
 // An unclosed "[" right before the caret, with an optional type.
-const OPEN_TAG = new RegExp(`\\[(#?)(?:(${PREFIXES}):)?([^[\\]|\\n]*)$`);
+// Any case while typing ("[clock:"): picking an option writes the
+// notation's own ("[Clock:…]").
+const OPEN_TAG = new RegExp(`\\[(#?)(?:(${PREFIXES}):)?([^[\\]|\\n]*)$`, "i");
+const KIND_OF_TYPED_PREFIX = new Map(Object.entries(KIND_OF_PREFIX).map(([p, kind]) => [p.toLowerCase(), kind]));
 
 /**
  * The tag being typed just before the caret, for the composer's
@@ -313,39 +316,46 @@ export function findTagQuery(beforeCaret: string): TagQuery | null {
   if (!match) return null;
   const text = match[3];
   if ((!match[2] && text.includes(":")) || /^\s/.test(text) || text.length > 40) return null;
-  return { start: match.index!, kind: match[2] ? KIND_OF_PREFIX[match[2]] : undefined, text };
+  return { start: match.index!, kind: match[2] ? KIND_OF_TYPED_PREFIX.get(match[2].toLowerCase()) : undefined, text };
 }
 
-/**
- * The cast members that fit what's typed: names starting with it first,
- * then the most recently mentioned. Closed threads go last, and with
- * nothing typed yet they're left out.
- */
-export function suggestCast(cast: CastMember[], query: TagQuery, limit = 6): CastMember[] {
+/** The cast members that fit what's typed, all of them, in alphabetical order. */
+export function suggestCast(cast: CastMember[], query: TagQuery): CastMember[] {
   const q = normalizeForSearch(query.text.trim());
-  const done = (m: CastMember) => m.kind === "thread" && threadStatus(m) !== "open";
-  const fits = cast.filter(
-    (m) => (!query.kind || m.kind === query.kind) && normalizeForSearch(m.name).includes(q) && (q || !done(m)),
-  );
-  const rank = (m: CastMember) => (done(m) ? 2 : 0) + (normalizeForSearch(m.name).startsWith(q) ? 0 : 1);
-  return fits.sort((a, b) => rank(a) - rank(b) || b.lastSeen - a.lastSeen).slice(0, limit);
+  return cast
+    .filter((m) => (!query.kind || m.kind === query.kind) && normalizeForSearch(m.name).includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
-/** An item of the "[" list: someone already in the cast, or a new one. */
-export type TagOption = { member: CastMember } | { kind: CastKind; name: string };
+/** An item of the "[" list: someone already in the cast (`recent` if
+ * among the last named, listed first), or a new one. */
+export type TagOption = { member: CastMember; recent?: boolean } | { kind: CastKind; name: string };
+
+/** How many of the last named go first in the "[" list. */
+const RECENT = 3;
+/** Every kind a new tag can be, in the order "[" offers them. */
+const NEW_KINDS: CastKind[] = ["npc", "place", "pc", "thread", "clock", "track", "timer"];
 
 /**
- * What "[" offers: the cast members that fit what's typed and, unless
- * one is called exactly that, a new one with that name: character,
- * place or thread (or only the kind already typed, "[L:…", which is
- * also how to start a clock, track or timer).
+ * What "[" offers: the cast members that fit what's typed, in
+ * alphabetical order — with nothing typed yet, the last few named go
+ * first (when there are enough for it to help) — and, unless one is
+ * called exactly that, a new one with that name of every kind (or only
+ * the kind already typed, "[L:…").
  */
 export function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
   const found = suggestCast(cast, query);
   const name = query.text.trim();
-  if (!name) return found.map((member) => ({ member }));
+  if (!name) {
+    if (found.length <= RECENT + 2) return found.map((member) => ({ member }));
+    const recent = [...found].sort((a, b) => b.lastSeen - a.lastSeen).slice(0, RECENT);
+    return [
+      ...recent.map((member) => ({ member, recent: true })),
+      ...found.filter((m) => !recent.includes(m)).map((member) => ({ member })),
+    ];
+  }
   const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
-  const kinds: CastKind[] = query.kind ? [query.kind] : ["npc", "place", "pc", "thread"];
+  const kinds = query.kind ? [query.kind] : NEW_KINDS;
   return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
 }
 

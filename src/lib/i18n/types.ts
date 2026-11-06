@@ -519,6 +519,9 @@ export interface Dictionary {
     tagChipLabel: string;
     suggestLabel: string;
     suggestHint: string;
+    /** Headings of the "[" list: the last few named, then everything. */
+    suggestRecent: string;
+    suggestAll: string;
     suggestNew: string;
   };
   error: {
