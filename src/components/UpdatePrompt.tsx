@@ -47,41 +47,42 @@ export function UpdatePrompt() {
   if (!needRefresh) return null;
 
   return (
-    <div
-      role="status"
-      className="animate-fade-up border-b border-gold/40 bg-gold/10 px-4 py-2.5"
-    >
-      <div className="mx-auto flex max-w-xl items-center gap-3 sm:px-4 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-        <IconSparkles size={20} className="shrink-0 text-gold" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-parchment">{t.update.title}</p>
-          <p className="hidden text-xs text-parchment-dim sm:block">{t.update.description}</p>
+    // Sticky, so it stays in sight while scrolling (under the desktop
+    // header, which is sticky too); opaque underneath, the tint on top.
+    <div role="status" className="animate-fade-up sticky top-0 z-30 bg-ink-950 lg:top-14">
+      <div className="border-b border-gold/40 bg-gold/10 px-4 py-2.5">
+        <div className="mx-auto flex max-w-xl items-center gap-3 sm:px-4 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
+          <IconSparkles size={20} className="shrink-0 text-gold" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-parchment">{t.update.title}</p>
+            <p className="hidden text-xs text-parchment-dim sm:block">{t.update.description}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setUpdating(true);
+              void updateServiceWorker(true);
+              // Normally the reload comes as soon as the new version takes
+              // control. If the page wasn't controlled by the service worker
+              // (e.g. the first visit), that moment never comes: reload
+              // anyway.
+              window.setTimeout(() => window.location.reload(), 3000);
+            }}
+            disabled={updating}
+            className="shrink-0 rounded-xl bg-gold px-3.5 py-2 text-sm font-medium text-ink-950 transition hover:bg-gold-soft disabled:opacity-60"
+          >
+            {updating ? t.update.updating : t.update.button}
+          </button>
+          <button
+            type="button"
+            onClick={() => setNeedRefresh(false)}
+            aria-label={t.update.later}
+            title={t.update.later}
+            className="-m-1.5 shrink-0 p-1.5 text-parchment-dim transition hover:text-parchment"
+          >
+            <IconClose size={18} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setUpdating(true);
-            void updateServiceWorker(true);
-            // Normally the reload comes as soon as the new version takes
-            // control. If the page wasn't controlled by the service worker
-            // (e.g. the first visit), that moment never comes: reload
-            // anyway.
-            window.setTimeout(() => window.location.reload(), 3000);
-          }}
-          disabled={updating}
-          className="shrink-0 rounded-xl bg-gold px-3.5 py-2 text-sm font-medium text-ink-950 transition hover:bg-gold-soft disabled:opacity-60"
-        >
-          {updating ? t.update.updating : t.update.button}
-        </button>
-        <button
-          type="button"
-          onClick={() => setNeedRefresh(false)}
-          aria-label={t.update.later}
-          title={t.update.later}
-          className="-m-1.5 shrink-0 p-1.5 text-parchment-dim transition hover:text-parchment"
-        >
-          <IconClose size={18} />
-        </button>
       </div>
     </div>
   );
