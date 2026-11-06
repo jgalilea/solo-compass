@@ -4,6 +4,7 @@ import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";
 import { parseMarkdownToEntries } from "./lonelog";
 import { splitRollText } from "./journalUi";
+import { buildCast } from "./lonelogTags";
 
 describe("sample adventure", () => {
   it("has the same script (kinds and dice) in every language", () => {
@@ -31,6 +32,19 @@ describe("sample adventure", () => {
         .map((e) => splitRollText(e.text).answer);
       expect(answers).toEqual(["si", "si", "contradiccion", "no"]);
       expect(entries.some((e) => e.text.includes("\n"))).toBe(true);
+    });
+  }
+});
+
+describe("sample adventure cast", () => {
+  for (const lang of ["es", "en"] as const) {
+    it(`names its characters and places with Lonelog tags (${lang})`, async () => {
+      const t = DICTIONARIES[lang];
+      const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
+      const cast = buildCast(parseMarkdownToEntries(markdown, "a", 0));
+      expect(cast.map((c) => c.kind)).toEqual(["pc", "place", "npc", "npc", "place"]);
+      expect(cast[0].tags.at(-1)).toMatch(/ 3$/);
+      expect(cast[2].mentions).toHaveLength(2);
     });
   }
 });

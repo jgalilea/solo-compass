@@ -163,6 +163,8 @@ export interface Dictionary {
     legendConsequence: string;
     legendNote: string;
     legendSession: string;
+    /** Character and place tags ([N:…], [L:…]). */
+    legendTags: string;
     legendIntro: string;
     dataSectionTitle: string;
     dataSectionDescription: string;
@@ -453,6 +455,40 @@ export interface Dictionary {
     loading: string;
     loadErrorTitle: string;
     lonelogCreditLine: string;
+  };
+  /** The adventure's notebook: pinned notes plus characters and places. */
+  notebook: {
+    title: string;
+    openLabel: string;
+    notesTitle: string;
+    notesEmpty: string;
+    notesPlaceholder: string;
+    notesEdit: string;
+    notesDone: string;
+    castTitle: string;
+    castEmpty: string;
+    kindPc: string;
+    kindNpc: string;
+    kindPlace: string;
+    groupCharacters: string;
+    groupPlaces: string;
+    mentionCount: string;
+    mentionCountOne: string;
+    mentionButton: string;
+    mentionHint: string;
+    changeButton: string;
+    changePlaceholder: string;
+    changeHint: string;
+    logButton: string;
+    addButton: string;
+    addKindLabel: string;
+    addNameLabel: string;
+    addDetailsLabel: string;
+    addHint: string;
+    tagChipLabel: string;
+    suggestLabel: string;
+    suggestHint: string;
+    suggestNew: string;
   };
   error: {
     boundaryTitle: string;

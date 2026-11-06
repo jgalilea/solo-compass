@@ -1,9 +1,20 @@
-import { useLayoutEffect, useMemo, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
+import {
+  buildCast,
+  findTagQuery,
+  formatTag,
+  suggestCast,
+  type CastKind,
+  type CastMember,
+  type TagQuery,
+} from "../lib/lonelogTags";
+import { normalizeForSearch } from "../lib/text";
+import { CastIcon } from "./journalShared";
 import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import {
@@ -45,6 +56,11 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
  * here: they live in the fixed right-hand panel (see
  * AdventureDetailView).
  *
+ * Typing "[" suggests the adventure's characters and places (and
+ * offers to name a new one), so Lonelog tags can be written without
+ * knowing their syntax: arrows to move, Enter or Tab to pick, Esc to
+ * close, or a tap.
+ *
  * The kind and the linked roll are kept by the parent, because the
  * desktop panel changes them too: after any roll it switches to
  * "Consequence", which is what usually gets written next.
@@ -52,6 +68,7 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
 export function JournalComposer({
   ref,
   inputRef,
+  insertRef,
   adventureId,
   mode,
   onModeChange,
@@ -62,6 +79,8 @@ export function JournalComposer({
   /** The journal measures it so the newest entry isn't left under the composer. */
   ref?: Ref<HTMLDivElement>;
   inputRef: RefObject<HTMLTextAreaElement | null>;
+  /** Filled in here: adds text after what's being written (a mention from the notebook). */
+  insertRef?: RefObject<((text: string) => void) | null>;
   adventureId: string;
   mode: ComposerMode;
   onModeChange: (mode: ComposerMode) => void;
@@ -75,6 +94,22 @@ export function JournalComposer({
   const { entries, addEntry } = useJournalContext();
   const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
+  // For the tag suggestions: where the caret is, which one is
+  // highlighted, and the "[" whose list was closed with Esc.
+  const [caret, setCaret] = useState(0);
+  const [focused, setFocused] = useState(false);
+  const [activeOption, setActiveOption] = useState(0);
+  const [dismissedAt, setDismissedAt] = useState<number | null>(null);
+  // Caret to restore right after a picked tag is painted (setting the
+  // value moves it to the end; later would race fast typing).
+  const pendingCaret = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const position = pendingCaret.current;
+    if (position === null) return;
+    pendingCaret.current = null;
+    inputRef.current?.focus();
+    inputRef.current?.setSelectionRange(position, position);
+  }, [text, inputRef]);
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
   // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
@@ -96,6 +131,23 @@ export function JournalComposer({
     if (lastWasVisible && covered > 0) window.scrollBy(0, covered);
   }, [text, inputRef]);
 
+  useEffect(() => {
+    if (!insertRef) return;
+    insertRef.current = (snippet) => {
+      setText((prev) => (prev && !/\s$/.test(prev) ? `${prev} ${snippet} ` : `${prev}${snippet} `));
+      // A mention belongs in an entry, not in a session title.
+      if (mode === "session") onModeChange("note");
+      window.setTimeout(() => {
+        const el = inputRef.current;
+        el?.focus();
+        el?.setSelectionRange(el.value.length, el.value.length);
+      }, 0);
+    };
+    return () => {
+      insertRef.current = null;
+    };
+  }, [insertRef, inputRef, mode, onModeChange]);
+
   // What a consequence will join (see buildEntryBlocks): the latest
   // entry, unless the session was just opened.
   const lastEntry = useMemo(() => {
@@ -105,6 +157,31 @@ export function JournalComposer({
     }
     return last && last.kind !== "session" ? last : undefined;
   }, [entries, adventureId]);
+
+  const cast = useMemo(() => buildCast(entries.filter((e) => e.adventureId === adventureId)), [entries, adventureId]);
+  // A session title is a single plain line: no tags there.
+  const tagQuery = mode === "session" ? null : findTagQuery(text.slice(0, caret));
+  const suggesting = focused && !!tagQuery && tagQuery.start !== dismissedAt;
+  const options = suggesting ? tagOptions(cast, tagQuery) : [];
+  const active = Math.min(activeOption, Math.max(options.length - 1, 0));
+
+  function trackCaret(el: HTMLTextAreaElement) {
+    setCaret(el.selectionStart);
+  }
+
+  function pickOption(option: TagOption) {
+    if (!tagQuery) return;
+    const tag =
+      "member" in option
+        ? formatTag(option.member.kind, option.member.name, [], true)
+        : formatTag(option.kind, option.name);
+    const after = text.slice(caret);
+    const inserted = tag + (after.startsWith(" ") ? "" : " ");
+    const position = tagQuery.start + inserted.length;
+    setText(text.slice(0, tagQuery.start) + inserted + after);
+    setCaret(position);
+    pendingCaret.current = position;
+  }
 
   // A session title is optional (it falls back to the date); anything
   // else needs some text.
@@ -148,6 +225,53 @@ export function JournalComposer({
       data-composer
       className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
+      {suggesting && (
+        <div
+          id="tag-suggestions"
+          role="listbox"
+          aria-label={t.notebook.suggestLabel}
+          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
+        >
+          {options.length === 0 ? (
+            <p className="px-4 py-2 text-xs text-parchment-dim">{t.notebook.suggestHint}</p>
+          ) : (
+            options.map((option, i) => {
+              const kind = "member" in option ? option.member.kind : option.kind;
+              const kindLabel = { pc: t.notebook.kindPc, npc: t.notebook.kindNpc, place: t.notebook.kindPlace }[kind];
+              const name = "member" in option ? option.member.name : option.name;
+              const detail =
+                "member" in option
+                  ? option.member.tags.join(" · ") || kindLabel
+                  : interpolate(t.notebook.suggestNew, { kind: kindLabel });
+              return (
+                <button
+                  key={`${kind}:${name}:${"member" in option}`}
+                  id={`tag-option-${i}`}
+                  type="button"
+                  role="option"
+                  aria-selected={i === active}
+                  // Keeps the focus (and the phone keyboard) in the field.
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pickOption(option)}
+                  onMouseMove={() => setActiveOption(i)}
+                  className={[
+                    "flex w-full items-center gap-2.5 px-4 py-2 text-left transition",
+                    i === active ? "bg-ink-700" : "hover:bg-ink-700/60",
+                  ].join(" ")}
+                >
+                  <CastIcon kind={kind} size={16} className="shrink-0 text-gold" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-parchment">{name}</span>
+                    <span className={`block truncate text-xs ${"member" in option ? "text-parchment-dim" : "text-gold"}`}>
+                      {detail}
+                    </span>
+                  </span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
       {mode === "consequence" && (
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconConsequence size={14} className="shrink-0 text-gold" />
@@ -193,8 +317,43 @@ export function JournalComposer({
             data-hotkey="write"
             rows={1}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              trackCaret(e.target);
+              setActiveOption(0);
+              if (!findTagQuery(e.target.value.slice(0, e.target.selectionStart))) setDismissedAt(null);
+            }}
+            onSelect={(e) => trackCaret(e.currentTarget)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={suggesting}
+            aria-controls={suggesting ? "tag-suggestions" : undefined}
+            aria-activedescendant={options.length > 0 ? `tag-option-${active}` : undefined}
             onKeyDown={(e) => {
+              if (suggesting && !e.nativeEvent.isComposing) {
+                if (e.key === "Escape") {
+                  // Closes the list only; a second Esc leaves the field.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDismissedAt(tagQuery!.start);
+                  return;
+                }
+                if (options.length > 0) {
+                  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    e.preventDefault();
+                    const step = e.key === "ArrowDown" ? 1 : -1;
+                    setActiveOption((active + step + options.length) % options.length);
+                    return;
+                  }
+                  if ((e.key === "Enter" && !e.shiftKey) || e.key === "Tab") {
+                    e.preventDefault();
+                    pickOption(options[active]);
+                    return;
+                  }
+                }
+              }
               if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing || !sendsOnEnter) return;
               e.preventDefault();
               handleSubmit();
@@ -262,6 +421,22 @@ export function JournalComposer({
       )}
     </div>
   );
+}
+
+type TagOption = { member: CastMember } | { kind: CastKind; name: string };
+
+/**
+ * What "[" offers: the characters and places that fit what's typed
+ * and, unless one is called exactly that, a new one with that name of
+ * each kind (or only the kind already typed, "[L:…").
+ */
+function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
+  const found = suggestCast(cast, query);
+  const name = query.text.trim();
+  if (!name) return found.map((member) => ({ member }));
+  const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
+  const kinds: CastKind[] = query.kind ? [query.kind] : ["npc", "place", "pc"];
+  return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
 }
 
 /**

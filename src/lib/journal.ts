@@ -18,6 +18,12 @@ export interface Adventure {
   updatedAt: number;
   favorite: boolean;
   status: AdventureStatus;
+  /**
+   * Pinned notes: free text kept at hand (inventory, clues, to-dos),
+   * edited in place. Not a journal entry: no date, no place in the
+   * log's order. Exported as the .md's front matter (lonelog.ts).
+   */
+  notes?: string;
 }
 
 // Same as the history: no natural size cap, so it goes in IndexedDB

@@ -98,11 +98,93 @@ export function exportAdventureToMarkdown(
   t: Dictionary,
   adventureName: string,
   entries: JournalEntry[],
+  notes = "",
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const lines = sorted.map((e) => formatLine(e));
   const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
-  return blocks.join("\n\n") + "\n";
+  return formatFrontMatter(notes) + blocks.join("\n\n") + "\n";
+}
+
+/**
+ * The adventure's pinned notes go where Lonelog puts a campaign's
+ * metadata in a digital log (§5.1): YAML front matter at the very top,
+ * in its `notes` field. A literal block ("|") keeps the lines, lists
+ * and checkboxes as written, and Markdown viewers (Obsidian too) show
+ * it as the file's properties instead of as text.
+ */
+function formatFrontMatter(notes: string): string {
+  const text = notes.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
+  if (!text.trim()) return "";
+  const body = text
+    .split("\n")
+    .map((line) => (line.trim() ? `  ${line}` : ""))
+    .join("\n");
+  return `---\nnotes: |\n${body}\n---\n\n`;
+}
+
+const FRONT_MATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+
+/** The front matter's text (without the "---" lines) and what follows it. */
+function splitFrontMatter(text: string): { frontMatter: string | null; body: string } {
+  const clean = text.replace(/^\uFEFF/, "");
+  const match = clean.match(FRONT_MATTER);
+  // Only if it reads as YAML: a log that opens with a "---" rule and
+  // has another further down mustn't lose what's in between.
+  const yaml = match?.[1]
+    .split(/\r?\n/)
+    .every((line) => !line.trim() || /^\s/.test(line) || /^(#|- |[\w-]+\s*:)/.test(line));
+  if (!match || !yaml) return { frontMatter: null, body: clean };
+  return { frontMatter: match[1], body: clean.slice(match[0].length) };
+}
+
+/**
+ * Reads the pinned notes back from a Lonelog .md: the `notes` field of
+ * its front matter, as a literal (|) or folded (>) block or on one
+ * line, quoted or not. Just enough YAML for that field: other fields
+ * (title, ruleset…) are left alone. Empty if there's none.
+ */
+export function parseNotesFromMarkdown(text: string): string {
+  const { frontMatter } = splitFrontMatter(text);
+  if (frontMatter === null) return "";
+  const lines = frontMatter.split(/\r?\n/);
+  const start = lines.findIndex((l) => /^notes\s*:/i.test(l));
+  if (start < 0) return "";
+  const value = lines[start].replace(/^notes\s*:\s*/i, "");
+
+  const block = value.match(/^([|>])[+-]?\s*$/);
+  if (!block) {
+    const single = value.trim();
+    if (single.startsWith('"') && single.endsWith('"') && single.length > 1) {
+      try {
+        return JSON.parse(single) as string;
+      } catch {
+        return single.slice(1, -1);
+      }
+    }
+    if (single.startsWith("'") && single.endsWith("'") && single.length > 1) {
+      return single.slice(1, -1).replace(/''/g, "'");
+    }
+    return single;
+  }
+
+  // The block is every following line that's blank or indented, with
+  // the first line's indentation taken off.
+  const content: string[] = [];
+  let indent = -1;
+  for (const line of lines.slice(start + 1)) {
+    if (!line.trim()) {
+      content.push("");
+      continue;
+    }
+    const lead = line.match(/^ */)![0].length;
+    if (indent < 0) indent = lead;
+    if (lead < indent || indent === 0) break;
+    content.push(line.slice(indent));
+  }
+  const literal = content.join("\n").replace(/\s+$/, "");
+  // Folded: single line breaks become spaces, blank lines stay.
+  return block[1] === ">" ? literal.replace(/([^\n])\n(?=[^\n])/g, "$1 ") : literal;
 }
 
 const ROLL_PREFIX = /^d:\s?/;
@@ -140,10 +222,11 @@ export function parseMarkdownToEntries(
   startTimestamp: number,
 ): JournalEntry[] {
   const entries: JournalEntry[] = [];
-  // Strip a possible leading BOM (our own export adds it so external
-  // viewers detect UTF-8 correctly) so it doesn't sneak into the first
-  // line and leave it unrecognised.
-  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+  // Without a possible leading BOM (our own export adds it so external
+  // viewers detect UTF-8 correctly), which would sneak into the first
+  // line and leave it unrecognised, and without the front matter (the
+  // pinned notes: see parseNotesFromMarkdown).
+  const lines = splitFrontMatter(text).body.split(/\r?\n/);
   let inHeader = true;
   let seenTitle = false;
   // Blank lines since the last line of the previous entry, to keep

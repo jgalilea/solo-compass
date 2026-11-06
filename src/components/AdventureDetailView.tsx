@@ -9,10 +9,12 @@ import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
 import { searchEntries } from "../lib/journalSearch";
 import { canShare, shareTextFile } from "../lib/share";
+import { AdventureNotebook } from "./AdventureNotebook";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { ActionMenu } from "./ActionMenu";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { JournalComposer } from "./JournalComposer";
+import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
@@ -36,6 +38,7 @@ import {
   IconDice,
   IconDownload,
   IconJournal,
+  IconNotebook,
   IconOracle,
   IconPause,
   IconPencil,
@@ -55,7 +58,8 @@ import {
  *   composer at the bottom; oracle, tables and dice open in a sheet.
  * - Desktop (lg): the journal in the middle and the table always open
  *   on the right, no sheets. From xl, on the left, the session index
- *   to jump between them.
+ *   to jump between them and the notebook (pinned notes, characters
+ *   and places); below xl the notebook is a sheet from the header.
  *
  * Sessions are in chronological order, like the journal itself: the
  * earlier ones folded at the top; the current one (the last) open
@@ -76,6 +80,8 @@ export function AdventureDetailView() {
     deleteAdventure,
     toggleAdventureFavorite,
     setAdventureStatus,
+    setAdventureNotes,
+    addEntry,
     removeEntry,
     restoreEntry,
     editEntry,
@@ -116,12 +122,18 @@ export function AdventureDetailView() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [notebookOpen, setNotebookOpen] = useState(false);
+  // The character/place chip last tapped in the journal; the tick makes
+  // tapping the same one again scroll to it again.
+  const [castFocus, setCastFocus] = useState<{ key: string | null; tick: number }>({ key: null, tick: 0 });
 
   // Composer: the entry kind and the roll a consequence links to live
   // here because the desktop panel changes them too.
   const [composerMode, setComposerMode] = useState<ComposerMode>("note");
   const [linkedRollId, setLinkedRollId] = useState<string | undefined>(undefined);
   const composerInputRef = useRef<HTMLTextAreaElement>(null);
+  // Set by the composer: adds text (a "Mention" from the notebook) to what's being written.
+  const composerInsertRef = useRef<((text: string) => void) | null>(null);
 
   // Oracle answer of each linked roll, to paint it in its colour in the
   // journal (Yes/No/Contradiction).
@@ -158,6 +170,11 @@ export function AdventureDetailView() {
     onSelect: setSelectedEntryId,
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
     highlightedId,
+    onTagClick: (key) => {
+      setCastFocus((prev) => ({ key, tick: prev.tick + 1 }));
+      // From xl the notebook is always visible in the left column.
+      if (!window.matchMedia("(min-width: 80rem)").matches) setNotebookOpen(true);
+    },
   };
 
   const searchMatches = useMemo(
@@ -278,7 +295,7 @@ export function AdventureDetailView() {
   }
 
   function handleExport() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes);
     const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
@@ -287,7 +304,7 @@ export function AdventureDetailView() {
   // The same Lonelog .md as the export, through the system's share
   // sheet; if it fails (not just cancelled), it's downloaded instead.
   function handleShare() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes);
     shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(handleExport);
   }
 
@@ -327,24 +344,39 @@ export function AdventureDetailView() {
   }
 
   const isArchived = adventure.status === "archived";
-
-  // No sessions, no index: the journal takes that column too instead of
-  // leaving an empty gap on the left.
   const hasSessionIndex = groups.some((g) => g.sessionEntry);
+
+  const notebook = (
+    <AdventureNotebook
+      notes={adventure.notes ?? ""}
+      onNotesChange={(notes) => setAdventureNotes(adventure.id, notes)}
+      entries={adventureEntries}
+      focusKey={castFocus.key}
+      focusTick={castFocus.tick}
+      onJump={(id) => {
+        setNotebookOpen(false);
+        jumpToEntry(id);
+      }}
+      onMention={(text) => {
+        setNotebookOpen(false);
+        composerInsertRef.current?.(text);
+      }}
+      onLog={(text) => {
+        addEntry(adventure.id, "note", text);
+        handleLogged();
+      }}
+    />
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[13rem_minmax(0,1fr)_21rem] 2xl:max-w-[110rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem] 2xl:gap-12">
-      {hasSessionIndex && (
-        <SessionIndex
-          groups={groups}
-          onJump={jumpToSession}
-          className="hidden xl:flex"
-        />
-      )}
+      {/* Wide desktop: sessions and notebook in their own column. */}
+      <aside className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-8 overflow-y-auto overscroll-contain py-8 pr-1 xl:flex">
+        {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} />}
+        {notebook}
+      </aside>
 
-      <div
-        className={`flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] ${hasSessionIndex ? "xl:col-start-2" : "xl:col-span-2"}`}
-      >
+      <div className="flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] xl:col-start-2">
         <div className="relative flex items-center gap-2">
           <Link
             to="/diario"
@@ -416,6 +448,15 @@ export function AdventureDetailView() {
                   <IconSearch size={21} />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setNotebookOpen(true)}
+                aria-label={t.notebook.openLabel}
+                title={t.notebook.openLabel}
+                className="-m-1 shrink-0 rounded-full p-1.5 text-parchment-dim transition hover:text-gold xl:hidden"
+              >
+                <IconNotebook size={21} />
+              </button>
               {/* With a single session there's nowhere to jump to. */}
               {groups.length > 1 && <SessionMenu groups={groups} onJump={jumpToSession} className="xl:hidden" />}
               {/* Everything rarely used, grouped, so the header fits on one
@@ -575,6 +616,7 @@ export function AdventureDetailView() {
         <JournalComposer
           ref={composerRef}
           inputRef={composerInputRef}
+          insertRef={composerInsertRef}
           adventureId={adventure.id}
           mode={composerMode}
           onModeChange={setComposerMode}
@@ -599,6 +641,31 @@ export function AdventureDetailView() {
           <TableTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
       </aside>
+
+      {notebookOpen && (
+        <Modal
+          sheet
+          onClose={() => setNotebookOpen(false)}
+          label={t.notebook.title}
+          className="animate-fade-up flex max-h-[85dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-ink-border bg-ink-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+        >
+          <div className="flex items-center gap-2">
+            <h2 className="flex min-w-0 flex-1 items-center gap-2 font-display text-lg text-parchment">
+              <IconNotebook size={19} className="shrink-0 text-gold" />
+              {t.notebook.title}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setNotebookOpen(false)}
+              aria-label={t.common.close}
+              className="shrink-0 p-2 text-parchment-dim transition hover:text-parchment"
+            >
+              <IconClose size={18} />
+            </button>
+          </div>
+          {notebook}
+        </Modal>
+      )}
 
       {statsOpen && (
         <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
@@ -736,21 +803,10 @@ function PanelSection({
 }
 
 /** Session index (wide desktop): jumps to each session. */
-function SessionIndex({
-  groups,
-  onJump,
-  className,
-}: {
-  groups: EntryGroup[];
-  onJump: (index: number) => void;
-  className: string;
-}) {
+function SessionIndex({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
   const { t } = useLocaleContext();
   return (
-    <nav
-      aria-label={t.journal.sessionsHeading}
-      className={`${className} sticky top-14 max-h-[calc(100dvh-3.5rem)] flex-col gap-2 overflow-y-auto py-8`}
-    >
+    <nav aria-label={t.journal.sessionsHeading} className="flex flex-col gap-2">
       <h2 className="flex items-center gap-2 px-3 text-xs font-medium uppercase tracking-wide text-parchment-dim">
         <IconSession size={15} className="text-gold" />
         {t.journal.sessionsHeading}

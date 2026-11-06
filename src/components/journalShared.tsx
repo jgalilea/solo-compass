@@ -2,6 +2,8 @@ import { useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
+import { castKey, splitTags, type CastKind } from "../lib/lonelogTags";
+import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -11,7 +13,10 @@ import {
   IconConsequence,
   IconDice,
   IconNote,
+  IconNpc,
+  IconPc,
   IconPencil,
+  IconPlace,
   IconQuestion,
   IconSession,
   IconTrash,
@@ -50,6 +55,8 @@ export interface EntryActions {
   answerFor: (rollId: string | undefined) => Answer | undefined;
   /** Entry just jumped to from the search: briefly highlighted. */
   highlightedId?: string | null;
+  /** A character/place chip was tapped (its castKey). */
+  onTagClick?: (key: string) => void;
 }
 
 const KIND_ICON: Record<Exclude<JournalLineKind, "session">, ComponentType<{ size?: number; className?: string }>> = {
@@ -245,7 +252,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     >
       {icon}
       <div className="min-w-0 flex-1">
-        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} />
+        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} />
       </div>
       <LineButtons
         visible={selected}
@@ -259,9 +266,21 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   );
 }
 
-function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer | undefined }) {
+function EntryContent({
+  entry,
+  answer,
+  onTagClick,
+}: {
+  entry: JournalEntry;
+  answer: Answer | undefined;
+  onTagClick?: (key: string) => void;
+}) {
   if (entry.kind === "question") {
-    return <p className="whitespace-pre-wrap text-base italic text-parchment">{entry.text}</p>;
+    return (
+      <p className="whitespace-pre-wrap text-base italic text-parchment">
+        <TaggedText text={entry.text} onTagClick={onTagClick} />
+      </p>
+    );
   }
 
   if (entry.kind === "roll") {
@@ -314,9 +333,63 @@ function EntryContent({ entry, answer }: { entry: JournalEntry; answer: Answer |
         entry.kind === "note" ? "text-parchment/90" : "text-parchment",
       ].join(" ")}
     >
-      {entry.text}
+      <TaggedText text={entry.text} onTagClick={onTagClick} />
     </p>
   );
+}
+
+const CAST_ICON: Record<CastKind, ComponentType<{ size?: number; className?: string }>> = {
+  pc: IconPc,
+  npc: IconNpc,
+  place: IconPlace,
+};
+
+/** The icon of a character (PC or NPC) or place. */
+export function CastIcon({ kind, size, className }: { kind: CastKind; size?: number; className?: string }) {
+  const Icon = CAST_ICON[kind];
+  return <Icon size={size} className={className} />;
+}
+
+/**
+ * Text with its Lonelog character/place tags drawn as chips (the name,
+ * and its traits smaller) instead of the raw "[N:Jonah|friendly]".
+ * Tapping one opens that element in the adventure's notebook.
+ */
+export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (key: string) => void }) {
+  const { t } = useLocaleContext();
+  const parts = splitTags(text);
+  if (parts.length === 1 && !parts[0].tag) return text;
+  return parts.map((part, i) => {
+    if (!part.tag) return part.text;
+    const { kind, name, details } = part.tag;
+    const content = (
+      <>
+        <CastIcon kind={kind} size={13} className="shrink-0 self-center text-gold" />
+        <span className="font-medium text-parchment">{name}</span>
+        {details.length > 0 && <span className="text-[0.85em] text-parchment-dim">{details.join(" · ")}</span>}
+      </>
+    );
+    const chipClass =
+      "mx-0.5 inline-flex max-w-full flex-wrap items-baseline gap-x-1 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 align-baseline not-italic leading-snug";
+    return onTagClick ? (
+      <button
+        key={i}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onTagClick(castKey(kind, name));
+        }}
+        title={interpolate(t.notebook.tagChipLabel, { name })}
+        className={`${chipClass} text-left transition hover:border-gold/60 hover:bg-gold/15`}
+      >
+        {content}
+      </button>
+    ) : (
+      <span key={i} className={chipClass}>
+        {content}
+      </span>
+    );
+  });
 }
 
 /** "+1 (+ 0 − +)" for 4dF: the total large and the faces small below. */

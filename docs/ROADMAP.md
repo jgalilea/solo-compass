@@ -5,10 +5,27 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-04 (tablas personalizadas, búsqueda).
+Última revisión: 2026-11-06 (cuaderno de la aventura, etiquetas de Lonelog, Cairn).
 
 ## Hecho recientemente
 
+- Cuaderno de la aventura (2026-11-06, puntos 1 y 9): a la izquierda
+  del diario en xl, en una hoja desde la cabecera por debajo.
+  - Notas fijas: texto libre editado en el sitio, guardado solo, con
+    casillas `- [ ]` que se marcan. Campo `notes` de `Adventure` (va en
+    la copia de seguridad); en el `.md`, el campo `notes` del front
+    matter YAML (la cabecera de campaña de Lonelog, §5.1).
+  - Personajes y lugares con etiquetas de Lonelog (`[N:]`, `[PC:]`,
+    `[L:]`, `[#N:]`): chips en el diario y lista en el cuaderno con sus
+    rasgos actuales y las entradas donde salen. Añadir, anotar un
+    cambio y mencionar desde el cuaderno, sin saber la sintaxis.
+    Autocompletado en el composer: al escribir `[` sugiere los que ya
+    hay y ofrece crear uno nuevo (PNJ, lugar o PJ) con lo escrito. La
+    aventura de ejemplo ya las usa.
+- Tablas de Cairn 2.ª ed. (2026-11-06): 82, CC BY-SA 4.0 (ver punto 5).
+- Placeholder del oráculo más corto (2026-11-06): cabe en un iPhone SE.
+- Tablas de seis juegos más y temáticas (2026-11-05): ver punto 5.
+- El fondo ya no se desplaza con un diálogo abierto (2026-11-05).
 - Tablas personalizadas (2026-11-04, punto 2): crear, editar, importar
   (.md/.txt/.json, varias por archivo), exportar a .md y compartir. Dado
   fijo (d4–d100, d66) o "según las líneas" (dN), rangos opcionales
@@ -103,7 +120,19 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ---
 
-## 1. Lonelog completo: hilos, personajes, lugares, relojes (P2, aplazado)
+## 1. Lonelog completo: hilos, personajes, lugares, relojes (P2, en parte hecho)
+
+**Hecho (2026-11-06), con la spec 1.5.0 delante:** personajes y lugares
+(`[N:]`, `[PC:]`, `[L:]` y referencias `[#N:]`), con los estilos de
+actualización de la spec (`+`/`-`, `a→b`, valores como "PV 6"/"PV-2" y
+categorías `estado:`), y etiquetas de varias líneas. Se derivan de las
+entradas (`lonelogTags.ts`), no se guardan aparte. Corresponde a las
+fases 1–3 de abajo (chips, panel derivado y menciones: desde el
+cuaderno y con autocompletado al escribir `[` en el composer).
+
+**Pendiente:** hilos `[Thread:]`, eventos y relojes `[E:x/y]` (y los
+botones −/+), fichas editables (descripción, alias) y "tirar en la
+lista". El autocompletado podría sugerir también hilos cuando existan.
 
 Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
 la mesa: modelo mixto. Los cambios de estado salen de las entradas
@@ -232,13 +261,15 @@ atribuciones literales, en Ajustes → Acerca de y en el README.
 | Loner v2.3 (R. Bisceglie) | 19 | CC BY-SA 4.0 (traducción también BY-SA) | Edición Keeper (`farirpgs/keeper`) |
 | Knave 1.ª ed. (Ben Milton) | 11 (rasgos) | CC BY 4.0 (comprobado en el PDF) | PDF oficial |
 | Lazy GM's Resource Document | 65 | CC BY 4.0 (+ atribución del SRD 5.1) | slyflourish.com; fuera las tablas de reglas 5e |
+| Cairn 2.ª ed. (Yochai Gal) | 82 | CC BY-SA 4.0 (dicho en cairnrpg.com y en el README del repo; traducción también BY-SA) | `yochaigal/cairn` en GitHub: semillas de la guía del Warden (región, facciones, terreno, tiempo, mazmorras, bosques), PNJ y rasgos, vínculos y presagios del jugador. Fuera los dados de reparto, las acciones de facción y las fórmulas de nombres (reglas) |
 
 Cada tabla tiene una temática común a todos los juegos (`TABLE_THEMES`):
 se filtra por ella, se busca por ella y agrupa las tablas dentro de cada
 bloque.
 
-Pendientes posibles: Cairn (CC BY-SA 4.0, SRD en GitHub), los nombres
-del Lazy GM (listas de longitud irregular) e Ironsmith (CC BY según
+Pendientes posibles: los nombres del Lazy GM (listas de longitud
+irregular), las tablas de nombres de lugar de Cairn (adjetivo + nombre
+con fórmula: en español chocan con el género) e Ironsmith (CC BY según
 Datasworn, BY-SA según Lulu). Sundered Isles: solo
 los movimientos son CC BY, sus tablas no.
 
@@ -260,7 +291,7 @@ terceros conserva su licencia aunque el código sea GPL.
 | Juice Oracle | CC BY-NC-SA 4.0 | Dudoso | Mismo problema NC |
 | One Page Solo Engine | Sin confirmar | ? | No encontré la licencia publicada; preguntar al autor |
 | Knave 1.ª ed. (tablas) | CC BY 4.0 (comprobado en el PDF) | **Hecho** (rasgos) | Conjuros y equipo, fuera: son reglas |
-| Cairn (tablas) | CC BY-SA 4.0 | Sí | BY-SA obliga a compartir igual la traducción (ya lo hacemos con Loner) |
+| Cairn (tablas) | CC BY-SA 4.0 | **Hecho** (2.ª ed.) | BY-SA obliga a compartir igual la traducción (ya lo hacemos con Loner) |
 | Lonelog | CC BY-SA 4.0 (el documento) | Sí | La licencia cubre el documento, no usar la notación |
 | "d10 Roll Under One Page Solo" (A. Cavanagh) | CC BY 4.0 | Probable | Oráculo de palabras, eventos y lugares; verificar |
 | "The Oracle" (jamessral) | CC BY 4.0 | Probable | Oráculo de cartas; verificar |
@@ -307,11 +338,11 @@ ni errores de consola.
 
 **Pendiente:**
 
-- **P3 · Detalles**: placeholder del oráculo cortado en móvil (usar uno
-  más corto); "CONTRADICCIÓN" deja poco sitio a la pregunta en "Últimas
-  tiradas"; el aviso "Activa una aventura…" deja una palabra huérfana
-  en móvil (ya no existe: lo sustituye el chip de la cabecera); las preguntas largas en mayúsculas en la tarjeta de
-  resultado se leen mal.
+- **P3 · Detalles**: "CONTRADICCIÓN" deja poco sitio a la pregunta en
+  "Últimas tiradas"; las preguntas largas en mayúsculas en la tarjeta
+  de resultado se leen mal. (Hechos o resueltos: el placeholder del
+  oráculo, más corto desde el 2026-11-06; el aviso "Activa una
+  aventura…", que ya no existe.)
 
 ## 7. Compatibilidad con Lonelog
 
@@ -327,10 +358,20 @@ ni errores de consola.
 - `#` y `>` solo se ignoran en la cabecera del archivo (título y
   crédito); más abajo se importan como notas.
 
-**Pendiente (P2):** comprobar en la spec 1.5.0 si Lonelog define ya su
-propia forma de escribir entradas de varias líneas. Si es así, adoptarla
-en lugar de la sangría y mantener la sangría solo al importar, para
-seguir leyendo los archivos ya exportados.
+**Revisado con la spec 1.5.0 (2026-11-06):** no define entradas de
+varias líneas (solo etiquetas de varias líneas, que ya se leen), así
+que la sangría de continuación se queda.
+
+**Pendiente (P2): la sangría choca con la spec al importar.** La spec
+(§2.3) dice que la sangría es opcional y no tiene significado
+estructural, y sus ejemplos sangran los `d:` y `=>` bajo su `@`. Hoy
+toda línea sangrada se une a la entrada anterior, así que un log
+escrito así entra como una sola entrada. Propuesta: una línea sangrada
+que empieza por un símbolo es una entrada nueva; al exportar, las
+líneas de continuación que empiezan por un símbolo se escapan con `\`
+(como ya se hace con las notas). Coste: los `.md` exportados antes con
+una continuación que empieza por símbolo se partirían en dos al
+reimportarlos (caso raro).
 
 ## 8. Decisiones pendientes
 
@@ -345,7 +386,9 @@ seguir leyendo los archivos ya exportados.
 
 ## 9. Otras ideas (P3)
 
-- **Notas fijas por aventura (aplazado el 2026-11-04; propuesta lista).**
+- **Notas fijas por aventura — HECHO (2026-11-06)**, como una sola nota
+  con casillas, dentro del cuaderno de la aventura (ver "Hecho
+  recientemente"). Lo que se planteó:
   Al retomarlo, decidir: una sola nota o varias tarjetas ("Pendiente",
   "Inventario"…), y si lleva casillas marcables o solo texto libre. Un
   apartado de "situación actual" que se edita en el sitio, aparte del

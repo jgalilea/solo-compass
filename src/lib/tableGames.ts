@@ -41,7 +41,8 @@ export type GameId =
   | "loner"
   | "starforged"
   | "starsmith"
-  | "lazy-gm";
+  | "lazy-gm"
+  | "cairn";
 
 export interface TableGame {
   id: GameId;
@@ -134,6 +135,16 @@ const LAZY_GM_GAME: GameRef = {
   tag: "Lazy GM",
 };
 
+export const CAIRN_URL = "https://cairnrpg.com";
+
+const CAIRN_GAME: GameRef = {
+  name: "Cairn",
+  url: CAIRN_URL,
+  author: "Yochai Gal",
+  license: "CC BY-SA 4.0",
+  tag: "Cairn",
+};
+
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const CC_BY_SA = "https://creativecommons.org/licenses/by-sa/4.0/";
 
@@ -182,6 +193,14 @@ export const TABLE_CREDITS: {
     licenseUrl: CC_BY,
     url: KNAVE_URL,
     attribution: ["Knave by Ben Milton, licensed under the Creative Commons Attribution 4.0 International License."],
+  },
+  {
+    name: "Cairn",
+    author: "Yochai Gal",
+    license: "CC BY-SA 4.0",
+    licenseUrl: CC_BY_SA,
+    url: CAIRN_URL,
+    attribution: ["Cairn by Yochai Gal, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License."],
   },
   {
     name: "Lazy GM's Resource Document",
@@ -272,6 +291,15 @@ export const TABLE_GAMES: TableGame[] = [
     count: 65,
     owns: (id) => id.startsWith("lazy-gm-"),
     load: () => import("./tableData/lazyGm").then((m) => m.TABLES),
+  },
+  {
+    id: "cairn",
+    title: () => CAIRN_GAME.name,
+    note: (t) => creditNote(t, CAIRN_GAME),
+    game: () => CAIRN_GAME,
+    count: 82,
+    owns: (id) => id.startsWith("cairn-"),
+    load: () => import("./tableData/cairn").then((m) => m.TABLES),
   },
 ];
 

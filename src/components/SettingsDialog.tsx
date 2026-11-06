@@ -11,6 +11,7 @@ import {
   IconNote,
   IconQuestion,
   IconSession,
+  IconCast,
   IconSettings,
   IconUpload,
 } from "./icons/Icons";
@@ -480,6 +481,7 @@ function AboutSettings() {
             <LegendRow Icon={IconConsequence} symbol="=>" description={t.about.legendConsequence} />
             <LegendRow Icon={IconNote} description={t.about.legendNote} />
             <LegendRow Icon={IconSession} symbol="=== ===" description={t.about.legendSession} />
+            <LegendRow Icon={IconCast} symbol="[N:]" description={t.about.legendTags} />
           </dl>
         </div>
       </Credit>

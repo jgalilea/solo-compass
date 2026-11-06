@@ -154,13 +154,39 @@ and written with the same format as `usePlayActions` (oracle verdict via
 `judgeDice` in `oracle.ts`, table results from the real tables, loaded
 first with `loadMeaningTables`), then imported as Lonelog. A test keeps both languages' scripts in step.
 
+### Notebook: pinned notes, characters and places
+
+Each adventure has a notebook (`AdventureNotebook.tsx`): in the left
+column at `xl` (under the session index), a sheet from the adventure
+header below that.
+
+- **Pinned notes**: `notes` on `Adventure` (so they ride along in the
+  backup). Edited in place, saved after a short pause; `- [ ]` lines
+  are tickable checkboxes. Not entries: no date, editing them doesn't
+  touch `updatedAt`. In the .md they're the YAML front matter's
+  `notes` field (Lonelog §5.1), written and read back by `lonelog.ts`.
+- **Characters and places** are Lonelog tags (`lonelogTags.ts`):
+  `[N:…]` NPC, `[PC:…]` PC, `[L:…]` place, `[#N:…]` reference, with
+  `+`/`-`/`→`, "HP 6"/"HP-2" stats and `category:` updates. They stay
+  in the entry text as written (so they round-trip for free); the
+  cast and each element's state are **derived** from the entries
+  (`buildCast`), never stored. Tags inside roll entries are roll
+  context and are skipped. Adding one or logging a change from the
+  notebook writes a tag note in the journal; "Mention" inserts
+  `[#N:Name]` into the composer (`insertRef`). Typing `[` in the
+  composer suggests the cast and offers a new one (`findTagQuery`,
+  `suggestCast`). Threads and clocks
+  aren't read yet (roadmap).
+
 ### Journal rendering (`src/components/journalShared.tsx`)
 
 Lonelog is the export format, not the on-screen view: entries render with
 an icon per kind, and `buildEntryBlocks` (`src/lib/journalUi.ts`) groups
 a question + its roll + the following consequences into one card.
 Oracle answers are colored using the linked history entry, falling back to
-parsing the roll text (`splitRollText`) for imported journals.
+parsing the roll text (`splitRollText`) for imported journals. Character
+and place tags render as chips (`TaggedText`); tapping one opens it in
+the notebook.
 
 ### Oracles (`src/lib/oracles.ts`)
 
@@ -204,7 +230,8 @@ file plus its `TABLE_GAMES` entry.
   refers to them).
 - Third-party tables under an open licence (CC BY or CC BY-SA, never
   NC): Ironsworn, Delve, Starforged, Starsmith (Datasworn), Loner,
-  Knave and the Lazy GM's Resource Document, with our own Spanish
+  Knave, Cairn (2nd ed., from its GitHub source) and the Lazy GM's
+  Resource Document, with our own Spanish
   translation (a translation of a BY-SA text is BY-SA too). Each table
   carries its `game` credit; `TABLE_CREDITS` (Settings → About, and the
   README) holds each source's attribution wording verbatim. Never add

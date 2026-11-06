@@ -213,3 +213,33 @@ export function IconInstall(props: IconProps) {
 export function IconInstalled(props: IconProps) {
   return <TablerIcon icon={Tabler.IconDeviceMobileCheck} {...props} />;
 }
+// The adventure's notebook: pinned notes plus its cast.
+export function IconNotebook(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconNotebook} {...props} />;
+}
+export function IconPinned(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconPinned} {...props} />;
+}
+// Lonelog tags: an NPC, the player character and a place.
+export function IconNpc(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconUser} {...props} />;
+}
+export function IconPc(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconUserStar} {...props} />;
+}
+export function IconPlace(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMapPin} {...props} />;
+}
+export function IconCast(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconUsers} {...props} />;
+}
+export function IconCheckbox(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSquare} {...props} />;
+}
+export function IconCheckboxChecked(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSquareCheck} {...props} />;
+}
+// Mentioning an element in the composer.
+export function IconMention(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconAt} {...props} />;
+}

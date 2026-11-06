@@ -26,6 +26,7 @@ const NAMES_ONLY = new Set([
   "starsmith-character-name-given-name",
   "starsmith-character-name-family-name",
   "starsmith-additional-registry-number-model",
+  "cairn-npc-name",
 ]);
 
 const loaded = await Promise.all(TABLE_GAMES.map(async (game) => ({ game, data: await game.load() })));

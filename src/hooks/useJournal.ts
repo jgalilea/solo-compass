@@ -12,6 +12,7 @@ import {
 } from "../lib/journal";
 import {
   parseMarkdownToEntries,
+  parseNotesFromMarkdown,
   type JournalEntry,
   type JournalLineKind,
 } from "../lib/lonelog";
@@ -33,6 +34,7 @@ interface UseJournalResult {
   reorderAdventures: (orderedIds: string[]) => void;
   toggleAdventureFavorite: (id: string) => void;
   setAdventureStatus: (id: string, status: AdventureStatus) => void;
+  setAdventureNotes: (id: string, notes: string) => void;
   addEntry: (
     adventureId: string,
     kind: JournalLineKind,
@@ -210,6 +212,15 @@ export function useJournal(): UseJournalResult {
     [activeAdventureId, updateAdventures, setActiveAdventureId],
   );
 
+  // Not a journal event: editing the notes leaves no trace (updatedAt
+  // stays as it was, so the adventure doesn't jump in the list).
+  const setAdventureNotes = useCallback(
+    (id: string, notes: string) => {
+      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, notes } : a)));
+    },
+    [updateAdventures],
+  );
+
   const addEntry = useCallback(
     (adventureId: string, kind: JournalLineKind, text: string, linkedRollId?: string) => {
       const entry: JournalEntry = {
@@ -251,7 +262,8 @@ export function useJournal(): UseJournalResult {
 
   const importAdventure = useCallback(
     (name: string, markdownText: string) => {
-      const adventure = buildAdventure(name);
+      const notes = parseNotesFromMarkdown(markdownText);
+      const adventure = { ...buildAdventure(name), ...(notes ? { notes } : {}) };
       const imported = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
       updateAdventures((prev) => [adventure, ...prev]);
       updateEntries((prev) => [...prev, ...imported]);
@@ -273,6 +285,7 @@ export function useJournal(): UseJournalResult {
     reorderAdventures,
     toggleAdventureFavorite,
     setAdventureStatus,
+    setAdventureNotes,
     addEntry,
     removeEntry,
     restoreEntry,

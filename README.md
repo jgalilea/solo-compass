@@ -65,7 +65,7 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings more than 600 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings nearly 700 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
@@ -73,8 +73,11 @@ Create adventures, split them into sessions, and log actions, rolls, consequence
 
 - Only one adventure is **active** at a time. Rolls go there, and the chip in the header shows which one it is from every screen.
 - Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, and 4dF for Fate/Fudge. This lets you log rolls from your own system without leaving the app.
+- Each adventure has a **notebook** (beside the journal on wide screens, behind the notebook button elsewhere):
+  - **Pinned notes** for what you want at hand: inventory, clues, loose ends. They're edited in place, and `- [ ]` lines become checkboxes you can tick.
+  - **Characters and places**: name them in any entry with Lonelog tags, like `[N:Odile|wary]`, `[PC:Mara|coins 9]` or `[L:The mill|idle]`. They show as chips in the journal and are gathered in the notebook with their current traits and every entry that mentions them. Changes such as `[N:Odile|+captured|-wary]` or `[PC:Mara|coins-6]` update them. Typing `[` in the journal field suggests the ones you already have, or makes a new one from the name you type, so you don't need to know the syntax. You can also add them, log a change or mention them from the notebook.
 - Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
-- **Export** an adventure as Lonelog Markdown, or **import** a `.md` journal. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
+- **Export** an adventure as Lonelog Markdown, or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
 
 <p align="center">
   <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with the one-row composer; and the meaning tables list" width="860">
@@ -156,8 +159,9 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - **Starsmith: Expanded Oracles** by Eric Bright, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - **Loner** v2.3 by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://zeruhur.itch.io/loner-2nd-edition>
 - **Knave** by Ben Milton, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://questingbeast.itch.io/knave>
+- **Cairn** (second edition) by Yochai Gal, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://cairnrpg.com>. English text from its [open source](https://github.com/yochaigal/cairn).
 - This work includes material taken from the **Lazy GM's Resource Document** by Michael E. Shea of SlyFlourish.com, available under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). It also includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC, licensed under the same license.
-- English text of the Ironsworn family and Starsmith via [Datasworn](https://github.com/rsek/datasworn). The Spanish translations are our own (Ironsworn's with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference); those of Loner and Starsmith are shared under CC BY-SA 4.0.
+- English text of the Ironsworn family and Starsmith via [Datasworn](https://github.com/rsek/datasworn). The Spanish translations are our own (Ironsworn's with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0.
 
 The Solo Compass code is released under the [GNU General Public License v3.0](LICENSE). You can use, study, change and share it. If you distribute a modified version, you must make its source code available under the same license.
 

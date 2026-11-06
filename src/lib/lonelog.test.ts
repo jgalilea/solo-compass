@@ -4,6 +4,7 @@ import {
   exportAdventureToMarkdown,
   formatLine,
   parseMarkdownToEntries,
+  parseNotesFromMarkdown,
   type JournalEntry,
   type JournalLineKind,
 } from "./lonelog";
@@ -128,5 +129,38 @@ describe("parseMarkdownToEntries", () => {
     expect(parsed.map((e) => e.timestamp)).toEqual([100, 101, 102]);
     expect(new Set(parsed.map((e) => e.id)).size).toBe(3);
     expect(parsed.every((e) => e.adventureId === "a")).toBe(true);
+  });
+});
+
+describe("pinned notes (front matter)", () => {
+  const notes = "Inventory:\n- [x] rope\n- [ ] lantern\n\n  indented line\nAsk Odile: \"why?\"";
+
+  it("are exported as the front matter's notes field and read back as written", () => {
+    const md = exportAdventureToMarkdown(es, "Mi aventura", [entry("note", "Hola", 1)], notes);
+    expect(md.startsWith("---\nnotes: |\n  Inventory:\n  - [x] rope\n")).toBe(true);
+    expect(parseNotesFromMarkdown(md)).toBe(notes);
+    // The entries don't change because of it.
+    expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
+  });
+
+  it("without notes there's no front matter", () => {
+    const md = exportAdventureToMarkdown(es, "Mi aventura", [], "  \n");
+    expect(md.startsWith("# Mi aventura")).toBe(true);
+    expect(parseNotesFromMarkdown(md)).toBe("");
+  });
+
+  it("reads other YAML styles and ignores the other fields", () => {
+    const md = (front: string) => `---\ntitle: Clearview\n${front}\nruleset: Loner\n---\n\n# Clearview\n`;
+    expect(parseNotesFromMarkdown(md("notes: Inspired by 80s shows"))).toBe("Inspired by 80s shows");
+    expect(parseNotesFromMarkdown(md('notes: "Line \\"one\\""'))).toBe('Line "one"');
+    expect(parseNotesFromMarkdown(md("notes: 'It''s here'"))).toBe("It's here");
+    expect(parseNotesFromMarkdown(md("notes: >\n  folded\n  text\n\n  next"))).toBe("folded text\n\nnext");
+    expect(parseNotesFromMarkdown(md(""))).toBe("");
+  });
+
+  it("a log that opens with a --- rule isn't taken for front matter", () => {
+    const md = "---\n@ I open the door\n---\n=> It creaks\n";
+    expect(parseNotesFromMarkdown(md)).toBe("");
+    expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.kind)).toEqual(["note", "action", "note", "consequence"]);
   });
 });
