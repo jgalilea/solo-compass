@@ -13,10 +13,24 @@ export interface ActionMenuItem {
  * "⋯" button with a dropdown of secondary actions, so a header doesn't
  * fill up with loose icons. Closes on pick, on Esc or on a click
  * outside.
+ *
+ * `compact` is the small version that sits among a journal entry's
+ * buttons; near the bottom of the screen (under the composer) it opens
+ * upwards.
  */
-export function ActionMenu({ label, items }: { label: string; items: ActionMenuItem[] }) {
+export function ActionMenu({ label, items, compact = false }: { label: string; items: ActionMenuItem[]; compact?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [upwards, setUpwards] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  function toggle() {
+    if (!open && rootRef.current) {
+      const menuHeight = items.length * 44 + 16;
+      // Room for the composer and the bottom bar below.
+      setUpwards(rootRef.current.getBoundingClientRect().bottom + menuHeight > window.innerHeight - 160);
+    }
+    setOpen((v) => !v);
+  }
 
   useDismiss(open, rootRef, () => setOpen(false));
 
@@ -24,23 +38,23 @@ export function ActionMenu({ label, items }: { label: string; items: ActionMenuI
     <div ref={rootRef} className="relative shrink-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-label={label}
         title={label}
         aria-haspopup="menu"
         aria-expanded={open}
         className={[
-          "-m-1 rounded-full p-1.5 transition",
-          open ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
+          compact ? "p-2 transition" : "-m-1 rounded-full p-1.5 transition",
+          open ? (compact ? "text-gold" : "bg-ink-700 text-parchment") : "text-parchment-dim hover:text-gold",
         ].join(" ")}
       >
-        <IconMore size={22} />
+        <IconMore size={compact ? 15 : 22} />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="animate-fade-up absolute right-0 top-full z-40 mt-2 w-56 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl"
+          className={`animate-fade-up absolute right-0 z-40 ${upwards ? "bottom-full mb-2" : "top-full mt-2"} w-56 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl`}
         >
           {items.map(({ label: itemLabel, Icon, onSelect, danger }) => (
             <button

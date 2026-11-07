@@ -16,6 +16,7 @@
 
 import { interpolate, type Dictionary } from "./i18n";
 import type { JournalEntry } from "./lonelog";
+import type { CastDescription } from "./journal";
 import { buildEntryBlocks, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
 import {
   buildCast,
@@ -120,14 +121,15 @@ function notesHtml(notes: string): string {
     .join("");
 }
 
-function castHtml(t: Dictionary, members: CastMember[]): string {
+function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<string, CastDescription>): string {
   return `<ul class="cast">${members
     .map((m) => {
       const status = m.kind === "thread" ? threadStatus(m) : null;
       const state = PROGRESS_KINDS.has(m.kind) && m.progress ? [progressText(m.progress)] : m.tags;
+      const description = descriptions[m.key]?.text.trim();
       return `<li${status && status !== "open" ? ' class="closed"' : ""}><small>${escapeHtml(t.notebook.kinds[m.kind])}</small> <b>${escapeHtml(m.name)}</b>${
         state.length ? ` <span>${escapeHtml(state.join(" · "))}</span>` : ""
-      }</li>`;
+      }${description ? `<p class="desc">${escapeHtml(description).replace(/\n/g, "<br>")}</p>` : ""}</li>`;
     })
     .join("")}</ul>`;
 }
@@ -137,6 +139,7 @@ export function exportAdventureToHtml({
   name,
   entries,
   notes = "",
+  descriptions = {},
   theme,
   answerFor = () => undefined,
   exportedAt = new Date(),
@@ -145,6 +148,7 @@ export function exportAdventureToHtml({
   name: string;
   entries: JournalEntry[];
   notes?: string;
+  descriptions?: Record<string, CastDescription>;
   theme: ExportTheme;
   answerFor?: (rollId?: string) => Answer | undefined;
   exportedAt?: Date;
@@ -168,8 +172,8 @@ export function exportAdventureToHtml({
 
   const aside = [
     notes.trim() ? `<section class="box"><h3>${escapeHtml(t.notebook.notesTitle)}</h3>${notesHtml(notes)}</section>` : "",
-    characters.length ? `<section class="box"><h3>${escapeHtml(t.notebook.castTitle)}</h3>${castHtml(t, characters)}</section>` : "",
-    threads.length ? `<section class="box"><h3>${escapeHtml(t.notebook.threadsTitle)}</h3>${castHtml(t, threads)}</section>` : "",
+    characters.length ? `<section class="box"><h3>${escapeHtml(t.notebook.castTitle)}</h3>${castHtml(t, characters, descriptions)}</section>` : "",
+    threads.length ? `<section class="box"><h3>${escapeHtml(t.notebook.threadsTitle)}</h3>${castHtml(t, threads, descriptions)}</section>` : "",
   ].join("");
 
   const colors = EXPORT_COLOR_TOKENS.map((token) => `    ${token}: ${theme.colors[token] ?? "inherit"};`).join("\n");
@@ -228,6 +232,7 @@ aside { display: grid; gap: 1rem; }
 .cast { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
 .cast small { color: var(--color-gold); font-size: .7rem; text-transform: uppercase; }
 .cast span { color: var(--color-parchment-dim); }
+.cast .desc { margin: .15rem 0 0; font-size: .85rem; color: var(--color-parchment-dim); }
 .cast .closed b { text-decoration: line-through; color: var(--color-parchment-dim); }
 @media print { body { background: none; } aside { position: static; } .card, .box { break-inside: avoid; } }
 </style>

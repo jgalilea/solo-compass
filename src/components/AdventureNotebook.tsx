@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
+import type { CastDescription } from "../lib/journal";
 import type { JournalEntry } from "../lib/lonelog";
 import {
   buildCast,
@@ -41,6 +42,8 @@ import {
  *   every entry that mentions it. Nothing is stored apart: adding one,
  *   logging a change, ticking a clock or closing a thread writes a tag
  *   entry in the journal.
+ * - Each of them can have a description: free text kept beside the
+ *   journal like the notes (not a tag, not an entry), by castKey.
  * - Rolling on a list (NPCs, places, open threads) picks one at random
  *   and logs it as a roll, for when the oracle asks "who?" or "which?".
  *
@@ -50,6 +53,8 @@ import {
 export function AdventureNotebook({
   notes,
   onNotesChange,
+  descriptions,
+  onDescriptionChange,
   entries,
   focusKey,
   focusTick,
@@ -60,6 +65,8 @@ export function AdventureNotebook({
 }: {
   notes: string;
   onNotesChange: (notes: string) => void;
+  descriptions: Record<string, CastDescription>;
+  onDescriptionChange: (key: string, text: string) => void;
   /** The adventure's entries, in journal order. */
   entries: JournalEntry[];
   /** Element to open and scroll to (a chip was tapped in the journal). */
@@ -182,6 +189,8 @@ export function AdventureNotebook({
                 onJump={onJump}
                 onMention={onMention}
                 onLog={onLog}
+                description={descriptions[member.key]?.text ?? ""}
+                onDescriptionChange={(text) => onDescriptionChange(member.key, text)}
               />
             ))}
           </ul>
@@ -410,6 +419,8 @@ function CastItem({
   onJump,
   onMention,
   onLog,
+  description,
+  onDescriptionChange,
 }: {
   member: CastMember;
   entries: JournalEntry[];
@@ -419,6 +430,8 @@ function CastItem({
   onJump: (entryId: string) => void;
   onMention: (text: string) => void;
   onLog: (text: string) => void;
+  description: string;
+  onDescriptionChange: (text: string) => void;
 }) {
   const { t } = useLocaleContext();
   // A chip tapped in the journal opens this element (already open if
@@ -533,6 +546,7 @@ function CastItem({
 
       {open && (
         <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">
+          <DescriptionField name={member.name} text={description} onChange={onDescriptionChange} />
           {!isProgress && member.tags.length > 0 && (
             <ul className="flex flex-wrap gap-1">
               {member.tags.map((tag) => (
@@ -631,6 +645,88 @@ function CastItem({
         </div>
       )}
     </li>
+  );
+}
+
+/**
+ * An element's description: read as text, tapped to edit, saved after
+ * a short pause and when leaving the field (like the pinned notes).
+ */
+function DescriptionField({ name, text, onChange }: { name: string; text: string; onChange: (text: string) => void }) {
+  const { t } = useLocaleContext();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(text);
+  const pending = useRef<string | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  });
+
+  function flush() {
+    window.clearTimeout(timer.current);
+    if (pending.current !== null) onChangeRef.current(pending.current);
+    pending.current = null;
+  }
+  useEffect(() => flush, []);
+
+  function write(value: string) {
+    setDraft(value);
+    pending.current = value;
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(flush, 500);
+  }
+
+  function stopEditing() {
+    flush();
+    setEditing(false);
+  }
+
+  const label = interpolate(t.notebook.descriptionLabel, { name });
+  if (editing) {
+    return (
+      <textarea
+        autoFocus
+        value={draft}
+        onChange={(e) => write(e.target.value)}
+        onBlur={stopEditing}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            stopEditing();
+          }
+        }}
+        rows={Math.min(8, Math.max(3, draft.split("\n").length + 1))}
+        placeholder={t.notebook.descriptionPlaceholder}
+        aria-label={label}
+        className={`${INPUT_CLASS} resize-y bg-ink-900/70 py-1.5 text-sm leading-relaxed`}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(text);
+        setEditing(true);
+      }}
+      aria-label={text.trim() ? label : undefined}
+      className={
+        text.trim()
+          ? "-mx-1.5 whitespace-pre-wrap rounded-md px-1.5 py-1 text-left text-sm text-parchment/90 transition hover:bg-ink-700/50"
+          : "flex items-center gap-1 self-start rounded-md py-0.5 text-xs text-parchment-dim/80 transition hover:text-gold"
+      }
+    >
+      {text.trim() ? (
+        text
+      ) : (
+        <>
+          <IconPlus size={12} />
+          {t.notebook.descriptionAdd}
+        </>
+      )}
+    </button>
   );
 }
 

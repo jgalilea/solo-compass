@@ -4,6 +4,7 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
+import type { JournalEntry } from "../lib/lonelog";
 import { buildCast } from "../lib/lonelogTags";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { Modal } from "./Modal";
@@ -15,6 +16,7 @@ import {
   IconClose,
   IconConsequence,
   IconDice,
+  IconInsertBelow,
   IconNote,
   IconOracle,
   IconSend,
@@ -56,6 +58,9 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
  * The kind and the linked roll are kept by the parent, because the
  * desktop panel changes them too: after any roll it switches to
  * "Consequence", which is what usually gets written next.
+ *
+ * While writing below an entry (insertAfter) a line above the field
+ * says where, with a way back to the end.
  */
 export function JournalComposer({
   ref,
@@ -65,6 +70,8 @@ export function JournalComposer({
   mode,
   onModeChange,
   linkedRollId,
+  insertAfter,
+  onInsertDone,
   onLogged,
   onRolled,
 }: {
@@ -77,6 +84,9 @@ export function JournalComposer({
   mode: ComposerMode;
   onModeChange: (mode: ComposerMode) => void;
   linkedRollId: string | undefined;
+  /** "Write below": the entry new ones go after, if not the end. */
+  insertAfter?: JournalEntry;
+  onInsertDone?: () => void;
   /** Something typed by hand was logged. */
   onLogged: () => void;
   /** A tool was rolled (rollId to link the consequence). */
@@ -126,13 +136,15 @@ export function JournalComposer({
 
   // What a consequence will join (see buildEntryBlocks): the latest
   // entry, unless the session was just opened.
-  const lastEntry = useMemo(() => {
+  const latestEntry = useMemo(() => {
     let last: (typeof entries)[number] | undefined;
     for (const e of entries) {
       if (e.adventureId === adventureId && (!last || e.timestamp >= last.timestamp)) last = e;
     }
-    return last && last.kind !== "session" ? last : undefined;
+    return last;
   }, [entries, adventureId]);
+  const previous = insertAfter ?? latestEntry;
+  const lastEntry = previous && previous.kind !== "session" ? previous : undefined;
 
   const cast = useMemo(() => buildCast(entries.filter((e) => e.adventureId === adventureId)), [entries, adventureId]);
   // A session title is a single plain line: no tags there.
@@ -181,7 +193,20 @@ export function JournalComposer({
       className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
       <TagSuggestions state={tags.suggestions} placement="above" />
-      {mode === "consequence" && (
+      {insertAfter ? (
+        <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
+          <IconInsertBelow size={14} className="shrink-0 text-gold" />
+          <span className="shrink-0">{t.journal.insertingAfter}</span>
+          <span className="min-w-0 flex-1 truncate italic text-parchment">«{insertAfter.text}»</span>
+          <button
+            type="button"
+            onClick={onInsertDone}
+            className="-my-1 shrink-0 rounded-md px-1.5 py-1 font-medium text-gold transition hover:bg-gold/10"
+          >
+            {t.journal.insertDone}
+          </button>
+        </p>
+      ) : mode === "consequence" && (
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconConsequence size={14} className="shrink-0 text-gold" />
           {lastEntry ? (

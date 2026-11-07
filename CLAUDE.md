@@ -20,14 +20,20 @@ npm run build    # tsc -b && vite build -> dist/
 npm run preview  # serve the production build
 npm run lint      # oxlint
 npm test          # vitest (unit tests de src/lib)
+npm run test:e2e  # playwright smoke test (builds, then plays the app on phone + desktop)
 npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see Deploy)
 ```
 
 Tests are Vitest unit tests next to the module they cover
 (`src/lib/*.test.ts`): oracle mechanics, Lonelog export/import, journal
-grouping and table data integrity. No component/DOM tests. The deploy
-workflow runs `npm test` before building, so a failing test blocks the
-publish.
+grouping and table data integrity. No component/DOM tests; instead
+one Playwright smoke test (`e2e/smoke.e2e.ts`, config in
+`playwright.config.ts`) plays the main path (oracle, new adventure,
+an entry, a table roll, reload) on a phone and a desktop viewport
+against `vite preview`, failing on any console error. The deploy
+workflow runs `npm test`, builds, then runs the smoke test, so a
+failure in either blocks the publish. Keep its selectors on visible
+text/roles in Spanish (the test runs with `locale: "es-ES"`).
 
 ## Deploy
 
@@ -181,6 +187,11 @@ header below that.
   are tickable checkboxes. Not entries: no date, editing them doesn't
   touch `updatedAt`. In the .md they're the YAML front matter's
   `notes` field (Lonelog §5.1), written and read back by `lonelog.ts`.
+- **Descriptions**: free text per character/place/thread,
+  `descriptions` on `Adventure` keyed by `castKey`, each with its own
+  `updatedAt` (merged one by one). Like the notes, not entries and not
+  tags (Lonelog has no description field); in the .md they're a
+  `descriptions` front matter field, one `[N:Name] text` line each.
 - **Characters and places** are Lonelog tags (`lonelogTags.ts`):
   `[N:…]` NPC, `[PC:…]` PC, `[L:…]` place, `[#N:…]` reference, with
   `+`/`-`/`→`, "HP 6"/"HP-2" stats and `category:` updates. They stay
@@ -209,6 +220,10 @@ header below that.
 Lonelog is the export format, not the on-screen view: entries render with
 an icon per kind, and `buildEntryBlocks` (`src/lib/journalUi.ts`) groups
 a question + its roll + the following consequences into one card.
+The journal's order is the entries' `timestamp` alone: "Write below"
+(an insertion point in `useJournal` that every `addEntry` honours,
+tools included) and moving an entry up/down place it between its
+neighbours (`journalOrder.ts`), nudging later ones when there's no room.
 Oracle answers are colored using the linked history entry, falling back to
 parsing the roll text (`splitRollText`) for imported journals. Character
 and place tags render as chips (`TaggedText`); tapping one opens it in
@@ -304,7 +319,8 @@ splits a roll's text at its last "->").
 
 The game table's dice (`DiceTool`) also take a formula (`rollFormula`
 in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
-advantage/disadvantage buttons) and success pools (`5d6>=5`), written
+advantage/disadvantage buttons), success pools (`5d6>=5`) and
+exploding dice (`3d6!`), written
 so the journal shows them die by die like the buttons' rolls.
 
 ### Journal search and stats

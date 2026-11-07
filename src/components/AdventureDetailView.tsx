@@ -85,10 +85,14 @@ export function AdventureDetailView() {
     toggleAdventureFavorite,
     setAdventureStatus,
     setAdventureNotes,
+    setCastDescription,
     addEntry,
     removeEntry,
     restoreEntry,
     editEntry,
+    moveEntry,
+    insertionPoint,
+    setInsertionPoint,
   } = useJournalContext();
   const { entries: historyEntries } = useHistoryContext();
 
@@ -103,6 +107,19 @@ export function AdventureDetailView() {
     [entries, adventureId],
   );
   const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
+
+  // "Write below" an entry: new entries go after it instead of at the
+  // end (see useJournal). Only while on this screen; at the last entry
+  // it's just the end again.
+  const insertAfter =
+    insertionPoint?.adventureId === adventureId
+      ? adventureEntries.find((e) => e.id === insertionPoint.afterId)
+      : undefined;
+  const inserting = !!insertAfter && insertAfter !== adventureEntries.at(-1);
+  useEffect(() => {
+    if (insertionPoint && !inserting) setInsertionPoint(null);
+  }, [insertionPoint, inserting, setInsertionPoint]);
+  useEffect(() => () => setInsertionPoint(null), [adventureId, setInsertionPoint]);
   const cast = useMemo(() => buildCast(adventureEntries), [adventureEntries]);
 
   // The current session is the last one: always open. The earlier ones
@@ -137,6 +154,9 @@ export function AdventureDetailView() {
   const [composerMode, setComposerMode] = useState<ComposerMode>("note");
   const [linkedRollId, setLinkedRollId] = useState<string | undefined>(undefined);
   const composerInputRef = useRef<HTMLTextAreaElement>(null);
+  // An entry to keep in sight once the journal repaints (moved, or the
+  // latest one written below another): its session is unfolded first.
+  const revealRef = useRef<string | null>(null);
   // Set by the composer: adds text (a "Mention" from the notebook) to what's being written.
   const composerInsertRef = useRef<((text: string) => void) | null>(null);
 
@@ -176,6 +196,22 @@ export function AdventureDetailView() {
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
     highlightedId,
     cast,
+    onMove: (id, direction) => {
+      moveEntry(id, direction);
+      revealRef.current = id;
+    },
+    canMove: (id, direction) => {
+      const index = adventureEntries.findIndex((e) => e.id === id);
+      return direction === "up" ? index > 0 : index < adventureEntries.length - 1;
+    },
+    onInsertBelow: (id) => {
+      const entry = adventureEntries.find((e) => e.id === id);
+      setSelectedEntryId(null);
+      setInsertionPoint({ adventureId, afterId: id });
+      // A consequence written there joins that roll, not the latest one.
+      setLinkedRollId(entry?.kind === "roll" ? entry.linkedRollId : undefined);
+      if (window.matchMedia("(pointer: fine)").matches) composerInputRef.current?.focus();
+    },
     onTagClick: (key) => {
       setCastFocus((prev) => ({ key, tick: prev.tick + 1 }));
       // From xl the notebook is always visible in the left column.
@@ -257,6 +293,27 @@ export function AdventureDetailView() {
     if (delta > 0) window.scrollBy({ top: delta, behavior: "smooth" });
   }, [adventureEntries.length]);
 
+  // Runs again after unfolding, when the entry is finally on screen.
+  useEffect(() => {
+    const id = revealRef.current === INSERTION ? insertionPoint?.afterId : revealRef.current;
+    if (!id) return;
+    const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
+    const group = groups[index];
+    if (!group) {
+      revealRef.current = null;
+      return;
+    }
+    const sessionId = group.sessionEntry?.id;
+    if (index < groups.length - 1 && (!previousExpanded || (sessionId && !expandedSessions.has(sessionId)))) {
+      setPreviousExpanded(true);
+      if (sessionId) setExpandedSessions((prev) => new Set(prev).add(sessionId));
+      return;
+    }
+    revealRef.current = null;
+    const el = document.getElementById(`entry-${id}`) ?? document.getElementById(`session-${id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [groups, previousExpanded, expandedSessions, insertionPoint]);
+
   if (status === "loading") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-8 sm:py-12 md:max-w-3xl">
@@ -301,7 +358,7 @@ export function AdventureDetailView() {
   }
 
   function handleExport() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions);
     const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
@@ -314,6 +371,7 @@ export function AdventureDetailView() {
       name: adventure!.name,
       entries: adventureEntries,
       notes: adventure!.notes,
+      descriptions: adventure!.descriptions,
       theme: await readExportTheme(),
       answerFor: entryActions.answerFor,
     });
@@ -325,13 +383,19 @@ export function AdventureDetailView() {
   // The same Lonelog .md as the export, through the system's share
   // sheet; if it fails (not just cancelled), it's downloaded instead.
   function handleShare() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions);
     shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(handleExport);
+  }
+
+  // Written below an entry: what's kept in sight is that spot, not the end.
+  function keepInSight() {
+    if (inserting) revealRef.current = INSERTION;
+    else scrollPendingRef.current = true;
   }
 
   function handleLogged() {
     if (composerMode !== "consequence") setLinkedRollId(undefined);
-    scrollPendingRef.current = true;
+    keepInSight();
   }
 
   // After a roll (oracle, table or dice) the next thing is usually to
@@ -339,12 +403,17 @@ export function AdventureDetailView() {
   function handleRolled(rollId?: string) {
     setComposerMode("consequence");
     setLinkedRollId(rollId);
-    scrollPendingRef.current = true;
+    keepInSight();
     // No focus on touch: it would open the keyboard over the result that
     // was just logged, right when you want to read it.
     if (window.matchMedia("(pointer: fine)").matches) {
       window.setTimeout(() => composerInputRef.current?.focus(), 0);
     }
+  }
+
+  function moveCurrentSession(direction: "up" | "down") {
+    moveEntry(currentGroup!.sessionEntry!.id, direction);
+    revealRef.current = currentGroup!.sessionEntry!.id;
   }
 
   // Jump to a session from the index (index: position in `groups`; the
@@ -371,6 +440,8 @@ export function AdventureDetailView() {
     <AdventureNotebook
       notes={adventure.notes ?? ""}
       onNotesChange={(notes) => setAdventureNotes(adventure.id, notes)}
+      descriptions={adventure.descriptions ?? {}}
+      onDescriptionChange={(key, text) => setCastDescription(adventure.id, key, text)}
       entries={adventureEntries}
       focusKey={castFocus.key}
       focusTick={castFocus.tick}
@@ -630,6 +701,13 @@ export function AdventureDetailView() {
                           entryActions.onStartEdit(currentGroup.sessionEntry!.id);
                         }}
                         onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
+                        onMoveUp={
+                          adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
+                        }
+                        onMoveDown={
+                          adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
+                        }
+                        onInsertBelow={() => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
                       />
                     </div>
                   </div>
@@ -651,6 +729,13 @@ export function AdventureDetailView() {
           mode={composerMode}
           onModeChange={setComposerMode}
           linkedRollId={linkedRollId}
+          insertAfter={inserting ? insertAfter : undefined}
+          onInsertDone={() => {
+            setInsertionPoint(null);
+            setLinkedRollId(undefined);
+            scrollPendingRef.current = false;
+            listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+          }}
           onLogged={handleLogged}
           onRolled={handleRolled}
         />
@@ -740,6 +825,8 @@ export function AdventureDetailView() {
 }
 
 const SEARCH_LIMIT = 50;
+/** revealRef: the entry being written below, whatever its id is by then. */
+const INSERTION = "insertion";
 
 /** Search inside the adventure, below its header; picking a result jumps to it. */
 function JournalSearchPanel({

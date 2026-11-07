@@ -6,6 +6,7 @@ import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
+import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
@@ -46,6 +47,7 @@ export function OracleView() {
         <header className="flex items-center justify-center gap-2.5">
           <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.oracle.title}</h1>
           <OracleSwitcher />
+          <OracleHelp />
         </header>
 
         <form

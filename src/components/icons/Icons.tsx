@@ -261,3 +261,17 @@ export function IconTimer(props: IconProps) {
 export function IconWebPage(props: IconProps) {
   return <TablerIcon icon={Tabler.IconBrowser} {...props} />;
 }
+// Journal entry order: move up/down, write below.
+export function IconArrowUp(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconArrowUp} {...props} />;
+}
+export function IconArrowDown(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconArrowDown} {...props} />;
+}
+export function IconInsertBelow(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconRowInsertBottom} {...props} />;
+}
+// "How does it work?" next to the oracle.
+export function IconHelp(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
+}

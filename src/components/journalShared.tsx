@@ -10,11 +10,15 @@ import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
 import {
   IconAction,
+  IconArrowDown,
+  IconArrowUp,
   IconChevronRight,
   IconConsequence,
   IconDice,
+  IconInsertBelow,
   IconNote,
   IconPencil,
   IconQuestion,
@@ -59,6 +63,20 @@ export interface EntryActions {
   onTagClick?: (key: string) => void;
   /** The adventure's characters and places, suggested on "[" while editing. */
   cast?: CastMember[];
+  /** Order: one place up/down, and writing below an entry. */
+  onMove?: (id: string, direction: "up" | "down") => void;
+  canMove?: (id: string, direction: "up" | "down") => boolean;
+  onInsertBelow?: (id: string) => void;
+}
+
+/** The "⋯" order items of an entry's buttons, if the screen offers them. */
+function orderProps(actions: EntryActions, id: string): Pick<LineButtonsProps, "onMoveUp" | "onMoveDown" | "onInsertBelow"> {
+  const { onMove, canMove, onInsertBelow } = actions;
+  return {
+    onMoveUp: onMove && canMove?.(id, "up") !== false ? () => onMove(id, "up") : undefined,
+    onMoveDown: onMove && canMove?.(id, "down") !== false ? () => onMove(id, "down") : undefined,
+    onInsertBelow: onInsertBelow && (() => onInsertBelow(id)),
+  };
 }
 
 const KIND_ICON: Record<Exclude<JournalLineKind, "session">, ComponentType<{ size?: number; className?: string }>> = {
@@ -175,6 +193,7 @@ export function SessionGroupRow({
               actions.onStartEdit(session.id);
             }}
             onDelete={() => actions.onDelete(session.id)}
+            {...orderProps(actions, session.id)}
           />
         </div>
       )}
@@ -281,6 +300,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
           actions.onStartEdit(entry.id);
         }}
         onDelete={() => actions.onDelete(entry.id)}
+        {...orderProps(actions, entry.id)}
       />
     </div>
   );
@@ -412,22 +432,32 @@ function RollResult({ result }: { result: string }) {
   );
 }
 
-export function LineButtons({
-  visible,
-  onEdit,
-  onDelete,
-}: {
+interface LineButtonsProps {
   /** Selected with a tap (touch); with a mouse they also show on hover. */
   visible: boolean;
   onEdit: () => void;
   onDelete: () => void;
-}) {
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onInsertBelow?: () => void;
+}
+
+/**
+ * Pencil and trash, plus a "⋯" with the less frequent ones (move up or
+ * down, write below), so the buttons don't cover half the line.
+ */
+export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow }: LineButtonsProps) {
   const { t } = useLocaleContext();
+  const more: ActionMenuItem[] = [];
+  if (onInsertBelow) more.push({ label: t.journal.insertBelow, Icon: IconInsertBelow, onSelect: onInsertBelow });
+  if (onMoveUp) more.push({ label: t.journal.moveUp, Icon: IconArrowUp, onSelect: onMoveUp });
+  if (onMoveDown) more.push({ label: t.journal.moveDown, Icon: IconArrowDown, onSelect: onMoveDown });
   return (
     <div
       onClick={(e) => e.stopPropagation()}
       className={[
-        "absolute right-1 top-1/2 flex -translate-y-1/2 items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
+        // Above the entries that follow, or they'd cover the "⋯" menu.
+        "absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
         visible
           ? "opacity-100"
           : "pointer-events-none opacity-0 pointer-fine:group-hover:pointer-events-auto pointer-fine:group-hover:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100",
@@ -449,6 +479,7 @@ export function LineButtons({
       >
         <IconTrash size={15} />
       </button>
+      {more.length > 0 && <ActionMenu compact label={t.journal.moreEntryActions} items={more} />}
     </div>
   );
 }

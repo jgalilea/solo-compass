@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createAdventure as buildAdventure,
   createJournalEntryId,
@@ -11,6 +11,7 @@ import {
   type AdventureStatus,
 } from "../lib/journal";
 import {
+  parseDescriptionsFromMarkdown,
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
   type JournalEntry,
@@ -18,9 +19,17 @@ import {
 } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { forgetDeletions, recordDeletions } from "../lib/deletions";
+import { placeAfter, placeMoved, type Placement } from "../lib/journalOrder";
 import { useLocaleContext } from "./useLocaleContext";
 
 export type JournalStatus = "loading" | "ready" | "error";
+
+/** Where new entries go instead of the end ("Write below" an entry). */
+export interface InsertionPoint {
+  adventureId: string;
+  /** The entry they're written after; it moves on to each new one. */
+  afterId: string;
+}
 
 interface UseJournalResult {
   status: JournalStatus;
@@ -36,6 +45,7 @@ interface UseJournalResult {
   toggleAdventureFavorite: (id: string) => void;
   setAdventureStatus: (id: string, status: AdventureStatus) => void;
   setAdventureNotes: (id: string, notes: string) => void;
+  setCastDescription: (adventureId: string, key: string, text: string) => void;
   addEntry: (
     adventureId: string,
     kind: JournalLineKind,
@@ -43,6 +53,10 @@ interface UseJournalResult {
     linkedRollId?: string,
   ) => void;
   removeEntry: (id: string) => void;
+  /** One place up or down in the journal (across sessions too). */
+  moveEntry: (id: string, direction: "up" | "down") => void;
+  insertionPoint: InsertionPoint | null;
+  setInsertionPoint: (point: InsertionPoint | null) => void;
   /** Puts a deleted entry (Undo) back, with its original id and date. */
   restoreEntry: (entry: JournalEntry) => void;
   editEntry: (id: string, text: string) => void;
@@ -226,22 +240,77 @@ export function useJournal(): UseJournalResult {
     [updateAdventures],
   );
 
+  // Writing below an entry: every new entry of that adventure (typed,
+  // or from the oracle, tables and dice) goes there, each one after the
+  // previous. Kept in a ref as well as in state because a single event
+  // can log two entries (question + roll), and the second must follow
+  // the first before React repaints.
+  const [insertionPoint, setInsertionPointState] = useState<InsertionPoint | null>(null);
+  const insertionRef = useRef<InsertionPoint | null>(null);
+  const setInsertionPoint = useCallback((point: InsertionPoint | null) => {
+    insertionRef.current = point;
+    setInsertionPointState(point);
+  }, []);
+
+  // Like the notes: no trace, updatedAt stays as it was. An emptied
+  // one is kept (blank, with its date) so a merge doesn't bring it back.
+  const setCastDescription = useCallback(
+    (adventureId: string, key: string, text: string) => {
+      const description = { text: text.replace(/\s+$/, ""), updatedAt: Date.now() };
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === adventureId ? { ...a, descriptions: { ...a.descriptions, [key]: description } } : a)),
+      );
+    },
+    [updateAdventures],
+  );
+
   const addEntry = useCallback(
     (adventureId: string, kind: JournalLineKind, text: string, linkedRollId?: string) => {
+      const now = Date.now();
       const entry: JournalEntry = {
         id: createJournalEntryId(),
         adventureId,
-        timestamp: Date.now(),
+        timestamp: now,
         kind,
         text,
         linkedRollId,
       };
-      updateEntries((prev) => [...prev, entry]);
+      const point = insertionRef.current;
+      if (point?.adventureId === adventureId) {
+        updateEntries((prev) => {
+          const sorted = sortedEntriesOf(prev, adventureId);
+          // Deleted meanwhile: back to the end.
+          if (!sorted.some((e) => e.id === point.afterId)) return [...prev, entry];
+          const placement = placeAfter(sorted, point.afterId, undefined, now);
+          return [...applyPlacement(prev, placement, now), { ...entry, timestamp: placement.timestamp }];
+        });
+        setInsertionPoint({ adventureId, afterId: entry.id });
+      } else {
+        updateEntries((prev) => [...prev, entry]);
+      }
       updateAdventures((prev) =>
-        prev.map((a) => (a.id === adventureId ? { ...a, updatedAt: entry.timestamp } : a)),
+        prev.map((a) => (a.id === adventureId ? { ...a, updatedAt: now } : a)),
       );
     },
-    [updateEntries, updateAdventures],
+    [updateEntries, updateAdventures, setInsertionPoint],
+  );
+
+  // A move counts as an edit (editedAt), so a merged backup keeps the
+  // newer order.
+  const moveEntry = useCallback(
+    (id: string, direction: "up" | "down") => {
+      updateEntries((prev) => {
+        const moving = prev.find((e) => e.id === id);
+        if (!moving) return prev;
+        const placement = placeMoved(sortedEntriesOf(prev, moving.adventureId), id, direction);
+        if (!placement) return prev;
+        const now = Date.now();
+        return applyPlacement(prev, placement, now).map((e) =>
+          e.id === id ? { ...e, timestamp: placement.timestamp, editedAt: now } : e,
+        );
+      });
+    },
+    [updateEntries],
   );
 
   const removeEntry = useCallback(
@@ -270,7 +339,12 @@ export function useJournal(): UseJournalResult {
   const importAdventure = useCallback(
     (name: string, markdownText: string) => {
       const notes = parseNotesFromMarkdown(markdownText);
-      const adventure = { ...buildAdventure(name), ...(notes ? { notes } : {}) };
+      const descriptions = parseDescriptionsFromMarkdown(markdownText);
+      const adventure: Adventure = {
+        ...buildAdventure(name),
+        ...(notes ? { notes } : {}),
+        ...(Object.keys(descriptions).length ? { descriptions } : {}),
+      };
       const imported = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
       updateAdventures((prev) => [adventure, ...prev]);
       updateEntries((prev) => [...prev, ...imported]);
@@ -293,11 +367,28 @@ export function useJournal(): UseJournalResult {
     toggleAdventureFavorite,
     setAdventureStatus,
     setAdventureNotes,
+    setCastDescription,
     addEntry,
     removeEntry,
+    moveEntry,
+    insertionPoint,
+    setInsertionPoint,
     restoreEntry,
     editEntry,
     importAdventure,
     retry,
   };
+}
+
+function sortedEntriesOf(entries: JournalEntry[], adventureId: string): JournalEntry[] {
+  return entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp);
+}
+
+/** The entries nudged forward to make room (see placeAfter). */
+function applyPlacement(entries: JournalEntry[], placement: Placement, now: number): JournalEntry[] {
+  if (placement.nudged.size === 0) return entries;
+  return entries.map((e) => {
+    const timestamp = placement.nudged.get(e.id);
+    return timestamp === undefined ? e : { ...e, timestamp, editedAt: now };
+  });
 }

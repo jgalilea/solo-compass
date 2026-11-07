@@ -57,6 +57,18 @@ describe("mergeData", () => {
     expect(merged.entries[0].text).toBe("edited here");
   });
 
+  it("each description apart: the newer wins, and what's only on one side stays", () => {
+    const merged = mergeData(
+      data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "new", updatedAt: 9 }, "npc:odile": { text: "mine", updatedAt: 1 } } })] }),
+      data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "old", updatedAt: 3 }, "place:mill": { text: "theirs", updatedAt: 2 } } })] }),
+    );
+    expect(merged.adventures[0].descriptions).toEqual({
+      "npc:bram": { text: "new", updatedAt: 9 },
+      "npc:odile": { text: "mine", updatedAt: 1 },
+      "place:mill": { text: "theirs", updatedAt: 2 },
+    });
+  });
+
   it("notes from before they had a date aren't lost to empty ones", () => {
     const merged = mergeData(data({ adventures: [adventure("a")] }), data({ adventures: [adventure("a", { notes: "x" })] }));
     expect(merged.adventures[0].notes).toBe("x");

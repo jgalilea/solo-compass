@@ -8,7 +8,7 @@
  *   all have one): what's only on one side is kept.
  * - When both have the same item, the newer change wins: an entry's
  *   last edit, an adventure's last update (its notes separately, by
- *   their own date), a table's last update. Rolls don't change, so this
+ *   their own date, and each description too), a table's last update. Rolls don't change, so this
  *   device's copy stays.
  * - What either side deleted stays deleted (deletions.ts): an adventure
  *   deleted on one device takes its entries with it.
@@ -50,7 +50,16 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     const theirsAt = theirs.notesUpdatedAt ?? 0;
     // Notes from before they had a date: better some than none.
     const notes = theirsAt > mineAt || (theirsAt === mineAt && !mine.notes && theirs.notes) ? theirs : mine;
-    return { ...base, notes: notes.notes, notesUpdatedAt: notes.notesUpdatedAt };
+    const descriptions = { ...mine.descriptions };
+    for (const [key, d] of Object.entries(theirs.descriptions ?? {})) {
+      if (d.updatedAt > (descriptions[key]?.updatedAt ?? -1)) descriptions[key] = d;
+    }
+    return {
+      ...base,
+      notes: notes.notes,
+      notesUpdatedAt: notes.notesUpdatedAt,
+      ...(Object.keys(descriptions).length ? { descriptions } : {}),
+    };
   }).filter((a) => !gone.has(a.id));
   const kept = new Set(adventures.map((a) => a.id));
 

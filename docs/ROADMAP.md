@@ -5,10 +5,31 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-06 (hilos y relojes, dados con fórmula, tablas que remiten, HTML, sincronización).
+Última revisión: 2026-11-07 (escribir debajo y mover entradas, dados que explotan, ayuda del oráculo, descripciones, prueba de humo).
 
 ## Hecho recientemente
 
+- Escribir debajo y mover entradas (2026-11-07): menú «⋯» de cada
+  entrada (y del título de sesión). «Escribir debajo» fija un punto de
+  inserción (`insertionPoint` en `useJournal`) que usan también el
+  oráculo, las tablas y los dados; avanza con cada entrada y se quita
+  al salir de la aventura. El orden es solo el `timestamp`: se coloca a
+  medio camino entre vecinos y, si no cabe, se empujan 1 ms los
+  siguientes (`journalOrder.ts`). Mover cuenta como edición
+  (`editedAt`) para que la fusión de copias respete el nuevo orden.
+- Descripciones en el cuaderno (2026-11-07, punto 1): texto libre por
+  personaje, lugar o hilo (`descriptions` de `Adventure`, por
+  `castKey`, cada una con su fecha para la fusión). Lonelog no define
+  descripciones; van en un campo `descriptions` de la cabecera YAML,
+  una línea `[N:Nombre] texto` por elemento (la spec admite campos
+  libres y su ejemplo ya pone etiquetas en `pcs:`). Sin alias.
+- Prueba de humo en el navegador (2026-11-07): Playwright
+  (`e2e/smoke.e2e.ts`), móvil y escritorio contra `vite preview`;
+  corre en el despliegue tras los tests unitarios.
+- Dados que explotan (2026-11-07): `3d6!`, también con `kh`/`kl` y en
+  reservas (`5d10!>=8`, cada repetición cuenta como un dado).
+- Ayuda del oráculo (2026-11-07): «?» junto al nombre, guía corta (no
+  las reglas: para eso el enlace al original).
 - Enviar la copia y juntarla al restaurar (2026-11-06, punto 9).
 - Hilos y relojes (2026-11-06, punto 1): `[Thread:]`, `[Clock:]` (y
   `[E:]`), `[Track:]` y `[Timer:]` en el cuaderno ("Hilos y relojes"),
@@ -149,7 +170,7 @@ abierto, cerrado, abandonado), relojes `[Clock:]`/`[E:]`, progresos
 `[Track:]` y cuentas atrás `[Timer:]` con botones −/+, y "tirar en la
 lista". El autocompletado sugiere también hilos y relojes.
 
-**Pendiente:** fichas editables (descripción, alias), salas de
+**Pendiente:** alias de un PNJ o lugar (la descripción ya está), salas de
 mazmorra `[R:]` (add-on), y quizá juntar varios −/+ seguidos de un
 reloj en una sola entrada si en uso real ensucian el diario.
 
@@ -468,5 +489,11 @@ quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/w
 - Escenas y factor de caos (estilo Mythic) como add-on opcional. Una
   tirada de arranque de escena (transcurre / cambia / se interrumpe)
   quedó en pausa el 2026-11-06: de momento se resuelve con tablas.
+- Baraja de cartas (póker/tarot, sacar sin reponer, por aventura) como
+  herramienta de la mesa de juego — aplazada el 2026-11-07. *The
+  Oracle* (jamessral, cartas) sería un oráculo aparte (punto 5).
+- Tablas sin repetición (casilla en las tablas propias, lo que ha
+  salido por aventura, "Barajar") — aplazada el 2026-11-07: no
+  convence de momento. Comparte mecanismo con la baraja.
 - Más idiomas si la comunidad lo pide (el sistema de diccionarios ya lo
   permite).

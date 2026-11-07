@@ -192,6 +192,18 @@ export interface Dictionary {
     dialogTitle: string;
     moreComingSoon: string;
   };
+  /** Short guide to the oracle (not its full rules: those are in the original). */
+  oracleHelp: {
+    button: string;
+    title: string;
+    intro: string;
+    steps: string[];
+    answersHeading: string;
+    answers: { label: string; text: string }[];
+    stuck: string;
+    /** {name}, {author}, {license}. */
+    credit: string;
+  };
   oracle: {
     title: string;
     questionLabel: string;
@@ -433,6 +445,13 @@ export interface Dictionary {
     newSessionPlaceholder: string;
     deleteEntry: string;
     editEntry: string;
+    moreEntryActions: string;
+    insertBelow: string;
+    moveUp: string;
+    moveDown: string;
+    /** Composer line while writing below an entry, before «text». */
+    insertingAfter: string;
+    insertDone: string;
     statsButton: string;
     shareButton: string;
     stats: {
@@ -482,6 +501,11 @@ export interface Dictionary {
     notesPlaceholder: string;
     notesEdit: string;
     notesDone: string;
+    /** A character's, place's or thread's free text (not logged). */
+    descriptionAdd: string;
+    descriptionPlaceholder: string;
+    /** {name} */
+    descriptionLabel: string;
     castTitle: string;
     castEmpty: string;
     /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */

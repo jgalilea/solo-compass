@@ -20,6 +20,8 @@
  */
 
 import { interpolate, type Dictionary } from "./i18n";
+import type { CastDescription } from "./journal";
+import { buildCast, castKey, formatTag, splitTags } from "./lonelogTags";
 
 export type JournalLineKind =
   | "action"
@@ -108,11 +110,30 @@ export function exportAdventureToMarkdown(
   adventureName: string,
   entries: JournalEntry[],
   notes = "",
+  descriptions: Record<string, CastDescription> = {},
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const lines = sorted.map((e) => formatLine(e));
   const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
-  return formatFrontMatter(notes) + blocks.join("\n\n") + "\n";
+  return formatFrontMatter(notes, formatDescriptions(sorted, descriptions)) + blocks.join("\n\n") + "\n";
+}
+
+/**
+ * Lonelog has no place for describing a character or place (only for
+ * its tags), but its front matter takes any field, and its own example
+ * already puts tags there (`pcs:`). So each description is one line of
+ * a `descriptions` field: the element's tag, then the text, its extra
+ * lines indented. Only elements still in the journal (the tag is
+ * written as it is there).
+ */
+function formatDescriptions(sorted: JournalEntry[], descriptions: Record<string, CastDescription>): string {
+  return buildCast(sorted)
+    .map((member) => {
+      const text = descriptions[member.key]?.text.replace(/\r\n?/g, "\n").trim();
+      return text ? `${formatTag(member.kind, member.name)} ${text.replace(/\n/g, "\n  ")}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
 }
 
 /**
@@ -122,14 +143,20 @@ export function exportAdventureToMarkdown(
  * and checkboxes as written, and Markdown viewers (Obsidian too) show
  * it as the file's properties instead of as text.
  */
-export function formatFrontMatter(notes: string): string {
-  const text = notes.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
+export function formatFrontMatter(notes: string, descriptions = ""): string {
+  const fields = [yamlBlock("notes", notes), yamlBlock("descriptions", descriptions)].filter(Boolean);
+  return fields.length ? `---\n${fields.join("\n")}\n---\n\n` : "";
+}
+
+/** `name: |` and the text below it, indented; nothing if it's empty. */
+function yamlBlock(name: string, value: string): string {
+  const text = value.replace(/\r\n?/g, "\n").replace(/\s+$/, "");
   if (!text.trim()) return "";
   const body = text
     .split("\n")
     .map((line) => (line.trim() ? `  ${line}` : ""))
     .join("\n");
-  return `---\nnotes: |\n${body}\n---\n\n`;
+  return `${name}: |\n${body}`;
 }
 
 const FRONT_MATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
@@ -147,19 +174,50 @@ function splitFrontMatter(text: string): { frontMatter: string | null; body: str
   return { frontMatter: match[1], body: clean.slice(match[0].length) };
 }
 
-/**
- * Reads the pinned notes back from a Lonelog .md: the `notes` field of
- * its front matter, as a literal (|) or folded (>) block or on one
- * line, quoted or not. Just enough YAML for that field: other fields
- * (title, ruleset…) are left alone. Empty if there's none.
- */
+/** Reads the pinned notes back from a Lonelog .md: its front matter's `notes`. */
 export function parseNotesFromMarkdown(text: string): string {
+  return readFrontMatterField(text, "notes");
+}
+
+/**
+ * The descriptions back from the front matter (see formatDescriptions),
+ * by castKey. A line that opens with a tag starts one; indented lines
+ * below it continue it.
+ */
+export function parseDescriptionsFromMarkdown(text: string, now = Date.now()): Record<string, CastDescription> {
+  const result: Record<string, CastDescription> = {};
+  let current: { key: string; lines: string[] } | null = null;
+  const save = () => {
+    const value = current?.lines.join("\n").trim();
+    if (current && value) result[current.key] = { text: value, updatedAt: now };
+  };
+  for (const line of readFrontMatterField(text, "descriptions").split("\n")) {
+    const first = splitTags(line)[0];
+    if (first?.tag && !/^\s/.test(line)) {
+      save();
+      current = { key: castKey(first.tag.kind, first.tag.name), lines: [line.slice(first.text.length).trim()] };
+    } else if (current) {
+      current.lines.push(line.replace(/^ {2}/, ""));
+    }
+  }
+  save();
+  return result;
+}
+
+/**
+ * One field of the front matter, as a literal (|) or folded (>) block
+ * or on one line, quoted or not. Just enough YAML for the fields this
+ * app writes: the rest (title, ruleset…) is left alone. Empty if
+ * there's none.
+ */
+function readFrontMatterField(text: string, name: string): string {
   const { frontMatter } = splitFrontMatter(text);
   if (frontMatter === null) return "";
   const lines = frontMatter.split(/\r?\n/);
-  const start = lines.findIndex((l) => /^notes\s*:/i.test(l));
+  const field = new RegExp(`^${name}\\s*:\\s*`, "i");
+  const start = lines.findIndex((l) => field.test(l));
   if (start < 0) return "";
-  const value = lines[start].replace(/^notes\s*:\s*/i, "");
+  const value = lines[start].replace(field, "");
 
   const block = value.match(/^([|>])[+-]?\s*$/);
   if (!block) {

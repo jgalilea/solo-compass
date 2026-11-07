@@ -3,6 +3,7 @@ import { es } from "./i18n/locales/es";
 import {
   exportAdventureToMarkdown,
   formatLine,
+  parseDescriptionsFromMarkdown,
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
   type JournalEntry,
@@ -177,5 +178,36 @@ describe("pinned notes (front matter)", () => {
     const md = "---\n@ I open the door\n---\n=> It creaks\n";
     expect(parseNotesFromMarkdown(md)).toBe("");
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.kind)).toEqual(["note", "action", "note", "consequence"]);
+  });
+});
+
+describe("descriptions (front matter)", () => {
+  const entries = [entry("note", "Llego a la [L:Posada del cruce]. [N:Bram|tuerto] me mira.", 1), entry("note", "[N:Odile] calla.", 2)];
+  const descriptions = {
+    "npc:bram": { text: "Posadero. Debe dinero al gremio.\nNo se fía de nadie.", updatedAt: 5 },
+    "place:posada del cruce": { text: "Dos plantas, establo detrás.", updatedAt: 5 },
+    "npc:odile": { text: "  ", updatedAt: 5 },
+    "npc:gone": { text: "Not in the journal any more", updatedAt: 5 },
+  };
+
+  it("are a descriptions field after the notes, one tag per element, and read back by key", () => {
+    const md = exportAdventureToMarkdown(es, "Aventura", entries, "Notas", descriptions);
+    expect(md).toContain(
+      "notes: |\n  Notas\ndescriptions: |\n  [L:Posada del cruce] Dos plantas, establo detrás.\n  [N:Bram] Posadero. Debe dinero al gremio.\n    No se fía de nadie.\n---",
+    );
+    expect(parseDescriptionsFromMarkdown(md, 9)).toEqual({
+      "npc:bram": { text: "Posadero. Debe dinero al gremio.\nNo se fía de nadie.", updatedAt: 9 },
+      "place:posada del cruce": { text: "Dos plantas, establo detrás.", updatedAt: 9 },
+    });
+    expect(parseNotesFromMarkdown(md)).toBe("Notas");
+    expect(parseMarkdownToEntries(md, "a", 0)).toHaveLength(2);
+  });
+
+  it("work without notes, and a hand-written tag with details is read too", () => {
+    const md = exportAdventureToMarkdown(es, "Aventura", entries, "", descriptions);
+    expect(md.startsWith("---\ndescriptions: |\n")).toBe(true);
+    expect(parseNotesFromMarkdown(md)).toBe("");
+    const handWritten = "---\ndescriptions: |\n  [N:Jonah|friendly] Old sailor\n---\n\n# X\n";
+    expect(parseDescriptionsFromMarkdown(handWritten, 1)).toEqual({ "npc:jonah": { text: "Old sailor", updatedAt: 1 } });
   });
 });

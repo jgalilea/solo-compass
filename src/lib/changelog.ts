@@ -18,6 +18,33 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-07",
+    text: {
+      es: {
+        title: "Capítulo XIII · Lo que se quedó en el tintero",
+        intro: "Mara repasa el diario a la luz de la vela y se da cuenta de que se saltó algo en el molino.",
+        items: [
+          "Escribe debajo de cualquier entrada: en su menú «⋯», «Escribir debajo», y lo siguiente que apuntes (también tiradas del oráculo, tablas y dados) va ahí, una tras otra. «Volver al final» te devuelve al presente.",
+          "Sube o baja una entrada desde el mismo menú; pasando por encima del título de una sesión cambia de sesión.",
+          "Dados que explotan: 3d6! vuelve a tirar el dado que saca su máximo y lo suma. En una reserva (5d10!>=8), cada dado extra cuenta como uno más.",
+          "Junto al nombre del oráculo, un «?» explica en pocas líneas cómo preguntarle y qué significa cada respuesta.",
+          "En el cuaderno, cada personaje, lugar o hilo puede llevar una descripción: cómo es, quién es, lo que sabes. No se apunta en el diario, y viaja en la copia, en el .md y en la página web.",
+        ],
+      },
+      en: {
+        title: "Chapter XIII · What was left unwritten",
+        intro: "Reading her journal by candlelight, Mara realises she skipped something at the mill.",
+        items: [
+          "Write below any entry: in its “⋯” menu, “Write below”, and whatever you log next (oracle, table and dice rolls too) goes there, one after another. “Back to the end” returns you to the present.",
+          "Move an entry up or down from the same menu; stepping past a session's title moves it into that session.",
+          "Exploding dice: 3d6! rolls again any die that shows its highest face and adds it. In a pool (5d10!>=8), each extra die counts as one more.",
+          "Next to the oracle's name, a “?” explains in a few lines how to ask it and what each answer means.",
+          "In the notebook, each character, place or thread can have a description: what they're like, who they are, what you know. It isn't logged in the journal, and it travels in the backup, the .md and the web page.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-06",
     text: {
       es: {

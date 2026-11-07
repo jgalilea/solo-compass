@@ -28,13 +28,26 @@ describe("rollFormula", () => {
     expect(rollFormula("5d6>=5", dice(6, 5, 3, 2, 1)(6))).toBe("5d6>=5 -> 2 (6✓ 5✓ 3 2 1)");
   });
 
+  it("explodes a die on its highest face", () => {
+    expect(rollFormula("3d6!", dice(6, 2, 4, 1)(6))).toBe("3d6! -> 13 (6!+2+4+1)");
+    expect(rollFormula("d6!", dice(6, 6, 3)(6))).toBe("d6! -> 15 (6!+6!+3)");
+    // Nothing exploded: written like any single die.
+    expect(rollFormula("d6!", dice(4)(6))).toBe("d6! -> 4");
+    // Savage Worlds-style keep: the exploded die counts as its total.
+    expect(rollFormula("2d6!kh1", dice(6, 1, 3)(6))).toBe("2d6!kh1 -> 7 (6!+1, 3✗)");
+  });
+
+  it("counts each reroll of an exploding pool as one more die", () => {
+    expect(rollFormula("3d10!>=8", dice(10, 9, 2, 5)(10))).toBe("3d10!>=8 -> 2 (10!✓ 9✓ 2 5)");
+  });
+
   it("rolls Fudge dice", () => {
     // Faces 1, 2, 3 of a dF are −, 0, +.
     expect(rollFormula("4dF", dice(3, 2, 3, 1)(3))).toBe("4dF -> +1 (+ 0 + −)");
   });
 
   it("returns null for what it can't read", () => {
-    for (const bad of ["", "hola", "2d", "d1", "3", "2d6 3", "4d6kh5", "2d6+1d4>=3", "1000d6", "2d6kh1>=4"]) {
+    for (const bad of ["", "hola", "2d", "d1", "3", "2d6 3", "4d6kh5", "2d6+1d4>=3", "1000d6", "2d6kh1>=4", "4dF!"]) {
       expect(rollFormula(bad), bad).toBeNull();
     }
   });

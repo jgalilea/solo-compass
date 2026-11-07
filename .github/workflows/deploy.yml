@@ -26,6 +26,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # Smoke test in a real browser against the build (playwright.config.ts).
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          CI: true
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

@@ -26,6 +26,18 @@ export interface Adventure {
   notes?: string;
   /** Last edit of the notes (ms): the newer notes win on a merge. */
   notesUpdatedAt?: number;
+  /**
+   * Free text about a character, place or thread, by its castKey: a
+   * description, not a state, so it isn't a tag in the journal (editing
+   * it leaves no trace). In the .md, the front matter's `descriptions`.
+   */
+  descriptions?: Record<string, CastDescription>;
+}
+
+/** Each one carries its date: the newer wins on a merge, one by one. */
+export interface CastDescription {
+  text: string;
+  updatedAt: number;
 }
 
 // Same as the history: no natural size cap, so it goes in IndexedDB
