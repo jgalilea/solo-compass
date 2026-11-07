@@ -504,27 +504,36 @@ export function AdventureDetailView() {
             </div>
           ) : (
             <>
-              <h1 className="min-w-0 truncate font-display text-2xl text-parchment sm:text-3xl">
+              {/* A long name wraps (up to three lines on phones, two above)
+                  rather than being cut by the buttons beside it. */}
+              <h1 className="line-clamp-3 min-w-0 font-display text-lg leading-snug break-words text-parchment sm:line-clamp-2 sm:text-2xl sm:leading-tight lg:text-3xl">
                 {adventure.favorite && <IconStar size={16} filled className="mr-1.5 inline align-baseline text-gold" />}
                 {adventure.name}
               </h1>
+              {/* On phones both are just their mark, to leave the name room:
+                  the gold dot (active) or the play icon (set active). */}
               {isActive ? (
                 <span
+                  role="img"
+                  aria-label={t.journal.activeLabel}
                   title={interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium text-gold"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 p-2 text-xs font-medium text-gold sm:px-2.5 sm:py-1"
                 >
                   <span className="size-1.5 rounded-full bg-gold" />
-                  {t.journal.activeLabel}
+                  <span aria-hidden className="hidden sm:inline">
+                    {t.journal.activeLabel}
+                  </span>
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => setActiveAdventureId(adventure.id)}
+                  aria-label={t.journal.setActive}
                   title={t.journal.activateHint}
-                  className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+                  className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border p-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold sm:px-2.5 sm:py-1"
                 >
                   <IconPlay size={13} />
-                  {t.journal.setActive}
+                  <span className="hidden sm:inline">{t.journal.setActive}</span>
                 </button>
               )}
               {isArchived && (
