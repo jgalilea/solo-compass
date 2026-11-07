@@ -8,7 +8,7 @@ import {
   IconDownload,
   IconShare,
   IconExternalLink,
-  IconHeart,
+  IconCoffee,
   IconNote,
   IconQuestion,
   IconSession,
@@ -585,7 +585,7 @@ function SupportCard() {
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
       <p className="flex items-center gap-1.5 font-display text-base text-parchment">
-        <IconHeart size={18} className="shrink-0 text-gold" />
+        <IconCoffee size={18} className="shrink-0 text-gold" />
         {t.support.title}
       </p>
       <p className="mt-1 text-sm text-parchment-dim">{t.support.description}</p>

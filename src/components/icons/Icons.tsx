@@ -119,8 +119,8 @@ export function IconCheckCircle(props: IconProps) {
 export function IconInfo(props: IconProps) {
   return <TablerIcon icon={Tabler.IconInfoCircle} {...props} />;
 }
-export function IconHeart(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHeart} {...props} />;
+export function IconCoffee(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconCoffee} {...props} />;
 }
 export function IconExternalLink(props: IconProps) {
   return <TablerIcon icon={Tabler.IconExternalLink} {...props} />;

@@ -29,6 +29,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Dados que explotan: 3d6! vuelve a tirar el dado que saca su máximo y lo suma. En una reserva (5d10!>=8), cada dado extra cuenta como uno más.",
           "Junto al nombre del oráculo, un «?» explica en pocas líneas cómo preguntarle y qué significa cada respuesta. En los dados de la mesa de juego, otro «?» cuenta qué tira cada botón y cómo se escriben las fórmulas, con un ejemplo de cada una.",
           "En el cuaderno, cada personaje, lugar o hilo puede llevar una descripción: cómo es, quién es, lo que sabes. No se apunta en el diario, y viaja en la copia, en el .md y en la página web.",
+          "Arriba, junto a los ajustes, una taza de café lleva a Ko-fi por si quieres invitar al autor. También en el móvil, sin más ruido que el icono.",
         ],
       },
       en: {
@@ -40,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Exploding dice: 3d6! rolls again any die that shows its highest face and adds it. In a pool (5d10!>=8), each extra die counts as one more.",
           "Next to the oracle's name, a “?” explains in a few lines how to ask it and what each answer means. In the game table's dice, another “?” tells what each button rolls and how to write formulas, with an example of each.",
           "In the notebook, each character, place or thread can have a description: what they're like, who they are, what you know. It isn't logged in the journal, and it travels in the backup, the .md and the web page.",
+          "Up top, beside the settings, a coffee cup leads to Ko-fi in case you'd like to buy the author one. On phones too, with nothing more than the icon.",
         ],
       },
     },

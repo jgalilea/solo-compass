@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { IconCompass, IconHeart, IconJournal, IconOracle, IconTable } from "./icons/Icons";
+import { IconCoffee, IconCompass, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
@@ -96,8 +96,9 @@ export function Layout() {
         <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[1fr_auto_1fr] lg:gap-6 2xl:max-w-[110rem]">
           <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
-            {/* On the narrowest phones only the logo, so the chip fits. */}
-            <span className="hidden font-display text-xl tracking-wide min-[380px]:inline">
+            {/* On phones only the logo, so the adventure chip has room
+                beside the Ko-fi and Settings icons. */}
+            <span className="hidden font-display text-xl tracking-wide sm:inline">
               {t.header.appName}
             </span>
           </div>
@@ -123,17 +124,18 @@ export function Layout() {
           </nav>
           <div className="flex min-w-0 items-center justify-end gap-3 lg:gap-4">
             <ActiveAdventureChip />
-            {/* Desktop only, where the header has room to spare; on
-                phone/tablet support lives in Settings → About. */}
+            {/* Ko-fi, as a quiet icon beside Settings and in the same
+                style, at every size: in sight on phones too without
+                taking room or asking for anything. */}
             <a
               href={KOFI_URL}
               target="_blank"
               rel="noreferrer"
+              aria-label={t.support.button}
               title={t.support.button}
-              className="hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-parchment-dim transition hover:bg-ink-800/60 hover:text-gold lg:flex"
+              className="-m-1.5 shrink-0 p-1.5 text-parchment-dim transition hover:text-gold"
             >
-              <IconHeart size={17} />
-              {t.support.headerLink}
+              <IconCoffee size={22} />
             </a>
             <SettingsDialog />
           </div>

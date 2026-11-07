@@ -113,9 +113,8 @@ export const es: Dictionary = {
   support: {
     title: "Apoya el proyecto",
     description:
-      "Solo Compass es gratis y lo seguirá siendo. Si te acompaña en tus partidas, puedes invitar a una ronda en la taberna.",
-    button: "Apoyar en Ko-fi",
-    headerLink: "Apoyar",
+      "Solo Compass es gratis y lo seguirá siendo. Si te acompaña en tus partidas, puedes invitarme a un café (o a una ronda en la taberna).",
+    button: "Invítame a un café en Ko-fi",
   },
   themeSwitcher: {
     triggerLabel: "Cambiar tema visual",
