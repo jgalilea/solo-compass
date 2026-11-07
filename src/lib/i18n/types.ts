@@ -204,6 +204,18 @@ export interface Dictionary {
     /** {name}, {author}, {license}. */
     credit: string;
   };
+  diceHelp: {
+    button: string;
+    title: string;
+    intro: string;
+    buttonsHeading: string;
+    buttons: { label: string; text: string }[];
+    formulasHeading: string;
+    /** `example` is the line it leaves in the journal. */
+    formulas: { formula: string; text: string; example: string }[];
+    reading: string;
+    tip: string;
+  };
   oracle: {
     title: string;
     questionLabel: string;

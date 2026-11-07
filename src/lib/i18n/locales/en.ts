@@ -203,6 +203,48 @@ export const en: Dictionary = {
     stuck: "Drawing a blank? Roll the quick inspiration (Action + Theme) in Tables and make sense of it.",
     credit: "{name} is by {author} ({license}). Its full rules are in the original.",
   },
+  diceHelp: {
+    button: "How the dice work",
+    title: "How to use the dice",
+    intro:
+      "For the rolls of your own system. Every die or formula you roll is added to the list; “Log it” takes them to the journal together as one entry, with whatever you wrote in “What's the roll for?” in front.",
+    buttonsHeading: "The buttons",
+    buttons: [
+      { label: "d4 … d20", text: "one die of that size; d% is a d100." },
+      { label: "4dF", text: "four Fudge or Fate dice (−, 0, +), added up." },
+      { label: "Advantage · Disadvantage", text: "two d20 and you keep the higher or the lower." },
+    ],
+    formulasHeading: "Formulas",
+    formulas: [
+      {
+        formula: "2d6+3",
+        text: "Adds dice and numbers. You can mix different dice and subtract: 1d8+1d6-1.",
+        example: "2d6+3 -> 9 (4+2 + 3)",
+      },
+      {
+        formula: "4d6kh3",
+        text: "Roll 4 and keep the 3 highest (kh); kl keeps the lowest. The ones that don't count get ✗.",
+        example: "4d6kh3 -> 14 (6+5+3, 2✗)",
+      },
+      {
+        formula: "5d6>=5",
+        text: "Dice pool: instead of adding them up, count the dice that reach 5 (✓). >, <= and < work too.",
+        example: "5d6>=5 -> 2 (6✓ 5✓ 3 2 1)",
+      },
+      {
+        formula: "3d6!",
+        text: "Exploding dice: a die that shows its highest face is rolled again and added (!). It combines with the above: 3d10!>=8 counts each extra die as one more.",
+        example: "3d6! -> 13 (6!+2+4+1)",
+      },
+      {
+        formula: "4dF · d%",
+        text: "Fudge dice and the d100 work in a formula too: 4dF+1.",
+        example: "4dF+1 -> +2 (+ 0 + − + 1)",
+      },
+    ],
+    reading: "In the journal, the result comes after the arrow and each die is in brackets.",
+    tip: "Capitals and spaces don't matter: “2D6 + 3” works too.",
+  },
   oracle: {
     title: "Oracle",
     questionLabel: "Question for the oracle",

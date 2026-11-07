@@ -321,7 +321,10 @@ The game table's dice (`DiceTool`) also take a formula (`rollFormula`
 in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
 advantage/disadvantage buttons), success pools (`5d6>=5`) and
 exploding dice (`3d6!`), written
-so the journal shows them die by die like the buttons' rolls.
+so the journal shows them die by die like the buttons' rolls. Its "?" (`DiceHelp`, on the shared
+`HelpDialog` shell like `OracleHelp`) explains the buttons and each
+formula with the line it leaves; a test checks every example there
+is one `rollFormula` can write.
 
 ### Journal search and stats
 

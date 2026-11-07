@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rollFormula } from "./dice";
+import { DICTIONARIES, LOCALES } from "./i18n";
 
 /** A die roll that always lands on the given faces, in order (1-based). */
 function dice(...faces: number[]) {
@@ -50,5 +51,20 @@ describe("rollFormula", () => {
     for (const bad of ["", "hola", "2d", "d1", "3", "2d6 3", "4d6kh5", "2d6+1d4>=3", "1000d6", "2d6kh1>=4", "4dF!"]) {
       expect(rollFormula(bad), bad).toBeNull();
     }
+  });
+});
+
+describe("dice help", () => {
+  it("only shows examples rollFormula can write", () => {
+    for (const locale of LOCALES) {
+      for (const { example } of DICTIONARIES[locale].diceHelp.formulas) {
+        const formula = example.split(" -> ")[0];
+        expect(rollFormula(formula)?.startsWith(`${formula} -> `), example).toBe(true);
+      }
+    }
+  });
+
+  it("writes a Fudge formula with a modifier as its example says", () => {
+    expect(rollFormula("4dF+1", dice(3, 2, 3, 1)(3))).toBe("4dF+1 -> +2 (+ 0 + − + 1)");
   });
 });

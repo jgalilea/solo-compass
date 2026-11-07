@@ -10,6 +10,7 @@ import { useMeaningTables } from "../hooks/useMeaningTables";
 import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
+import { DiceHelp } from "./DiceHelp";
 import { DiceRoller } from "./DiceRoller";
 import { rollFormula } from "../lib/dice";
 import { LikelihoodPicker } from "./LikelihoodPicker";
@@ -195,7 +196,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
       />
       <DiceRoller onRoll={add} ariaLabel={t.journal.diceRollerLabel} />
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {[
           { label: t.journal.diceAdvantage, formula: "2d20kh1" },
           { label: t.journal.diceDisadvantage, formula: "2d20kl1" },
@@ -210,6 +211,9 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
             {d.label}
           </button>
         ))}
+        <span className="ml-auto flex">
+          <DiceHelp />
+        </span>
       </div>
       <form
         className="flex gap-1.5"

@@ -203,6 +203,48 @@ export const es: Dictionary = {
     stuck: "¿No se te ocurre nada? Tira la inspiración rápida (Acción + Tema) en Tablas y búscale el sentido.",
     credit: "{name} es de {author} ({license}). Sus reglas completas, en el original.",
   },
+  diceHelp: {
+    button: "Cómo funcionan los dados",
+    title: "Cómo se usan los dados",
+    intro:
+      "Para las tiradas de tu propio sistema. Cada dado o fórmula que tires se añade a la lista; «Apuntar» los lleva juntos al diario en una sola entrada, con lo que escribas en «¿Para qué tiras?» delante.",
+    buttonsHeading: "Los botones",
+    buttons: [
+      { label: "d4 … d20", text: "un dado de ese tamaño; d% es un d100." },
+      { label: "4dF", text: "cuatro dados Fudge o Fate (−, 0, +), sumados." },
+      { label: "Ventaja · Desventaja", text: "dos d20 y te quedas con el mayor o el menor." },
+    ],
+    formulasHeading: "Las fórmulas",
+    formulas: [
+      {
+        formula: "2d6+3",
+        text: "Suma dados y números. Puedes mezclar dados distintos y restar: 1d8+1d6-1.",
+        example: "2d6+3 -> 9 (4+2 + 3)",
+      },
+      {
+        formula: "4d6kh3",
+        text: "Tira 4 y quédate con los 3 mayores (kh); kl se queda con los menores. Los que no cuentan llevan ✗.",
+        example: "4d6kh3 -> 14 (6+5+3, 2✗)",
+      },
+      {
+        formula: "5d6>=5",
+        text: "Reserva de dados: no se suman, se cuentan los que llegan a 5 (✓). También valen >, <= y <.",
+        example: "5d6>=5 -> 2 (6✓ 5✓ 3 2 1)",
+      },
+      {
+        formula: "3d6!",
+        text: "Dados que explotan: el que saca su cara más alta se vuelve a tirar y se suma (!). Se combina con lo anterior: 3d10!>=8 cuenta cada dado extra como uno más.",
+        example: "3d6! -> 13 (6!+2+4+1)",
+      },
+      {
+        formula: "4dF · d%",
+        text: "Los dados Fudge y el d100 también se pueden usar en una fórmula: 4dF+1.",
+        example: "4dF+1 -> +2 (+ 0 + − + 1)",
+      },
+    ],
+    reading: "En el diario, tras la flecha va el resultado y, entre paréntesis, cada dado.",
+    tip: "Da igual escribir mayúsculas o espacios: «2D6 + 3» también vale.",
+  },
   oracle: {
     title: "Oráculo",
     questionLabel: "Pregunta para el oráculo",
