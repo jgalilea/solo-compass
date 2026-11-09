@@ -263,15 +263,29 @@ parsing the roll text (`splitRollText`) for imported journals. Character
 and place tags render as chips (`TaggedText`); tapping one opens it in
 the notebook.
 
-### Oracles (`src/lib/oracles.ts`)
+### Oracles (`src/lib/oracles.ts`, `oracleEngines.ts`)
 
-Oracle selection is already a registry (id, name, author, license, link)
-even though only one oracle (**Recluse**, by Graven Utterance, CC BY 4.0) is
-implemented today. Its roll mechanic (white vs. black die, "pero"/"y"
-qualifiers on low/high ties, contradiction on an exact tie, extra dice for
-skewed likelihood) lives in `src/lib/oracle.ts` and is called directly
-(via `usePlayActions`) rather than dispatched by oracle id — when a second
-oracle is added, that dispatch is the thing to introduce.
+Four yes/no oracles, picked from the name next to the Oracle title
+(`OracleSwitcher`, saved per device): **Recluse** (the default, the
+author's favourite; mechanic in `oracle.ts`), **Loner**, **Ironsworn**'s
+"Ask the Oracle" and **One Page Solo Engine** v1.6. `oracles.ts` holds
+each one's credit and verbatim attribution (all listed in Settings →
+About); `oracleEngines.ts` their mechanics, as engines that declare the
+dice for a likelihood and how to read the kept ones. Rolling throws
+those dice (`rollOracleWith`, called by `usePlayActions`); the help's
+odds table (`OracleHelp`) comes from `oracleOdds`, which goes through
+every possible throw, so the percentages always match (tested against
+the books' numbers). Loner and OPSE offer three likelihoods
+(`oracleLevels`; the picker shows only those, `fitLikelihood` maps the
+rest to even). A roll keeps its `oracle` and every die (`dice`; old
+Recluse rolls only have `white`/`black`, read through `oracleDice`).
+Loner's Twist Counter is derived from the history
+(`lonerTwistCounter`), never stored apart; the third double rolls its
+two twist tables, preloaded while Loner is selected. In the journal an
+oracle roll is "Name — dice -> answer" (`formatOracleDice`/
+`formatOracleResult`): the "—" is how `splitRollText` tells it from a
+table roll. Licences checked: never add an NC one (Mythic, Juice) or
+one with no published licence (MUNE).
 
 ### Tables (`src/lib/tables.ts`, `tableGames.ts`, `customTables.ts`)
 

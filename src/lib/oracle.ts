@@ -16,6 +16,7 @@
  */
 
 import { makeId } from "./ids";
+import type { OracleDiceGroup, OracleId } from "./oracleEngines";
 
 export type Likelihood =
   | "muy-improbable"
@@ -40,11 +41,36 @@ export interface OracleRoll {
   timestamp: number;
   question: string;
   likelihood: Likelihood;
-  white: DiceGroup;
-  black: DiceGroup;
+  /** Which oracle answered (oracleEngines.ts); none: Recluse, saved before there were others. */
+  oracle?: OracleId;
+  /** Recluse's dice (also kept on new Recluse rolls, for older copies of the app). */
+  white?: DiceGroup;
+  black?: DiceGroup;
+  /** Every die thrown, for any oracle: see `oracleDice`. */
+  dice?: OracleDiceGroup[];
   answer: Answer;
   qualifier: Qualifier;
+  /** Loner: the dice tied. Ironsworn: a match (extreme result or twist). */
+  special?: "double" | "match";
+  /**
+   * Loner: the Twist Counter after this roll, whether it brought a
+   * twist and, if so, what its two tables said ("A third party · Appears").
+   */
+  twist?: { counter: number; happened: boolean; result?: string };
   favorite: boolean;
+}
+
+/** A roll's dice by role, also for Recluse rolls saved with only white/black. */
+export function oracleDice(roll: OracleRoll): OracleDiceGroup[] {
+  if (roll.dice) return roll.dice;
+  return [roll.white, roll.black]
+    .filter((g): g is DiceGroup => !!g)
+    .map((g) => ({ role: g.color === "blanco" ? "white" : "black", sides: 6, rolls: g.rolls, kept: g.kept }));
+}
+
+/** The oracle that answered a roll. */
+export function rollOracleId(roll: OracleRoll): OracleId {
+  return roll.oracle ?? "recluse";
 }
 
 export const LIKELIHOOD_DICE: Record<
@@ -74,7 +100,7 @@ export function judgeDice(white: number, black: number): { answer: Answer; quali
 export function rollOracle(
   question: string,
   likelihood: Likelihood,
-): OracleRoll {
+): OracleRoll & { white: DiceGroup; black: DiceGroup } {
   const config = LIKELIHOOD_DICE[likelihood];
 
   const whiteRolls = Array.from({ length: config.white }, rollDie);

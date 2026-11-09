@@ -1,9 +1,11 @@
-import { useCallback } from "react";
-import { rollOracle, type Likelihood, type OracleRoll } from "../lib/oracle";
+import { useCallback, useEffect } from "react";
+import type { Likelihood, OracleRoll } from "../lib/oracle";
+import { lonerTwistCounter, rollOracleWith } from "../lib/oracleEngines";
 import { resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
 import type { TableRollEntry } from "../lib/history";
 import { getOracle } from "../lib/oracles";
-import { formatAnswer } from "../lib/i18n/answerText";
+import { formatOracleDice, formatOracleResult } from "../lib/i18n/answerText";
+import { gameState, loadGame, TABLE_GAMES, toMeaningTables } from "../lib/tableGames";
 import { useHistoryContext } from "./useHistoryContext";
 import { useJournalContext } from "./useJournalContext";
 import { useLocaleContext } from "./useLocaleContext";
@@ -33,25 +35,16 @@ export interface Inspiration {
  * screens record exactly the same thing.
  */
 export function usePlayActions() {
-  const { addEntry: addHistoryEntry } = useHistoryContext();
+  const { entries: historyEntries, addEntry: addHistoryEntry } = useHistoryContext();
   const { activeAdventureId, addEntry: addJournalEntry } = useJournalContext();
   const { oracleId } = useOracleContext();
-  const { t } = useLocaleContext();
+  const { t, locale } = useLocaleContext();
 
-  const askOracle = useCallback(
-    (question: string, likelihood: Likelihood, adventureId = activeAdventureId): OracleRoll => {
-      const roll = rollOracle(question, likelihood);
-      addHistoryEntry(roll);
-      if (adventureId) {
-        if (roll.question) addJournalEntry(adventureId, "question", roll.question, roll.id);
-        const oracleName = getOracle(oracleId).name;
-        const diceText = `${oracleName} — ${t.die.color.blanco} ${roll.white.kept} / ${t.die.color.negro} ${roll.black.kept} -> ${formatAnswer(t, roll)}`;
-        addJournalEntry(adventureId, "roll", diceText, roll.id);
-      }
-      return roll;
-    },
-    [activeAdventureId, addHistoryEntry, addJournalEntry, oracleId, t],
-  );
+  // Loner's twist rolls on its own two tables: they're loaded ahead, so
+  // the twist comes with the roll that brings it.
+  useEffect(() => {
+    if (oracleId === "loner") loadGame("loner").catch(() => undefined);
+  }, [oracleId]);
 
   // A table roll as a history entry (not saved yet).
   const buildTableRoll = useCallback(
@@ -71,6 +64,31 @@ export function usePlayActions() {
       };
     },
     [t],
+  );
+
+  const askOracle = useCallback(
+    (question: string, likelihood: Likelihood, adventureId = activeAdventureId): OracleRoll => {
+      const roll = rollOracleWith(oracleId, question, likelihood, lonerTwistCounter(historyEntries));
+      if (roll.twist?.happened) {
+        // Each table roll goes to the history too, like any other.
+        const data = gameState("loner").data;
+        const tables = data ? toMeaningTables(TABLE_GAMES.find((g) => g.id === "loner")!, data, t, locale) : [];
+        const twistRolls = ["loner-twist-subject", "loner-twist-action"]
+          .map((id) => tables.find((table) => table.id === id))
+          .filter((table) => table !== undefined)
+          .map((table) => buildTableRoll(table));
+        for (const twistRoll of twistRolls) addHistoryEntry(twistRoll);
+        if (twistRolls.length) roll.twist.result = twistRolls.map((r) => r.resultText).join(" · ");
+      }
+      addHistoryEntry(roll);
+      if (adventureId) {
+        if (roll.question) addJournalEntry(adventureId, "question", roll.question, roll.id);
+        const diceText = `${getOracle(oracleId).name} — ${formatOracleDice(t, roll)} -> ${formatOracleResult(t, roll)}`;
+        addJournalEntry(adventureId, "roll", diceText, roll.id);
+      }
+      return roll;
+    },
+    [activeAdventureId, addHistoryEntry, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, t],
   );
 
   const rollTable = useCallback(

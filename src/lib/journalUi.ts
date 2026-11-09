@@ -132,7 +132,8 @@ const ANSWER_PATTERNS: [Answer, RegExp][] = [
 ];
 
 /**
- * Splits a roll's text ("Recluse — blanco 3 / negro 5 -> No") into the
+ * Splits a roll's text ("Recluse — blanco 3 / negro 5 -> No",
+ * "Ironsworn — d100 67 vs 26+ -> Sí · Coincidencia") into the
  * dice detail and the result. If the detail looks like an oracle roll,
  * it tries to recognise the answer.
  */
@@ -145,7 +146,8 @@ export function splitRollText(text: string): {
   if (i < 0) return { detail: text, result: null, answer: undefined };
   const detail = text.slice(0, i).trim();
   const result = text.slice(i + 2).trim();
-  const looksLikeOracle = /—.*\d+\s*\/.*\d+/.test(detail);
+  // "Oracle — dice": table rolls and inspiration never carry a "—".
+  const looksLikeOracle = /—.*\d/.test(detail);
   const answer = looksLikeOracle
     ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
     : undefined;

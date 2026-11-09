@@ -35,7 +35,11 @@ export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
   if (typeof v.id !== "string" || !isNumber(v.timestamp)) return null;
   const favorite = v.favorite === true;
   if (v.kind === "oraculo") {
-    if (typeof v.question !== "string" || typeof v.answer !== "string" || !isDiceGroup(v.white) || !isDiceGroup(v.black)) {
+    // Recluse rolls carry white/black; any oracle's, `dice` (oracleEngines.ts).
+    const hasDice =
+      (isDiceGroup(v.white) && isDiceGroup(v.black)) ||
+      (Array.isArray(v.dice) && v.dice.length > 0 && v.dice.every((g) => isDiceGroup(g) && isNumber((g as Record<string, unknown>).sides)));
+    if (typeof v.question !== "string" || typeof v.answer !== "string" || !hasDice) {
       return null;
     }
     return { ...(v as unknown as OracleRoll), favorite };

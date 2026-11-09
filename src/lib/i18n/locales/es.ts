@@ -143,7 +143,7 @@ export const es: Dictionary = {
     dialogLabel: "Acerca de Solo Compass",
     description:
       "Oráculo, tablas de significado y diario para jugar a rol en solitario. Todo se guarda solo en este dispositivo.",
-    oracleUsedBy: "El oráculo usa",
+    oracleUsedBy: "Oráculos",
     journalUsedBy: "El diario se escribe en notación",
     tablesUsedBy: "Tablas de otros juegos",
     notOfficial:
@@ -186,7 +186,12 @@ export const es: Dictionary = {
   oracleSwitcher: {
     triggerLabel: "Cambiar oráculo",
     dialogTitle: "Oráculo",
-    moreComingSoon: "Pronto llegarán más oráculos.",
+    blurb: {
+      recluse: "Dado blanco contra dado negro. Los empates son contradicciones.",
+      loner: "Dado de oportunidad contra dado de riesgo. Los dobles traen giros.",
+      ironsworn: "Un d100 con cinco umbrales. Las cifras repetidas, resultados extremos.",
+      opse: "Dos d6: uno responde y otro matiza. El más sencillo.",
+    },
   },
   oracleHelp: {
     button: "Cómo funciona el oráculo",
@@ -202,8 +207,32 @@ export const es: Dictionary = {
       { label: "Sí · No", text: "lo que preguntaste, tal cual." },
       { label: "… pero", text: "con una pega o un matiz en contra." },
       { label: "… y además", text: "más fuerte: algo extra en la misma dirección." },
-      { label: "Contradicción", text: "algo que dabas por hecho no es cierto. Replantea la escena." },
     ],
+    rules: {
+      recluse: {
+        heading: "Cómo responde Recluse",
+        text: "Se tira un dado blanco contra uno negro: si gana el blanco, «Sí»; si gana el negro, «No». Si los dos son bajos (1–3) se añade «pero»; si los dos son altos (4–6), «y además». Lo probable suma dados blancos y lo improbable, negros: cuenta el mayor de cada color.",
+        special: { label: "Contradicción", text: "si empatan, algo que dabas por hecho no es cierto. Replantea la escena." },
+      },
+      loner: {
+        heading: "Cómo responde Loner",
+        text: "Se tira un dado de oportunidad contra uno de riesgo: si gana oportunidad, «Sí»; si gana riesgo, «No». Los dos bajos (1–3), «pero»; los dos altos (4–6), «y además». «Probable» es tener ventaja (un dado de oportunidad más) e «Improbable», desventaja (uno de riesgo más): cuenta el mayor.",
+        special: { label: "Dobles", text: "si empatan es «Sí, pero» y suma uno al contador de giros. Al tercero llega un giro: tira «Giro: sujeto» y «Giro: acción», y el contador vuelve a cero. El contador es uno para todas tus partidas." },
+      },
+      ironsworn: {
+        heading: "Cómo responde Ironsworn",
+        text: "Se tira un d100: es «Sí» si sacas al menos 11 (muy probable, «casi seguro» en el libro), 26 (probable), 51 (equilibrado, «50/50»), 76 (improbable) o 91 (muy improbable, «poca probabilidad»). No tiene «pero» ni «y además».",
+        special: { label: "Coincidencia", text: "si las dos cifras son iguales (11, 22… 99 y 100), ha pasado algo extremo o un giro." },
+      },
+      opse: {
+        heading: "Cómo responde One Page Solo Engine",
+        text: "Se tiran dos d6. El de respuesta da «Sí» con 3 o más si es probable, 4 o más si está equilibrado y 5 o más si es improbable. El de matiz añade «pero» con un 1 y «y además» con un 6.",
+      },
+    },
+    oddsHeading: "Probabilidades",
+    oddsIntro: "Lo que sale con cada probabilidad, contando todas las tiradas posibles.",
+    oddsColumns: { likelihood: "Probabilidad", yes: "Sí", no: "No", and: "y", but: "pero" },
+    oddsSpecial: { recluse: "Contradicción", loner: "Dobles", ironsworn: "Coincidencia" },
     stuck: "¿No se te ocurre nada? Tira la inspiración rápida (Acción + Tema) en Tablas y búscale el sentido.",
     credit: "{name} es de {author} ({license}). Sus reglas completas, en el original.",
   },
@@ -341,6 +370,14 @@ export const es: Dictionary = {
     vs: "vs",
     contradictionExplanation:
       "La pregunta parte de una premisa falsa. Revisa qué estás dando por sentado y replantéala.",
+    matchLabel: "Coincidencia",
+    matchExplanation: "Las dos cifras son iguales: un resultado extremo o un giro.",
+    doubleExplanation: "Dobles: cuenta para un giro ({count} de 3).",
+    twistLabel: "¡Giro!",
+    twistExplanation: "Tercer doble: algo inesperado cambia la escena. El contador vuelve a cero.",
+    doubleShort: "dobles {count}/3",
+    rollTwist: "Tirar el giro",
+    targetSuffix: "{value} vs {target}+",
     consequencePlaceholder: "¿Qué pasa? Se apunta en el diario.",
     consequenceSaved: "Apuntado en «{name}»",
     consequenceSavedNoAdventure: "Apuntado en el diario",
@@ -368,6 +405,15 @@ export const es: Dictionary = {
   die: {
     ariaLabel: "Dado {color} con valor {value}",
     color: { blanco: "blanco", negro: "negro" },
+  },
+  oracleDice: {
+    white: "blanco",
+    black: "negro",
+    chance: "oportunidad",
+    risk: "riesgo",
+    percentile: "d100",
+    answer: "respuesta",
+    modifier: "matiz",
   },
   tables: {
     title: "Tablas de significado",

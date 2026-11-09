@@ -9,6 +9,15 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Más oráculos (2026-11-09): Loner (con contador de giros derivado del
+  historial y tablas de giro tiradas solas), «Ask the Oracle» de
+  Ironsworn (d100, coincidencias) y One Page Solo Engine v1.6 (CC BY-SA,
+  según el autor en itch.io). Cada oráculo es un motor
+  (`oracleEngines.ts`); la ayuda muestra sus reglas y una tabla con las
+  probabilidades exactas, calculadas recorriendo todas las tiradas.
+  Descartados: Mythic y Juice (licencias NC) y MUNE (sin licencia
+  publicada). Pendiente si se pide: el «¿Cuánto?» de OPSE y el
+  contador de giros por aventura (hoy es uno para todas).
 - Prueba de rendimiento y aviso de Safari (2026-11-09):
   - `npm run test:perf` (`e2e/volume.perf.ts`, fuera del despliegue):
     restaura una copia con 11.000 entradas en 22 aventuras y 10.000
@@ -537,7 +546,8 @@ quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/w
   (notas, personajes, lugares, hilos y relojes) ya cumple esa función.
 - Exportar a HTML legible — HECHO (2026-11-06). Para PDF basta imprimir
   ese HTML desde el navegador (tiene estilos de impresión).
-- Probabilidad "a ojo" del oráculo (mostrar % aproximado de Sí/No).
+- Probabilidad del oráculo — HECHO (2026-11-09): tabla exacta en la
+  ayuda de cada oráculo.
 - Escenas y factor de caos (estilo Mythic) como add-on opcional. Una
   tirada de arranque de escena (transcurre / cambia / se interrumpe)
   quedó en pausa el 2026-11-06: de momento se resuelve con tablas.

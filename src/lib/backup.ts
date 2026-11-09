@@ -26,7 +26,7 @@ import { isCustomTable, loadCustomTables, replaceCustomTables, type CustomTable 
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
-import { loadOracleId, saveOracleId } from "./oracles";
+import { isOracleId, loadOracleId, saveOracleId } from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
@@ -188,7 +188,7 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     if (typeof s.theme === "string" && isThemeId(s.theme)) saveTheme(s.theme);
     if (typeof s.mode === "string" && isThemeMode(s.mode)) saveMode(s.mode);
     if (typeof s.locale === "string" && isLocale(s.locale)) saveLocale(s.locale);
-    if (typeof s.oracleId === "string") saveOracleId(s.oracleId);
+    if (typeof s.oracleId === "string" && isOracleId(s.oracleId)) saveOracleId(s.oracleId);
     if (typeof s.activeAdventureId === "string" || s.activeAdventureId === null) {
       saveActiveAdventureId((s.activeAdventureId as string | null) ?? null);
     }

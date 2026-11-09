@@ -56,7 +56,10 @@ export function OracleSwitcher() {
                         <span className="block text-sm font-medium text-parchment">
                           {oracleInfo.name}
                         </span>
-                        <span className="block truncate text-xs text-parchment-dim">
+                        <span className="mt-0.5 block text-xs text-parchment">
+                          {t.oracleSwitcher.blurb[oracleInfo.id]}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs text-parchment-dim">
                           {interpolate(t.about.creditBy, {
                             author: oracleInfo.author,
                           })}{" "}
@@ -82,9 +85,6 @@ export function OracleSwitcher() {
               })}
             </div>
 
-            <p className="text-center text-xs text-parchment-dim/70">
-              {t.oracleSwitcher.moreComingSoon}
-            </p>
           </DialogBody>
         </Modal>
       )}

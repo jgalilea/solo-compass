@@ -16,12 +16,11 @@ import {
   IconUpload,
 } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { useOracleContext } from "../hooks/useOracleContext";
 import { useThemeContext } from "../hooks/useThemeContext";
 import { useModeContext } from "../hooks/useModeContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHotkeys } from "../hooks/useHotkeys";
-import { getOracle } from "../lib/oracles";
+import { ORACLES } from "../lib/oracles";
 import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
@@ -514,8 +513,6 @@ function BackupSettings() {
 
 function AboutSettings() {
   const { t } = useLocaleContext();
-  const { oracleId } = useOracleContext();
-  const oracle = getOracle(oracleId);
 
   return (
     <>
@@ -525,16 +522,12 @@ function AboutSettings() {
 
       <SupportCard />
 
-      <Credit
+      <CreditList
         label={t.about.oracleUsedBy}
-        name={oracle.name}
-        author={oracle.author}
-        license={oracle.license}
-        licenseUrl={oracle.licenseUrl}
-        url={oracle.url}
+        credits={ORACLES.map((o) => ({ ...o, attribution: [o.attribution] }))}
       />
 
-      <TablesCredit />
+      <CreditList label={t.about.tablesUsedBy} credits={TABLE_CREDITS} />
 
       <Credit
         label={t.about.journalUsedBy}
@@ -591,14 +584,14 @@ function SupportCard() {
   );
 }
 
-/** Every third-party table source, with the attribution each asks for. */
-function TablesCredit() {
+/** Every third-party oracle or table source, with the attribution each asks for. */
+function CreditList({ label, credits }: { label: string; credits: typeof TABLE_CREDITS }) {
   const { t } = useLocaleContext();
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{t.about.tablesUsedBy}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{label}</p>
       <ul className="mt-2 flex flex-col gap-3">
-        {TABLE_CREDITS.map((credit) => (
+        {credits.map((credit) => (
           <li key={credit.name}>
             <a
               href={credit.url}

@@ -3,6 +3,8 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import type { Likelihood } from "../lib/oracle";
+import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
+import { useOracleContext } from "../hooks/useOracleContext";
 import type { MeaningTable } from "../lib/tables";
 import { loadFavoriteTableIds } from "../lib/tableFavorites";
 import { gameOfTable } from "../lib/tableGames";
@@ -35,7 +37,9 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
   const { t } = useLocaleContext();
   const { askOracle } = usePlayActions();
   const [question, setQuestion] = useState("");
+  const { oracleId } = useOracleContext();
   const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
+  const level = fitLikelihood(oracleId, likelihood);
 
   return (
     <form
@@ -43,7 +47,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
       className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onRolled(askOracle(question, likelihood, adventureId).id);
+        onRolled(askOracle(question, level, adventureId).id);
         setQuestion("");
       }}
     >
@@ -56,7 +60,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
         enterKeyHint="go"
         className={`${INPUT_CLASS} flex-none bg-ink-900/70`}
       />
-      <LikelihoodPicker value={likelihood} onChange={setLikelihood} />
+      <LikelihoodPicker value={level} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
       <button
         type="submit"
         className="w-full rounded-xl bg-gold py-2.5 font-display text-base font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"

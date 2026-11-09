@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Likelihood, OracleRoll } from "../lib/oracle";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { useOracleContext } from "../hooks/useOracleContext";
+import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import { LikelihoodPicker } from "./LikelihoodPicker";
@@ -18,7 +20,10 @@ export function OracleView() {
   const { adventures, activeAdventureId } = useJournalContext();
   const { askOracle, addConsequence } = usePlayActions();
   const [question, setQuestion] = useState("");
+  const { oracleId } = useOracleContext();
   const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
+  // Kept as picked: going back to an oracle with five levels restores it.
+  const level = fitLikelihood(oracleId, likelihood);
   const [lastRoll, setLastRoll] = useState<OracleRoll | null>(null);
   const [animateKey, setAnimateKey] = useState(0);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -35,7 +40,7 @@ export function OracleView() {
   }, [animateKey]);
 
   function handleRoll() {
-    setLastRoll(askOracle(question, likelihood));
+    setLastRoll(askOracle(question, level));
     setAnimateKey((k) => k + 1);
   }
 
@@ -67,7 +72,7 @@ export function OracleView() {
             className="w-full rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3.5 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
           />
 
-          <LikelihoodPicker value={likelihood} onChange={setLikelihood} />
+          <LikelihoodPicker value={level} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
 
           <button
             type="submit"

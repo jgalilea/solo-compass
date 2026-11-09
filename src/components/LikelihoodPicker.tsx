@@ -39,9 +39,12 @@ function ShortScale({ option }: { option: Likelihood }) {
 export function LikelihoodPicker({
   value,
   onChange,
+  levels = ORDER,
 }: {
   value: Likelihood;
   onChange: (v: Likelihood) => void;
+  /** The ones the oracle offers (oracleLevels): three for Loner and OPSE. */
+  levels?: Likelihood[];
 }) {
   const { t } = useLocaleContext();
 
@@ -50,9 +53,9 @@ export function LikelihoodPicker({
       <div
         role="radiogroup"
         aria-label={t.likelihoodGroupLabel}
-        className="grid grid-cols-5 gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1.5"
+        className={`grid ${levels.length === 3 ? "grid-cols-3" : "grid-cols-5"} gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1.5`}
       >
-        {ORDER.map((option) => {
+        {levels.map((option) => {
           const active = option === value;
           return (
             <button

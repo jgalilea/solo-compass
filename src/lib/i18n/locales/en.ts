@@ -143,7 +143,7 @@ export const en: Dictionary = {
     dialogLabel: "About Solo Compass",
     description:
       "An oracle, meaning tables and a journal for solo tabletop RPGs. Everything is saved only on this device.",
-    oracleUsedBy: "The oracle uses",
+    oracleUsedBy: "Oracles",
     journalUsedBy: "The journal is written in",
     tablesUsedBy: "Tables from other games",
     notOfficial:
@@ -186,7 +186,12 @@ export const en: Dictionary = {
   oracleSwitcher: {
     triggerLabel: "Change oracle",
     dialogTitle: "Oracle",
-    moreComingSoon: "More oracles are on the way.",
+    blurb: {
+      recluse: "White die against black die. Ties are contradictions.",
+      loner: "Chance die against Risk die. Doubles bring twists.",
+      ironsworn: "One d100 with five thresholds. Matching digits, extreme results.",
+      opse: "Two d6: one answers, the other adds a nuance. The simplest.",
+    },
   },
   oracleHelp: {
     button: "How the oracle works",
@@ -202,8 +207,32 @@ export const en: Dictionary = {
       { label: "Yes · No", text: "what you asked, as it stands." },
       { label: "… but", text: "with a catch or a twist against it." },
       { label: "… and", text: "stronger: something extra in the same direction." },
-      { label: "Contradiction", text: "something you took for granted isn't true. Rethink the scene." },
     ],
+    rules: {
+      recluse: {
+        heading: "How Recluse answers",
+        text: "Roll a white die against a black die: if white is higher, “Yes”; if black is, “No”. If both are low (1–3), add “but”; if both are high (4–6), “and”. Likely adds white dice and unlikely, black ones: the highest of each colour counts.",
+        special: { label: "Contradiction", text: "on a tie, something you took for granted isn't true. Rethink the scene." },
+      },
+      loner: {
+        heading: "How Loner answers",
+        text: "Roll a Chance die against a Risk die: if Chance is higher, “Yes”; if Risk is, “No”. Both low (1–3), “but”; both high (4–6), “and”. “Likely” means advantage (one more Chance die) and “Unlikely”, disadvantage (one more Risk die): the highest counts.",
+        special: { label: "Doubles", text: "on a tie it's “Yes, but” and the Twist Counter goes up by one. The third brings a twist: roll “Twist: Subject” and “Twist: Action”, and the counter starts again. There's one counter for all your games." },
+      },
+      ironsworn: {
+        heading: "How Ironsworn answers",
+        text: "Roll a d100: it's “Yes” on at least 11 (very likely, “almost certain” in the book), 26 (likely), 51 (even, “50/50”), 76 (unlikely) or 91 (very unlikely, “small chance”). There's no “but” or “and”.",
+        special: { label: "Match", text: "if both digits are the same (11, 22… 99 and 100), an extreme result or a twist has happened." },
+      },
+      opse: {
+        heading: "How One Page Solo Engine answers",
+        text: "Roll two d6. The answer die says “Yes” on 3 or more if likely, 4 or more if even and 5 or more if unlikely. The modifier die adds “but” on a 1 and “and” on a 6.",
+      },
+    },
+    oddsHeading: "Odds",
+    oddsIntro: "What comes up at each likelihood, counting every possible roll.",
+    oddsColumns: { likelihood: "Likelihood", yes: "Yes", no: "No", and: "and", but: "but" },
+    oddsSpecial: { recluse: "Contradiction", loner: "Doubles", ironsworn: "Match" },
     stuck: "Drawing a blank? Roll the quick inspiration (Action + Theme) in Tables and make sense of it.",
     credit: "{name} is by {author} ({license}). Its full rules are in the original.",
   },
@@ -341,6 +370,14 @@ export const en: Dictionary = {
     vs: "vs",
     contradictionExplanation:
       "The question rests on a false premise. Check what you're taking for granted and rephrase it.",
+    matchLabel: "Match",
+    matchExplanation: "Both digits are the same: an extreme result or a twist.",
+    doubleExplanation: "Doubles: counts toward a twist ({count} of 3).",
+    twistLabel: "Twist!",
+    twistExplanation: "Third double: something unexpected changes the scene. The counter starts again.",
+    doubleShort: "doubles {count}/3",
+    rollTwist: "Roll the twist",
+    targetSuffix: "{value} vs {target}+",
     consequencePlaceholder: "What happens? Goes in the journal.",
     consequenceSaved: "Logged in “{name}”",
     consequenceSavedNoAdventure: "Logged in the journal",
@@ -368,6 +405,15 @@ export const en: Dictionary = {
   die: {
     ariaLabel: "{color} die showing {value}",
     color: { blanco: "white", negro: "black" },
+  },
+  oracleDice: {
+    white: "white",
+    black: "black",
+    chance: "chance",
+    risk: "risk",
+    percentile: "d100",
+    answer: "answer",
+    modifier: "modifier",
   },
   tables: {
     title: "Meaning tables",

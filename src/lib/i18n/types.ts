@@ -1,4 +1,5 @@
 import type { Answer, Likelihood, Qualifier } from "../oracle";
+import type { OracleDiceGroup, OracleId } from "../oracleEngines";
 import type { SoloCompassTableId } from "../tableGames";
 import type { TableTheme } from "../tables";
 import type { ThemeId } from "../theme";
@@ -193,7 +194,8 @@ export interface Dictionary {
   oracleSwitcher: {
     triggerLabel: string;
     dialogTitle: string;
-    moreComingSoon: string;
+    /** One line under each oracle's name: what it's like to use. */
+    blurb: Record<OracleId, string>;
   };
   /** Short guide to the oracle (not its full rules: those are in the original). */
   oracleHelp: {
@@ -203,6 +205,13 @@ export interface Dictionary {
     steps: string[];
     answersHeading: string;
     answers: { label: string; text: string }[];
+    /** How the chosen oracle reads its dice, in our own words, and its special answer if it has one. */
+    rules: Record<OracleId, { heading: string; text: string; special?: { label: string; text: string } }>;
+    oddsHeading: string;
+    oddsIntro: string;
+    oddsColumns: { likelihood: string; yes: string; no: string; and: string; but: string };
+    /** The column for each oracle's special outcome (none for OPSE). */
+    oddsSpecial: Partial<Record<OracleId, string>>;
     stuck: string;
     /** {name}, {author}, {license}. */
     credit: string;
@@ -245,6 +254,18 @@ export interface Dictionary {
     emptyDescription: string;
     vs: string;
     contradictionExplanation: string;
+    /** Ironsworn: a match. */
+    matchLabel: string;
+    matchExplanation: string;
+    /** Loner: a double; {count} is the Twist Counter now. */
+    doubleExplanation: string;
+    /** Loner's counter in the journal: {count}. */
+    doubleShort: string;
+    twistLabel: string;
+    twistExplanation: string;
+    rollTwist: string;
+    /** "{die} {value} vs {target}+" detail pieces in the journal. */
+    targetSuffix: string;
     consequencePlaceholder: string;
     consequenceSaved: string;
     consequenceSavedNoAdventure: string;
@@ -260,6 +281,8 @@ export interface Dictionary {
     ariaLabel: string;
     color: Record<DieColor, string>;
   };
+  /** Each oracle die by its role (oracleEngines.ts). */
+  oracleDice: Record<OracleDiceGroup["role"], string>;
   tables: {
     title: string;
     subtitle: string;

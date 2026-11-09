@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { Die } from "./Die";
-import { formatAnswer } from "../lib/i18n/answerText";
+import { formatOracleResult } from "../lib/i18n/answerText";
+import { oracleDice } from "../lib/oracle";
+import { ROLE_COLOR } from "../lib/oracleEngines";
 import type { HistoryEntry } from "../lib/history";
 import { IconStar, IconTrash } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -181,12 +183,18 @@ export function HistoryEntryCard({
             )}
             <div className="mt-2 flex flex-wrap items-center gap-3">
               <div className="flex gap-1">
-                {entry.white.rolls.map((v, i) => (
-                  <Die key={`w${i}`} value={v} color="blanco" size="sm" faded={v !== entry.white.kept} />
-                ))}
-                {entry.black.rolls.map((v, i) => (
-                  <Die key={`b${i}`} value={v} color="negro" size="sm" faded={v !== entry.black.kept} />
-                ))}
+                {oracleDice(entry).flatMap((group) =>
+                  group.rolls.map((v, i) => (
+                    <Die
+                      key={`${group.role}${i}`}
+                      value={v}
+                      color={ROLE_COLOR[group.role]}
+                      name={t.oracleDice[group.role]}
+                      size="sm"
+                      faded={group.rolls.length > 1 && v !== group.kept}
+                    />
+                  )),
+                )}
               </div>
               <span
                 className={[
@@ -197,7 +205,7 @@ export function HistoryEntryCard({
                   ANSWER_COLOR[entry.answer],
                 ].join(" ")}
               >
-                {formatAnswer(t, entry)}
+                {formatOracleResult(t, entry)}
               </span>
             </div>
           </div>

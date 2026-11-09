@@ -19,7 +19,7 @@
 Playing an RPG on your own means being both the player and the game master. You ask the oracle, roll on a table for inspiration, and write down what happened. Doing that with paper, dice and a notes app means lots of switching back and forth. Solo Compass puts all three on one screen and keeps the log for you.
 
 - **Ask, roll, write, all in one place.** Every oracle answer and table roll goes straight into the journal of the active adventure. After a roll, the composer switches to "Consequence" so you can write what it means.
-- **A real oracle, not a coin flip.** Solo Compass uses [Recluse](https://gravenutterance.itch.io/recluse). Answers have shades ("yes, but…", "no, and…") and contradictions that tell you the question itself was wrong. You can make an event more or less likely.
+- **Four real oracles, not a coin flip.** [Recluse](https://gravenutterance.itch.io/recluse) by default, plus Loner, Ironsworn's "Ask the Oracle" and the One Page Solo Engine. Answers have shades ("yes, but…", "no, and…"), contradictions, twists and extreme results. You can make an event more or less likely, and each oracle's help shows the exact odds.
 - **Plain-text journals you own.** Adventures are stored in [Lonelog](https://lonelog.itch.io/lonelog), an open notation for solo play. You can export any adventure as a `.md` file that other Lonelog tools can read, or import one you already have.
 - **Works on a phone at the table and on a big screen at your desk.** On a phone the journal is clear of clutter, with the tools in a sheet. On desktop, an adventure becomes a workspace with a session index and a game-table panel.
 - **Offline and installable.** It's a PWA: install it from the browser, and it keeps working without a connection.
@@ -60,6 +60,16 @@ Type a yes/no question, pick how likely it is, and roll. The **Recluse** rules (
 | A tie | **Contradiction**: something in the question is wrong, so rethink it |
 
 *Likely* and *Unlikely* add a second die of the favoured colour, and *Very likely* and *Very unlikely* add two. Only the highest die of each colour counts.
+
+The oracle's name next to the title switches to another one:
+
+| Oracle | How it answers |
+|---|---|
+| **Loner** (Roberto Bisceglie, CC BY-SA 4.0) | A Chance die against a Risk die, like Recluse. Advantage or disadvantage adds one die. A tie is "Yes, but…" and counts toward a twist: the third double rolls Loner's twist tables. |
+| **Ironsworn**, "Ask the Oracle" (Shawn Tomkin, CC BY 4.0) | One d100: yes from 11, 26, 51, 76 or 91 up, depending on the likelihood. Matching digits (11, 22… 100) mean an extreme result or a twist. |
+| **One Page Solo Engine** v1.6 (Karl Hendricks, CC BY-SA 4.0) | An answer d6 (yes on 3+, 4+ or 5+) and a modifier d6 (1 adds "but", 6 adds "and"). |
+
+Each oracle's **?** explains its rules in a few lines and has a table with the exact chance of each answer at every likelihood, worked out from every possible roll.
 
 When an adventure is active, the question and answer go into its journal, and a small field lets you add the consequence right away. Every roll is also kept in **History**, which you reach from "Recent rolls". There you can filter by oracle, tables or favourites, mark rolls as favourites or delete them.
 
@@ -134,7 +144,7 @@ npm run dev       # dev server at http://localhost:5173/solo-compass/
 | `npm run dev` | Vite dev server |
 | `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
 | `npm run preview` | Serve the production build |
-| `npm test` | Vitest unit tests for `src/lib` (oracle, Lonelog import/export, journal grouping, tables, sample adventure, backup reminder) |
+| `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, journal grouping, tables, sample adventure, backup reminder) |
 | `npm run lint` | oxlint |
 
 The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, and [Tabler Icons](https://tabler.io/icons).
@@ -153,6 +163,7 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 ## Credits and license
 
 - **Recluse** oracle by Graven Utterance (Oliver N), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://gravenutterance.itch.io/recluse>
+- **One Page Solo Engine** v1.6 oracle by Karl Hendricks (Inflatable Studios), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://inflatablestudios.itch.io/one-page-solo-engine>. Loner's and Ironsworn's oracles are credited below with their tables.
 - **Lonelog** notation by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://lonelog.itch.io/lonelog>
 - **Tabler Icons**, MIT.
 - Solo Compass's own meaning tables are original and written for this app.

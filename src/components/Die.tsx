@@ -43,15 +43,20 @@ export function Die({
   size = "md",
   animate = false,
   faded = false,
+  name,
 }: {
   value: number;
   color: DieColor;
   size?: "sm" | "md" | "lg";
   animate?: boolean;
   faded?: boolean;
+  /** What the die is called, if not its colour (an oracle's "chance" die). */
+  name?: string;
 }) {
   const { t } = useLocaleContext();
+  // Pips for a d6; any other value (a d100) is written as a number.
   const pips = PIP_LAYOUTS[value] ?? [];
+  const numeral = !PIP_LAYOUTS[value];
   const dims = size === "lg" ? 72 : size === "md" ? 56 : 40;
 
   const isWhite = color === "blanco";
@@ -63,7 +68,7 @@ export function Die({
       height={dims}
       role="img"
       aria-label={interpolate(t.die.ariaLabel, {
-        color: t.die.color[color],
+        color: name ?? t.die.color[color],
         value,
       })}
       className={[
@@ -82,6 +87,19 @@ export function Die({
         stroke={isWhite ? "#c9c2b2" : "#3a3d4a"}
         strokeWidth="2"
       />
+      {numeral && (
+        <text
+          x="50"
+          y="52"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={value >= 100 ? 34 : 44}
+          fontWeight="700"
+          fill={isWhite ? "var(--color-die-black)" : "var(--color-die-white)"}
+        >
+          {value}
+        </text>
+      )}
       {pips.map(([cx, cy], i) => (
         <circle
           key={i}

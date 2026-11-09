@@ -21,6 +21,29 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-09",
     text: {
       es: {
+        title: "Capítulo XV · Cuatro voces en la niebla",
+        intro: "Mara ya no consulta a un solo oráculo: en la encrucijada la esperan cuatro, cada uno con su manera de responder.",
+        items: [
+          "Tres oráculos nuevos, además de Recluse: Loner (dados de oportunidad y riesgo, con giros cuando salen dobles), el «Pregunta al oráculo» de Ironsworn (un d100) y One Page Solo Engine (dos d6, el más sencillo). Se cambian tocando el nombre del oráculo junto al título.",
+          "En Loner, el tercer doble trae un giro: se tiran solas sus tablas de giro y el resultado va al diario con la respuesta.",
+          "La ayuda «?» de cada oráculo explica cómo responde y trae una tabla con la probabilidad exacta de cada respuesta (sí, no, «y además», «pero» y lo especial de cada uno) según lo probable que lo marques.",
+        ],
+      },
+      en: {
+        title: "Chapter XV · Four voices in the fog",
+        intro: "Mara no longer asks a single oracle: four wait at the crossroads, each with its own way of answering.",
+        items: [
+          "Three new oracles besides Recluse: Loner (Chance and Risk dice, with twists on doubles), Ironsworn's “Ask the Oracle” (a d100) and the One Page Solo Engine (two d6, the simplest). Switch by tapping the oracle's name next to the title.",
+          "With Loner, the third double brings a twist: its twist tables are rolled for you and the result goes into the journal with the answer.",
+          "Each oracle's “?” help explains how it answers and has a table with the exact chance of each answer (yes, no, “and”, “but” and each one's special result) at every likelihood.",
+        ],
+      },
+    },
+  },
+  {
+    date: "2026-11-09",
+    text: {
+      es: {
         title: "Capítulo XIV · Dos velas, un mismo diario",
         intro: "Mara escribe en la posada y en el camino a la vez, y ninguna de las dos plumas borra lo que anota la otra.",
         items: [
