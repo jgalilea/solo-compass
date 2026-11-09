@@ -113,9 +113,9 @@ No backend; persistence is split by access pattern, not by feature:
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
   language, selected oracle and favorite oracle (the app opens with the
   favorite, `initialOracleId`; the last used otherwise), favorite tables, unfolded table blocks,
-  folded notebook lists, active-adventure id (`activeAdventure.ts`,
-  `theme.ts`, `mode.ts`, `tableFavorites.ts`, `tableSections.ts`,
-  `notebookSections.ts`).
+  folded notebook lists, whether new scenes are tested, active-adventure
+  id (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
+  `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`).
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
   browser (`navigator.storage.persist()`) not to evict its data. Never call
   it silently — Firefox shows its own permission prompt — always behind
@@ -172,7 +172,12 @@ the app's own table rolls are `tbl: Name d66=42 -> …` (`formatTableRoll`)
 and quick inspiration a `gen:`. Scenes are their own entry kind
 (`scene`, text "S4 *Tavern*", numbered by `nextSceneId`, offered in the
 composer beside "New session", listed under their session in the
-index). Everything else stays a note and is only *drawn* differently
+index). A new scene can be tested, optionally (a switch in the
+composer, off until turned on): the selected oracle answers "Does the
+scene go as I expected?" at Likely, and `sceneVerdict` reads the
+answer (expected / altered / interrupted) for the consequence's
+placeholder. No rules of its own, so it works with any oracle.
+Everything else stays a note and is only *drawn* differently
 (`lonelogLines.ts`: `@(Name)` actors, dialogue, `(note: …)` asides,
 `\---`…`---\` narrative blocks, the add-ons' `[COMBAT]`/
 `[DUNGEON STATUS]`/`[RESOURCES]` markers and `Rd1` rounds; a
@@ -393,12 +398,18 @@ extra results are joined with "→" and "·", never "->" (the journal
 splits a roll's text at its last "->").
 
 The game table's dice (`DiceTool`) also take a formula (`rollFormula`
-in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
-advantage/disadvantage buttons) or drop (`4d6dl1`), success pools
-(`5d6>=5`, failures `f<3`), exploding (`3d6!`) and compounding
-(`d6!!`) dice and a `// description` — the practical part of Lonelog's
-dice notation add-on — written
-so the journal shows them die by die like the buttons' rolls. Its "?" (`DiceHelp`, on the shared
+in `diceNotation.ts`): the whole of Lonelog's dice notation add-on, a
+small parser over its grammar (arithmetic and parentheses, `{…}`
+groups, min/max, exploding with a condition, compounding,
+penetrating, rerolls, unique, keep/drop, success pools with failures,
+criticals, sorting, every form of description). Modifiers act in the
+spec's fixed order; a condition right after `!`/`r`/`u`/`cs`/`cf` is
+theirs (`3d10!>=8` explodes on 8+, `3d10>=8!` counts 8+). It's
+written so the journal shows each roll die by die like the buttons'
+rolls (`✓`/`✗`, `1→4` rerolled, `2↑`/`3↓` min/max, `▲`/`▼`
+criticals); in a list of rolls each one keeps its own description
+(`splitRollSeries`), and `d66=25 ->` stays a table roll's value, not
+a formula. Its "?" (`DiceHelp`, on the shared
 `HelpDialog` shell like `OracleHelp`) explains the buttons, how to
 read a roll and each formula taken apart, with examples and the line
 each leaves; a test rolls every example and checks the exact line, and
@@ -428,9 +439,10 @@ theme display fonts draw "+" as a cross — use the icon. Every
 dialog uses `Modal` (portal to `<body>`, closes on Esc and backdrop click):
 the sticky desktop header would otherwise clip or cover dialogs rendered
 inside it (`backdrop-filter`/z-index stacking). `Modal` owns the panel
-frame and picks its width from a `size` (`sm` confirmations, `md` forms
-and lists, `lg` guides/changelog/sheets, `xl` settings and the dice
-guide); inside go `DialogHeader` (title, icon, close; fixed) and
+frame and its width: every dialog is `size="lg"` (the same width on
+desktop; its content goes into columns there rather than staying a
+narrow strip), only a question to answer is `sm` (confirmations,
+restoring a backup); inside go `DialogHeader` (title, icon, close; fixed) and
 `DialogBody` (scrolls) from `Dialog.tsx`. Don't style a panel by hand.
 
 ### Responsive

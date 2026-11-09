@@ -14,7 +14,7 @@ import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { DiceHelp } from "./DiceHelp";
 import { DiceRoller } from "./DiceRoller";
-import { rollFormula } from "../lib/dice";
+import { rollFormula } from "../lib/diceNotation";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";

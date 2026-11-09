@@ -29,11 +29,11 @@ export function OracleSwitcher() {
         <Modal
           onClose={() => setOpen(false)}
           label={t.oracleSwitcher.dialogTitle}
-          size="sm"
+          size="lg"
         >
           <DialogHeader title={t.oracleSwitcher.dialogTitle} onClose={() => setOpen(false)} />
           <DialogBody>
-            <div className="flex flex-col gap-2">
+            <div className="grid gap-2 md:grid-cols-2 md:gap-3">
               {ORACLES.map((oracleInfo) => {
                 const active = oracleInfo.id === oracleId;
                 const favorite = oracleInfo.id === favoriteOracleId;
@@ -41,7 +41,7 @@ export function OracleSwitcher() {
                   <div
                     key={oracleInfo.id}
                     className={[
-                      "rounded-2xl border p-3",
+                      "flex flex-col justify-between rounded-2xl border p-3",
                       active
                         ? "border-gold/50 bg-gold/10"
                         : "border-ink-border",

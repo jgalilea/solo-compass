@@ -169,12 +169,18 @@ export function splitRollText(text: string): {
 /**
  * One die or formula from the generic roller: "d10", "2d6", "d%",
  * "4dF", "2d6+3", "4d6kh3", "4d6dl1", "3d6!", "d6!!", "5d6>=5",
- * "4d6>4f<3" (see rollFormula in dice.ts).
+ * "4d6>4f<3", "(1d6+2)*3", "{4d6,2d10}k1" (see rollFormula in
+ * diceNotation.ts): faces right after the "d", then anything but a space.
  */
-const DICE = String.raw`\d*d(?:\d+|%|F)!{0,2}(?:[kd][hl]?\d+)?`;
-const DIE = String.raw`${DICE}(?:[+-](?:${DICE}|\d+))*(?:[<>]=?\d+)?(?:f[<>]=?\d+)?`;
+// Not ending in "=9": "d6=5 ->" is Lonelog's rolled value (a table
+// roll, "Theme d66=25 -> …"), not a formula.
+const DIE = String.raw`[-({\d]*d(?:\d|%|F|\()[^\s]*?(?<!(?:^|[^<>!])=\d+)`;
+/** Text with a roll of the generic roller in it ("Attack 2d6+3 -> 9 (…)"). */
+export const OWN_ROLL = new RegExp(String.raw`(^|\s)${DIE}\s*->`);
+// Each roll, and the description of every one after the first
+// ("…, Fire 2d6 -> 7 (3+4)"); the first one's is the series' label.
 const ROLL_SEGMENT = new RegExp(
-  String.raw`(${DIE})\s*->\s*(.+?)(?=\s*,?\s+${DIE}\s*->|\s*$)`,
+  String.raw`(?:([^,>]*?)\s+)?(${DIE})\s*->\s*(.+?)(?=\s*,\s*(?:[^,>]*?\s+)?${DIE}\s*->|\s+${DIE}\s*->|\s*$)`,
   "g",
 );
 
@@ -188,14 +194,14 @@ const ROLL_SEGMENT = new RegExp(
  */
 export function splitRollSeries(
   text: string,
-): { label: string; rolls: { die: string; result: string }[] } | null {
-  const first = text.search(new RegExp(String.raw`(^|\s)${DIE}\s*->`));
+): { label: string; rolls: { label: string; die: string; result: string }[] } | null {
+  const first = text.search(OWN_ROLL);
   if (first < 0) return null;
   const label = text.slice(0, first).trim().replace(/,$/, "");
   const rest = text.slice(first).trim();
-  const rolls: { die: string; result: string }[] = [];
+  const rolls: { label: string; die: string; result: string }[] = [];
   for (const m of rest.matchAll(ROLL_SEGMENT)) {
-    rolls.push({ die: m[1], result: m[2].trim() });
+    rolls.push({ label: m[1]?.trim() ?? "", die: m[2], result: m[3].trim() });
   }
   const leftover = rest.replace(ROLL_SEGMENT, "").replace(/[\s,]/g, "");
   if (rolls.length < 2 || leftover) return null;

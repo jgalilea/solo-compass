@@ -10,13 +10,10 @@ import { IconHelp } from "./icons/Icons";
 export function HelpDialog({
   button,
   title,
-  size = "lg",
   children,
 }: {
   button: string;
   title: string;
-  /** "xl" for a guide with more to show side by side. */
-  size?: "lg" | "xl";
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -34,7 +31,7 @@ export function HelpDialog({
       </button>
 
       {open && (
-        <Modal onClose={() => setOpen(false)} label={title} size={size}>
+        <Modal onClose={() => setOpen(false)} label={title} size="lg">
           <DialogHeader title={title} Icon={IconHelp} onClose={() => setOpen(false)} />
           <DialogBody className="flex flex-col gap-5">{children}</DialogBody>
         </Modal>

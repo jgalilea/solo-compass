@@ -1,7 +1,7 @@
 import type { HistoryEntry } from "./history";
 import type { JournalEntry } from "./lonelog";
 import type { Answer } from "./oracle";
-import { splitRollSeries, splitRollText } from "./journalUi";
+import { OWN_ROLL, splitRollSeries, splitRollText } from "./journalUi";
 
 export interface AdventureStats {
   sessions: number;
@@ -22,7 +22,6 @@ export interface AdventureStats {
   last: number | null;
 }
 
-const OWN_DICE = /(^|\s)\d*d(?:\d+|%|F)\s*->/;
 
 /**
  * What kind of roll an entry is. The linked history entry says so for
@@ -49,7 +48,7 @@ function classifyRoll(
         : undefined;
     return { kind: "oracle", answer, qualifier };
   }
-  if (linked?.kind === "tabla" || (result !== null && !splitRollSeries(entry.text) && !OWN_DICE.test(entry.text))) {
+  if (linked?.kind === "tabla" || (result !== null && !splitRollSeries(entry.text) && !OWN_ROLL.test(entry.text))) {
     // "Theme d66=25", "Theme 2/5" (as written before) or
     // "Inspiration (Action d66=34, Theme d66=25)": just the name.
     const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+$/, "").trim();

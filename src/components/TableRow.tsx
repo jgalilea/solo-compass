@@ -148,7 +148,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
         <Modal
           onClose={() => setOpen(false)}
           label={interpolate(t.tables.allResultsDialogLabel, { name: table.name })}
-          size="md"
+          size="lg"
         >
           <DialogHeader
             title={table.name}
@@ -163,7 +163,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
             onClose={() => setOpen(false)}
           />
           <DialogBody>
-            <ul className="flex flex-col gap-1.5">
+            <ul className="grid gap-1.5 lg:grid-cols-2">
               {table.entries.map((entry) => (
                 <li
                   key={`${entry.range[0]}-${entry.range[1]}`}

@@ -1,3 +1,4 @@
+import type { SceneVerdict } from "../sceneCheck";
 import type { Answer, Likelihood, Qualifier } from "../oracle";
 import type { OracleDiceGroup, OracleId } from "../oracleEngines";
 import type { CastKind } from "../lonelogTags";
@@ -520,6 +521,14 @@ export interface Dictionary {
     newSceneButton: string;
     /** {id}: the scene's number, "S4". */
     newScenePlaceholder: string;
+    /** Testing a new scene with the oracle (optional). */
+    sceneCheckLabel: string;
+    sceneCheckOptional: string;
+    /** Under the switch while it's on: how to read the answer. */
+    sceneCheckHint: string;
+    sceneCheckQuestion: string;
+    /** The consequence's placeholder after the test: how the scene starts. */
+    sceneVerdict: Record<SceneVerdict, string>;
     deleteEntry: string;
     editEntry: string;
     moreEntryActions: string;

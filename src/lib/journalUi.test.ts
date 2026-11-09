@@ -94,18 +94,47 @@ describe("splitRollSeries", () => {
     expect(splitRollSeries("Ataque 2d20kh1 -> 17 (17, 5✗), 1d8+3 -> 7 (4 + 3), 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)")).toEqual({
       label: "Ataque",
       rolls: [
-        { die: "2d20kh1", result: "17 (17, 5✗)" },
-        { die: "1d8+3", result: "7 (4 + 3)" },
-        { die: "5d6>=5", result: "2 (6✓ 5✓ 3 2 1)" },
+        { label: "", die: "2d20kh1", result: "17 (17, 5✗)" },
+        { label: "", die: "1d8+3", result: "7 (4 + 3)" },
+        { label: "", die: "5d6>=5", result: "2 (6✓ 5✓ 3 2 1)" },
       ],
     });
   });
 
+  it("reads the whole dice notation: arithmetic, groups and new marks", () => {
+    expect(
+      splitRollSeries("(1d6+2)*3 -> 18 ((4 + 2) × 3), {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), d6r -> 4 (1→4), 4dF.1 -> 0 (0 0 0 0)"),
+    ).toEqual({
+      label: "",
+      rolls: [
+        { label: "", die: "(1d6+2)*3", result: "18 ((4 + 2) × 3)" },
+        { label: "", die: "{4d6,2d10}k1", result: "13 ({5+4+3+1, (7+4)✗})" },
+        { label: "", die: "d6r", result: "4 (1→4)" },
+        { label: "", die: "4dF.1", result: "0 (0 0 0 0)" },
+      ],
+    });
+  });
+
+  it("keeps the description of a roll in the middle of the list", () => {
+    expect(splitRollSeries("2d6 -> 7 (3+4), Mejor tirada {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), Fuerza 4d6dl1 -> 14 (6+5+3, 2✗)")).toEqual({
+      label: "",
+      rolls: [
+        { label: "", die: "2d6", result: "7 (3+4)" },
+        { label: "Mejor tirada", die: "{4d6,2d10}k1", result: "13 ({5+4+3+1, (7+4)✗})" },
+        { label: "Fuerza", die: "4d6dl1", result: "14 (6+5+3, 2✗)" },
+      ],
+    });
+  });
+
+  it("leaves table rolls alone: \"d66=25\" is a rolled value, not a formula", () => {
+    expect(splitRollSeries("Acción d66=34 -> Atacar, Tema d66=25 -> Muerte")).toBeNull();
+  });
+
   it("splits each die from its result, with or without commas", () => {
     const rolls = [
-      { die: "d10", result: "9" },
-      { die: "d10", result: "5" },
-      { die: "d10", result: "2" },
+      { label: "", die: "d10", result: "9" },
+      { label: "", die: "d10", result: "5" },
+      { label: "", die: "d10", result: "2" },
     ];
     expect(splitRollSeries("d10 -> 9, d10 -> 5, d10 -> 2")).toEqual({ label: "", rolls });
     expect(splitRollSeries("d10 -> 9 d10 -> 5 d10 -> 2")).toEqual({ label: "", rolls });
@@ -115,9 +144,9 @@ describe("splitRollSeries", () => {
     expect(splitRollSeries("Ataque al orco d20 -> 14, 4dF -> +1 (+ 0 − +), d% -> 73")).toEqual({
       label: "Ataque al orco",
       rolls: [
-        { die: "d20", result: "14" },
-        { die: "4dF", result: "+1 (+ 0 − +)" },
-        { die: "d%", result: "73" },
+        { label: "", die: "d20", result: "14" },
+        { label: "", die: "4dF", result: "+1 (+ 0 − +)" },
+        { label: "", die: "d%", result: "73" },
       ],
     });
   });

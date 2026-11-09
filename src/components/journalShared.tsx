@@ -439,7 +439,10 @@ function EntryContent({
                 key={i}
                 className="flex min-w-11 flex-col items-center rounded-lg border border-ink-border px-2 py-1"
               >
-                <span className="text-[0.65rem] leading-tight text-parchment-dim">{roll.die}</span>
+                <span className="text-[0.65rem] leading-tight text-parchment-dim">
+                  {roll.label && `${roll.label} · `}
+                  {roll.die}
+                </span>
                 <RollResult result={roll.result} />
               </li>
             ))}

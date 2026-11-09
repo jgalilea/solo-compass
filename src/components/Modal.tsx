@@ -31,18 +31,15 @@ function unlockPageScroll() {
 }
 
 /**
- * Panel widths, the same few for every dialog: from `sm` up they're
- * centred windows; below, full-width bottom sheets.
+ * Panel widths: one for every dialog, so they all open the same on
+ * desktop, and a narrower one for a question to answer. From `sm` up
+ * they're centred windows; below, full-width bottom sheets.
  */
 const SIZES = {
-  /** A yes/no question or a short list (confirmations, the oracle picker). */
-  sm: "sm:max-w-sm",
-  /** A form or a list (the table editor, a table's results, the stats). */
-  md: "sm:max-w-lg",
-  /** Reading and tools: the oracle's guide, the changelog, the game table's sheets. */
-  lg: "sm:max-w-xl md:max-w-3xl",
-  /** Two columns on desktop: settings, the dice guide. */
-  xl: "sm:max-w-xl md:max-w-3xl lg:max-w-5xl",
+  /** A question: confirmations, restoring a backup. */
+  sm: "sm:max-w-lg",
+  /** Everything else; its content uses the width (columns on desktop). */
+  lg: "sm:max-w-xl md:max-w-3xl lg:max-w-5xl",
 };
 
 const FOCUSABLE =

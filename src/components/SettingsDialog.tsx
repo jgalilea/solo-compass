@@ -110,7 +110,7 @@ export function SettingsDialog() {
         <Modal
           onClose={() => setOpen(false)}
           label={t.settings.title}
-          size="xl"
+          size="lg"
         >
           <DialogHeader title={t.settings.title} onClose={() => setOpen(false)} />
           <DialogBody className="block">
@@ -468,7 +468,7 @@ function BackupSettings() {
           onClose={() => setPendingRestore(null)}
           labelledBy="restore-choice-title"
           centered
-          size="md"
+          size="sm"
         >
           <DialogBody className="block">
             <h2 id="restore-choice-title" className="font-display text-xl text-parchment">

@@ -82,7 +82,7 @@ export function TableEditorDialog({
     <Modal
       onClose={onClose}
       labelledBy={titleId}
-      size="md"
+      size="lg"
     >
       <DialogHeader id={titleId} title={editing ? e.editTitle : e.newTitle} onClose={onClose} />
       <DialogBody>

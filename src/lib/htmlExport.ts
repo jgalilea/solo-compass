@@ -91,7 +91,7 @@ function rollHtml(entry: JournalEntry, answer: Answer | undefined): string {
   const series = splitRollSeries(entry.text);
   if (series) {
     const dice = series.rolls
-      .map((r) => `<span class="die"><small>${escapeHtml(r.die)}</small>${escapeHtml(r.result)}</span>`)
+      .map((r) => `<span class="die"><small>${escapeHtml(r.label ? `${r.label} · ${r.die}` : r.die)}</small>${escapeHtml(r.result)}</span>`)
       .join("");
     return `${series.label ? `<p class="detail">${escapeHtml(series.label)}</p>` : ""}<p class="dice">${dice}</p>`;
   }

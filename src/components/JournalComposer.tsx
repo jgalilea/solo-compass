@@ -2,11 +2,16 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentTy
 import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { useOracleContext } from "../hooks/useOracleContext";
+import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
 import type { JournalEntry } from "../lib/lonelog";
 import { formatScene, nextSceneId } from "../lib/lonelogLines";
 import { buildCast } from "../lib/lonelogTags";
+import { fitLikelihood } from "../lib/oracleEngines";
+import { getOracle } from "../lib/oracles";
+import { SCENE_CHECK_LIKELIHOOD, loadSceneCheck, saveSceneCheck, sceneVerdict, type SceneVerdict } from "../lib/sceneCheck";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -64,6 +69,11 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
  *
  * While writing below an entry (insertAfter) a line above the field
  * says where, with a way back to the end.
+ *
+ * A new scene can be tested with the selected oracle, if the player
+ * turns it on (a switch above the field, remembered per device): the
+ * scene is logged, then the oracle's answer to "Does the scene go as I
+ * expected?", and the consequence that follows asks what it means.
  */
 export function JournalComposer({
   ref,
@@ -97,6 +107,11 @@ export function JournalComposer({
 }) {
   const { t } = useLocaleContext();
   const { entries, addEntry } = useJournalContext();
+  const { askOracle } = usePlayActions();
+  const { oracleId } = useOracleContext();
+  const [sceneCheck, setSceneCheck] = useState(loadSceneCheck);
+  // The last scene test, so its consequence asks what the answer means.
+  const [verdict, setVerdict] = useState<{ rollId: string; verdict: SceneVerdict } | null>(null);
   const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
@@ -161,7 +176,9 @@ export function JournalComposer({
 
   const placeholder =
     mode === "consequence"
-      ? t.oracle.consequencePlaceholder
+      ? verdict && verdict.rollId === linkedRollId
+        ? t.journal.sceneVerdict[verdict.verdict]
+        : t.oracle.consequencePlaceholder
       : mode === "session"
         ? t.journal.newSessionPlaceholder
         : mode === "scene"
@@ -177,6 +194,13 @@ export function JournalComposer({
       // Numbered after the adventure's latest scene: "S4 *Tavern, night*".
       const id = nextSceneId(entries.filter((e) => e.adventureId === adventureId));
       addEntry(adventureId, "scene", formatScene(id, text));
+      if (sceneCheck) {
+        const roll = askOracle(t.journal.sceneCheckQuestion, fitLikelihood(oracleId, SCENE_CHECK_LIKELIHOOD), adventureId);
+        setVerdict({ rollId: roll.id, verdict: sceneVerdict(roll) });
+        setText("");
+        onRolled(roll.id);
+        return;
+      }
       onModeChange("note");
     } else {
       if (!canSend) return;
@@ -218,6 +242,44 @@ export function JournalComposer({
             {t.journal.insertDone}
           </button>
         </p>
+      ) : mode === "scene" ? (
+        <div className="mb-2 px-1">
+          {/* Optional, and says so: off until the player turns it on. */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={sceneCheck}
+            onClick={() => {
+              setSceneCheck(!sceneCheck);
+              saveSceneCheck(!sceneCheck);
+            }}
+            className="flex items-center gap-2 text-left text-xs text-parchment-dim transition hover:text-parchment"
+          >
+            <span
+              className={[
+                "relative h-4 w-7 shrink-0 rounded-full border transition",
+                sceneCheck ? "border-gold bg-gold" : "border-ink-border bg-ink-900",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "absolute top-1/2 size-3 -translate-y-1/2 rounded-full transition-all",
+                  sceneCheck ? "left-3 bg-ink-950" : "left-0.5 bg-parchment-dim",
+                ].join(" ")}
+              />
+            </span>
+            <IconOracle size={14} className={sceneCheck ? "shrink-0 text-gold" : "shrink-0"} />
+            <span>
+              <span className={sceneCheck ? "font-medium text-parchment" : ""}>{t.journal.sceneCheckLabel}</span>{" "}
+              <span className="text-parchment-dim/70">({t.journal.sceneCheckOptional})</span>
+            </span>
+          </button>
+          {sceneCheck && (
+            <p className="mt-1.5 text-xs text-parchment-dim">
+              {interpolate(t.journal.sceneCheckHint, { oracle: getOracle(oracleId).name })}
+            </p>
+          )}
+        </div>
       ) : mode === "consequence" && (
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconConsequence size={14} className="shrink-0 text-gold" />

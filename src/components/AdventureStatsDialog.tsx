@@ -43,7 +43,7 @@ export function AdventureStatsDialog({
     <Modal
       onClose={onClose}
       labelledBy={titleId}
-      size="md"
+      size="lg"
     >
       <DialogHeader id={titleId} title={s.title} subtitle={<p className="truncate">{name}</p>} Icon={IconChart} onClose={onClose} />
       <DialogBody className="flex flex-col gap-5">
@@ -51,7 +51,7 @@ export function AdventureStatsDialog({
           <p className="text-sm text-parchment-dim">{s.empty}</p>
         ) : (
           <>
-            <dl className="grid grid-cols-2 gap-2.5">
+            <dl className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
               {(
                 [
                   [s.sessions, stats.sessions],

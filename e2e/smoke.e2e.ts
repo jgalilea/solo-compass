@@ -36,6 +36,16 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   await composer.fill("La puerta de la cripta");
   await page.getByRole("button", { name: "Añadir al diario" }).click();
   await expect(page.locator("[id^=entry-]").getByText("S1")).toBeVisible();
+  // Another, tested with the oracle (off until turned on).
+  await page.locator("[data-composer] button[aria-haspopup=menu]").click();
+  await page.getByRole("menuitemradio", { name: /Nueva escena/ }).click();
+  const sceneCheck = page.getByRole("switch", { name: /Probar la escena/ });
+  await expect(sceneCheck).toHaveAttribute("aria-checked", "false");
+  await sceneCheck.click();
+  await composer.fill("El osario");
+  await page.getByRole("button", { name: "Añadir al diario" }).click();
+  await expect(page.locator("[id^=entry-]").getByText("S2")).toBeVisible();
+  await expect(page.locator("[id^=entry-]").getByText("¿La escena va como esperaba?")).toBeVisible();
 
   // A table roll.
   await page.getByRole("link", { name: "Tablas", exact: true }).click();

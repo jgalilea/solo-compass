@@ -245,10 +245,13 @@ notación de dados: descartar (`dl`/`dh`), explosión acumulada (`!!`),
 fallos en reservas (`f<3`) y descripción (`// Fuerza`). Las tiradas de
 tabla de la app se apuntan como `tbl:` y la inspiración como `gen:`.
 Fuera, a propósito: Partylog, Lorelog, Maplog y Wargaming (sistemas
-aparte) y el complemento de cartas (no hay baraja). De la notación de
-dados no se leen repeticiones, mínimos/máximos, críticos ni paréntesis,
-y `5d10!>=8` sigue siendo «explota y cuenta éxitos» (en la spec, el
-`>=8` pegado al `!` cambiaría cuándo explota).
+aparte) y el complemento de cartas (no hay baraja).
+
+**Hecho (2026-11-09): la notación de dados entera** (`diceNotation.ts`):
+operaciones y paréntesis, grupos `{…}`, mínimo/máximo, explosión con
+condición y penetrante, repeticiones, únicos, críticos y orden. Como
+en la spec, `3d10!>=8` explota con 8+ (antes contaba éxitos); para la
+regla «10 otra vez» del Mundo de Tinieblas es `3d10>=8!`.
 
 **Pendiente:** juntar varios −/+ seguidos de un reloj en una sola
 entrada si en uso real ensucian el diario. Los «alias» no son de
@@ -566,9 +569,12 @@ quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/w
   ese HTML desde el navegador (tiene estilos de impresión).
 - Probabilidad del oráculo — HECHO (2026-11-09): tabla exacta en la
   ayuda de cada oráculo.
-- Escenas y factor de caos (estilo Mythic) como add-on opcional. Una
-  tirada de arranque de escena (transcurre / cambia / se interrumpe)
-  quedó en pausa el 2026-11-06: de momento se resuelve con tablas.
+- Probar la escena — HECHO (2026-11-09), opcional (interruptor en el
+  composer al crear una escena, apagado por defecto): el oráculo
+  elegido responde «¿La escena va como esperaba?» en Probable y la
+  respuesta se lee como transcurre / alterada / interrumpida. Sin
+  reglas de One Page Solo Engine: vale con cualquier oráculo. El
+  factor de caos de Mythic sigue fuera (licencia NC).
 - Baraja de cartas (póker/tarot, sacar sin reponer, por aventura) como
   herramienta de la mesa de juego — aplazada el 2026-11-07. *The
   Oracle* (jamessral, cartas) sería un oráculo aparte (punto 5).

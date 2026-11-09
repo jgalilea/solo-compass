@@ -12,7 +12,7 @@ export function DiceHelp() {
   const help = t.diceHelp;
 
   return (
-    <HelpDialog button={help.button} title={help.title} size="xl">
+    <HelpDialog button={help.button} title={help.title}>
       <p className="text-sm text-parchment">{help.intro}</p>
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-6">
@@ -107,7 +107,7 @@ export function DiceHelp() {
               </p>
             </li>
           ))}
-          {/* Sixth card: fills the grid's last row on desktop. */}
+          {/* Last card: with the formulas it fills the grid's last row on desktop. */}
           <li className="flex flex-col gap-2 rounded-2xl border border-dashed border-ink-border p-4">
             <h4 className="font-display text-base text-parchment">{help.rulesHeading}</h4>
             <ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-parchment-dim marker:text-gold">
