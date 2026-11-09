@@ -1,4 +1,4 @@
-import { get, set, del } from "idb-keyval";
+import { createCollection, diffById } from "./collectionStore";
 import type { OracleRoll } from "./oracle";
 import type { Dictionary } from "./i18n";
 
@@ -16,13 +16,44 @@ export interface TableRollEntry {
 
 export type HistoryEntry = OracleRoll | TableRollEntry;
 
-// Stored in IndexedDB (via idb-keyval) instead of localStorage: the
-// history has no natural size cap and localStorage is limited to
-// ~5 MiB per origin, shared with any other app on the same domain.
-// IndexedDB gives orders of magnitude more room and is just as free
-// and server-less.
-const IDB_KEY = "solo-compass:history";
+// Stored in IndexedDB instead of localStorage: the history has no
+// natural size cap and localStorage is limited to ~5 MiB per origin,
+// shared with any other app on the same domain. One record per roll
+// (collectionStore.ts), so a long history doesn't make each new roll
+// rewrite all the others.
+const LEGACY_IDB_KEY = "solo-compass:history";
 const LEGACY_LOCALSTORAGE_KEY = "solo-compass:history";
+
+const isNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const isDiceGroup = (v: unknown): boolean =>
+  !!v && typeof v === "object" && Array.isArray((v as Record<string, unknown>).rolls) && isNumber((v as Record<string, unknown>).kept);
+
+/** A roll as stored or restored; null if it can't be shown. */
+export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.id !== "string" || !isNumber(v.timestamp)) return null;
+  const favorite = v.favorite === true;
+  if (v.kind === "oraculo") {
+    if (typeof v.question !== "string" || typeof v.answer !== "string" || !isDiceGroup(v.white) || !isDiceGroup(v.black)) {
+      return null;
+    }
+    return { ...(v as unknown as OracleRoll), favorite };
+  }
+  if (v.kind === "tabla") {
+    if (typeof v.tableName !== "string" || typeof v.resultText !== "string" || !Array.isArray(v.rolls) || !isNumber(v.total)) {
+      return null;
+    }
+    return { ...(v as unknown as TableRollEntry), favorite };
+  }
+  return null;
+}
+
+const historyStore = createCollection<HistoryEntry>({
+  name: "history",
+  legacyKey: LEGACY_IDB_KEY,
+  normalize: normalizeHistoryEntry,
+});
 
 interface LegacyStoredPayload {
   version: number;
@@ -53,42 +84,43 @@ function migrateFromLocalStorage(): HistoryEntry[] | null {
   }
 }
 
+/** Newest first. */
 export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
   if (typeof window === "undefined") return [];
-
-  let stored: HistoryEntry[] | undefined;
+  let stored: HistoryEntry[];
   try {
-    stored = await get<HistoryEntry[]>(IDB_KEY);
+    stored = await historyStore.load();
   } catch {
     throw new HistoryStorageError(t.history.storageUnavailableError);
   }
-
-  if (stored) {
-    if (!Array.isArray(stored)) {
-      throw new HistoryStorageError(t.history.storageCorruptedError);
+  if (stored.length === 0) {
+    const migrated = migrateFromLocalStorage()?.map(normalizeHistoryEntry).filter((e) => e !== null) ?? [];
+    if (migrated.length) {
+      try {
+        await historyStore.save({ put: migrated, remove: [] });
+      } catch {
+        // Kept in memory for this session at least; see migrateFromLocalStorage.
+      }
+      stored = migrated;
     }
-    // Compatibility with histories saved before favourites were added.
-    return stored.map((e) => ({ ...e, favorite: e.favorite ?? false }));
   }
-
-  const migrated = migrateFromLocalStorage();
-  if (migrated) {
-    try {
-      await set(IDB_KEY, migrated);
-    } catch {
-      // The migration couldn't be persisted yet, but the data is
-      // returned anyway so it isn't lost from the current session.
-    }
-    return migrated;
-  }
-
-  return [];
+  return stored.sort((a, b) => b.timestamp - a.timestamp);
 }
 
-export async function saveHistory(t: Dictionary, entries: HistoryEntry[]): Promise<void> {
+/** Writes only what changed between the two lists. */
+export async function saveHistoryChanges(t: Dictionary, prev: HistoryEntry[], next: HistoryEntry[]): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    await set(IDB_KEY, entries);
+    await historyStore.save(diffById(prev, next));
+  } catch {
+    throw new HistoryStorageError(t.history.storageSaveError);
+  }
+}
+
+export async function replaceHistory(t: Dictionary, entries: HistoryEntry[]): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    await historyStore.replace(entries);
   } catch {
     throw new HistoryStorageError(t.history.storageSaveError);
   }
@@ -97,7 +129,7 @@ export async function saveHistory(t: Dictionary, entries: HistoryEntry[]): Promi
 export async function clearHistory(t: Dictionary): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    await del(IDB_KEY);
+    await historyStore.replace([]);
   } catch {
     throw new HistoryStorageError(t.history.storageClearError);
   }

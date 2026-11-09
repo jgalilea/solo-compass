@@ -12,8 +12,9 @@
  * The export is a Markdown table that this same parser reads back.
  */
 
-import { get, set } from "idb-keyval";
+import { createCollection, diffById } from "./collectionStore";
 import { DICTIONARIES, interpolate, LOCALES, type Dictionary } from "./i18n";
+import { makeId } from "./ids";
 import { normalizeForSearch } from "./text";
 import {
   diceSides,
@@ -57,24 +58,58 @@ export type DiceChoice = DiceType | "auto";
 /** Dice offered in the editor, besides "auto". */
 export const EDITOR_DICE: DiceType[] = ["d4", "d6", "d8", "d10", "d12", "d20", "d66", "d100"];
 
-const STORAGE_KEY = "solo-compass:custom-tables";
+/** Where the whole array was kept before (see collectionStore.ts). */
+const LEGACY_STORAGE_KEY = "solo-compass:custom-tables";
 
 export class CustomTablesStorageError extends Error {}
+
+/**
+ * One record per table, listed by creation date (`createdAt`), which
+ * is how they were kept in the old array too. The moved array's dates
+ * are made strictly increasing so tables imported together (same
+ * millisecond) keep their order.
+ */
+const tableStore = createCollection<CustomTable>({
+  name: "custom-tables",
+  legacyKey: LEGACY_STORAGE_KEY,
+  normalize: (value) => (isCustomTable(value) ? value : null),
+  fromLegacy: (items) => {
+    let last = -Infinity;
+    return items.map((table) => {
+      const createdAt = Math.max(table.createdAt ?? 0, last + 1);
+      last = createdAt;
+      return createdAt === table.createdAt ? table : { ...table, createdAt };
+    });
+  },
+});
+
+export function sortCustomTables(tables: CustomTable[]): CustomTable[] {
+  return [...tables].sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
+}
 
 export async function loadCustomTables(t: Dictionary): Promise<CustomTable[]> {
   if (typeof window === "undefined") return [];
   try {
-    const stored = await get<CustomTable[]>(STORAGE_KEY);
-    return Array.isArray(stored) ? stored.filter(isCustomTable) : [];
+    return sortCustomTables(await tableStore.load());
   } catch {
     throw new CustomTablesStorageError(t.history.storageUnavailableError);
   }
 }
 
-export async function saveCustomTables(t: Dictionary, tables: CustomTable[]): Promise<void> {
+/** Writes only what changed between the two lists. */
+export async function saveCustomTableChanges(t: Dictionary, prev: CustomTable[], next: CustomTable[]): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    await set(STORAGE_KEY, tables);
+    await tableStore.save(diffById(prev, next));
+  } catch {
+    throw new CustomTablesStorageError(t.history.storageSaveError);
+  }
+}
+
+export async function replaceCustomTables(t: Dictionary, tables: CustomTable[]): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    await tableStore.replace(tables);
   } catch {
     throw new CustomTablesStorageError(t.history.storageSaveError);
   }
@@ -95,16 +130,10 @@ export function isCustomTable(value: unknown): value is CustomTable {
   );
 }
 
-function makeId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `custom-${crypto.randomUUID()}`;
-  }
-  return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-export function createCustomTable(draft: CustomTableDraft): CustomTable {
+/** `index` spaces out the dates of tables created together, to keep their order. */
+export function createCustomTable(draft: CustomTableDraft, index = 0): CustomTable {
   const now = Date.now();
-  return { ...draft, id: makeId(), createdAt: now, updatedAt: now };
+  return { ...draft, id: makeId("custom-"), createdAt: now + index, updatedAt: now };
 }
 
 /** Same shape as the built-in tables, so everything else rolls it the same way. */

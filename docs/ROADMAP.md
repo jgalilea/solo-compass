@@ -9,6 +9,31 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Auditoría de código (2026-11-09), todo corregido:
+  - Pérdida de datos con dos pestañas o ventanas abiertas: cada una
+    escribía su lista entera encima de la otra. Ahora cada tipo de
+    dato es una colección con un registro por id (`collectionStore.ts`),
+    se guarda solo lo que cambia y las demás pestañas recargan al
+    recibir el aviso (`sync.ts`). Migración automática del formato
+    antiguo (probada con datos creados por la versión anterior).
+  - Restaurar una copia comprobaba solo las tablas: ahora cada
+    aventura, entrada y tirada pasa por su `normalize…` (al cargar
+    también) y se descarta lo ilegible.
+  - Escritura de listas completas en cada cambio: resuelto con lo
+    anterior. El historial sigue sin tope (decisión: no borrar
+    tiradas del jugador; leerlo entero al arrancar es barato).
+  - Importar un .md largo fechaba sus entradas en el futuro; los
+    guardados iban dentro de los updaters de React (`useStoredList`);
+    la lista de borrados crecía siempre (ahora se guarda un año).
+  - Dependencias de compilación: `npm audit fix` y `glob` forzado
+    dentro de `workbox-build` (overrides). Quedan 4 avisos leves de
+    `deepmerge`, sin versión corregida, solo en el build.
+  - Mantenimiento: `makeId` en `ids.ts`; `AdventureDetailView`,
+    `TablesView` y `AdventureNotebook` partidos en componentes
+    (`AdventureHeader`, `JournalSearchPanel`, `SessionNavigation`,
+    `TableSections`, `TableRow`, `TableResultPanel`, `InspirationCard`,
+    `PinnedNotes`, `CastItem`, `AddCastForm`); tests de almacenamiento
+    con `fake-indexeddb` y de la lógica de insertar/mover.
 - Escribir debajo y mover entradas (2026-11-07): menú «⋯» de cada
   entrada (y del título de sesión). «Escribir debajo» fija un punto de
   inserción (`insertionPoint` en `useJournal`) que usan también el

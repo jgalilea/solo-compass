@@ -18,6 +18,33 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-09",
+    text: {
+      es: {
+        title: "Capítulo XIV · Dos velas, un mismo diario",
+        intro: "Mara escribe en la posada y en el camino a la vez, y ninguna de las dos plumas borra lo que anota la otra.",
+        items: [
+          "Si tienes Solo Compass abierto en dos sitios a la vez (la app instalada y una pestaña del navegador, por ejemplo), lo que apuntas en uno ya no borra lo del otro, y cada uno ve al momento lo que escribes en el otro.",
+          "Una copia de seguridad dañada o editada a mano se restaura sin lo que no se pueda leer, en vez de dejar el diario sin abrir.",
+          "El diario y el historial guardan cada cambio por separado: con años de partidas, tirar sigue siendo igual de rápido.",
+          "Al importar un diario muy largo, lo que escribas justo después ya no se cuela entre sus líneas.",
+          "En el cuaderno del móvil, su botón queda marcado mientras está abierto, como la búsqueda y las sesiones.",
+        ],
+      },
+      en: {
+        title: "Chapter XIV · Two candles, one journal",
+        intro: "Mara writes at the inn and on the road at once, and neither quill erases what the other wrote.",
+        items: [
+          "With Solo Compass open in two places at once (the installed app and a browser tab, say), what you log in one no longer erases the other's, and each shows what you write in the other right away.",
+          "A damaged or hand-edited backup is restored without what can't be read, instead of leaving the journal unable to open.",
+          "The journal and the history save each change on its own: after years of play, rolling is just as quick.",
+          "When importing a very long journal, what you write right after no longer slips in among its lines.",
+          "On phones, the notebook's button stays marked while it's open, like search and sessions.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-07",
     text: {
       es: {

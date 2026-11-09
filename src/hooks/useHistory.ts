@@ -4,10 +4,12 @@ import {
   clearHistory,
   HistoryStorageError,
   loadHistory,
-  saveHistory,
+  saveHistoryChanges,
   type HistoryEntry,
 } from "../lib/history";
+import { announceChange, onExternalChange } from "../lib/sync";
 import { useLocaleContext } from "./useLocaleContext";
+import { useStoredList } from "./useStoredList";
 
 export type HistoryStatus = "loading" | "ready" | "error";
 
@@ -27,17 +29,29 @@ interface UseHistoryResult {
 export function useHistory(): UseHistoryResult {
   const { t } = useLocaleContext();
   const [status, setStatus] = useState<HistoryStatus>("loading");
-  const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Optimistic, as in useJournal: shown at once, saved roll by roll
+  // (only what changed), then the app's other tabs are told.
+  const failSave = useCallback(
+    (err: unknown) => {
+      setError(err instanceof HistoryStorageError ? err.message : t.history.genericSaveError);
+      setStatus("error");
+    },
+    [t],
+  );
+  const save = useCallback(
+    (prev: HistoryEntry[], next: HistoryEntry[]) =>
+      saveHistoryChanges(t, prev, next).then(() => announceChange("history")),
+    [t],
+  );
+  const { items: entries, latest, version, setLoaded: setEntries, update: persist } = useStoredList(save, failSave);
 
   // IndexedDB read. It doesn't touch "loading" itself: the initial
   // state is already "loading", and on retry retry() sets it (an
   // event), so the mount effect doesn't call setState synchronously.
   const load = useCallback(() => {
     let cancelled = false;
-    // IndexedDB is truly asynchronous (unlike the old localStorage),
-    // so there's no need to fake the loading state with a setTimeout:
-    // the read itself takes its time.
     loadHistory(t)
       .then((loaded) => {
         if (cancelled) return;
@@ -54,39 +68,38 @@ export function useHistory(): UseHistoryResult {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [setEntries, t]);
 
   useEffect(() => load(), [load]);
+
+  // Another tab rolled or deleted: read it again (once more if
+  // something changed here meanwhile).
+  useEffect(() => {
+    let cancelled = false;
+    function refresh() {
+      const started = version.current;
+      loadHistory(t)
+        .then((loaded) => {
+          if (cancelled) return;
+          if (version.current !== started) return refresh();
+          setEntries(loaded);
+        })
+        .catch(() => {
+          // What's on screen stays.
+        });
+    }
+    const stop = onExternalChange("history", refresh);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [setEntries, t, version]);
 
   const retry = useCallback(() => {
     setStatus("loading");
     setError(null);
     load();
   }, [load]);
-
-  // Functional setState (always starts from the latest state, not from
-  // "entries" captured by a closure): if addEntry is called more than
-  // once in the same event before React repaints, the second call
-  // doesn't overwrite the first. Same bug that slipped into useJournal
-  // with the oracle's question + roll.
-  const persist = useCallback(
-    (updater: (prev: HistoryEntry[]) => HistoryEntry[]) => {
-      setEntries((prev) => {
-        const next = updater(prev);
-        // Optimistic: the UI reflects the change right away, without
-        // waiting for the IndexedDB save to confirm (it's fast, but still
-        // an asynchronous operation).
-        saveHistory(t, next).catch((err: unknown) => {
-          setError(
-            err instanceof HistoryStorageError ? err.message : t.history.genericSaveError,
-          );
-          setStatus("error");
-        });
-        return next;
-      });
-    },
-    [t],
-  );
 
   const addEntry = useCallback(
     (entry: HistoryEntry) => {
@@ -126,10 +139,11 @@ export function useHistory(): UseHistoryResult {
 
   const clear = useCallback(() => {
     // So a merged backup from another device doesn't bring them back.
-    recordDeletions(entries.map((e) => e.id));
+    recordDeletions(latest.current.map((e) => e.id));
     clearHistory(t)
       .then(() => {
         setEntries([]);
+        announceChange("history");
         setStatus("ready");
         setError(null);
       })
@@ -139,7 +153,7 @@ export function useHistory(): UseHistoryResult {
         );
         setStatus("error");
       });
-  }, [t, entries]);
+  }, [t, latest, setEntries]);
 
   return {
     status,

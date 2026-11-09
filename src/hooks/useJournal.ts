@@ -5,8 +5,8 @@ import {
   JournalStorageError,
   loadAdventures,
   loadJournalEntries,
-  saveAdventures,
-  saveJournalEntries,
+  saveAdventureChanges,
+  saveJournalEntryChanges,
   type Adventure,
   type AdventureStatus,
 } from "../lib/journal";
@@ -19,8 +19,10 @@ import {
 } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { forgetDeletions, recordDeletions } from "../lib/deletions";
-import { placeAfter, placeMoved, type Placement } from "../lib/journalOrder";
+import { insertEntryAfter, moveEntryIn } from "../lib/journalOrder";
+import { announceChange, onExternalChange } from "../lib/sync";
 import { useLocaleContext } from "./useLocaleContext";
+import { useStoredList } from "./useStoredList";
 
 export type JournalStatus = "loading" | "ready" | "error";
 
@@ -68,18 +70,51 @@ export function useJournal(): UseJournalResult {
   const { t } = useLocaleContext();
   const [status, setStatus] = useState<JournalStatus>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [adventures, setAdventures] = useState<Adventure[]>([]);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [activeAdventureId, setActiveAdventureIdState] = useState<string | null>(
     () => loadActiveAdventureId(),
   );
+
+  // Optimistic: the screen changes at once and each list saves only
+  // what changed (useStoredList), then tells the app's other tabs.
+  const failSave = useCallback(
+    (err: unknown) => {
+      setError(err instanceof JournalStorageError ? err.message : t.history.genericSaveError);
+      setStatus("error");
+    },
+    [t],
+  );
+  const saveAdventures = useCallback(
+    (prev: Adventure[], next: Adventure[]) =>
+      saveAdventureChanges(t, prev, next).then(() => announceChange("journal")),
+    [t],
+  );
+  const saveEntries = useCallback(
+    (prev: JournalEntry[], next: JournalEntry[]) =>
+      saveJournalEntryChanges(t, prev, next).then(() => announceChange("journal")),
+    [t],
+  );
+  const {
+    items: adventures,
+    version: adventuresVersion,
+    setLoaded: setAdventures,
+    update: updateAdventures,
+  } = useStoredList(saveAdventures, failSave);
+  const {
+    items: entries,
+    latest: latestEntries,
+    version: entriesVersion,
+    setLoaded: setEntries,
+    update: updateEntries,
+  } = useStoredList(saveEntries, failSave);
+
+  const read = useCallback(() => Promise.all([loadAdventures(t), loadJournalEntries(t)]), [t]);
 
   // IndexedDB read. It doesn't touch "loading" itself: the initial
   // state is already "loading", and on retry retry() sets it (an
   // event), so the mount effect doesn't call setState synchronously.
   const load = useCallback(() => {
     let cancelled = false;
-    Promise.all([loadAdventures(t), loadJournalEntries(t)])
+    read()
       .then(([loadedAdventures, loadedEntries]) => {
         if (cancelled) return;
         setAdventures(loadedAdventures);
@@ -96,52 +131,39 @@ export function useJournal(): UseJournalResult {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [read, setAdventures, setEntries, t]);
 
   useEffect(() => load(), [load]);
+
+  // Another tab saved: read it all again. If something changed here
+  // while reading, that read may have missed it, so read once more.
+  useEffect(() => {
+    let cancelled = false;
+    function refresh() {
+      const started = adventuresVersion.current + entriesVersion.current;
+      read()
+        .then(([loadedAdventures, loadedEntries]) => {
+          if (cancelled) return;
+          if (adventuresVersion.current + entriesVersion.current !== started) return refresh();
+          setAdventures(loadedAdventures);
+          setEntries(loadedEntries);
+        })
+        .catch(() => {
+          // What's on screen stays; the next change elsewhere reads again.
+        });
+    }
+    const stop = onExternalChange("journal", refresh);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [read, adventuresVersion, entriesVersion, setAdventures, setEntries]);
 
   const retry = useCallback(() => {
     setStatus("loading");
     setError(null);
     load();
   }, [load]);
-
-  // updateAdventures/updateEntries always start from the latest state
-  // (functional setState), not from "adventures"/"entries" captured by
-  // a closure — so if addEntry is called twice in a row in the same
-  // event (e.g. question + roll), the second doesn't overwrite the
-  // first before React repaints.
-  const updateAdventures = useCallback(
-    (updater: (prev: Adventure[]) => Adventure[]) => {
-      setAdventures((prev) => {
-        const next = updater(prev);
-        saveAdventures(t, next).catch((err: unknown) => {
-          setError(
-            err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
-          );
-          setStatus("error");
-        });
-        return next;
-      });
-    },
-    [t],
-  );
-
-  const updateEntries = useCallback(
-    (updater: (prev: JournalEntry[]) => JournalEntry[]) => {
-      setEntries((prev) => {
-        const next = updater(prev);
-        saveJournalEntries(t, next).catch((err: unknown) => {
-          setError(
-            err instanceof JournalStorageError ? err.message : t.history.genericSaveError,
-          );
-          setStatus("error");
-        });
-        return next;
-      });
-    },
-    [t],
-  );
 
   // An archived adventure can't be the active one at the same time —
   // activating it is exactly the sign it's in use again, so it gets
@@ -206,15 +228,13 @@ export function useJournal(): UseJournalResult {
 
   const deleteAdventure = useCallback(
     (id: string) => {
+      // Recorded so a merged backup from another device doesn't bring them back.
+      recordDeletions([id, ...latestEntries.current.filter((e) => e.adventureId === id).map((e) => e.id)]);
       updateAdventures((prev) => prev.filter((a) => a.id !== id));
-      updateEntries((prev) => {
-        // Recorded so a merged backup from another device doesn't bring them back.
-        recordDeletions([id, ...prev.filter((e) => e.adventureId === id).map((e) => e.id)]);
-        return prev.filter((e) => e.adventureId !== id);
-      });
+      updateEntries((prev) => prev.filter((e) => e.adventureId !== id));
       if (activeAdventureId === id) setActiveAdventureId(null);
     },
-    [activeAdventureId, updateAdventures, updateEntries, setActiveAdventureId],
+    [activeAdventureId, latestEntries, updateAdventures, updateEntries, setActiveAdventureId],
   );
 
   // Archiving the active adventure deactivates it (an archived
@@ -277,13 +297,7 @@ export function useJournal(): UseJournalResult {
       };
       const point = insertionRef.current;
       if (point?.adventureId === adventureId) {
-        updateEntries((prev) => {
-          const sorted = sortedEntriesOf(prev, adventureId);
-          // Deleted meanwhile: back to the end.
-          if (!sorted.some((e) => e.id === point.afterId)) return [...prev, entry];
-          const placement = placeAfter(sorted, point.afterId, undefined, now);
-          return [...applyPlacement(prev, placement, now), { ...entry, timestamp: placement.timestamp }];
-        });
+        updateEntries((prev) => insertEntryAfter(prev, entry, point.afterId, now));
         setInsertionPoint({ adventureId, afterId: entry.id });
       } else {
         updateEntries((prev) => [...prev, entry]);
@@ -295,20 +309,9 @@ export function useJournal(): UseJournalResult {
     [updateEntries, updateAdventures, setInsertionPoint],
   );
 
-  // A move counts as an edit (editedAt), so a merged backup keeps the
-  // newer order.
   const moveEntry = useCallback(
     (id: string, direction: "up" | "down") => {
-      updateEntries((prev) => {
-        const moving = prev.find((e) => e.id === id);
-        if (!moving) return prev;
-        const placement = placeMoved(sortedEntriesOf(prev, moving.adventureId), id, direction);
-        if (!placement) return prev;
-        const now = Date.now();
-        return applyPlacement(prev, placement, now).map((e) =>
-          e.id === id ? { ...e, timestamp: placement.timestamp, editedAt: now } : e,
-        );
-      });
+      updateEntries((prev) => moveEntryIn(prev, id, direction, Date.now()));
     },
     [updateEntries],
   );
@@ -345,7 +348,11 @@ export function useJournal(): UseJournalResult {
         ...(notes ? { notes } : {}),
         ...(Object.keys(descriptions).length ? { descriptions } : {}),
       };
-      const imported = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
+      // One millisecond per line, ending now: dated from the adventure's
+      // creation on, a long file would run into the future and what's
+      // written next could land among its lines.
+      const parsed = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
+      const imported = parsed.map((e) => ({ ...e, timestamp: e.timestamp - parsed.length }));
       updateAdventures((prev) => [adventure, ...prev]);
       updateEntries((prev) => [...prev, ...imported]);
       return adventure;
@@ -378,17 +385,4 @@ export function useJournal(): UseJournalResult {
     importAdventure,
     retry,
   };
-}
-
-function sortedEntriesOf(entries: JournalEntry[], adventureId: string): JournalEntry[] {
-  return entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp);
-}
-
-/** The entries nudged forward to make room (see placeAfter). */
-function applyPlacement(entries: JournalEntry[], placement: Placement, now: number): JournalEntry[] {
-  if (placement.nudged.size === 0) return entries;
-  return entries.map((e) => {
-    const timestamp = placement.nudged.get(e.id);
-    return timestamp === undefined ? e : { ...e, timestamp, editedAt: now };
-  });
 }

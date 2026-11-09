@@ -48,3 +48,30 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+/**
+ * Two tabs (an installed app and a browser tab, say) writing at once:
+ * neither loses what the other saved, and each sees the other's.
+ */
+test("keeps what two open tabs write at the same time", async ({ page, context }) => {
+  const other = await context.newPage();
+  for (const p of [page, other]) await p.goto("./#/diario");
+
+  async function create(p: typeof page, name: string) {
+    await p.getByRole("button", { name: "Nueva aventura" }).click();
+    await p.getByPlaceholder("Nombre de la aventura").fill(name);
+    await p.getByRole("button", { name: "Crear" }).click();
+    // Creating opens the adventure; back to the list.
+    await p.getByRole("link", { name: "Volver al diario" }).click();
+  }
+  await create(page, "Desde la primera pestaña");
+  await create(other, "Desde la segunda pestaña");
+
+  // The first tab shows the second's without reloading…
+  await expect(page.getByText("Desde la segunda pestaña").first()).toBeVisible();
+  // …and both are saved.
+  const fresh = await context.newPage();
+  await fresh.goto("./#/diario");
+  await expect(fresh.getByText("Desde la primera pestaña").first()).toBeVisible();
+  await expect(fresh.getByText("Desde la segunda pestaña").first()).toBeVisible();
+});

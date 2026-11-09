@@ -4,11 +4,13 @@ import {
   createCustomTable,
   CustomTablesStorageError,
   loadCustomTables,
-  saveCustomTables,
+  saveCustomTableChanges,
   type CustomTable,
   type CustomTableDraft,
 } from "../lib/customTables";
+import { announceChange, onExternalChange } from "../lib/sync";
 import { useLocaleContext } from "./useLocaleContext";
+import { useStoredList } from "./useStoredList";
 
 export type CustomTablesStatus = "idle" | "loading" | "ready" | "error";
 
@@ -22,7 +24,16 @@ export function useCustomTables() {
   const [requested, setRequested] = useState(false);
   const [status, setStatus] = useState<CustomTablesStatus>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [tables, setTables] = useState<CustomTable[]>([]);
+  const failSave = useCallback(
+    (err: unknown) => setError(err instanceof CustomTablesStorageError ? err.message : t.history.genericSaveError),
+    [t],
+  );
+  const save = useCallback(
+    (prev: CustomTable[], next: CustomTable[]) =>
+      saveCustomTableChanges(t, prev, next).then(() => announceChange("customTables")),
+    [t],
+  );
+  const { items: tables, version, setLoaded: setTables, update: updateStored } = useStoredList(save, failSave);
   // Changes before the stored tables are in would overwrite them with an empty list.
   const readyRef = useRef(false);
 
@@ -49,22 +60,39 @@ export function useCustomTables() {
     return () => {
       cancelled = true;
     };
-  }, [requested, t]);
+  }, [requested, setTables, t]);
 
-  // Functional setState, as in useJournal: several changes in the same
-  // event (e.g. importing a file with many tables) don't overwrite each other.
+  // Another tab changed them: read them again, if they're loaded here.
+  useEffect(() => {
+    if (!requested) return;
+    let cancelled = false;
+    function refresh() {
+      if (!readyRef.current) return;
+      const started = version.current;
+      loadCustomTables(t)
+        .then((loaded) => {
+          if (cancelled) return;
+          if (version.current !== started) return refresh();
+          setTables(loaded);
+        })
+        .catch(() => {
+          // What's on screen stays.
+        });
+    }
+    const stop = onExternalChange("customTables", refresh);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, [requested, setTables, t, version]);
+
+  // As in useJournal: several changes in the same event (importing a
+  // file with many tables) build on each other.
   const update = useCallback(
     (updater: (prev: CustomTable[]) => CustomTable[]) => {
-      if (!readyRef.current) return;
-      setTables((prev) => {
-        const next = updater(prev);
-        saveCustomTables(t, next).catch((err: unknown) => {
-          setError(err instanceof CustomTablesStorageError ? err.message : t.history.genericSaveError);
-        });
-        return next;
-      });
+      if (readyRef.current) updateStored(updater);
     },
-    [t],
+    [updateStored],
   );
 
   const addTables = useCallback(

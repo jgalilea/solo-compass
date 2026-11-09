@@ -1,4 +1,4 @@
-import { get, set } from "idb-keyval";
+import { createCollection } from "./collectionStore";
 
 /**
  * What was deleted on this device (journal entries, adventures, history
@@ -7,13 +7,12 @@ import { get, set } from "idb-keyval";
  * item's id is enough; nothing of its content is kept. Undoing a
  * deletion takes it off the list.
  *
- * IndexedDB like the data it refers to. Best-effort: writes are queued
- * one after another (so two quick deletions don't overwrite each
- * other) and a failure only means a deleted item could come back on a
- * merge.
+ * One record per id (collectionStore.ts), so two deletions at once
+ * never overwrite each other. Best-effort: a failure only means a
+ * deleted item could come back on a merge. Kept for a year: a backup
+ * older than that, merged, could bring back what was deleted before
+ * it, a fair price for a list that doesn't grow forever.
  */
-
-const KEY = "solo-compass:deleted";
 
 export interface Deletion {
   id: string;
@@ -21,47 +20,57 @@ export interface Deletion {
   at: number;
 }
 
-let queue: Promise<unknown> = Promise.resolve();
+const KEEP_FOR = 365 * 24 * 60 * 60 * 1000;
 
-function enqueue(change: (prev: Deletion[]) => Deletion[]): void {
-  if (typeof window === "undefined") return;
-  queue = queue
-    .then(() => loadDeletions())
-    .then((prev) => set(KEY, change(prev)))
-    .catch(() => {
-      // Not critical: see above.
-    });
+function normalizeDeletion(value: unknown): Deletion | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === "string" && typeof v.at === "number" && Number.isFinite(v.at) ? { id: v.id, at: v.at } : null;
 }
 
+const deletionStore = createCollection<Deletion>({
+  name: "deletions",
+  legacyKey: "solo-compass:deleted",
+  normalize: normalizeDeletion,
+});
+
+/** Only the ones still within the year. */
+export function recentDeletions(deletions: Deletion[], now = Date.now()): Deletion[] {
+  return deletions.filter((d) => d.at > now - KEEP_FOR);
+}
+
+/** The ones still within the year; older ones are dropped from storage on the way. */
 export async function loadDeletions(): Promise<Deletion[]> {
   if (typeof window === "undefined") return [];
   try {
-    const stored = await get<Deletion[]>(KEY);
-    return Array.isArray(stored) ? stored.filter((d) => typeof d?.id === "string") : [];
+    const all = await deletionStore.load();
+    const recent = recentDeletions(all);
+    if (recent.length < all.length) {
+      const kept = new Set(recent.map((d) => d.id));
+      void deletionStore.save({ put: [], remove: all.filter((d) => !kept.has(d.id)).map((d) => d.id) }).catch(() => {});
+    }
+    return recent;
   } catch {
     return [];
   }
 }
 
-export async function saveDeletions(deletions: Deletion[]): Promise<void> {
+export async function replaceDeletions(deletions: Deletion[]): Promise<void> {
   if (typeof window === "undefined") return;
-  await queue;
-  await set(KEY, deletions);
+  await deletionStore.replace(recentDeletions(deletions.map(normalizeDeletion).filter((d) => d !== null)));
 }
 
 export function recordDeletions(ids: string[]): void {
-  if (ids.length === 0) return;
+  if (ids.length === 0 || typeof window === "undefined") return;
   const at = Date.now();
-  enqueue((prev) => {
-    const gone = new Set(ids);
-    return [...prev.filter((d) => !gone.has(d.id)), ...ids.map((id) => ({ id, at }))];
+  deletionStore.save({ put: ids.map((id) => ({ id, at })), remove: [] }).catch(() => {
+    // Not critical: see above.
   });
 }
 
 export function forgetDeletions(ids: string[]): void {
-  if (ids.length === 0) return;
-  enqueue((prev) => {
-    const back = new Set(ids);
-    return prev.filter((d) => !back.has(d.id));
+  if (ids.length === 0 || typeof window === "undefined") return;
+  deletionStore.save({ put: [], remove: ids }).catch(() => {
+    // Not critical: see above.
   });
 }

@@ -11,10 +11,18 @@
  * already handle gets duplicated.
  */
 
-import { loadHistory, saveHistory, type HistoryEntry } from "./history";
-import { loadAdventures, saveAdventures, loadJournalEntries, saveJournalEntries, type Adventure } from "./journal";
+import { loadHistory, normalizeHistoryEntry, replaceHistory, type HistoryEntry } from "./history";
+import {
+  loadAdventures,
+  loadJournalEntries,
+  normalizeAdventure,
+  normalizeJournalEntry,
+  replaceAdventures,
+  replaceJournalEntries,
+  type Adventure,
+} from "./journal";
 import type { JournalEntry } from "./lonelog";
-import { isCustomTable, loadCustomTables, saveCustomTables, type CustomTable } from "./customTables";
+import { isCustomTable, loadCustomTables, replaceCustomTables, type CustomTable } from "./customTables";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
@@ -23,7 +31,8 @@ import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
 import { mergeData } from "./backupMerge";
-import { loadDeletions, saveDeletions, type Deletion } from "./deletions";
+import { loadDeletions, recentDeletions, replaceDeletions, type Deletion } from "./deletions";
+import { announceChange } from "./sync";
 
 // 2: journal.adventures (formerly journal.campaigns) — backups are so
 // new there's no need to migrate old ones.
@@ -82,8 +91,9 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
   };
 }
 
-/** Only validates the bare minimum shape so restoring doesn't blow up
- * — settings are deliberately lenient (best-effort). */
+/** Only the outer shape: each record is checked on its own afterwards
+ * (a bad one is dropped, the rest restored), and settings are
+ * deliberately lenient (best-effort). */
 function isBackupPayload(value: unknown): value is BackupPayload {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -119,8 +129,17 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     throw new BackupError(t.about.importAllError);
   }
 
+  // Record by record, like on load: a damaged or hand-edited backup
+  // loses what can't be read, instead of leaving a screen that can't open.
+  const incomingHistory = parsed.history.map(normalizeHistoryEntry).filter((x) => x !== null);
+  const incomingAdventures = parsed.journal.adventures.map(normalizeAdventure).filter((x) => x !== null);
+  const incomingEntries = parsed.journal.entries.map(normalizeJournalEntry).filter((x) => x !== null);
   const incomingTables = Array.isArray(parsed.customTables) ? parsed.customTables.filter(isCustomTable) : null;
-  const incomingDeleted = Array.isArray(parsed.journal.deleted) ? parsed.journal.deleted : [];
+  const incomingDeleted = recentDeletions(
+    (Array.isArray(parsed.journal.deleted) ? parsed.journal.deleted : []).filter(
+      (d): d is Deletion => !!d && typeof d.id === "string" && typeof d.at === "number",
+    ),
+  );
 
   if (mode === "merge") {
     const [history, adventures, entries, customTables, deleted] = await Promise.all([
@@ -133,31 +152,33 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     const merged = mergeData(
       { history, adventures, entries, customTables, deleted },
       {
-        history: parsed.history,
-        adventures: parsed.journal.adventures,
-        entries: parsed.journal.entries,
+        history: incomingHistory,
+        adventures: incomingAdventures,
+        entries: incomingEntries,
         customTables: incomingTables ?? [],
         deleted: incomingDeleted,
       },
     );
     await Promise.all([
-      saveHistory(t, merged.history),
-      saveAdventures(t, merged.adventures),
-      saveJournalEntries(t, merged.entries),
-      saveCustomTables(t, merged.customTables),
-      saveDeletions(merged.deleted),
+      replaceHistory(t, merged.history),
+      replaceAdventures(t, merged.adventures),
+      replaceJournalEntries(t, merged.entries),
+      replaceCustomTables(t, merged.customTables),
+      replaceDeletions(merged.deleted),
     ]);
+    announceRestore();
     return;
   }
 
   await Promise.all([
-    saveDeletions(incomingDeleted),
-    saveHistory(t, parsed.history),
-    saveAdventures(t, parsed.journal.adventures),
-    saveJournalEntries(t, parsed.journal.entries),
+    replaceDeletions(incomingDeleted),
+    replaceHistory(t, incomingHistory),
+    replaceAdventures(t, incomingAdventures),
+    replaceJournalEntries(t, incomingEntries),
     // Older backups have no custom tables: the ones here are kept.
-    incomingTables ? saveCustomTables(t, incomingTables) : Promise.resolve(),
+    incomingTables ? replaceCustomTables(t, incomingTables) : Promise.resolve(),
   ]);
+  announceRestore();
   // What's here now is exactly that backup: it counts as the latest.
   const exportedAt = Date.parse(parsed.exportedAt);
   if (Number.isFinite(exportedAt)) saveLastBackupAt(exportedAt);
@@ -175,6 +196,13 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
       saveFavoriteTableIds(new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")));
     }
   }
+}
+
+/** This tab reloads after a restore; the others read it all again. */
+function announceRestore(): void {
+  announceChange("journal");
+  announceChange("history");
+  announceChange("customTables");
 }
 
 export function backupFilename(): string {

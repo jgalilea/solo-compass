@@ -15,6 +15,8 @@
  * kept for the comparison.
  */
 
+import { makeId } from "./ids";
+
 export type Likelihood =
   | "muy-improbable"
   | "improbable"
@@ -58,13 +60,6 @@ export const LIKELIHOOD_DICE: Record<
 
 function rollDie(): number {
   return 1 + Math.floor(Math.random() * 6);
-}
-
-function makeId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /** The rule above applied to the already-chosen dice (the highest of each colour). */

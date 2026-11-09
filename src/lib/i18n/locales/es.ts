@@ -411,7 +411,6 @@ export const es: Dictionary = {
     entryDeleted: "Tirada eliminada",
     storageUnavailableError:
       "El almacenamiento de este navegador no está disponible.",
-    storageCorruptedError: "El historial guardado está dañado y no se pudo leer.",
     storageSaveError: "No se pudo guardar el historial (¿almacenamiento lleno o bloqueado?).",
     storageClearError: "No se pudo borrar el historial.",
     genericLoadError: "No se pudo cargar el historial.",

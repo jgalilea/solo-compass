@@ -69,3 +69,43 @@ export function placeMoved(sorted: JournalEntry[], id: string, direction: "up" |
   if (index === sorted.length - 1) return null;
   return placeAfter(sorted, sorted[index + 1].id, id);
 }
+
+/** One adventure's entries in journal order. */
+export function sortedEntriesOf(entries: JournalEntry[], adventureId: string): JournalEntry[] {
+  return entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp);
+}
+
+/** The entries nudged forward to make room (see placeAfter); a nudge counts as an edit. */
+function applyPlacement(entries: JournalEntry[], placement: Placement, now: number): JournalEntry[] {
+  if (placement.nudged.size === 0) return entries;
+  return entries.map((e) => {
+    const timestamp = placement.nudged.get(e.id);
+    return timestamp === undefined ? e : { ...e, timestamp, editedAt: now };
+  });
+}
+
+/**
+ * Every entry with `entry` added right after `afterId` in its
+ * adventure ("Write below"), or at the end if that entry is gone.
+ */
+export function insertEntryAfter(entries: JournalEntry[], entry: JournalEntry, afterId: string, now: number): JournalEntry[] {
+  const sorted = sortedEntriesOf(entries, entry.adventureId);
+  if (!sorted.some((e) => e.id === afterId)) return [...entries, entry];
+  const placement = placeAfter(sorted, afterId, undefined, now);
+  return [...applyPlacement(entries, placement, now), { ...entry, timestamp: placement.timestamp }];
+}
+
+/**
+ * Every entry with `id` one place up or down in its adventure; the same
+ * list if it can't move. A move counts as an edit (editedAt), so a
+ * merged backup keeps the newer order.
+ */
+export function moveEntryIn(entries: JournalEntry[], id: string, direction: "up" | "down", now: number): JournalEntry[] {
+  const moving = entries.find((e) => e.id === id);
+  if (!moving) return entries;
+  const placement = placeMoved(sortedEntriesOf(entries, moving.adventureId), id, direction);
+  if (!placement) return entries;
+  return applyPlacement(entries, placement, now).map((e) =>
+    e.id === id ? { ...e, timestamp: placement.timestamp, editedAt: now } : e,
+  );
+}

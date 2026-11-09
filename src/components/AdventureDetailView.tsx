@@ -1,27 +1,28 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
-import { searchEntries } from "../lib/journalSearch";
+import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
 import { buildCast } from "../lib/lonelogTags";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
-import { canShare, shareTextFile } from "../lib/share";
+import { shareTextFile } from "../lib/share";
 import { AdventureNotebook } from "./AdventureNotebook";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
-import { ActionMenu } from "./ActionMenu";
+import { AdventureHeader } from "./AdventureHeader";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { JournalComposer } from "./JournalComposer";
 import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
-import { EntryList, LineButtons, SearchResultList, SessionGroupRow, type EntryActions } from "./journalShared";
+import { JournalSearchPanel } from "./JournalSearchPanel";
+import { EntryList, LineButtons, SessionGroupRow, type EntryActions } from "./journalShared";
+import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
   groupBySession,
@@ -29,30 +30,17 @@ import {
   PRIMARY_BUTTON_CLASS,
   sanitizeFilename,
   type ComposerMode,
-  type EntryGroup,
 } from "../lib/journalUi";
 import {
-  IconArchive,
-  IconArchiveRestore,
-  IconArrowLeft,
-  IconChart,
   IconChevronRight,
   IconClose,
   IconDice,
-  IconDownload,
   IconJournal,
   IconNotebook,
   IconOracle,
-  IconPause,
-  IconPencil,
-  IconPlay,
-  IconSearch,
   IconSession,
-  IconShare,
-  IconStar,
   IconTable,
   IconTrash,
-  IconWebPage,
 } from "./icons/Icons";
 
 /**
@@ -79,11 +67,7 @@ export function AdventureDetailView() {
     adventures,
     entries,
     activeAdventureId,
-    setActiveAdventureId,
-    renameAdventure,
     deleteAdventure,
-    toggleAdventureFavorite,
-    setAdventureStatus,
     setAdventureNotes,
     setCastDescription,
     addEntry,
@@ -135,8 +119,6 @@ export function AdventureDetailView() {
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
-  const [renaming, setRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<JournalEntry | null>(null);
@@ -220,7 +202,7 @@ export function AdventureDetailView() {
   };
 
   const searchMatches = useMemo(
-    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, SEARCH_LIMIT + 1) : []),
+    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1) : []),
     [searchOpen, adventureEntries, searchQuery],
   );
 
@@ -340,16 +322,6 @@ export function AdventureDetailView() {
     );
   }
 
-  function startRename() {
-    setRenameValue(adventure!.name);
-    setRenaming(true);
-  }
-
-  function commitRename() {
-    if (renameValue.trim()) renameAdventure(adventure!.id, renameValue);
-    setRenaming(false);
-  }
-
   function commitSessionTitleEdit() {
     if (currentGroup?.sessionEntry && sessionTitleEditValue.trim()) {
       editEntry(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
@@ -433,7 +405,6 @@ export function AdventureDetailView() {
     document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const isArchived = adventure.status === "archived";
   const hasSessionIndex = groups.some((g) => g.sessionEntry);
 
   const notebook = (
@@ -477,132 +448,22 @@ export function AdventureDetailView() {
       </aside>
 
       <div className="flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] xl:col-start-2">
-        <div className="relative flex items-center gap-2">
-          <Link
-            to="/diario"
-            aria-label={t.journal.backToList}
-            className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
-          >
-            <IconArrowLeft size={20} />
-          </Link>
-          {renaming ? (
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <input
-                autoFocus
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") commitRename();
-                  if (e.key === "Escape") setRenaming(false);
-                }}
-                placeholder={t.journal.renameAdventurePlaceholder}
-                className={INPUT_CLASS}
-              />
-              <button type="button" onClick={commitRename} className={PRIMARY_BUTTON_CLASS}>
-                {t.common.save}
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* A long name wraps (up to three lines on phones, two above)
-                  rather than being cut by the buttons beside it. */}
-              <h1 className="line-clamp-3 min-w-0 font-display text-lg leading-snug break-words text-parchment sm:line-clamp-2 sm:text-2xl sm:leading-tight lg:text-3xl">
-                {adventure.favorite && <IconStar size={16} filled className="mr-1.5 inline align-baseline text-gold" />}
-                {adventure.name}
-              </h1>
-              {/* On phones both are just their mark, to leave the name room:
-                  the gold dot (active) or the play icon (set active). */}
-              {isActive ? (
-                <span
-                  role="img"
-                  aria-label={t.journal.activeLabel}
-                  title={interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 p-2 text-xs font-medium text-gold sm:px-2.5 sm:py-1"
-                >
-                  <span className="size-1.5 rounded-full bg-gold" />
-                  <span aria-hidden className="hidden sm:inline">
-                    {t.journal.activeLabel}
-                  </span>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setActiveAdventureId(adventure.id)}
-                  aria-label={t.journal.setActive}
-                  title={t.journal.activateHint}
-                  className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border p-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold sm:px-2.5 sm:py-1"
-                >
-                  <IconPlay size={13} />
-                  <span className="hidden sm:inline">{t.journal.setActive}</span>
-                </button>
-              )}
-              {isArchived && (
-                <span className="shrink-0 rounded-full border border-ink-border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-parchment-dim">
-                  {t.journal.statusArchived}
-                </span>
-              )}
-              <div className="ml-auto" />
-              {adventureEntries.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen((v) => !v)}
-                  aria-label={t.journal.searchInJournal}
-                  title={t.journal.searchInJournal}
-                  aria-expanded={searchOpen}
-                  className={[
-                    "-m-1 shrink-0 rounded-full p-1.5 transition",
-                    searchOpen ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
-                  ].join(" ")}
-                >
-                  <IconSearch size={21} />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setNotebookOpen(true)}
-                aria-label={t.notebook.openLabel}
-                title={t.notebook.openLabel}
-                className="-m-1 shrink-0 rounded-full p-1.5 text-parchment-dim transition hover:text-gold xl:hidden"
-              >
-                <IconNotebook size={21} />
-              </button>
-              {/* With a single session there's nowhere to jump to. */}
-              {groups.length > 1 && <SessionMenu groups={groups} onJump={jumpToSession} className="xl:hidden" />}
-              {/* Everything rarely used, grouped, so the header fits on one
-                  line and doesn't compete with what's used while playing. */}
-              <ActionMenu
-                label={t.journal.moreActions}
-                items={[
-                  {
-                    label: adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd,
-                    Icon: IconStar,
-                    onSelect: () => toggleAdventureFavorite(adventure.id),
-                  },
-                  ...(isActive
-                    ? [{ label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }]
-                    : []),
-                  { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
-                  { label: t.journal.statsButton, Icon: IconChart, onSelect: () => setStatsOpen(true) },
-                  { label: t.journal.exportButton, Icon: IconDownload, onSelect: handleExport },
-                  { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: () => void handleExportHtml() },
-                  ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: handleShare }] : []),
-                  isArchived
-                    ? {
-                        label: t.journal.unarchiveAdventure,
-                        Icon: IconArchiveRestore,
-                        onSelect: () => setAdventureStatus(adventure.id, "ongoing"),
-                      }
-                    : {
-                        label: t.journal.archiveAdventure,
-                        Icon: IconArchive,
-                        onSelect: () => setAdventureStatus(adventure.id, "archived"),
-                      },
-                  { label: t.journal.deleteAdventure, Icon: IconTrash, onSelect: () => setDeleting(true), danger: true },
-                ]}
-              />
-            </>
-          )}
-        </div>
+        <AdventureHeader
+          adventure={adventure}
+          isActive={isActive}
+          hasEntries={adventureEntries.length > 0}
+          searchOpen={searchOpen}
+          onToggleSearch={() => setSearchOpen((v) => !v)}
+          notebookOpen={notebookOpen}
+          onOpenNotebook={() => setNotebookOpen(true)}
+          groups={groups}
+          onJumpToSession={jumpToSession}
+          onStats={() => setStatsOpen(true)}
+          onExport={handleExport}
+          onExportHtml={() => void handleExportHtml()}
+          onShare={handleShare}
+          onDelete={() => setDeleting(true)}
+        />
 
         {searchOpen && (
           <JournalSearchPanel
@@ -833,80 +694,8 @@ export function AdventureDetailView() {
   );
 }
 
-const SEARCH_LIMIT = 50;
 /** revealRef: the entry being written below, whatever its id is by then. */
 const INSERTION = "insertion";
-
-/** Search inside the adventure, below its header; picking a result jumps to it. */
-function JournalSearchPanel({
-  query,
-  onQueryChange,
-  matches,
-  onPick,
-  onClose,
-}: {
-  query: string;
-  onQueryChange: (query: string) => void;
-  /** Up to SEARCH_LIMIT + 1, to know whether there are more. */
-  matches: ReturnType<typeof searchEntries>;
-  onPick: (match: ReturnType<typeof searchEntries>[number]) => void;
-  onClose: () => void;
-}) {
-  const { t } = useLocaleContext();
-  const q = query.trim();
-  const shown = matches.slice(0, SEARCH_LIMIT);
-  return (
-    <section
-      aria-label={t.journal.searchInJournal}
-      className="animate-fade-up flex flex-col gap-2.5 rounded-2xl border border-ink-border bg-ink-800/60 p-3"
-    >
-      <div className="relative flex">
-        <IconSearch
-          size={17}
-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/50"
-        />
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") onClose();
-            if (e.key === "Enter" && shown[0]) onPick(shown[0]);
-          }}
-          placeholder={t.journal.searchInJournalPlaceholder}
-          aria-label={t.journal.searchInJournal}
-          className={`${INPUT_CLASS} w-full py-2.5 pl-10 pr-10`}
-        />
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t.common.close}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-dim/60 transition hover:text-parchment"
-        >
-          <IconClose size={15} />
-        </button>
-      </div>
-      {q && (
-        <>
-          <p aria-live="polite" className="px-1 text-xs text-parchment-dim">
-            {shown.length === 0
-              ? interpolate(t.journal.searchNoMatches, { query: q })
-              : matches.length > SEARCH_LIMIT
-                ? interpolate(t.journal.searchMoreResults, { count: SEARCH_LIMIT })
-                : shown.length === 1
-                  ? t.journal.searchMatchCountOne
-                  : interpolate(t.journal.searchMatchCount, { count: shown.length })}
-          </p>
-          {shown.length > 0 && (
-            <div className="max-h-[50dvh] overflow-y-auto overscroll-contain pr-0.5">
-              <SearchResultList matches={shown} query={q} onPick={onPick} />
-            </div>
-          )}
-        </>
-      )}
-    </section>
-  );
-}
 
 function PanelSection({
   Icon,
@@ -928,97 +717,3 @@ function PanelSection({
   );
 }
 
-/** Session index (wide desktop): jumps to each session. */
-function SessionIndex({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
-  const { t } = useLocaleContext();
-  return (
-    <nav aria-label={t.journal.sessionsHeading} className="flex flex-col gap-2">
-      <h2 className="flex items-center gap-2 px-3 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-        <IconSession size={15} className="text-gold" />
-        {t.journal.sessionsHeading}
-      </h2>
-      <SessionList groups={groups} onJump={onJump} />
-    </nav>
-  );
-}
-
-/**
- * The same index where there's no room for a column (phone, tablet and
- * narrow desktop): a button in the header that drops it down.
- */
-function SessionMenu({
-  groups,
-  onJump,
-  className,
-}: {
-  groups: EntryGroup[];
-  onJump: (index: number) => void;
-  className: string;
-}) {
-  const { t } = useLocaleContext();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  useDismiss(open, rootRef, () => setOpen(false));
-
-  return (
-    // No "relative" on phones: the dropdown takes the header's width
-    // instead of overflowing to the left from the button.
-    // flex: as a block, its line height pushed the button 2px out of
-    // line with the search and notebook buttons beside it.
-    <div ref={rootRef} className={`${className} flex shrink-0 sm:relative`}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={t.journal.sessionsHeading}
-        title={t.journal.sessionsHeading}
-        aria-haspopup="true"
-        aria-expanded={open}
-        className={[
-          "-m-1 rounded-full p-1.5 transition",
-          open ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
-        ].join(" ")}
-      >
-        <IconSession size={21} />
-      </button>
-      {open && (
-        <nav
-          aria-label={t.journal.sessionsHeading}
-          className="animate-fade-up absolute inset-x-0 top-full z-40 mt-2 flex max-h-[60dvh] flex-col overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 p-1.5 shadow-2xl sm:left-auto sm:w-72"
-        >
-          <SessionList
-            groups={groups}
-            onJump={(i) => {
-              setOpen(false);
-              onJump(i);
-            }}
-          />
-        </nav>
-      )}
-    </div>
-  );
-}
-
-function SessionList({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
-  const { t } = useLocaleContext();
-  const last = groups.length - 1;
-  return (
-    <ul className="flex flex-col gap-0.5">
-      {groups.map((g, i) => (
-        <li key={g.sessionEntry?.id ?? `prologue-${i}`}>
-          <button
-            type="button"
-            onClick={() => onJump(i)}
-            aria-current={i === last ? "true" : undefined}
-            className={[
-              "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition hover:bg-ink-700/60",
-              i === last ? "font-medium text-gold" : "text-parchment-dim hover:text-parchment",
-            ].join(" ")}
-          >
-            <span className="min-w-0 flex-1 truncate">{g.sessionEntry?.text ?? t.journal.prologueLabel}</span>
-            <span className="shrink-0 text-xs text-parchment-dim/50">{g.items.length}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}

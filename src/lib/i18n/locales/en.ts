@@ -409,7 +409,6 @@ export const en: Dictionary = {
     clearConfirmButton: "Clear all",
     entryDeleted: "Roll deleted",
     storageUnavailableError: "This browser's storage isn't available.",
-    storageCorruptedError: "The saved history is corrupted and couldn't be read.",
     storageSaveError: "Couldn't save the history (storage full or blocked?).",
     storageClearError: "Couldn't clear the history.",
     genericLoadError: "Couldn't load the history.",

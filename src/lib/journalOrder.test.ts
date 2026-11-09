@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { placeAfter, placeMoved } from "./journalOrder";
+import { insertEntryAfter, moveEntryIn, placeAfter, placeMoved } from "./journalOrder";
 import type { JournalEntry } from "./lonelog";
 
 function entry(id: string, timestamp: number): JournalEntry {
@@ -72,5 +72,45 @@ describe("placeMoved", () => {
     const tied = [entry("q", 100), entry("roll", 100)];
     expect(order(tied, "roll", placeMoved(tied, "roll", "up")!)).toEqual(["roll", "q"]);
     expect(order(tied, "q", placeMoved(tied, "q", "down")!)).toEqual(["roll", "q"]);
+  });
+});
+
+describe("insertEntryAfter", () => {
+  const at = (id: string, timestamp: number, adventureId = "a"): JournalEntry => ({
+    id,
+    adventureId,
+    timestamp,
+    kind: "note",
+    text: id,
+  });
+
+  it("puts the new entry right after the anchor, and the next one after that", () => {
+    const entries = [at("one", 10), at("two", 20), at("elsewhere", 15, "b")];
+    const first = insertEntryAfter(entries, at("new", 99), "one", 99);
+    const second = insertEntryAfter(first, at("newer", 99), "new", 99);
+    const order = second
+      .filter((e) => e.adventureId === "a")
+      .sort((x, y) => x.timestamp - y.timestamp)
+      .map((e) => e.id);
+    expect(order).toEqual(["one", "new", "newer", "two"]);
+    expect(second.find((e) => e.id === "elsewhere")?.timestamp).toBe(15);
+  });
+
+  it("goes to the end if the anchor was deleted", () => {
+    const entries = [at("one", 10)];
+    expect(insertEntryAfter(entries, at("new", 50), "gone", 50).map((e) => e.id)).toEqual(["one", "new"]);
+  });
+});
+
+describe("moveEntryIn", () => {
+  it("marks the moved entry as edited, and returns the same list when it can't move", () => {
+    const entries: JournalEntry[] = [
+      { id: "x", adventureId: "a", timestamp: 1, kind: "note", text: "x" },
+      { id: "y", adventureId: "a", timestamp: 2, kind: "note", text: "y" },
+    ];
+    const moved = moveEntryIn(entries, "y", "up", 500);
+    expect(moved.find((e) => e.id === "y")).toMatchObject({ editedAt: 500 });
+    expect(moved.find((e) => e.id === "y")!.timestamp).toBeLessThan(1);
+    expect(moveEntryIn(entries, "x", "up", 500)).toBe(entries);
   });
 });

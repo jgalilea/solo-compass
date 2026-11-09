@@ -14,6 +14,9 @@ export interface EntryMatch {
  * in the journal's order (oldest first: where a name first shows up is
  * usually where it was introduced), each with the session it belongs to.
  */
+/** How many matches the search inside an adventure lists. */
+export const ADVENTURE_SEARCH_LIMIT = 50;
+
 export function searchEntries(entries: JournalEntry[], query: string, limit = Infinity): EntryMatch[] {
   if (!query.trim()) return [];
   const byAdventure = new Map<string, JournalEntry[]>();

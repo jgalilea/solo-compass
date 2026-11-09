@@ -85,7 +85,19 @@ No backend; persistence is split by access pattern, not by feature:
   the player's own tables (`customTables.ts`).
   `localStorage` is ~5 MiB per origin and shared with every other app on the
   same `github.io` subdomain, so it's unsuitable for this.
-  History auto-migrates once from a legacy `localStorage` version if found.
+  Each kind of record (adventures, journal entries, rolls, tables,
+  deletions) is a **collection** (`collectionStore.ts`): its own database,
+  one record per id, every record read through a `normalize…` function
+  that drops what can't be shown (also on restoring a backup). Saving
+  writes only what changed (`diffById`), never the whole list: two tabs
+  or windows open at once (an installed app and a browser tab) used to
+  overwrite each other. The adventures' order is a separate key of ids.
+  The first load moves the old layout (one key per whole array) over and
+  deletes it; history also migrates once from a legacy `localStorage`
+  version. The hooks keep each list with `useStoredList` (latest list in
+  a ref, updater run once outside React, then save) and, after saving,
+  tell the other tabs through `sync.ts` (BroadcastChannel), which read
+  again. New stored data should follow the same pattern.
 - **localStorage**, for small settings read synchronously before first
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
   language, selected oracle, favorite tables, unfolded table blocks,
@@ -123,7 +135,7 @@ No backend; persistence is split by access pattern, not by feature:
   Deletions are recorded by id (`deletions.ts`, also in the backup) so a
   merge doesn't bring back what was deleted on either device: anything
   new that deletes data must call `recordDeletions` (and its undo
-  `forgetDeletions`).
+  `forgetDeletions`). They're kept for a year.
 
 ### Lonelog (`src/lib/lonelog.ts`)
 

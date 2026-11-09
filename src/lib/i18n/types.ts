@@ -358,7 +358,6 @@ export interface Dictionary {
     clearConfirmButton: string;
     entryDeleted: string;
     storageUnavailableError: string;
-    storageCorruptedError: string;
     storageSaveError: string;
     storageClearError: string;
     genericLoadError: string;
