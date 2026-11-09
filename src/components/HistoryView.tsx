@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -6,10 +6,17 @@ import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
-import { IconArrowLeft, IconHistory, IconTrash } from "./icons/Icons";
+import { IconArrowLeft, IconChevronDown, IconHistory, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
 
 type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
+
+/**
+ * Rolls shown at first, and added each time the end of the list comes
+ * into view: years of play are thousands of rolls, and rendering them
+ * all at once took seconds on a phone (e2e/volume.perf.ts).
+ */
+const PAGE_SIZE = 60;
 
 export function HistoryView() {
   const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
@@ -33,6 +40,30 @@ export function HistoryView() {
     if (filter === "favoritas") return entries.filter((e) => e.favorite);
     return entries.filter((e) => e.kind === filter);
   }, [entries, filter]);
+
+  const [shown, setShown] = useState(PAGE_SIZE);
+  const showMore = useCallback(() => setShown((n) => n + PAGE_SIZE), []);
+  const hasMore = filtered.length > shown;
+  const moreRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const button = moreRef.current;
+    if (!hasMore || !button || typeof IntersectionObserver === "undefined") return;
+    // Loads the next page a little before the end is reached; the button
+    // stays for keyboards and for browsers without the observer.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) showMore();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(button);
+    return () => observer.disconnect();
+  }, [hasMore, shown, showMore]);
+
+  function changeFilter(next: Filter) {
+    setFilter(next);
+    setShown(PAGE_SIZE);
+  }
 
   const filters: [Filter, string][] = [
     ["todo", t.history.filterAll],
@@ -83,7 +114,7 @@ export function HistoryView() {
             <button
               key={key}
               type="button"
-              onClick={() => setFilter(key)}
+              onClick={() => changeFilter(key)}
               className={[
                 "flex-1 rounded-xl px-1 py-1.5 transition",
                 filter === key
@@ -130,7 +161,7 @@ export function HistoryView() {
 
       {status === "ready" && filtered.length > 0 && (
         <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {filtered.map((entry) => (
+          {filtered.slice(0, shown).map((entry) => (
             <li key={entry.id}>
               <HistoryEntryCard
                 entry={entry}
@@ -140,6 +171,18 @@ export function HistoryView() {
             </li>
           ))}
         </ul>
+      )}
+
+      {status === "ready" && hasMore && (
+        <button
+          ref={moreRef}
+          type="button"
+          onClick={showMore}
+          className="mx-auto flex items-center gap-1.5 rounded-xl border border-ink-border px-4 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+        >
+          <IconChevronDown size={16} />
+          {t.history.showMore}
+        </button>
       )}
 
       {confirmingClear && (

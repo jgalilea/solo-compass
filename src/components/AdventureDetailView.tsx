@@ -177,6 +177,7 @@ export function AdventureDetailView() {
     onSelect: setSelectedEntryId,
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
     highlightedId,
+    anchorId: inserting ? insertAfter.id : null,
     cast,
     onMove: (id, direction) => {
       moveEntry(id, direction);

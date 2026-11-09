@@ -81,6 +81,10 @@ export interface Dictionary {
     shiftKey: string;
     enterKey: string;
   };
+  safariNote: {
+    text: string;
+    moveData: string;
+  };
   install: {
     sectionTitle: string;
     statusStandalone: string;
@@ -352,6 +356,7 @@ export interface Dictionary {
     title: string;
     subtitle: string;
     swipeHint: string;
+    showMore: string;
     backToOracle: string;
     clearAll: string;
     filterAll: string;
@@ -405,6 +410,7 @@ export interface Dictionary {
     favoriteRemove: string;
     dragHandle: string;
     toggleSession: string;
+    showEarlierEntries: string;
     previousSessionsHeading: string;
     togglePreviousSessions: string;
     diceRollerLabel: string;

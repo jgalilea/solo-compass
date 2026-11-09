@@ -67,6 +67,8 @@ export interface EntryActions {
   onMove?: (id: string, direction: "up" | "down") => void;
   canMove?: (id: string, direction: "up" | "down") => boolean;
   onInsertBelow?: (id: string) => void;
+  /** Where new entries are being written ("write below"): kept in view. */
+  anchorId?: string | null;
 }
 
 /** The "⋯" order items of an entry's buttons, if the screen offers them. */
@@ -93,11 +95,44 @@ const ANSWER_CHIP: Record<Answer, string> = {
   contradiccion: "border-contradiction/40 bg-contradiction/10 text-contradiction",
 };
 
+/**
+ * Blocks drawn at first, and added each time "earlier entries" is
+ * pressed: a session can hold thousands of entries (an imported journal
+ * with no session markers), and drawing them all made every new entry
+ * take seconds on a phone (e2e/volume.perf.ts).
+ */
+const BLOCK_PAGE = 80;
+
 /** A session's entries, grouping question → roll → consequences. */
 export function EntryList({ items, actions }: { items: JournalEntry[]; actions: EntryActions }) {
+  const { t } = useLocaleContext();
+  const blocks = buildEntryBlocks(items);
+  const [shown, setShown] = useState(BLOCK_PAGE);
+  // What the screen is pointing at (a search jump, the entry being
+  // edited, selected or written below) is always drawn, with
+  // everything after it.
+  const targets = [actions.highlightedId, actions.editingId, actions.selectedId, actions.anchorId];
+  const firstTarget = blocks.findIndex((block) => block.some((e) => targets.includes(e.id)));
+  const needed = firstTarget >= 0 ? blocks.length - firstTarget : 0;
+  if (needed > shown) setShown(needed);
+  const start = Math.max(0, blocks.length - Math.max(shown, needed));
+  const hiddenEntries = blocks.slice(0, start).reduce((n, block) => n + block.length, 0);
+
   return (
     <>
-      {buildEntryBlocks(items).map((block) =>
+      {start > 0 && (
+        <li className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setShown((n) => n + BLOCK_PAGE)}
+            className="flex items-center gap-1.5 rounded-xl border border-ink-border px-4 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          >
+            <IconArrowUp size={16} />
+            {interpolate(t.journal.showEarlierEntries, { count: hiddenEntries })}
+          </button>
+        </li>
+      )}
+      {blocks.slice(start).map((block) =>
         block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
           <li
             key={block[0].id}

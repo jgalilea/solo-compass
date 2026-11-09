@@ -54,6 +54,11 @@ export const en: Dictionary = {
     shiftKey: "Shift",
     enterKey: "Enter",
   },
+  safariNote: {
+    text: "On iPhone, Safari deletes the data of sites you don't open for a week, your journal included. To avoid it, install Solo Compass: Share button → “Add to Home Screen”.",
+    moveData:
+      "The installed app starts empty. To bring what's here: Settings → “Export everything” in Safari, then “Restore backup” in the app.",
+  },
   install: {
     sectionTitle: "App",
     statusStandalone: "Installed: you're using Solo Compass as an app.",
@@ -466,6 +471,7 @@ export const en: Dictionary = {
     title: "History",
     subtitle: "All your rolls, with or without an active adventure.",
     swipeHint: "Swipe a roll right to favorite it, or left to delete it.",
+    showMore: "Show more rolls",
     backToOracle: "Back to the oracle",
     clearAll: "Clear all",
     filterAll: "All",
@@ -522,6 +528,7 @@ export const en: Dictionary = {
     favoriteRemove: "Remove adventure from favorites",
     dragHandle: "Drag to reorder",
     toggleSession: "Show or hide the session",
+    showEarlierEntries: "Show earlier entries ({count})",
     previousSessionsHeading: "Previous sessions",
     togglePreviousSessions: "Show or hide previous sessions",
     diceRollerLabel: "Quick dice",

@@ -21,6 +21,7 @@ npm run preview  # serve the production build
 npm run lint      # oxlint
 npm test          # vitest (unit tests de src/lib)
 npm run test:e2e  # playwright smoke test (builds, then plays the app on phone + desktop)
+npm run test:perf # synthetic volume test (years of play, slowed-down phone CPU); not in the deploy
 npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see Deploy)
 ```
 
@@ -34,6 +35,16 @@ against `vite preview`, failing on any console error. The deploy
 workflow runs `npm test`, builds, then runs the smoke test, so a
 failure in either blocks the publish. Keep its selectors on visible
 text/roles in Spanish (the test runs with `locale: "es-ES"`).
+
+`e2e/volume.perf.ts` (config `playwright.perf.config.ts`, run by hand
+with `npm run test:perf`) restores a backup with ~11,000 entries and
+10,000 rolls and times the main screens on a phone with the CPU 4x
+slower, printing each timing. It's why the roll history is paged
+(`HistoryView`, 60 at a time as you scroll) and a session's entries
+are drawn from the end (`EntryList`, 80 blocks, "earlier entries"
+button; whatever is highlighted, edited, selected or written below is
+always drawn). Run it after changing how the journal or the history
+load or render.
 
 ## Deploy
 
@@ -116,6 +127,17 @@ No backend; persistence is split by access pattern, not by feature:
   PWA rarely navigates, which is when browsers check on their own), then
   shows an "Actualizar" banner instead of reloading by itself (it could
   drop half-typed text).
+- **Safari note** (`safariStorageNote.ts`, `SafariStorageNote.tsx`):
+  iPhone/iPad Safari deletes a site's data after 7 days of use without
+  visiting it. Only there (not installed, storage not persistent) the
+  journal list shows a closable note to install the app, saying the
+  installed app starts empty (iOS keeps its storage apart from
+  Safari's) and how to carry the backup over.
+- **Manifest**: one per language (`vite.config.ts` emits
+  `manifest.en.webmanifest` next to the Spanish one, same `id`);
+  `LocaleProvider` points `<link rel="manifest">` at the current one.
+  The viewport blocks pinch zoom on purpose (native-app feel): keep
+  text fields at 16px+ so iOS doesn't zoom into them.
 - **Install** (`install.ts`, card in `InstallApp.tsx`): imported early
   from `main.tsx` to catch `beforeinstallprompt` (fires once at load);
   Settings shows the browser's install dialog, menu instructions where

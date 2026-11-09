@@ -79,6 +79,15 @@ export function isIos(): boolean {
   );
 }
 
+/**
+ * Safari itself on iPhone/iPad (other iOS browsers say so in their
+ * user agent: CriOS, FxiOS, EdgiOS…). Only Safari deletes a site's
+ * data after a week of use without visiting it.
+ */
+export function isIosSafari(): boolean {
+  return isIos() && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(navigator.userAgent);
+}
+
 if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (e) => {
     // No preventDefault: the browser keeps offering its own install

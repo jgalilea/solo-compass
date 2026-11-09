@@ -54,6 +54,11 @@ export const es: Dictionary = {
     shiftKey: "Mayús",
     enterKey: "Intro",
   },
+  safariNote: {
+    text: "En iPhone, Safari borra los datos de las webs que pasas una semana sin abrir, y tu diario con ellos. Para evitarlo, instala Solo Compass: botón Compartir → «Añadir a pantalla de inicio».",
+    moveData:
+      "La app instalada empieza vacía. Para llevarte lo de aquí: Ajustes → «Exportar todo» en Safari y «Restaurar copia» en la app.",
+  },
   install: {
     sectionTitle: "Aplicación",
     statusStandalone: "Instalada: estás usando Solo Compass como app.",
@@ -466,6 +471,7 @@ export const es: Dictionary = {
     title: "Historial",
     subtitle: "Todas tus tiradas, con o sin aventura activa.",
     swipeHint: "Desliza una tirada a la derecha para marcarla como favorita o a la izquierda para borrarla.",
+    showMore: "Ver más tiradas",
     backToOracle: "Volver al oráculo",
     clearAll: "Borrar todo",
     filterAll: "Todo",
@@ -526,6 +532,7 @@ export const es: Dictionary = {
     favoriteRemove: "Quitar aventura de favoritas",
     dragHandle: "Arrastrar para reordenar",
     toggleSession: "Mostrar u ocultar la sesión",
+    showEarlierEntries: "Ver entradas anteriores ({count})",
     previousSessionsHeading: "Sesiones anteriores",
     togglePreviousSessions: "Mostrar u ocultar las sesiones anteriores",
     diceRollerLabel: "Dados rápidos",

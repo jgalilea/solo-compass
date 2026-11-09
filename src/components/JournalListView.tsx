@@ -5,6 +5,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
+import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
@@ -330,6 +331,8 @@ export function JournalListView() {
                 {t.journal.noActiveAdventureNote}
               </p>
             )}
+
+            <SafariStorageNote />
           </section>
 
           {entryMatches.length > 0 && (

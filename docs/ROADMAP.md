@@ -5,10 +5,31 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-09 (ayuda de los dados ampliada, diálogos unificados).
+Última revisión: 2026-11-09 (prueba de rendimiento con años de partidas, aviso de Safari).
 
 ## Hecho recientemente
 
+- Prueba de rendimiento y aviso de Safari (2026-11-09):
+  - `npm run test:perf` (`e2e/volume.perf.ts`, fuera del despliegue):
+    restaura una copia con 11.000 entradas en 22 aventuras y 10.000
+    tiradas y cronometra las pantallas en un móvil con la CPU 4 veces
+    más lenta. Encontró dos problemas, corregidos: el historial pintaba
+    todas las tiradas (14 s; ahora 60 y el resto al bajar, ~0,1 s) y
+    una sesión de 2.000 entradas (diario importado sin sesiones) tardaba
+    4,7 s en cada entrada nueva (ahora pinta los últimos 80 bloques con
+    «Ver entradas anteriores»; ~0,4 s). Lo demás va por debajo de 0,5 s.
+    Pendiente si molesta: saltar desde la búsqueda a una entrada muy
+    antigua de una sesión enorme pinta todo desde ella hasta el final.
+  - Aviso en el diario solo en Safari de iPhone/iPad sin instalar (y
+    sin almacenamiento persistente): Safari borra los datos de una web
+    tras 7 días de uso sin visitarla. Dice también que la app instalada
+    empieza vacía (en iOS no comparte datos con Safari) y cómo pasar
+    la copia. Se puede cerrar para siempre.
+  - Manifest de la PWA en los dos idiomas: `LocaleProvider` cambia el
+    `<link rel="manifest">` al del idioma elegido.
+- Decisiones (2026-11-09): el zoom sigue bloqueado a propósito (la app
+  debe comportarse como una nativa); revisión con lector de pantalla,
+  no prioritaria.
 - Ayuda de los dados ampliada y diálogos unificados (2026-11-09): la
   guía de los dados explica cómo tirar, cómo leer una tirada y cada
   fórmula desglosada pieza a pieza, con varios ejemplos (un test
@@ -446,11 +467,10 @@ formato digital).
 
 ## 8. Decisiones pendientes
 
-- **Visibilidad del repositorio y uso de IA.** Abierto (GPL) o privado:
-  GitHub Pages desde un repo privado necesita un plan de pago, y
-  Cloudflare Pages lo permite gratis. Cambiar de URL cambia el origen y
-  los datos de los usuarios no se mueven solos (IndexedDB y
-  localStorage van atados al origen): solo con la copia de seguridad.
+- **Visibilidad del repositorio — DECIDIDO (2026-11-09): sigue
+  abierto (GPL)** en GitHub Pages. No cambiar de URL: el origen ata los
+  datos de los usuarios (IndexedDB y localStorage) y solo se moverían
+  con la copia de seguridad.
 - **Firma de IA en los commits.** Decidir si se quita del historial
   (exige reescribirlo y forzar el push) y si los commits nuevos la
   llevan.
