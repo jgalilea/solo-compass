@@ -63,6 +63,31 @@ function faces(...rolls: [face: number, sides: number][]) {
   };
 }
 
+describe("rollFormula, Lonelog's dice notation add-on", () => {
+  it("drops the lowest or highest dice", () => {
+    expect(rollFormula("4d6dl1", dice(2, 6, 5, 3)(6))).toBe("4d6dl1 -> 14 (6+5+3, 2✗)");
+    expect(rollFormula("4d6d1", dice(2, 6, 5, 3)(6))).toBe("4d6d1 -> 14 (6+5+3, 2✗)");
+    expect(rollFormula("4d6dh1", dice(2, 6, 5, 3)(6))).toBe("4d6dh1 -> 10 (2+3+5, 6✗)");
+    expect(rollFormula("2d6dl2")).toBeNull();
+  });
+
+  it("compounds an explosion into one die", () => {
+    expect(rollFormula("d6!!", dice(6, 6, 2)(6))).toBe("d6!! -> 14 (6!+6!+2)");
+    // In a pool it counts once, with its total.
+    expect(rollFormula("2d6!!>=5", dice(6, 1, 3)(6))).toBe("2d6!!>=5 -> 1 (7!!✓ 3)");
+  });
+
+  it("takes failures away from a pool's successes", () => {
+    expect(rollFormula("4d6>4f<3", dice(6, 5, 2, 1)(6))).toBe("4d6>4f<3 -> 0 (6✓ 5✓ 2✗ 1✗)");
+    expect(rollFormula("4d6f<3")).toBeNull();
+  });
+
+  it("writes a description before the roll", () => {
+    expect(rollFormula("4d6dl1 // Strength", dice(2, 6, 5, 3)(6))).toBe("Strength 4d6dl1 -> 14 (6+5+3, 2✗)");
+    expect(rollFormula("2d6 # Damage", dice(3, 4)(6))).toBe("Damage 2d6 -> 7 (3+4)");
+  });
+});
+
 describe("dice help", () => {
   it("only shows examples rollFormula can write", () => {
     for (const locale of LOCALES) {
@@ -91,6 +116,9 @@ describe("dice help", () => {
       "1d8!+1d6!": [[8, 8], [3, 8], [2, 6]],
       "3d10!>=8": [[10, 10], [9, 10], [4, 10], [8, 10]],
       "4dF+1": [[3, 3], [2, 3], [3, 3], [1, 3]],
+      "4d6dl1": [[2, 6], [6, 6], [5, 6], [3, 6]],
+      "4d6>4f<3": [[6, 6], [5, 6], [2, 6], [4, 6]],
+      "d6!!": [[6, 6], [6, 6], [2, 6]],
       "d%": [[42, 100]],
     };
     for (const line of lines) {

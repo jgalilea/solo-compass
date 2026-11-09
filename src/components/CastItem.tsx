@@ -3,9 +3,11 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { JournalEntry } from "../lib/lonelog";
 import {
+  foeIsOut,
   formatProgressTag,
   formatTag,
   PROGRESS_KINDS,
+  QUANTITY_KINDS,
   progressText,
   tagsToPlainText,
   threadStatus,
@@ -69,6 +71,9 @@ export function CastItem({
   const status = member.kind === "thread" ? threadStatus(member) : null;
   const progress = member.progress;
   const isProgress = PROGRESS_KINDS.has(member.kind);
+  const isQuantity = QUANTITY_KINDS.has(member.kind);
+  // A closed thread or a foe out of the fight: dimmed and struck through.
+  const done = (status && status !== "open") || (member.kind === "foe" && foeIsOut(member));
 
   // −/+ on a clock writes its new value as a journal entry (the log is
   // a record: nothing is edited in place). Clocks and tracks stay
@@ -76,14 +81,25 @@ export function CastItem({
   function step(delta: number) {
     const value = (progress?.value ?? 0) + delta;
     if (value < 0 || (progress?.max !== undefined && value > progress.max)) return;
-    onLog(formatProgressTag(member.kind, member.name, value, progress?.max));
+    // An item or money logs the change ("[Inv:Torch-1]"), as the
+    // resource add-on writes it; a clock, where it stands now.
+    if (isQuantity) onLog(formatTag(member.kind, `${member.name}${delta > 0 ? "+" : "-"}${Math.abs(delta)}`));
+    else onLog(formatProgressTag(member.kind, member.name, value, progress?.max));
   }
 
   function logChange(e: FormEvent) {
     e.preventDefault();
-    const details = change.split(",").map((d) => d.trim()).filter(Boolean);
-    if (details.length === 0) return;
-    onLog(formatTag(member.kind, member.name, details));
+    // An amount for an item or money: "+15", "-8", or "45" (what there is now).
+    const amount = change.trim().match(/^([+-]?)\s*(\d+)$/);
+    if (isQuantity && amount) {
+      if (amount[1]) onLog(formatTag(member.kind, `${member.name}${amount[1]}${amount[2]}`));
+      else if (member.kind === "wealth") onLog(formatProgressTag("wealth", member.name, Number(amount[2])));
+      else onLog(formatTag("item", member.name, [amount[2]]));
+    } else {
+      const details = change.split(",").map((d) => d.trim()).filter(Boolean);
+      if (details.length === 0) return;
+      onLog(formatTag(member.kind, member.name, details));
+    }
     setChange("");
     setChanging(false);
   }
@@ -105,12 +121,12 @@ export function CastItem({
           aria-expanded={open}
           className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-ink-700/50"
         >
-          <CastIcon kind={member.kind} size={16} className={`shrink-0 ${status && status !== "open" ? "text-parchment-dim" : "text-gold"}`} />
+          <CastIcon kind={member.kind} size={16} className={`shrink-0 ${done ? "text-parchment-dim" : "text-gold"}`} />
           <span className="min-w-0 flex-1">
             <span
               className={[
                 "block truncate text-sm font-medium",
-                status && status !== "open" ? "text-parchment-dim line-through" : "text-parchment",
+                done ? "text-parchment-dim line-through" : "text-parchment",
               ].join(" ")}
             >
               {member.name}
@@ -123,22 +139,22 @@ export function CastItem({
               )
             )}
           </span>
-          {(member.kind === "pc" || isProgress) && (
-            <span className="shrink-0 rounded border border-gold/40 px-1 text-[0.65rem] font-medium text-gold">
-              {isProgress && progress ? progressText(progress) : kindLabel}
+          {(member.kind === "pc" || isProgress || (isQuantity && progress)) && (
+            <span className="shrink-0 rounded border border-gold/40 px-1 text-[0.65rem] font-medium tabular-nums text-gold">
+              {(isProgress || isQuantity) && progress ? progressText(progress) : kindLabel}
             </span>
           )}
-          {!isProgress && (
+          {!isProgress && !isQuantity && (
             <IconChevronRight size={14} className={`shrink-0 text-parchment-dim transition-transform ${open ? "rotate-90" : ""}`} />
           )}
         </button>
-        {isProgress && (
+        {(isProgress || isQuantity) && (
           <div className="flex shrink-0 items-center pr-1">
             <button
               type="button"
               onClick={() => step(-1)}
-              aria-label={interpolate(t.notebook.decrease, { name: member.name })}
-              title={interpolate(t.notebook.decrease, { name: member.name })}
+              aria-label={interpolate(isQuantity ? t.notebook.useOne : t.notebook.decrease, { name: member.name })}
+              title={interpolate(isQuantity ? t.notebook.useOne : t.notebook.decrease, { name: member.name })}
               className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
             >
               <IconMinus size={14} />
@@ -146,8 +162,8 @@ export function CastItem({
             <button
               type="button"
               onClick={() => step(1)}
-              aria-label={interpolate(t.notebook.increase, { name: member.name })}
-              title={interpolate(t.notebook.increase, { name: member.name })}
+              aria-label={interpolate(isQuantity ? t.notebook.addOne : t.notebook.increase, { name: member.name })}
+              title={interpolate(isQuantity ? t.notebook.addOne : t.notebook.increase, { name: member.name })}
               className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
             >
               <IconPlus size={14} />
@@ -208,7 +224,7 @@ export function CastItem({
                       setChanging(false);
                     }
                   }}
-                  placeholder={t.notebook.changePlaceholder}
+                  placeholder={isQuantity ? t.notebook.quantityChangePlaceholder : t.notebook.changePlaceholder}
                   aria-label={t.notebook.changeButton}
                   className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
                 />
@@ -220,7 +236,9 @@ export function CastItem({
                   {t.notebook.logButton}
                 </button>
               </div>
-              <p className="text-[0.7rem] text-parchment-dim/70">{t.notebook.changeHint}</p>
+              <p className="text-[0.7rem] text-parchment-dim/70">
+                {isQuantity ? t.notebook.quantityChangeHint : t.notebook.changeHint}
+              </p>
             </form>
           ) : (
             <div className="flex flex-wrap gap-1.5">

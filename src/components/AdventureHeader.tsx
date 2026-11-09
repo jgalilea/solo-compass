@@ -41,6 +41,7 @@ export function AdventureHeader({
   onOpenNotebook,
   groups,
   onJumpToSession,
+  onJumpToEntry,
   onStats,
   onExport,
   onExportHtml,
@@ -56,6 +57,7 @@ export function AdventureHeader({
   onOpenNotebook: () => void;
   groups: EntryGroup[];
   onJumpToSession: (index: number) => void;
+  onJumpToEntry: (id: string) => void;
   onStats: () => void;
   onExport: () => void;
   onExportHtml: () => void;
@@ -173,7 +175,9 @@ export function AdventureHeader({
             <IconNotebook size={21} />
           </button>
           {/* With a single session there's nowhere to jump to. */}
-          {groups.length > 1 && <SessionMenu groups={groups} onJump={onJumpToSession} className="xl:hidden" />}
+          {(groups.length > 1 || groups.some((g) => g.items.some((e) => e.kind === "scene"))) && (
+            <SessionMenu groups={groups} onJump={onJumpToSession} onJumpToEntry={onJumpToEntry} className="xl:hidden" />
+          )}
           {/* Everything rarely used, grouped, so the header fits on one
               line and doesn't compete with what's used while playing. */}
           <ActionMenu

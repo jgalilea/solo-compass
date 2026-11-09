@@ -6,7 +6,9 @@ import { CastIcon } from "./CastIcon";
 
 /**
  * A new element, logged as its tag: "[N:Odile|innkeeper]",
- * "[Thread:The box|Open]", "[Clock:Alarm 0/6]", "[Timer:Dawn 6]".
+ * "[Thread:The box|Open]", "[Clock:Alarm 0/6]", "[Timer:Dawn 6]",
+ * "[R:4|active|library]", "[F:Thug|HP 6|Close]", "[Inv:Torch|3]",
+ * "[Wealth:Gold 45]".
  */
 export function AddCastForm({
   kinds,
@@ -22,12 +24,16 @@ export function AddCastForm({
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [size, setSize] = useState(6);
-  const hint = kind === "clock" || kind === "track" || kind === "timer" ? t.notebook.kindHints[kind] : t.notebook.addHint;
+  const [quantity, setQuantity] = useState(1);
+  const hint = kind in t.notebook.kindHints ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints] : t.notebook.addHint;
+  const hasDetails = kind === "pc" || kind === "npc" || kind === "place" || kind === "room" || kind === "foe" || kind === "item";
 
   function tag(): string {
     if (kind === "thread") return formatTag("thread", name, [t.notebook.statuses.open]);
     if (kind === "clock" || kind === "track") return formatProgressTag(kind, name, 0, size);
     if (kind === "timer") return formatProgressTag(kind, name, size);
+    if (kind === "item") return formatTag("item", name, [String(quantity), ...details.split(",")]);
+    if (kind === "wealth") return formatProgressTag("wealth", name, quantity);
     return formatTag(kind, name, details.split(","));
   }
 
@@ -74,7 +80,7 @@ export function AddCastForm({
         aria-label={t.notebook.addNameLabel}
         className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
       />
-      {(kind === "pc" || kind === "npc" || kind === "place") && (
+      {hasDetails && (
         <input
           value={details}
           onChange={(e) => setDetails(e.target.value)}
@@ -93,6 +99,18 @@ export function AddCastForm({
             value={size}
             onChange={(e) => setSize(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
             className={`${INPUT_CLASS} w-20 flex-none bg-ink-900/70 py-1.5 text-sm`}
+          />
+        </label>
+      )}
+      {(kind === "item" || kind === "wealth") && (
+        <label className="flex items-center gap-2 text-xs text-parchment-dim">
+          <span className="flex-1">{t.notebook.quantityLabel}</span>
+          <input
+            type="number"
+            min={0}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(0, Number(e.target.value) || 0))}
+            className={`${INPUT_CLASS} w-24 flex-none bg-ink-900/70 py-1.5 text-sm`}
           />
         </label>
       )}

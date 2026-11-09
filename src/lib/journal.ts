@@ -67,6 +67,7 @@ const ENTRY_KINDS: ReadonlySet<string> = new Set<JournalLineKind>([
   "consequence",
   "note",
   "session",
+  "scene",
 ]);
 
 /**

@@ -21,12 +21,14 @@ import { buildEntryBlocks, groupBySession, splitRollSeries, splitRollText } from
 import {
   buildCast,
   PROGRESS_KINDS,
+  QUANTITY_KINDS,
   progressText,
   splitTags,
   threadStatus,
   type CastMember,
 } from "./lonelogTags";
 import type { Answer } from "./oracle";
+import { noteForm, parseScene, splitActor } from "./lonelogLines";
 
 /** The theme as exported: colour tokens and the display font. */
 export interface ExportTheme {
@@ -55,7 +57,7 @@ export const EXPORT_COLOR_TOKENS = [
   "--color-contradiction",
 ] as const;
 
-const KIND_SYMBOL: Record<Exclude<JournalEntry["kind"], "session">, string> = {
+const KIND_SYMBOL: Record<Exclude<JournalEntry["kind"], "session" | "scene">, string> = {
   action: "@",
   question: "?",
   roll: "d:",
@@ -101,10 +103,35 @@ function rollHtml(entry: JournalEntry, answer: Answer | undefined): string {
   }`;
 }
 
+/** A note as the journal draws it: a narrative block, a line of dialogue, an aside, a block marker. */
+function noteHtml(text: string): string {
+  const form = noteForm(text);
+  switch (form.form) {
+    case "excerpt":
+      return `<blockquote>${escapeHtml(form.text).replace(/\n/g, "<br>")}</blockquote>`;
+    case "dialogue":
+      return `<p><b>${escapeHtml(form.speaker)}:</b> ${taggedHtml(form.text)}</p>`;
+    case "meta":
+      return `<p class="meta">(${form.label ? `${escapeHtml(form.label)}: ` : ""}${taggedHtml(form.text)})</p>`;
+    case "block":
+    case "round":
+      return `<p class="marker">${taggedHtml(text)}</p>`;
+    default:
+      return `<p>${taggedHtml(text)}</p>`;
+  }
+}
+
 function entryHtml(entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined): string {
-  const kind = entry.kind === "session" ? "note" : entry.kind;
+  const kind = entry.kind === "session" || entry.kind === "scene" ? "note" : entry.kind;
   const symbol = KIND_SYMBOL[kind];
-  const body = kind === "roll" ? rollHtml(entry, answerFor(entry.linkedRollId)) : `<p>${taggedHtml(entry.text)}</p>`;
+  const body =
+    kind === "roll"
+      ? rollHtml(entry, answerFor(entry.linkedRollId))
+      : kind === "note"
+        ? noteHtml(entry.text)
+        : kind === "action"
+          ? actionHtml(entry.text)
+          : `<p>${taggedHtml(entry.text)}</p>`;
   return `<div class="entry ${kind}">${symbol ? `<span class="sym">${escapeHtml(symbol)}</span>` : `<span class="sym"></span>`}<div>${body}</div></div>`;
 }
 
@@ -125,13 +152,25 @@ function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<str
   return `<ul class="cast">${members
     .map((m) => {
       const status = m.kind === "thread" ? threadStatus(m) : null;
-      const state = PROGRESS_KINDS.has(m.kind) && m.progress ? [progressText(m.progress)] : m.tags;
+      const state = (PROGRESS_KINDS.has(m.kind) || QUANTITY_KINDS.has(m.kind)) && m.progress ? [progressText(m.progress), ...m.tags] : m.tags;
       const description = descriptions[m.key]?.text.trim();
       return `<li${status && status !== "open" ? ' class="closed"' : ""}><small>${escapeHtml(t.notebook.kinds[m.kind])}</small> <b>${escapeHtml(m.name)}</b>${
         state.length ? ` <span>${escapeHtml(state.join(" · "))}</span>` : ""
       }${description ? `<p class="desc">${escapeHtml(description).replace(/\n/g, "<br>")}</p>` : ""}</li>`;
     })
     .join("")}</ul>`;
+}
+
+/** `@(Jonah) …`: who acts goes first, in bold. */
+function actionHtml(text: string): string {
+  const { actor, text: action } = splitActor(text);
+  return `<p>${actor ? `<b>${escapeHtml(actor)}:</b> ` : ""}${taggedHtml(action)}</p>`;
+}
+
+/** "S1 · Tavern, evening", a heading within the session. */
+function sceneHtml(entry: JournalEntry): string {
+  const { id, context, combat } = parseScene(entry.text);
+  return `<h3 class="scene">${escapeHtml(id)}${context ? ` · ${taggedHtml(context)}` : ""}${combat ? " ⚔" : ""}</h3>`;
 }
 
 export function exportAdventureToHtml({
@@ -155,15 +194,20 @@ export function exportAdventureToHtml({
 }): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const cast = buildCast(sorted);
-  const characters = cast.filter((c) => c.kind === "pc" || c.kind === "npc" || c.kind === "place");
+  const characters = cast.filter((c) => ["pc", "npc", "place", "room", "foe"].includes(c.kind));
   const threads = cast.filter((c) => c.kind === "thread" || PROGRESS_KINDS.has(c.kind));
+  const inventory = cast.filter((c) => QUANTITY_KINDS.has(c.kind));
   const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(exportedAt);
 
   const sessions = groupBySession(sorted)
     .filter((g) => g.sessionEntry || g.items.length)
     .map((group) => {
       const blocks = buildEntryBlocks(group.items)
-        .map((block) => `<section class="card">${block.map((e) => entryHtml(e, answerFor)).join("")}</section>`)
+        .map((block) =>
+          block[0].kind === "scene"
+            ? sceneHtml(block[0])
+            : `<section class="card">${block.map((e) => entryHtml(e, answerFor)).join("")}</section>`,
+        )
         .join("");
       const title = group.sessionEntry ? `<h2>${escapeHtml(group.sessionEntry.text)}</h2>` : "";
       return `<article class="session">${title}${blocks}</article>`;
@@ -174,6 +218,7 @@ export function exportAdventureToHtml({
     notes.trim() ? `<section class="box"><h3>${escapeHtml(t.notebook.notesTitle)}</h3>${notesHtml(notes)}</section>` : "",
     characters.length ? `<section class="box"><h3>${escapeHtml(t.notebook.castTitle)}</h3>${castHtml(t, characters, descriptions)}</section>` : "",
     threads.length ? `<section class="box"><h3>${escapeHtml(t.notebook.threadsTitle)}</h3>${castHtml(t, threads, descriptions)}</section>` : "",
+    inventory.length ? `<section class="box"><h3>${escapeHtml(t.notebook.inventoryTitle)}</h3>${castHtml(t, inventory, descriptions)}</section>` : "",
   ].join("");
 
   const colors = EXPORT_COLOR_TOKENS.map((token) => `    ${token}: ${theme.colors[token] ?? "inherit"};`).join("\n");
@@ -212,6 +257,10 @@ h2 { font-size: 1.15rem; color: var(--color-parchment); border: 1px solid color-
 .sym { color: var(--color-gold); font: 600 .8rem/1.9 ui-monospace, monospace; }
 .question p { font-style: italic; }
 .note p { color: color-mix(in srgb, var(--color-parchment) 90%, transparent); }
+h3.scene { font-size: 1rem; color: var(--color-gold); margin: .4rem 0 0; font-weight: 600; }
+blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid color-mix(in srgb, var(--color-gold) 50%, transparent); font-style: italic; }
+.meta, .marker { color: var(--color-parchment-dim); font-size: .9em; }
+.meta { font-style: italic; }
 .detail { font-size: .78rem; color: var(--color-parchment-dim); }
 .result { font-weight: 600; }
 .answer { display: inline-block; border: 1px solid; border-radius: 999px; padding: .05rem .7rem; font: 700 .9rem/1.6 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }

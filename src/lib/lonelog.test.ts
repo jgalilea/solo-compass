@@ -6,6 +6,7 @@ import {
   parseDescriptionsFromMarkdown,
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
+  parseTitleFromMarkdown,
   type JournalEntry,
   type JournalLineKind,
 } from "./lonelog";
@@ -40,9 +41,11 @@ describe("exportAdventureToMarkdown", () => {
     const entries = [entry("action", "Segundo", 2), entry("note", "Primero", 1)];
     const md = exportAdventureToMarkdown(es, "La Cripta", entries);
     const blocks = md.trimEnd().split("\n\n");
-    expect(blocks[0]).toBe("# La Cripta");
-    expect(blocks[1]).toMatch(/^> .*Lonelog/);
-    expect(blocks.slice(2)).toEqual(["Primero", "@ Segundo"]);
+    // The campaign header (§5.1) in the front matter, then the title.
+    expect(blocks[0]).toBe('---\ntitle: "La Cripta"\n---');
+    expect(blocks[1]).toBe("# La Cripta");
+    expect(blocks[2]).toMatch(/^> .*Lonelog/);
+    expect(blocks.slice(3)).toEqual(["Primero", "@ Segundo"]);
   });
 });
 
@@ -127,9 +130,11 @@ describe("parseMarkdownToEntries", () => {
   });
 
   it("in a foreign file, an indented line continues the previous entry", () => {
+    // "->" is a symbol of its own (§3.2.2): indented, it's still a new line.
     const parsed = parseMarkdownToEntries("d: 2d6 -> 4\n    -> Fallo\nTexto suelto\n=== S1 ===\n  sangrado tras sesión", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
-      ["roll", "2d6 -> 4\n-> Fallo"],
+      ["roll", "2d6 -> 4"],
+      ["roll", "-> Fallo"],
       ["note", "Texto suelto"],
       ["session", "S1"],
       ["note", "sangrado tras sesión"],
@@ -153,15 +158,15 @@ describe("pinned notes (front matter)", () => {
 
   it("are exported as the front matter's notes field and read back as written", () => {
     const md = exportAdventureToMarkdown(es, "Mi aventura", [entry("note", "Hola", 1)], notes);
-    expect(md.startsWith("---\nnotes: |\n  Inventory:\n  - [x] rope\n")).toBe(true);
+    expect(md.startsWith('---\ntitle: "Mi aventura"\nnotes: |\n  Inventory:\n  - [x] rope\n')).toBe(true);
     expect(parseNotesFromMarkdown(md)).toBe(notes);
     // The entries don't change because of it.
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
   });
 
-  it("without notes there's no front matter", () => {
+  it("without notes the front matter only has the campaign header", () => {
     const md = exportAdventureToMarkdown(es, "Mi aventura", [], "  \n");
-    expect(md.startsWith("# Mi aventura")).toBe(true);
+    expect(md.startsWith('---\ntitle: "Mi aventura"\n---\n\n# Mi aventura')).toBe(true);
     expect(parseNotesFromMarkdown(md)).toBe("");
   });
 
@@ -205,9 +210,90 @@ describe("descriptions (front matter)", () => {
 
   it("work without notes, and a hand-written tag with details is read too", () => {
     const md = exportAdventureToMarkdown(es, "Aventura", entries, "", descriptions);
-    expect(md.startsWith("---\ndescriptions: |\n")).toBe(true);
+    expect(md.startsWith('---\ntitle: "Aventura"\ndescriptions: |\n')).toBe(true);
     expect(parseNotesFromMarkdown(md)).toBe("");
     const handWritten = "---\ndescriptions: |\n  [N:Jonah|friendly] Old sailor\n---\n\n# X\n";
     expect(parseDescriptionsFromMarkdown(handWritten, 1)).toEqual({ "npc:jonah": { text: "Old sailor", updatedAt: 1 } });
+  });
+});
+
+describe("Lonelog 1.6 core", () => {
+  const kinds = (md: string) => parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text]);
+
+  it("reads scenes in every form, Markdown heading included", () => {
+    expect(
+      kinds("S1 *School library*\n### S2 *Hall*\nS5a *Flashback*\nS7.1 *Day 1*\nT2-S1 *Meanwhile*\nS3\nS1 is not a scene marker"),
+    ).toEqual([
+      ["scene", "S1 *School library*"],
+      ["scene", "S2 *Hall*"],
+      ["scene", "S5a *Flashback*"],
+      ["scene", "S7.1 *Day 1*"],
+      ["scene", "T2-S1 *Meanwhile*"],
+      ["scene", "S3"],
+      ["note", "S1 is not a scene marker"],
+    ]);
+    expect(formatLine({ kind: "scene", text: "S4 *Tavern*" })).toBe("S4 *Tavern*");
+  });
+
+  it("keeps tbl:, gen: and bare -> lines as rolls, written back as they were", () => {
+    const md = "? What's in the chest?\ntbl: d100=42 -> \"A broken sword\"\ngen: NPC\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n? Anyone home?\n-> Yes, but... (d6=4)";
+    const parsed = parseMarkdownToEntries(md, "a", 0);
+    expect(parsed.map((e) => [e.kind, e.text])).toEqual([
+      ["question", "What's in the chest?"],
+      ["roll", 'tbl: d100=42 -> "A broken sword"'],
+      ["roll", "gen: NPC\nRole: d6=3 -> Merchant\nTrait: d6=5 -> Secretive"],
+      ["question", "Anyone home?"],
+      ["roll", "-> Yes, but... (d6=4)"],
+    ]);
+    const again = exportAdventureToMarkdown(es, "A", parsed);
+    expect(again).toContain('\n\ntbl: d100=42 -> "A broken sword"\n');
+    expect(again).toContain("\n\ngen: NPC\n  Role: d6=3 -> Merchant\n");
+    expect(again).toContain("\n\n-> Yes, but... (d6=4)\n");
+    expect(parseMarkdownToEntries(again, "a", 0).map((e) => [e.kind, e.text])).toEqual(parsed.map((e) => [e.kind, e.text]));
+  });
+
+  it("keeps a narrative block whole, blank lines and symbols inside included", () => {
+    const md = 'Before\n\\---\nThe diary reads:\n\n@ not an action\n---\\\nAfter';
+    const parsed = parseMarkdownToEntries(md, "a", 0);
+    expect(parsed.map((e) => [e.kind, e.text])).toEqual([
+      ["note", "Before"],
+      ["note", "\\---\nThe diary reads:\n\n@ not an action\n---\\"],
+      ["note", "After"],
+    ]);
+    expect(formatLine(parsed[1])).toBe(parsed[1].text);
+  });
+
+  it("escapes a note that would read as a roll symbol", () => {
+    const note = entry("note", "-> not a result", 1);
+    expect(formatLine(note)).toBe("\\-> not a result");
+    expect(parseMarkdownToEntries(formatLine(note), "a", 0).map((e) => [e.kind, e.text])).toEqual([["note", "-> not a result"]]);
+  });
+
+  it("writes and reads the campaign header", () => {
+    const md = exportAdventureToMarkdown(es, 'La "Cripta"', [], "", {}, { createdAt: new Date(2025, 8, 3).getTime(), updatedAt: new Date(2025, 9, 28).getTime() });
+    expect(md.startsWith('---\ntitle: "La \\"Cripta\\""\nstart_date: 2025-09-03\nlast_update: 2025-10-28\n---')).toBe(true);
+    expect(parseTitleFromMarkdown(md)).toBe('La "Cripta"');
+    expect(parseTitleFromMarkdown("# Clearview Mystery\n\n@ a")).toBe("Clearview Mystery");
+    expect(parseTitleFromMarkdown("=== Campaign Log: Clearview Mystery ===\n[Ruleset] Loner")).toBe("Clearview Mystery");
+    expect(parseTitleFromMarkdown("@ just play")).toBe("");
+    // The analog header's first line isn't a session.
+    expect(kinds("=== Campaign Log: Clearview ===\n=== Session 1 ===").map(([k]) => k)).toEqual(["session"]);
+  });
+});
+
+describe("a full Lonelog 1.6 log with the add-ons", () => {
+  const LOG = "---\ntitle: Clearview Mystery\nruleset: Loner + Mythic Oracle\n---\n\n# Clearview Mystery\n\n## Session 1\n\n### S1 *School library after hours*\n\n```\n@ Sneak inside to check the archives\nd: Stealth d6=5 vs TN 4 -> Success\n=> I slip inside unnoticed. [L:Library|dark|quiet]\n@(Jonah) Keeps watch at the door\n? Is anyone inside?\n-> Yes, but... (d6=4)\n=> Someone is here, but they're distracted. [N:Guard|watchful]\nN (Guard): \"Who's there?\"\nPC: \"Stay calm... just stay calm.\"\n(note: testing alternate stealth rule)\ntbl: Forest Encounter d6=5 -> Traveler on the road\ngen: NPC (custom)\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n```\n\n\\---\nThe diary reads:\n\"Day 47: The tides no longer obey the moon.\"\n---\\\n\nS2 [R:1|active|entry cave|exits N:R2, E:R3] *The crypt below*\n\n[DUNGEON STATUS]\n[R:2|unexplored]\n[R:3|locked|heavy door]\n[/DUNGEON STATUS]\n\nS3 *Dockside ambush* [COMBAT]\n[F:Pirate Captain|HP 10|Close] [F:Pirate×2|HP 4|Medium]\nRd1\n@ Slash Captain\nd: 1d8=6 damage\n=> [F:Pirate Captain|HP-6|staggered]\n@(Pirate Captain) Desperate swing\nRd2\n=> [F:Pirate Captain|fled] [F:Pirate×1|Close]\n[/COMBAT]\n\n[RESOURCES]\n[Inv:Torch|3] [Inv:Rope|1|50ft] [Wealth:Gold 45|Silver 12]\n[/RESOURCES]\n=> I light a torch. [Inv:Torch-1] [Wealth:Gold+15] [R:1|cleared, looted]\n[PC:Kael|Supply d8|HP 8]\n[PC:Kael|Supply d8→d6]\n";
+
+  it("survives being imported, exported and imported again, entry for entry", () => {
+    const first = parseMarkdownToEntries(LOG, "a", 0);
+    const md = exportAdventureToMarkdown(es, parseTitleFromMarkdown(LOG), first);
+    const second = parseMarkdownToEntries(md, "a", 0);
+    expect(second.map((e) => [e.kind, e.text])).toEqual(first.map((e) => [e.kind, e.text]));
+    expect(first.filter((e) => e.kind === "scene").map((e) => e.text)).toEqual([
+      "S1 *School library after hours*",
+      "S2 [R:1|active|entry cave|exits N:R2, E:R3] *The crypt below*",
+      "S3 *Dockside ambush* [COMBAT]",
+    ]);
+    expect(parseTitleFromMarkdown(LOG)).toBe("Clearview Mystery");
   });
 });

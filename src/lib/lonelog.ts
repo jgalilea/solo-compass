@@ -1,13 +1,19 @@
 /**
  * Lonelog notation (Roberto Bisceglie, CC BY-SA 4.0):
  * https://lonelog.itch.io/lonelog — an open plain-text standard for
- * logging solo RPG sessions. Five symbols:
+ * logging solo RPG sessions (spec 1.6.0). Its symbols, as entries:
  *
- *   @   player action
+ *   @   player action (`@(Name)` for another actor)
  *   ?   question to the oracle
- *   d:  roll (the result goes inline with "->", e.g. "d: ... -> ...")
+ *   d:  roll (the result goes inline with "->", e.g. "d: ... -> ...");
+ *       also `tbl:` (a table), `gen:` (a generator) and a bare
+ *       `-> result`, kept as written in the roll's text
  *   =>  narrative consequence
- *   === Title ===   section/session header
+ *   === Title ===   session header
+ *   S1 *context*    scene (also S5a, S7.1, T1-S2)
+ *
+ * Anything else (prose, tags, dialogue, `(note: …)`, `\---` blocks)
+ * is a note.
  *
  * This module is the only place that knows how to translate between
  * our journal entries and that text format, in both directions
@@ -29,7 +35,8 @@ export type JournalLineKind =
   | "roll"
   | "consequence"
   | "note"
-  | "session";
+  | "session"
+  | "scene";
 
 export interface JournalEntry {
   id: string;
@@ -44,7 +51,7 @@ export interface JournalEntry {
   editedAt?: number;
 }
 
-const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
+const PREFIX: Record<Exclude<JournalLineKind, "note" | "session" | "scene">, string> = {
   action: "@ ",
   question: "? ",
   roll: "d: ",
@@ -57,10 +64,26 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session">, string> = {
  * escaped with "\\", which is also Markdown's standard escape and
  * doesn't show when rendered.
  */
-const NEEDS_ESCAPE = /^(@|\?|d:|=>|===|#|>|\\)/;
+const NEEDS_ESCAPE = /^(@|\?|d:|tbl:|gen:|->|=>|===|#|>|\\)/;
 
 /** What opens an entry of its own, even on an indented line. */
-const STARTS_ENTRY = /^(@|\?|d:|=>|===)/;
+const STARTS_ENTRY = /^(@|\?|d:|tbl:|gen:|->|=>|===)/;
+
+/**
+ * A roll whose text already carries its own resolution symbol (`tbl:`,
+ * `gen:`, or a bare `->`) is written as is; any other gets `d:`.
+ */
+const OWN_ROLL_SYMBOL = /^(tbl:|gen:|->)/;
+
+/** A scene marker (§5.3): S1, S5a (flashback), S7.1 (montage), T1-S2 or T1+T2-S5 (threads). */
+export const SCENE_ID = String.raw`(?:T\d+(?:\+T\d+)*-)?S\d+(?:\.\d+|[a-z])?`;
+/** "S1", "S1 *Tavern*", "S5 [R:4|active] *Store*", "### S1 *…*" (Markdown heading). */
+const SCENE_LINE = new RegExp(String.raw`^(?:###\s+)?(${SCENE_ID}(?:\s+[*\[(].*)?)$`);
+
+/** A narrative block (§4.4): in-world text between `\---` and `---\`. */
+const EXCERPT = /^\\---\n[\s\S]*\n---\\$/;
+const EXCERPT_OPEN = /^\\---$/;
+const EXCERPT_CLOSE = /^---\\$/;
 
 /**
  * Entries can span several lines (the editor allows it). Continuation
@@ -76,11 +99,16 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
     // A session title is a single line by definition.
     return `=== ${entry.text.replace(/\s*\n\s*/g, " ")} ===`;
   }
+  if (entry.kind === "scene") return entry.text.replace(/\s*\n\s*/g, " ");
+  // Its own markers delimit it: written as is, lines and all.
+  if (entry.kind === "note" && EXCERPT.test(entry.text)) return entry.text;
   const [first, ...rest] = entry.text.split(/\r?\n/);
   const head =
     entry.kind === "note"
       ? NEEDS_ESCAPE.test(first) ? `\\${first}` : first
-      : `${PREFIX[entry.kind]}${first}`;
+      : entry.kind === "roll" && OWN_ROLL_SYMBOL.test(first)
+        ? first
+        : `${PREFIX[entry.kind]}${first}`;
   const continuation = (line: string) =>
     line.trim() ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}` : "";
   return [head, ...rest.map(continuation)].join("\n");
@@ -111,11 +139,22 @@ export function exportAdventureToMarkdown(
   entries: JournalEntry[],
   notes = "",
   descriptions: Record<string, CastDescription> = {},
+  dates?: { createdAt: number; updatedAt: number },
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const lines = sorted.map((e) => formatLine(e));
   const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
-  return formatFrontMatter(notes, formatDescriptions(sorted, descriptions)) + blocks.join("\n\n") + "\n";
+  const header = [
+    `title: ${JSON.stringify(adventureName)}`,
+    ...(dates ? [`start_date: ${isoDate(dates.createdAt)}`, `last_update: ${isoDate(dates.updatedAt)}`] : []),
+  ];
+  return formatFrontMatter(notes, formatDescriptions(sorted, descriptions), header) + blocks.join("\n\n") + "\n";
+}
+
+/** "2025-09-03", in local time like the dates shown in the app. */
+function isoDate(time: number): string {
+  const d = new Date(time);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 /**
@@ -139,12 +178,13 @@ function formatDescriptions(sorted: JournalEntry[], descriptions: Record<string,
 /**
  * The adventure's pinned notes go where Lonelog puts a campaign's
  * metadata in a digital log (§5.1): YAML front matter at the very top,
- * in its `notes` field. A literal block ("|") keeps the lines, lists
+ * in its `notes` field, after the campaign's `title` and dates
+ * (`start_date`, `last_update`) when given. A literal block ("|") keeps the lines, lists
  * and checkboxes as written, and Markdown viewers (Obsidian too) show
  * it as the file's properties instead of as text.
  */
-export function formatFrontMatter(notes: string, descriptions = ""): string {
-  const fields = [yamlBlock("notes", notes), yamlBlock("descriptions", descriptions)].filter(Boolean);
+export function formatFrontMatter(notes: string, descriptions = "", header: string[] = []): string {
+  const fields = [...header, yamlBlock("notes", notes), yamlBlock("descriptions", descriptions)].filter(Boolean);
   return fields.length ? `---\n${fields.join("\n")}\n---\n\n` : "";
 }
 
@@ -172,6 +212,26 @@ function splitFrontMatter(text: string): { frontMatter: string | null; body: str
     .every((line) => !line.trim() || /^\s/.test(line) || /^(#|- |[\w-]+\s*:)/.test(line));
   if (!match || !yaml) return { frontMatter: null, body: clean };
   return { frontMatter: match[1], body: clean.slice(match[0].length) };
+}
+
+/**
+ * The adventure's name in a Lonelog .md, if it says: the front
+ * matter's `title`, the H1 heading, or the analog campaign header
+ * ("=== Campaign Log: Title ==="). Empty if none.
+ */
+export function parseTitleFromMarkdown(text: string): string {
+  const title = readFrontMatterField(text, "title").trim();
+  if (title) return title;
+  for (const raw of splitFrontMatter(text).body.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || CODE_FENCE.test(line)) continue;
+    const h1 = line.match(/^#(?!#)\s*(.+)$/);
+    if (h1) return h1[1].trim();
+    const campaign = line.match(CAMPAIGN_LOG_LINE);
+    if (campaign) return campaign[1];
+    if (!line.startsWith(">")) break;
+  }
+  return "";
 }
 
 /** Reads the pinned notes back from a Lonelog .md: its front matter's `notes`. */
@@ -255,6 +315,10 @@ function readFrontMatterField(text: string, name: string): string {
 }
 
 const ROLL_PREFIX = /^d:\s?/;
+/** `tbl:`, `gen:` and a bare `->`: rolls that keep their symbol in the text. */
+const OWN_ROLL_LINE = /^(tbl:|gen:|->)/;
+/** "=== Campaign Log: Title ===": the analog campaign header (§5.1), not a session. */
+const CAMPAIGN_LOG_LINE = /^===\s*Campaign Log:\s*(.+?)\s*===$/i;
 /** "```" or "~~~", with or without a language. */
 const CODE_FENCE = /^(```|~~~)/;
 /** An indented line continues the previous entry (see formatLine). */
@@ -305,8 +369,39 @@ export function parseMarkdownToEntries(
   // them if what follows is a continuation.
   let pendingBlankLines = 0;
 
+  // Inside a `\---` … `---\` narrative block: its lines, as written.
+  let excerpt: string[] | null = null;
+
+  const push = (kind: JournalLineKind, text: string) => {
+    const index = entries.length;
+    entries.push({
+      // Plain text has no real timestamp per line: sequential ones are
+      // generated to keep the file's order when displaying it.
+      id: `${startTimestamp}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+      adventureId,
+      timestamp: startTimestamp + index,
+      kind,
+      text,
+    });
+  };
+
   for (const rawLine of lines) {
     const line = rawLine.trim();
+    if (excerpt) {
+      if (EXCERPT_CLOSE.test(line)) {
+        push("note", ["\\---", ...excerpt, "---\\"].join("\n"));
+        excerpt = null;
+      } else {
+        excerpt.push(rawLine.trimEnd());
+      }
+      continue;
+    }
+    if (EXCERPT_OPEN.test(line)) {
+      excerpt = [];
+      pendingBlankLines = 0;
+      inHeader = false;
+      continue;
+    }
     if (!line) {
       pendingBlankLines += 1;
       continue;
@@ -323,6 +418,7 @@ export function parseMarkdownToEntries(
     if (
       previous &&
       previous.kind !== "session" &&
+      previous.kind !== "scene" &&
       CONTINUATION_LINE.test(rawLine) &&
       (line.startsWith("\\") || !STARTS_ENTRY.test(line))
     ) {
@@ -339,10 +435,13 @@ export function parseMarkdownToEntries(
         continue;
       }
       if (line.startsWith(">")) continue;
+      // The analog campaign header's first line names the adventure (parseTitleFromMarkdown).
+      if (CAMPAIGN_LOG_LINE.test(line)) continue;
       inHeader = false;
     }
 
     const h2Match = line.match(H2_SESSION_LINE);
+    const sceneMatch = line.match(SCENE_LINE);
     const legacySessionMatch = line.match(LEGACY_SESSION_LINE);
     let kind: JournalLineKind;
     let content: string;
@@ -353,6 +452,12 @@ export function parseMarkdownToEntries(
     } else if (h2Match) {
       kind = "session";
       content = h2Match[1];
+    } else if (sceneMatch) {
+      kind = "scene";
+      content = sceneMatch[1];
+    } else if (OWN_ROLL_LINE.test(line)) {
+      kind = "roll";
+      content = line;
     } else if (legacySessionMatch) {
       kind = "session";
       content = legacySessionMatch[1];
@@ -373,17 +478,10 @@ export function parseMarkdownToEntries(
       content = line;
     }
 
-    const index = entries.length;
-    entries.push({
-      // Plain text has no real timestamp per line: sequential ones are
-      // generated to keep the file's order when displaying it.
-      id: `${startTimestamp}-${index}-${Math.random().toString(36).slice(2, 8)}`,
-      adventureId,
-      timestamp: startTimestamp + index,
-      kind,
-      text: content,
-    });
+    push(kind, content);
   }
+  // A block left open at the end keeps what it had.
+  if (excerpt?.length) push("note", ["\\---", ...excerpt, "---\\"].join("\n"));
 
   return entries;
 }

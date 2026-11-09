@@ -5,7 +5,7 @@
  * screen's blocks: if localStorage fails, they just start unfolded.
  */
 
-export type NotebookSection = "characters" | "places" | "threads" | "progress";
+export type NotebookSection = "characters" | "places" | "rooms" | "foes" | "threads" | "progress" | "items" | "wealth";
 
 const STORAGE_KEY = "solo-compass:notebook-sections-folded";
 

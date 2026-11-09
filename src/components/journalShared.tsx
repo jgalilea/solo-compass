@@ -1,8 +1,9 @@
-import { useRef, useState, type ComponentType } from "react";
+import { createElement, useRef, useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
 import { castKey, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
+import { noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
@@ -22,7 +23,15 @@ import {
   IconNote,
   IconPencil,
   IconQuestion,
+  IconCombat,
+  IconDialogue,
+  IconExcerpt,
+  IconGenerator,
+  IconInventory,
+  IconRoom,
+  IconScene,
   IconSession,
+  IconTable,
   IconTrash,
 } from "./icons/Icons";
 
@@ -81,13 +90,38 @@ function orderProps(actions: EntryActions, id: string): Pick<LineButtonsProps, "
   };
 }
 
-const KIND_ICON: Record<Exclude<JournalLineKind, "session">, ComponentType<{ size?: number; className?: string }>> = {
+type IconType = ComponentType<{ size?: number; className?: string }>;
+
+const KIND_ICON: Record<Exclude<JournalLineKind, "session">, IconType> = {
   action: IconAction,
   question: IconQuestion,
   roll: IconDice,
   consequence: IconConsequence,
   note: IconNote,
+  scene: IconScene,
 };
+
+const BLOCK_ICON: Record<"combat" | "dungeon" | "resources", IconType> = {
+  combat: IconCombat,
+  dungeon: IconRoom,
+  resources: IconInventory,
+};
+
+/** The icon beside an entry: its kind's, or what the line is (a table roll, a dialogue…). */
+function entryIcon(entry: JournalEntry): IconType {
+  if (entry.kind === "roll") {
+    const { symbol } = splitRollSymbol(entry.text);
+    return symbol === "tbl" ? IconTable : symbol === "gen" ? IconGenerator : IconDice;
+  }
+  if (entry.kind === "note") {
+    const form = noteForm(entry.text);
+    if (form.form === "excerpt") return IconExcerpt;
+    if (form.form === "dialogue") return IconDialogue;
+    if (form.form === "block") return BLOCK_ICON[form.name];
+    if (form.form === "round") return IconCombat;
+  }
+  return KIND_ICON[entry.kind === "session" ? "note" : entry.kind];
+}
 
 const ANSWER_CHIP: Record<Answer, string> = {
   si: "border-yes/40 bg-yes/10 text-yes",
@@ -133,7 +167,12 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
         </li>
       )}
       {blocks.slice(start).map((block) =>
-        block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
+        block[0].kind === "scene" ? (
+          // A scene opens a stretch of the session: a heading, not a card.
+          <li key={block[0].id} className="mt-2 px-1 first:mt-0">
+            <EntryLine entry={block[0]} actions={actions} />
+          </li>
+        ) : block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
           <li
             key={block[0].id}
             className="rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3"
@@ -255,7 +294,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     cast: actions.cast ?? [],
     enabled: editing && entry.kind !== "roll",
   });
-  const Icon = KIND_ICON[entry.kind === "session" ? "note" : entry.kind];
+  const Icon = entryIcon(entry);
   const kindLabel = {
     action: t.journal.kindAction,
     question: t.journal.kindQuestion,
@@ -263,6 +302,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     consequence: t.journal.kindConsequence,
     note: t.journal.kindNote,
     session: t.journal.kindSession,
+    scene: t.journal.kindScene,
   }[entry.kind];
 
   function commit() {
@@ -270,16 +310,12 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     actions.onStopEdit();
   }
 
-  const icon = (
-    <Icon
-      size={18}
-      aria-label={kindLabel}
-      className={[
-        "mt-0.5 shrink-0",
-        entry.kind === "note" ? "text-parchment-dim/50" : "text-gold",
-      ].join(" ")}
-    />
-  );
+  // createElement: the icon depends on the line (a table roll, a dialogue…).
+  const icon = createElement(Icon, {
+    size: 18,
+    "aria-label": kindLabel,
+    className: ["mt-0.5 shrink-0", entry.kind === "note" ? "text-parchment-dim/50" : "text-gold"].join(" "),
+  } as { size: number; className: string });
 
   if (editing) {
     return (
@@ -350,11 +386,42 @@ function EntryContent({
   answer: Answer | undefined;
   onTagClick?: (key: string) => void;
 }) {
+  const { t } = useLocaleContext();
   if (entry.kind === "question") {
     return (
       <p className="whitespace-pre-wrap text-base italic text-parchment">
         <TaggedText text={entry.text} onTagClick={onTagClick} />
       </p>
+    );
+  }
+
+  if (entry.kind === "scene") return <SceneContent text={entry.text} onTagClick={onTagClick} />;
+
+  if (entry.kind === "action") {
+    const { actor, text } = splitActor(entry.text);
+    if (actor) {
+      return (
+        <p className="whitespace-pre-wrap text-base text-parchment">
+          <span className="mr-1.5 rounded-md bg-ink-700/70 px-1.5 py-0.5 text-sm font-semibold text-gold">{actor}</span>
+          <TaggedText text={text} onTagClick={onTagClick} />
+        </p>
+      );
+    }
+  }
+
+  if (entry.kind === "note") {
+    const form = noteForm(entry.text);
+    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} />;
+  }
+
+  if (entry.kind === "roll" && entry.text.includes("\n")) {
+    // A generator's axes or a table written out under its first line (§4.3).
+    const [first, ...rest] = entry.text.split("\n");
+    return (
+      <div className="flex flex-col gap-1">
+        <EntryContent entry={{ ...entry, text: first }} answer={answer} onTagClick={onTagClick} />
+        <p className="whitespace-pre-wrap border-l border-ink-border pl-2.5 text-sm text-parchment/90">{rest.join("\n")}</p>
+      </div>
     );
   }
 
@@ -381,13 +448,21 @@ function EntryContent({
       );
     }
     const { detail, result, answer: parsedAnswer } = splitRollText(entry.text);
+    const { symbol } = splitRollSymbol(entry.text);
     const knownAnswer = answer ?? parsedAnswer;
+    // A table or a generator says so before its name ("Table · Forest Encounter d6=5").
+    const kind = symbol === "tbl" || symbol === "gen" ? t.journal.rollSymbol[symbol] : null;
     if (result === null) {
-      return <p className="whitespace-pre-wrap text-base text-parchment/90">{entry.text}</p>;
+      return (
+        <p className="whitespace-pre-wrap text-base text-parchment/90">
+          {kind && <span className="text-xs text-parchment-dim">{kind} · </span>}
+          {detail}
+        </p>
+      );
     }
     return (
       <div className="flex flex-col gap-1">
-        <p className="text-xs text-parchment-dim">{detail}</p>
+        {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, detail].filter(Boolean).join(" · ")}</p>}
         {knownAnswer ? (
           <span
             className={`w-fit rounded-full border px-2.5 py-0.5 font-display text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
@@ -413,6 +488,68 @@ function EntryContent({
   );
 }
 
+/** "S4 · Tavern, night", with ⚔ Combat when the scene is a fight. */
+function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: string) => void }) {
+  const { t } = useLocaleContext();
+  const { id, context, combat } = parseScene(text);
+  return (
+    <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span className="rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
+      {context && (
+        <span className="font-display text-base italic text-parchment">
+          <TaggedText text={context} onTagClick={onTagClick} />
+        </span>
+      )}
+      {combat && (
+        <span className="inline-flex items-center gap-1 self-center text-xs font-medium uppercase tracking-wide text-no">
+          <IconCombat size={13} />
+          {t.journal.sceneCombat}
+        </span>
+      )}
+    </p>
+  );
+}
+
+/** A note that isn't plain prose: see noteForm. */
+function NoteContent({ form, onTagClick }: { form: Exclude<NoteForm, { form: "plain" }>; onTagClick?: (key: string) => void }) {
+  const { t } = useLocaleContext();
+  switch (form.form) {
+    case "excerpt":
+      return (
+        <blockquote className="whitespace-pre-wrap border-l-2 border-gold/50 pl-3 font-display text-base italic text-parchment">
+          {form.text}
+        </blockquote>
+      );
+    case "dialogue":
+      return (
+        <p className="whitespace-pre-wrap text-base text-parchment">
+          <span className="mr-1.5 font-semibold text-gold">{form.pc ? t.journal.dialoguePc : form.speaker}:</span>
+          <TaggedText text={form.text} onTagClick={onTagClick} />
+        </p>
+      );
+    case "meta":
+      return (
+        <p className="whitespace-pre-wrap text-sm italic text-parchment-dim">
+          ({form.label && <span className="not-italic font-medium">{form.label}: </span>}
+          <TaggedText text={form.text} onTagClick={onTagClick} />)
+        </p>
+      );
+    case "block":
+      return (
+        <p className="text-xs font-semibold uppercase tracking-wide text-parchment-dim">
+          {form.closing ? t.journal.blocks[form.name].close : t.journal.blocks[form.name].open}
+        </p>
+      );
+    case "round":
+      return (
+        <p className="flex flex-wrap items-baseline gap-x-2 text-base text-parchment">
+          <span className="rounded-md bg-no/15 px-1.5 text-sm font-semibold tabular-nums text-no">{form.round}</span>
+          {form.text && <TaggedText text={form.text} onTagClick={onTagClick} />}
+        </p>
+      );
+  }
+}
+
 /**
  * Text with its Lonelog character/place tags drawn as chips (the name,
  * and its traits smaller) instead of the raw "[N:Jonah|friendly]".
@@ -434,7 +571,7 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
       </>
     );
     const chipClass =
-      "mx-0.5 inline-flex max-w-full flex-wrap items-baseline gap-x-1 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 align-baseline not-italic leading-snug";
+      "mx-0.5 inline-flex max-w-full flex-wrap items-baseline gap-x-1 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 align-baseline font-sans normal-case not-italic leading-snug";
     return onTagClick ? (
       <button
         key={i}

@@ -128,3 +128,20 @@ describe("splitRollSeries", () => {
     expect(splitRollSeries("Sigilo -> Sí, d6 -> 3")).toBeNull();
   });
 });
+
+describe("Lonelog 1.6 lines", () => {
+  const e = (kind: JournalLineKind, text: string, i: number): JournalEntry => ({ id: `e${i}`, adventureId: "a", timestamp: i, kind, text });
+
+  it("reads tbl:, gen: and a bare result, colouring an oracle's answer", () => {
+    expect(splitRollText("tbl: Forest Encounter d6=5 -> Traveler")).toEqual({ detail: "Forest Encounter d6=5", result: "Traveler", answer: undefined });
+    expect(splitRollText("gen: NPC -> Merchant / Secretive").detail).toBe("NPC");
+    expect(splitRollText("-> Yes, but... (d6=4)")).toEqual({ detail: "", result: "Yes, but... (d6=4)", answer: "si" });
+  });
+
+  it("keeps a scene apart: a consequence right after it isn't joined to it", () => {
+    const blocks = buildEntryBlocks([e("scene", "S1 *Mill*", 1), e("consequence", "I find the journal.", 2), e("question", "Locked?", 3), e("roll", "-> No", 4)]);
+    expect(blocks.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"], ["e3", "e4"]]);
+    const afterBlock = buildEntryBlocks([e("note", "[/RESOURCES]", 1), e("consequence", "I light a torch.", 2)]);
+    expect(afterBlock.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"]]);
+  });
+});

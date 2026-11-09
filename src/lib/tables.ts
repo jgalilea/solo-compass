@@ -91,6 +91,15 @@ export function diceValues(dice: DiceType): number[] {
 }
 
 /** How a roll on this table is named in the history and the journal. */
+/**
+ * A table roll as the journal writes it, Lonelog's `tbl:` line (§4.3):
+ * "tbl: Ironsworn: Action d100=42 -> Bolster". The total goes with the
+ * die (a d66's "42" is its two dice).
+ */
+export function formatTableRoll(name: string, dice: DiceType, total: number, result: string): string {
+  return `tbl: ${name} ${dice}=${total} -> ${result}`;
+}
+
 export function tableRollName(table: MeaningTable): string {
   return table.game.tag ? `${table.game.tag}: ${table.name}` : table.name;
 }

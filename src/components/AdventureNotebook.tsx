@@ -5,6 +5,7 @@ import type { CastDescription } from "../lib/journal";
 import type { JournalEntry } from "../lib/lonelog";
 import {
   buildCast,
+  foeIsOut,
   PROGRESS_KINDS,
   threadStatus,
   type CastMember,
@@ -18,6 +19,7 @@ import {
   IconCast,
   IconChevronRight,
   IconDice,
+  IconInventory,
   IconPinned,
   IconPlus,
   IconThread,
@@ -28,9 +30,10 @@ import {
  *
  * - Pinned notes: free text edited in place (inventory, clues, to-dos),
  *   with "- [ ]" checkboxes you can tick. Saved on its own as you type.
- * - Characters and places, threads and clocks: derived from the
- *   journal's Lonelog tags ([N:…], [PC:…], [L:…], [Thread:…],
- *   [Clock:…], [Track:…], [Timer:…]), each with its current state and
+ * - Characters and places, threads and clocks, and the add-ons' rooms,
+ *   foes and inventory: derived from the journal's Lonelog tags ([N:…],
+ *   [PC:…], [L:…], [R:…], [F:…], [Thread:…], [Clock:…], [Track:…],
+ *   [Timer:…], [Inv:…], [Wealth:…]), each with its current state and
  *   every entry that mentions it. Nothing is stored apart: adding one,
  *   logging a change, ticking a clock or closing a thread writes a tag
  *   entry in the journal.
@@ -83,31 +86,44 @@ export function AdventureNotebook({
     }
     return map;
   }, [entries]);
-  const [adding, setAdding] = useState<"cast" | "threads" | null>(null);
+  const [adding, setAdding] = useState<"cast" | "threads" | "inventory" | null>(null);
   const [folded, setFolded] = useState(loadFoldedNotebookSections);
 
   const lists: Record<NotebookSection, CastMember[]> = {
     characters: cast.filter((c) => c.kind === "pc" || c.kind === "npc"),
     places: cast.filter((c) => c.kind === "place"),
+    rooms: cast.filter((c) => c.kind === "room"),
+    // Still fighting first: the dead and the fled are history.
+    foes: [...cast.filter((c) => c.kind === "foe" && !foeIsOut(c)), ...cast.filter((c) => c.kind === "foe" && foeIsOut(c))],
     // Open ones first: the closed are history.
     threads: [
       ...cast.filter((c) => c.kind === "thread" && threadStatus(c) === "open"),
       ...cast.filter((c) => c.kind === "thread" && threadStatus(c) !== "open"),
     ],
     progress: cast.filter((c) => PROGRESS_KINDS.has(c.kind)),
+    items: cast.filter((c) => c.kind === "item"),
+    wealth: cast.filter((c) => c.kind === "wealth"),
   };
   // What "roll on the list" picks from: NPCs (not the PC), places, open threads.
   const rollable: Record<NotebookSection, CastMember[]> = {
     characters: lists.characters.filter((c) => c.kind === "npc"),
     places: lists.places,
+    rooms: [],
+    foes: [],
     threads: lists.threads.filter((c) => threadStatus(c) === "open"),
     progress: [],
+    items: [],
+    wealth: [],
   };
   const titles: Record<NotebookSection, string> = {
     characters: t.notebook.groupCharacters,
     places: t.notebook.groupPlaces,
+    rooms: t.notebook.groupRooms,
+    foes: t.notebook.groupFoes,
     threads: t.notebook.groupThreads,
     progress: t.notebook.groupProgress,
+    items: t.notebook.groupItems,
+    wealth: t.notebook.groupWealth,
   };
 
   // A chip tapped in the journal unfolds the list its element is in.
@@ -191,10 +207,16 @@ export function AdventureNotebook({
     );
   }
 
-  function addButton(section: "cast" | "threads", label: string) {
+  function addButton(section: "cast" | "threads" | "inventory", label: string) {
     return adding === section ? (
       <AddCastForm
-        kinds={section === "cast" ? ["npc", "pc", "place"] : ["thread", "clock", "track", "timer"]}
+        kinds={
+          section === "cast"
+            ? ["npc", "pc", "place", "room", "foe"]
+            : section === "threads"
+              ? ["thread", "clock", "track", "timer"]
+              : ["item", "wealth"]
+        }
         onAdd={(text) => {
           onLog(text);
           setAdding(null);
@@ -213,7 +235,8 @@ export function AdventureNotebook({
     );
   }
 
-  const hasCast = lists.characters.length + lists.places.length > 0;
+  const hasCast = lists.characters.length + lists.places.length + lists.rooms.length + lists.foes.length > 0;
+  const hasInventory = lists.items.length + lists.wealth.length > 0;
   const hasThreads = lists.threads.length + lists.progress.length > 0;
 
   return (
@@ -234,6 +257,8 @@ export function AdventureNotebook({
         {!hasCast && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
         {group("characters")}
         {group("places")}
+        {group("rooms")}
+        {group("foes")}
         {addButton("cast", t.notebook.addButton)}
       </section>
 
@@ -246,6 +271,17 @@ export function AdventureNotebook({
         {group("threads")}
         {group("progress")}
         {addButton("threads", t.notebook.addThreadButton)}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+          <IconInventory size={15} className="text-gold" />
+          {t.notebook.inventoryTitle}
+        </h2>
+        {!hasInventory && <p className="text-xs text-parchment-dim/80">{t.notebook.inventoryEmpty}</p>}
+        {group("items")}
+        {group("wealth")}
+        {addButton("inventory", t.notebook.addInventoryButton)}
       </section>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { Answer, Likelihood, Qualifier } from "../oracle";
 import type { OracleDiceGroup, OracleId } from "../oracleEngines";
+import type { CastKind } from "../lonelogTags";
 import type { SoloCompassTableId } from "../tableGames";
 import type { TableTheme } from "../tables";
 import type { ThemeId } from "../theme";
@@ -23,7 +24,7 @@ export const LOCALES: Locale[] = ["es", "en"];
  * name, answer, table result), in the app's language.
  */
 export type SampleLine =
-  | { kind: "note" | "action" | "question" | "consequence" | "session" | "roll"; text: string }
+  | { kind: "note" | "action" | "question" | "consequence" | "session" | "scene" | "roll"; text: string }
   | { oracle: [white: number, black: number] }
   | { table: SoloCompassTableId; roll: number[] };
 
@@ -167,6 +168,10 @@ export interface Dictionary {
     legendConsequence: string;
     legendNote: string;
     legendSession: string;
+    legendScene: string;
+    legendTable: string;
+    legendNarrative: string;
+    legendAddons: string;
     /** Character and place tags ([N:…], [L:…]). */
     legendTags: string;
     legendIntro: string;
@@ -464,6 +469,15 @@ export interface Dictionary {
     kindConsequence: string;
     kindNote: string;
     kindSession: string;
+    kindScene: string;
+    /** Combat add-on: a fight scene, and a round ("Rd1"). */
+    sceneCombat: string;
+    /** The add-ons' blocks ([COMBAT] … [/COMBAT] and the like): opening and closing. */
+    blocks: Record<"combat" | "dungeon" | "resources", { open: string; close: string }>;
+    /** Who speaks, when it's the player character ("PC: …"). */
+    dialoguePc: string;
+    /** A roll's kind when it isn't plain dice: tbl: and gen:. */
+    rollSymbol: { tbl: string; gen: string };
     toolOracle: string;
     toolTable: string;
     toolOracleTitle: string;
@@ -477,6 +491,7 @@ export interface Dictionary {
     sendButton: string;
     kindMenuLabel: string;
     composerHintSession: string;
+    composerHintScene: string;
     consequenceJoins: string;
     consequenceAlone: string;
     toolDice: string;
@@ -499,6 +514,9 @@ export interface Dictionary {
     playPanelLabel: string;
     newSessionButton: string;
     newSessionPlaceholder: string;
+    newSceneButton: string;
+    /** {id}: the scene's number, "S4". */
+    newScenePlaceholder: string;
     deleteEntry: string;
     editEntry: string;
     moreEntryActions: string;
@@ -565,9 +583,9 @@ export interface Dictionary {
     castTitle: string;
     castEmpty: string;
     /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */
-    kinds: Record<"pc" | "npc" | "place" | "thread" | "clock" | "track" | "timer", string>;
+    kinds: Record<CastKind, string>;
     /** What a clock, a track and a timer are for (the add form). */
-    kindHints: Record<"clock" | "track" | "timer", string>;
+    kindHints: Record<"clock" | "track" | "timer" | "room" | "foe" | "item" | "wealth", string>;
     statuses: Record<"open" | "closed" | "abandoned", string>;
     threadsTitle: string;
     threadsEmpty: string;
@@ -583,6 +601,20 @@ export interface Dictionary {
     addThreadButton: string;
     groupCharacters: string;
     groupPlaces: string;
+    groupRooms: string;
+    groupFoes: string;
+    groupItems: string;
+    groupWealth: string;
+    /** Resource tracking add-on: items and money. */
+    inventoryTitle: string;
+    inventoryEmpty: string;
+    addInventoryButton: string;
+    quantityLabel: string;
+    /** "Use one {name}" / "One more {name}". */
+    useOne: string;
+    addOne: string;
+    quantityChangePlaceholder: string;
+    quantityChangeHint: string;
     mentionCount: string;
     mentionCountOne: string;
     mentionButton: string;

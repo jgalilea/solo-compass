@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
+import { foeIsOut,
   applyTagUpdates,
   buildCast,
   castKey,
@@ -48,7 +48,7 @@ describe("splitTags", () => {
   });
 
   it("leaves other brackets alone (unknown types, plain text, empty names)", () => {
-    const text = "[Faction:Guild|rising] [a note] [N:] [R:1|cleared]";
+    const text = "[Faction:Guild|rising] [a note] [N:] [Z:1|cleared]";
     expect(splitTags(text)).toEqual([{ text }]);
   });
 
@@ -213,7 +213,7 @@ describe("tagOptions", () => {
 
   it("offers a new one of every kind, or only the typed kind after a prefix", () => {
     const kinds = (q: string) => tagOptions([], findTagQuery(q)!).map((o) => ("kind" in o ? o.kind : ""));
-    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread", "clock", "track", "timer"]);
+    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread", "clock", "track", "timer", "room", "foe", "item", "wealth"]);
     expect(kinds("[Clock:Torre")).toEqual(["clock"]);
   });
 
@@ -222,5 +222,57 @@ describe("tagOptions", () => {
     expect(tagOptionText({ kind: "timer", name: "Torre" })).toBe("[Timer:Torre 6]");
     expect(tagOptionText({ kind: "clock", name: "Torre 2/4" })).toBe("[Clock:Torre 2/4]");
     expect(tagOptionText({ kind: "thread", name: "Torre" })).toBe("[Thread:Torre]");
+  });
+});
+
+describe("the official add-ons' tags", () => {
+  const log = (...lines: string[]) =>
+    lines.map((text, i) => ({ id: `e${i}`, adventureId: "a", timestamp: i, kind: "note" as const, text }));
+  const find = (lines: string[], key: string) => buildCast(log(...lines)).find((m) => m.key === key);
+
+  it("follows a room's status, description and exits (dungeon crawling)", () => {
+    const room = find(
+      ["[R:4|active|storage room, dusty shelves|exits S:R2, E:R5]", "[R:4|cleared, looted]", "[R:4|exits E:R7(secret)]", "[#R:4]"],
+      "room:4",
+    );
+    expect(room?.tags).toEqual(["cleared, looted", "storage room, dusty shelves", "exits S:R2, E:R7(secret)"]);
+    expect(room?.mentions).toHaveLength(4);
+    expect(find(["[R:1|cleared]", "[R:1|+looted]", "[R:1|-cleared]"], "room:1")?.tags).toEqual(["looted"]);
+  });
+
+  it("follows a foe's hit points, range band and group size (combat)", () => {
+    const foe = find(["[F:Thug A|HP 6|Close|armed]", "[F:Thug A|HP-3|Far]", "[F:Thug A|dead]"], "foe:thug a");
+    expect(foe?.tags).toEqual(["HP 3", "armed", "Far", "dead"]);
+    expect(foeIsOut(foe!)).toBe(true);
+    const goblins = find(["[F:Goblins×4|HP 3 each|Close]", "[F:Goblins×3|Close]"], "foe:goblins");
+    expect(goblins?.tags).toEqual(["HP 3 each", "×3", "Close"]);
+  });
+
+  it("counts items and money (resource tracking)", () => {
+    const torch = find(["[Inv:Torch|3]", "[Inv:Torch-1]", "[Inv:Torch+2]", "[Inv:Torch|4→1|smoky]"], "item:torch");
+    expect(torch?.progress).toEqual({ value: 1 });
+    expect(torch?.tags).toEqual(["smoky"]);
+    expect(find(["[Inv:Oil Flask|2]", "[Inv:Oil Flask|depleted]"], "item:oil flask")?.progress).toEqual({ value: 0 });
+    expect(find(["[Inv:Map to the Ruins]"], "item:map to the ruins")?.progress).toBeUndefined();
+
+    const cast = buildCast(log("[Wealth:Gold 45|Silver 12]", "[Wealth:Gold+15]", "[Wealth:Gold-8]", "[Wealth:Silver 12→20]"));
+    expect(cast.map((m) => [m.kind, m.name, m.progress?.value])).toEqual([
+      ["wealth", "Gold", 52],
+      ["wealth", "Silver", 20],
+    ]);
+  });
+
+  it("keeps a label when its value changes (abstract resources in [PC:])", () => {
+    const pc = find(["[PC:Kael|Supply d8|Supplies:abundant|HP 8]", "[PC:Kael|Supply d8→d6]", "[PC:Kael|Supplies:abundant→low|HP 8→6]"], "pc:kael");
+    expect(pc?.tags).toEqual(["Supply d6", "Supplies:low", "HP 6"]);
+    // A plain replacement still works as before.
+    expect(find(["[N:Jonah|friendly]", "[N:Jonah|friendly→hostile]"], "npc:jonah")?.tags).toEqual(["hostile"]);
+  });
+
+  it("draws the add-ons' tags as chips, with their numbers", () => {
+    const [, foe] = splitTags("Two of them: [F:Goblins×2|Close]");
+    expect(foe.tag).toMatchObject({ kind: "foe", name: "Goblins", details: ["×2", "Close"] });
+    expect(splitTags("[Inv:Arrow-1]")[0].tag).toMatchObject({ kind: "item", name: "Arrow", progress: { value: -1, relative: true } });
+    expect(splitTags("[Wealth:Gold 45→52]")[0].tag).toMatchObject({ kind: "wealth", name: "Gold", progress: { value: 52 } });
   });
 });

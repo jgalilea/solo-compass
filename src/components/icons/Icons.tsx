@@ -275,3 +275,37 @@ export function IconInsertBelow(props: IconProps) {
 export function IconHelp(props: IconProps) {
   return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
 }
+
+/** A scene (S1 *…*) inside a session. */
+export function IconScene(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMovie} {...props} />;
+}
+/** Combat add-on: a fight, its rounds and its foes. */
+export function IconCombat(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSwords} {...props} />;
+}
+export function IconFoe(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSkull} {...props} />;
+}
+/** Dungeon crawling add-on: a room. */
+export function IconRoom(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconDoor} {...props} />;
+}
+/** Resource tracking add-on: items and money. */
+export function IconInventory(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconBackpack} {...props} />;
+}
+export function IconWealth(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconCoins} {...props} />;
+}
+/** Dialogue lines and narrative blocks. */
+export function IconDialogue(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMessageCircle} {...props} />;
+}
+export function IconExcerpt(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconQuote} {...props} />;
+}
+/** A table roll (tbl:) and a generator (gen:). */
+export function IconGenerator(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconLayersSubtract} {...props} />;
+}

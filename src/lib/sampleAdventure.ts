@@ -16,8 +16,8 @@ import type { Dictionary } from "./i18n";
 import { formatAnswer } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
-import { lookupEntry, type MeaningTable } from "./tables";
 import { formatFrontMatter, formatLine } from "./lonelog";
+import { formatTableRoll, lookupEntry, type MeaningTable } from "./tables";
 
 export function buildSampleAdventure(
   t: Dictionary,
@@ -36,7 +36,7 @@ export function buildSampleAdventure(
       const table = tables.find((x) => x.id === line.table)!;
       const total = line.roll.length === 2 ? line.roll[0] * 10 + line.roll[1] : line.roll[0];
       const result = lookupEntry(table, total)?.text ?? t.tables.noEntryFallback;
-      return formatLine({ kind: "roll", text: `${table.name} ${line.roll.join("/")} -> ${result}` });
+      return formatLine({ kind: "roll", text: formatTableRoll(table.name, table.dice, total, result) });
     }
     return formatLine(line);
   });

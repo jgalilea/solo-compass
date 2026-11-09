@@ -18,6 +18,7 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   Descartados: Mythic y Juice (licencias NC) y MUNE (sin licencia
   publicada). Pendiente si se pide: el «¿Cuánto?» de OPSE y el
   contador de giros por aventura (hoy es uno para todas).
+- Lonelog 1.6.0 y sus complementos (2026-11-09): ver el punto 1.
 - Prueba de rendimiento y aviso de Safari (2026-11-09):
   - `npm run test:perf` (`e2e/volume.perf.ts`, fuera del despliegue):
     restaura una copia con 11.000 entradas en 22 aventuras y 10.000
@@ -232,9 +233,26 @@ abierto, cerrado, abandonado), relojes `[Clock:]`/`[E:]`, progresos
 `[Track:]` y cuentas atrás `[Timer:]` con botones −/+, y "tirar en la
 lista". El autocompletado sugiere también hilos y relojes.
 
-**Pendiente:** alias de un PNJ o lugar (la descripción ya está), salas de
-mazmorra `[R:]` (add-on), y quizá juntar varios −/+ seguidos de un
-reloj en una sola entrada si en uso real ensucian el diario.
+**Hecho (2026-11-09): Lonelog 1.6.0 completo y los complementos
+oficiales.** Escenas (`S1 *…*`, S5a, S7.1, T1-S2) como tipo de entrada,
+con su botón en el composer y en el índice; `tbl:`, `gen:` (también de
+varias líneas) y `->` sueltos; actores `@(Nombre)`, diálogo, apartes
+`(nota: …)` y bloques narrativos `\---`; cabecera de campaña en el YAML
+(y el título al importar). Complementos: salas `[R:]`, enemigos `[F:]`,
+inventario `[Inv:]` y dinero `[Wealth:]` en el cuaderno, bloques
+`[COMBAT]`/`[DUNGEON STATUS]`/`[RESOURCES]`, asaltos `Rd1`, y de la
+notación de dados: descartar (`dl`/`dh`), explosión acumulada (`!!`),
+fallos en reservas (`f<3`) y descripción (`// Fuerza`). Las tiradas de
+tabla de la app se apuntan como `tbl:` y la inspiración como `gen:`.
+Fuera, a propósito: Partylog, Lorelog, Maplog y Wargaming (sistemas
+aparte) y el complemento de cartas (no hay baraja). De la notación de
+dados no se leen repeticiones, mínimos/máximos, críticos ni paréntesis,
+y `5d10!>=8` sigue siendo «explota y cuenta éxitos» (en la spec, el
+`>=8` pegado al `!` cambiaría cuándo explota).
+
+**Pendiente:** juntar varios −/+ seguidos de un reloj en una sola
+entrada si en uso real ensucian el diario. Los «alias» no son de
+Lonelog (idea propia): descartados mientras nadie los pida.
 
 Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
 la mesa: modelo mixto. Los cambios de estado salen de las entradas

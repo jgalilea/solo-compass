@@ -2,10 +2,20 @@ import { useRef, useState } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import type { EntryGroup } from "../lib/journalUi";
+import { parseScene } from "../lib/lonelogLines";
+import { tagsToPlainText } from "../lib/lonelogTags";
 import { IconSession } from "./icons/Icons";
 
-/** Session index (wide desktop): jumps to each session. */
-export function SessionIndex({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
+interface IndexProps {
+  groups: EntryGroup[];
+  /** To a session, by its place in `groups`. */
+  onJump: (index: number) => void;
+  /** To a scene, by its entry id. */
+  onJumpToEntry: (id: string) => void;
+}
+
+/** Session index (wide desktop): jumps to each session, and to its scenes. */
+export function SessionIndex({ groups, onJump, onJumpToEntry }: IndexProps) {
   const { t } = useLocaleContext();
   return (
     <nav aria-label={t.journal.sessionsHeading} className="flex flex-col gap-2">
@@ -13,7 +23,7 @@ export function SessionIndex({ groups, onJump }: { groups: EntryGroup[]; onJump:
         <IconSession size={15} className="text-gold" />
         {t.journal.sessionsHeading}
       </h2>
-      <SessionList groups={groups} onJump={onJump} />
+      <SessionList groups={groups} onJump={onJump} onJumpToEntry={onJumpToEntry} />
     </nav>
   );
 }
@@ -22,15 +32,7 @@ export function SessionIndex({ groups, onJump }: { groups: EntryGroup[]; onJump:
  * The same index where there's no room for a column (phone, tablet and
  * narrow desktop): a button in the header that drops it down.
  */
-export function SessionMenu({
-  groups,
-  onJump,
-  className,
-}: {
-  groups: EntryGroup[];
-  onJump: (index: number) => void;
-  className: string;
-}) {
+export function SessionMenu({ groups, onJump, onJumpToEntry, className }: IndexProps & { className: string }) {
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -67,6 +69,10 @@ export function SessionMenu({
               setOpen(false);
               onJump(i);
             }}
+            onJumpToEntry={(id) => {
+              setOpen(false);
+              onJumpToEntry(id);
+            }}
           />
         </nav>
       )}
@@ -74,27 +80,50 @@ export function SessionMenu({
   );
 }
 
-function SessionList({ groups, onJump }: { groups: EntryGroup[]; onJump: (index: number) => void }) {
+function SessionList({ groups, onJump, onJumpToEntry }: IndexProps) {
   const { t } = useLocaleContext();
   const last = groups.length - 1;
   return (
     <ul className="flex flex-col gap-0.5">
-      {groups.map((g, i) => (
-        <li key={g.sessionEntry?.id ?? `prologue-${i}`}>
-          <button
-            type="button"
-            onClick={() => onJump(i)}
-            aria-current={i === last ? "true" : undefined}
-            className={[
-              "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition hover:bg-ink-700/60",
-              i === last ? "font-medium text-gold" : "text-parchment-dim hover:text-parchment",
-            ].join(" ")}
-          >
-            <span className="min-w-0 flex-1 truncate">{g.sessionEntry?.text ?? t.journal.prologueLabel}</span>
-            <span className="shrink-0 text-xs text-parchment-dim/50">{g.items.length}</span>
-          </button>
-        </li>
-      ))}
+      {groups.map((g, i) => {
+        const scenes = g.items.filter((e) => e.kind === "scene");
+        return (
+          <li key={g.sessionEntry?.id ?? `prologue-${i}`}>
+            <button
+              type="button"
+              onClick={() => onJump(i)}
+              aria-current={i === last ? "true" : undefined}
+              className={[
+                "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm transition hover:bg-ink-700/60",
+                i === last ? "font-medium text-gold" : "text-parchment-dim hover:text-parchment",
+              ].join(" ")}
+            >
+              <span className="min-w-0 flex-1 truncate">{g.sessionEntry?.text ?? t.journal.prologueLabel}</span>
+              <span className="shrink-0 text-xs text-parchment-dim/50">{g.items.length}</span>
+            </button>
+            {scenes.length > 0 && (
+              // Its scenes (Lonelog §5.3), one level in.
+              <ul className="ml-3 flex flex-col border-l border-ink-border pl-1">
+                {scenes.map((scene) => {
+                  const { id, context } = parseScene(scene.text);
+                  return (
+                    <li key={scene.id}>
+                      <button
+                        type="button"
+                        onClick={() => onJumpToEntry(scene.id)}
+                        className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1 text-left text-xs text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
+                      >
+                        <span className="shrink-0 font-semibold tabular-nums text-gold/80">{id}</span>
+                        <span className="min-w-0 flex-1 truncate">{tagsToPlainText(context)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

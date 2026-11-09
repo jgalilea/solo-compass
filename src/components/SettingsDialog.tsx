@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import {
   IconAction,
+  IconCast,
   IconCheck,
+  IconCoffee,
+  IconCombat,
   IconConsequence,
+  IconDialogue,
   IconDice,
   IconDownload,
-  IconShare,
   IconExternalLink,
-  IconCoffee,
   IconNote,
   IconQuestion,
+  IconScene,
   IconSession,
-  IconCast,
   IconSettings,
+  IconShare,
+  IconTable,
   IconUpload,
 } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -549,7 +553,11 @@ function AboutSettings() {
             <LegendRow Icon={IconConsequence} symbol="=>" description={t.about.legendConsequence} />
             <LegendRow Icon={IconNote} description={t.about.legendNote} />
             <LegendRow Icon={IconSession} symbol="=== ===" description={t.about.legendSession} />
+            <LegendRow Icon={IconScene} symbol="S1 *…*" description={t.about.legendScene} />
+            <LegendRow Icon={IconTable} symbol="tbl: gen:" description={t.about.legendTable} />
+            <LegendRow Icon={IconDialogue} symbol="@( )" description={t.about.legendNarrative} />
             <LegendRow Icon={IconCast} symbol="[N:]" description={t.about.legendTags} />
+            <LegendRow Icon={IconCombat} symbol="[R:] [F:]" description={t.about.legendAddons} />
           </dl>
         </div>
       </Credit>

@@ -7,6 +7,7 @@ import type { Adventure } from "../lib/journal";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
+import { parseTitleFromMarkdown } from "../lib/lonelog";
 import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import { searchEntries } from "../lib/journalSearch";
@@ -155,7 +156,7 @@ export function JournalListView() {
     if (!file) return;
     try {
       const text = await file.text();
-      const name = file.name.replace(/\.(md|markdown|txt)$/i, "");
+      const name = parseTitleFromMarkdown(text) || file.name.replace(/\.(md|markdown|txt)$/i, "");
       const adventure = importAdventure(name, text);
       setActiveAdventureId(adventure.id);
       navigate(`/diario/${adventure.id}`);

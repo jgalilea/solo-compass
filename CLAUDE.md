@@ -161,10 +161,25 @@ No backend; persistence is split by access pattern, not by feature:
 
 ### Lonelog (`src/lib/lonelog.ts`)
 
-The journal's storage/interchange format is [Lonelog](https://lonelog.itch.io/lonelog),
-an open plain-text notation (`@` action, `?` question, `d:` roll, `=>`
-consequence, `=== Title ===` for sessions). This module does both
-directions:
+The journal's storage/interchange format is [Lonelog](https://lonelog.itch.io/lonelog)
+(spec 1.6.0, source in github.com/zeruhur/lonelog), an open plain-text
+notation (`@` action, `?` question, `d:` roll, `=>` consequence,
+`=== Title ===` for sessions, `S1 *context*` for scenes). Rolls that
+carry their own symbol (`tbl:` table, `gen:` generator, a bare
+`-> result`) keep it in the roll's text and are written back as is;
+the app's own table rolls are `tbl: Name d66=42 -> …` (`formatTableRoll`)
+and quick inspiration a `gen:`. Scenes are their own entry kind
+(`scene`, text "S4 *Tavern*", numbered by `nextSceneId`, offered in the
+composer beside "New session", listed under their session in the
+index). Everything else stays a note and is only *drawn* differently
+(`lonelogLines.ts`: `@(Name)` actors, dialogue, `(note: …)` asides,
+`\---`…`---\` narrative blocks, the add-ons' `[COMBAT]`/
+`[DUNGEON STATUS]`/`[RESOURCES]` markers and `Rd1` rounds; a
+consequence never joins a scene or a block marker). The front matter
+carries the campaign header (`title`, `start_date`, `last_update`) and
+import names the adventure from it (`parseTitleFromMarkdown`). Not
+read: Partylog/Lorelog/Maplog/Wargaming (separate systems) and the
+Cards add-on (no deck in the app). This module does both directions:
 
 - `exportAdventureToMarkdown` — produces a `.md` valid for any
   Lonelog-compatible tool, not just this app.
@@ -241,6 +256,15 @@ header below that.
   (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
   `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
   adventure uses tags and has pinned notes (`t.sample.notes`).
+- **The official add-ons' tags** (derived the same way): rooms
+  `[R:4|status|description|exits N:R2]` (first field is the status,
+  replaced; `+looted` adds; exits merge by direction), foes
+  `[F:Thug A|HP 6|Close]` (range band and `×N` group size replace;
+  `foeIsOut` for dead/fled), items `[Inv:Torch|3]`/`[Inv:Torch-1]`
+  and money `[Wealth:Gold 45|Silver 12]` (one member per currency),
+  both `QUANTITY_KINDS` with −/+ in the notebook's Inventory section.
+  A "label value" change keeps the label (`Supply d8→d6`,
+  `Supplies:abundant→low`).
 - **Threads and progress** are tags too: `[Thread:…|Open]` (one state
   at a time, English or Spanish words, `threadStatus`), clocks
   `[Clock:Name 2/6]` (and the older `[E:…]`), tracks `[Track:…]` and
@@ -367,8 +391,10 @@ splits a roll's text at its last "->").
 
 The game table's dice (`DiceTool`) also take a formula (`rollFormula`
 in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
-advantage/disadvantage buttons), success pools (`5d6>=5`) and
-exploding dice (`3d6!`), written
+advantage/disadvantage buttons) or drop (`4d6dl1`), success pools
+(`5d6>=5`, failures `f<3`), exploding (`3d6!`) and compounding
+(`d6!!`) dice and a `// description` — the practical part of Lonelog's
+dice notation add-on — written
 so the journal shows them die by die like the buttons' rolls. Its "?" (`DiceHelp`, on the shared
 `HelpDialog` shell like `OracleHelp`) explains the buttons, how to
 read a roll and each formula taken apart, with examples and the line

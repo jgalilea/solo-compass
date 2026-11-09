@@ -331,7 +331,7 @@ export function AdventureDetailView() {
   }
 
   function handleExport() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions, adventure!);
     const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
@@ -356,7 +356,7 @@ export function AdventureDetailView() {
   // The same Lonelog .md as the export, through the system's share
   // sheet; if it fails (not just cancelled), it's downloaded instead.
   function handleShare() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions);
+    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions, adventure!);
     shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(handleExport);
   }
 
@@ -406,7 +406,7 @@ export function AdventureDetailView() {
     document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const hasSessionIndex = groups.some((g) => g.sessionEntry);
+  const hasSessionIndex = groups.some((g) => g.sessionEntry || g.items.some((e) => e.kind === "scene"));
 
   const notebook = (
     <AdventureNotebook
@@ -444,7 +444,7 @@ export function AdventureDetailView() {
       {/* Wide desktop: sessions and notebook in their own column. Padded on
           both sides: it scrolls, so a selected item's ring would be clipped. */}
       <aside className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-8 overflow-y-auto overscroll-contain px-1 py-8 xl:flex">
-        {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} />}
+        {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />}
         {notebook}
       </aside>
 
@@ -459,6 +459,7 @@ export function AdventureDetailView() {
           onOpenNotebook={() => setNotebookOpen(true)}
           groups={groups}
           onJumpToSession={jumpToSession}
+          onJumpToEntry={jumpToEntry}
           onStats={() => setStatsOpen(true)}
           onExport={handleExport}
           onExportHtml={() => void handleExportHtml()}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import type { Likelihood, OracleRoll } from "../lib/oracle";
 import { lonerTwistCounter, rollOracleWith } from "../lib/oracleEngines";
-import { resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
+import { formatTableRoll, resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
 import type { TableRollEntry } from "../lib/history";
 import { getOracle } from "../lib/oracles";
 import { formatOracleDice, formatOracleResult } from "../lib/i18n/answerText";
@@ -21,7 +21,7 @@ function makeId(): string {
 export interface Inspiration {
   /** History id of the first roll (the one the journal entry links to). */
   id: string;
-  /** "Action 3/4, Theme 2/5". */
+  /** "Action d66=34, Theme d66=25". */
   detail: string;
   /** "Reveal · Secret". */
   text: string;
@@ -96,7 +96,7 @@ export function usePlayActions() {
       const entry = buildTableRoll(table, tables);
       addHistoryEntry(entry);
       if (adventureId) {
-        const diceText = `${entry.tableName} ${entry.rolls.join("/")} -> ${entry.resultText}`;
+        const diceText = formatTableRoll(entry.tableName, table.dice, entry.total, entry.resultText);
         addJournalEntry(adventureId, "roll", diceText, entry.id);
       }
       return entry;
@@ -116,12 +116,13 @@ export function usePlayActions() {
       for (const roll of rolls) addHistoryEntry(roll);
       const inspiration: Inspiration = {
         id: rolls[0].id,
-        detail: rolls.map((r) => `${r.tableName} ${r.rolls.join("/")}`).join(", "),
+        detail: rolls.map((r, i) => `${r.tableName} ${tables[i].dice}=${r.total}`).join(", "),
         text: rolls.map((r) => r.resultText).join(" · "),
       };
       if (adventureId) {
-        // No "—" in the detail: that's how oracle rolls are recognised (splitRollText).
-        const diceText = `${t.tables.inspirationName} (${inspiration.detail}) -> ${inspiration.text}`;
+        // Two tables at once: a generator, in Lonelog (`gen:`). No "—" in
+        // the detail: that's how oracle rolls are recognised (splitRollText).
+        const diceText = `gen: ${t.tables.inspirationName} (${inspiration.detail}) -> ${inspiration.text}`;
         addJournalEntry(adventureId, "roll", diceText, inspiration.id);
       }
       return inspiration;

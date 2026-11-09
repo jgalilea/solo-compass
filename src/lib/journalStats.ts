@@ -50,8 +50,9 @@ function classifyRoll(
     return { kind: "oracle", answer, qualifier };
   }
   if (linked?.kind === "tabla" || (result !== null && !splitRollSeries(entry.text) && !OWN_DICE.test(entry.text))) {
-    // "Theme 2/5" or "Inspiration (Action 3/4, Theme 2/5)": just the name.
-    const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+[\d/]+$/, "").trim();
+    // "Theme d66=25", "Theme 2/5" (as written before) or
+    // "Inspiration (Action d66=34, Theme d66=25)": just the name.
+    const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+$/, "").trim();
     return { kind: "table", name: name || detail };
   }
   return { kind: "dice" };

@@ -5,6 +5,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
 import type { JournalEntry } from "../lib/lonelog";
+import { formatScene, nextSceneId } from "../lib/lonelogLines";
 import { buildCast } from "../lib/lonelogTags";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { DialogBody, DialogHeader } from "./Dialog";
@@ -20,6 +21,7 @@ import {
   IconNote,
   IconOracle,
   IconSend,
+  IconScene,
   IconSession,
   IconTable,
 } from "./icons/Icons";
@@ -32,6 +34,7 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
   action: IconAction,
   consequence: IconConsequence,
   session: IconSession,
+  scene: IconScene,
 };
 
 /**
@@ -99,7 +102,9 @@ export function JournalComposer({
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
   // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
-  const sendsOnEnter = finePointer || mode === "session";
+  // Session and scene titles are one line: Enter sends them anywhere.
+  const marker = mode === "session" || mode === "scene";
+  const sendsOnEnter = finePointer || marker;
 
   // The field grows with the text (empty goes back to one row:
   // otherwise a long placeholder that doesn't fit would grow it too).
@@ -144,27 +149,34 @@ export function JournalComposer({
     return last;
   }, [entries, adventureId]);
   const previous = insertAfter ?? latestEntry;
-  const lastEntry = previous && previous.kind !== "session" ? previous : undefined;
+  const lastEntry = previous && previous.kind !== "session" && previous.kind !== "scene" ? previous : undefined;
 
   const cast = useMemo(() => buildCast(entries.filter((e) => e.adventureId === adventureId)), [entries, adventureId]);
   // A session title is a single plain line: no tags there.
   const tags = useTagAutocomplete({ text, setText, inputRef, cast, enabled: mode !== "session" });
 
-  // A session title is optional (it falls back to the date); anything
-  // else needs some text.
-  const canSend = mode === "session" || text.trim() !== "";
+  // A session title is optional (it falls back to the date), and so is
+  // a scene's context (it's numbered anyway); anything else needs text.
+  const canSend = marker || text.trim() !== "";
 
   const placeholder =
     mode === "consequence"
       ? t.oracle.consequencePlaceholder
       : mode === "session"
         ? t.journal.newSessionPlaceholder
-        : t.journal.addPlaceholder;
+        : mode === "scene"
+          ? interpolate(t.journal.newScenePlaceholder, { id: nextSceneId(entries.filter((e) => e.adventureId === adventureId)) })
+          : t.journal.addPlaceholder;
 
   function handleSubmit() {
     if (mode === "session") {
       // A session title is a single line (in Lonelog it goes between "===").
       addEntry(adventureId, "session", text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString());
+      onModeChange("note");
+    } else if (mode === "scene") {
+      // Numbered after the adventure's latest scene: "S4 *Tavern, night*".
+      const id = nextSceneId(entries.filter((e) => e.adventureId === adventureId));
+      addEntry(adventureId, "scene", formatScene(id, text));
       onModeChange("note");
     } else {
       if (!canSend) return;
@@ -341,8 +353,11 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
       consequence: t.journal.composerHintConsequence,
     }[k],
   }));
-  const session = { mode: "session" as const, label: t.journal.newSessionButton, hint: t.journal.composerHintSession };
-  const current = [...kinds, session].find((o) => o.mode === mode)!;
+  const markers = [
+    { mode: "session" as const, label: t.journal.newSessionButton, hint: t.journal.composerHintSession },
+    { mode: "scene" as const, label: t.journal.newSceneButton, hint: t.journal.composerHintScene },
+  ];
+  const current = [...kinds, ...markers].find((o) => o.mode === mode)!;
   const CurrentIcon = MODE_ICON[mode];
 
   function pick(next: ComposerMode) {
@@ -407,27 +422,33 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
               </button>
             );
           })}
-          {/* Not one more kind of entry but a chapter break: set apart
-              below a divider and drawn as an action. */}
+          {/* Not more kinds of entry but breaks (a chapter, a scene):
+              set apart below a divider and drawn as actions. */}
           <div role="separator" className="mx-4 my-1.5 border-t border-ink-border" />
-          <button
-            type="button"
-            role="menuitemradio"
-            aria-checked={mode === "session"}
-            onClick={() => pick("session")}
-            className={[
-              "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
-              mode === "session" ? "bg-gold/10" : "",
-            ].join(" ")}
-          >
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold">
-              <IconSession size={16} />
-            </span>
-            <span className="min-w-0">
-              <span className="block font-display text-sm font-semibold text-gold">{session.label}</span>
-              <span className="block text-xs text-parchment-dim">{session.hint}</span>
-            </span>
-          </button>
+          {markers.map((o) => {
+            const Icon = MODE_ICON[o.mode];
+            return (
+              <button
+                key={o.mode}
+                type="button"
+                role="menuitemradio"
+                aria-checked={mode === o.mode}
+                onClick={() => pick(o.mode)}
+                className={[
+                  "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
+                  mode === o.mode ? "bg-gold/10" : "",
+                ].join(" ")}
+              >
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold">
+                  <Icon size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-display text-sm font-semibold text-gold">{o.label}</span>
+                  <span className="block text-xs text-parchment-dim">{o.hint}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

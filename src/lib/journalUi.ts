@@ -1,4 +1,10 @@
 import type { JournalEntry, JournalLineKind } from "./lonelog";
+import { noteForm, splitRollSymbol } from "./lonelogLines";
+
+/** A scene or an add-on's [COMBAT]/[/COMBAT]-style marker: never joined by what follows. */
+function isMarker(entry: JournalEntry): boolean {
+  return entry.kind === "scene" || (entry.kind === "note" && noteForm(entry.text).form === "block");
+}
 import type { Answer } from "./oracle";
 
 /**
@@ -22,12 +28,13 @@ export const SECONDARY_BUTTON_CLASS =
 // another Lonelog) can have that kind.
 // "roll" is left out too: the dice tool logs your own system's rolls
 // with the actual dice; typing one by hand only wrote text.
-export type ComposerKind = Exclude<JournalLineKind, "session" | "question" | "roll">;
+// Sessions and scenes are markers, picked apart (ComposerMode).
+export type ComposerKind = Exclude<JournalLineKind, "session" | "scene" | "question" | "roll">;
 
 export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "consequence"];
 
-/** What can be picked in the composer: the entry kinds and starting a session. */
-export type ComposerMode = ComposerKind | "session";
+/** What can be picked in the composer: the entry kinds and starting a session or a scene. */
+export type ComposerMode = ComposerKind | "session" | "scene";
 
 export const SYMBOL: Record<JournalLineKind, string> = {
   action: "@",
@@ -36,6 +43,7 @@ export const SYMBOL: Record<JournalLineKind, string> = {
   consequence: "=>",
   note: "",
   session: "",
+  scene: "",
 };
 
 export function downloadTextFile(filename: string, content: string, type = "text/markdown") {
@@ -83,7 +91,8 @@ export function groupBySession(sortedEntries: JournalEntry[]): EntryGroup[] {
  * roll that answers it and the consequences right after it go
  * together; the rest (notes, actions…) stands alone. A consequence
  * always joins the entry right before it, whatever its kind (an action
- * and what comes of it are one card), so the composer can say so.
+ * and what comes of it are one card), so the composer can say so —
+ * except a scene or a block marker ([COMBAT]…), which stands alone.
  * Grouped by position (not only by linkedRollId) so it also works with
  * imported journals, which carry no links.
  */
@@ -109,7 +118,7 @@ export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
     } else if (entry.kind === "roll") {
       open = [entry];
       blocks.push(open);
-    } else if (entry.kind === "consequence" && blocks.length > 0) {
+    } else if (entry.kind === "consequence" && blocks.length > 0 && !isMarker(blocks[blocks.length - 1][0])) {
       open = blocks[blocks.length - 1];
       open.push(entry);
     } else {
@@ -142,12 +151,15 @@ export function splitRollText(text: string): {
   result: string | null;
   answer: Answer | undefined;
 } {
-  const i = text.lastIndexOf("->");
-  if (i < 0) return { detail: text, result: null, answer: undefined };
-  const detail = text.slice(0, i).trim();
-  const result = text.slice(i + 2).trim();
-  // "Oracle — dice": table rolls and inspiration never carry a "—".
-  const looksLikeOracle = /—.*\d/.test(detail);
+  // "tbl: Name d6=3 -> …" and "gen: …" show without their symbol.
+  const { symbol, text: body } = splitRollSymbol(text);
+  const i = body.lastIndexOf("->");
+  if (i < 0) return { detail: body, result: null, answer: undefined };
+  const detail = body.slice(0, i).trim();
+  const result = body.slice(i + 2).trim();
+  // "Oracle — dice": table rolls and inspiration never carry a "—". A
+  // bare "-> Yes, but…" is an oracle's answer too (Lonelog §3.2.2).
+  const looksLikeOracle = /—.*\d/.test(detail) || (symbol === "result" && !detail);
   const answer = looksLikeOracle
     ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
     : undefined;
@@ -156,10 +168,11 @@ export function splitRollText(text: string): {
 
 /**
  * One die or formula from the generic roller: "d10", "2d6", "d%",
- * "4dF", "2d6+3", "4d6kh3", "5d6>=5" (see rollFormula in dice.ts).
+ * "4dF", "2d6+3", "4d6kh3", "4d6dl1", "3d6!", "d6!!", "5d6>=5",
+ * "4d6>4f<3" (see rollFormula in dice.ts).
  */
-const DICE = String.raw`\d*d(?:\d+|%|F)(?:k[hl]?\d+)?`;
-const DIE = String.raw`${DICE}(?:[+-](?:${DICE}|\d+))*(?:[<>]=?\d+)?`;
+const DICE = String.raw`\d*d(?:\d+|%|F)!{0,2}(?:[kd][hl]?\d+)?`;
+const DIE = String.raw`${DICE}(?:[+-](?:${DICE}|\d+))*(?:[<>]=?\d+)?(?:f[<>]=?\d+)?`;
 const ROLL_SEGMENT = new RegExp(
   String.raw`(${DIE})\s*->\s*(.+?)(?=\s*,?\s+${DIE}\s*->|\s*$)`,
   "g",
