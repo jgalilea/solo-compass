@@ -3,12 +3,12 @@ import { ORACLES } from "../lib/oracles";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { IconCheck, IconExternalLink, IconSwap } from "./icons/Icons";
+import { IconCheck, IconExternalLink, IconStar, IconSwap } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 
 export function OracleSwitcher() {
-  const { oracleId, setOracleId } = useOracleContext();
+  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId } = useOracleContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const current = ORACLES.find((o) => o.id === oracleId) ?? ORACLES[0];
@@ -36,6 +36,7 @@ export function OracleSwitcher() {
             <div className="flex flex-col gap-2">
               {ORACLES.map((oracleInfo) => {
                 const active = oracleInfo.id === oracleId;
+                const favorite = oracleInfo.id === favoriteOracleId;
                 return (
                   <div
                     key={oracleInfo.id}
@@ -59,7 +60,7 @@ export function OracleSwitcher() {
                         <span className="mt-0.5 block text-xs text-parchment">
                           {t.oracleSwitcher.blurb[oracleInfo.id]}
                         </span>
-                        <span className="mt-0.5 block truncate text-xs text-parchment-dim">
+                        <span className="mt-0.5 block text-xs text-parchment-dim">
                           {interpolate(t.about.creditBy, {
                             author: oracleInfo.author,
                           })}{" "}
@@ -70,21 +71,38 @@ export function OracleSwitcher() {
                         <IconCheck size={18} className="shrink-0 text-gold" />
                       )}
                     </button>
-                    <a
-                      href={oracleInfo.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="mt-2 flex items-center justify-center gap-1.5 rounded-xl border border-ink-border py-1.5 text-xs text-parchment-dim transition hover:text-gold"
-                    >
-                      {t.common.viewOriginal}
-                      <IconExternalLink size={11} />
-                    </a>
+                    <div className="mt-2 flex gap-1.5">
+                      {/* One favourite at a time: the oracle the app opens with. */}
+                      <button
+                        type="button"
+                        onClick={() => setFavoriteOracleId(favorite ? null : oracleInfo.id)}
+                        aria-pressed={favorite}
+                        className={[
+                          "flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-1.5 text-xs transition",
+                          favorite
+                            ? "border-gold/50 bg-gold/10 font-medium text-gold hover:bg-gold/20"
+                            : "border-ink-border text-parchment-dim hover:text-gold",
+                        ].join(" ")}
+                      >
+                        <IconStar size={12} filled={favorite} />
+                        {favorite ? t.oracleSwitcher.favorite : t.oracleSwitcher.markFavorite}
+                      </button>
+                      <a
+                        href={oracleInfo.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-ink-border py-1.5 text-xs text-parchment-dim transition hover:text-gold"
+                      >
+                        {t.common.viewOriginal}
+                        <IconExternalLink size={11} />
+                      </a>
+                    </div>
                   </div>
                 );
               })}
             </div>
-
+            <p className="text-center text-xs text-parchment-dim/80">{t.oracleSwitcher.favoriteHint}</p>
           </DialogBody>
         </Modal>
       )}

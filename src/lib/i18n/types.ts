@@ -201,6 +201,9 @@ export interface Dictionary {
     dialogTitle: string;
     /** One line under each oracle's name: what it's like to use. */
     blurb: Record<OracleId, string>;
+    favorite: string;
+    markFavorite: string;
+    favoriteHint: string;
   };
   /** Short guide to the oracle (not its full rules: those are in the original). */
   oracleHelp: {

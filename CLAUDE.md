@@ -111,7 +111,8 @@ No backend; persistence is split by access pattern, not by feature:
   again. New stored data should follow the same pattern.
 - **localStorage**, for small settings read synchronously before first
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
-  language, selected oracle, favorite tables, unfolded table blocks,
+  language, selected oracle and favorite oracle (the app opens with the
+  favorite, `initialOracleId`; the last used otherwise), favorite tables, unfolded table blocks,
   folded notebook lists, active-adventure id (`activeAdventure.ts`,
   `theme.ts`, `mode.ts`, `tableFavorites.ts`, `tableSections.ts`,
   `notebookSections.ts`).
@@ -290,7 +291,8 @@ the notebook.
 ### Oracles (`src/lib/oracles.ts`, `oracleEngines.ts`)
 
 Four yes/no oracles, picked from the name next to the Oracle title
-(`OracleSwitcher`, saved per device): **Recluse** (the default, the
+(`OracleSwitcher`, saved per device; a star marks the favorite, the
+one the app opens with): **Recluse** (the default, the
 author's favourite; mechanic in `oracle.ts`), **Loner**, **Ironsworn**'s
 "Ask the Oracle" and **One Page Solo Engine** v1.6. `oracles.ts` holds
 each one's credit and verbatim attribution (all listed in Settings →

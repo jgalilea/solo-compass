@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara ya no consulta a un solo oráculo: en la encrucijada la esperan cuatro, cada uno con su manera de responder.",
         items: [
           "Tres oráculos nuevos, además de Recluse: Loner (dados de oportunidad y riesgo, con giros cuando salen dobles), el «Pregunta al oráculo» de Ironsworn (un d100) y One Page Solo Engine (dos d6, el más sencillo). Se cambian tocando el nombre del oráculo junto al título.",
+          "Marca un oráculo como favorito con la estrella del selector: la app se abrirá siempre con él, aunque cambies a otro un momento.",
           "En Loner, el tercer doble trae un giro: se tiran solas sus tablas de giro y el resultado va al diario con la respuesta.",
           "La ayuda «?» de cada oráculo explica cómo responde y trae una tabla con la probabilidad exacta de cada respuesta (sí, no, «y además», «pero» y lo especial de cada uno) según lo probable que lo marques.",
           "Escenas dentro de las sesiones: «Nueva escena» en el selector del diario las numera solas (S1, S2…) y aparecen en el índice de sesiones. Un diario importado también trae sus recuerdos (S5a), montajes (S7.1) y tramas paralelas (T2-S1).",
@@ -38,6 +39,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara no longer asks a single oracle: four wait at the crossroads, each with its own way of answering.",
         items: [
           "Three new oracles besides Recluse: Loner (Chance and Risk dice, with twists on doubles), Ironsworn's “Ask the Oracle” (a d100) and the One Page Solo Engine (two d6, the simplest). Switch by tapping the oracle's name next to the title.",
+          "Mark an oracle as your favorite with the star in the switcher: the app will always open with it, even if you switch to another for a while.",
           "With Loner, the third double brings a twist: its twist tables are rolled for you and the result goes into the journal with the answer.",
           "Each oracle's “?” help explains how it answers and has a table with the exact chance of each answer (yes, no, “and”, “but” and each one's special result) at every likelihood.",
           "Scenes within sessions: “New scene” in the journal's picker numbers them for you (S1, S2…) and they show in the session index. An imported journal brings its flashbacks (S5a), montages (S7.1) and parallel threads (T2-S1) too.",

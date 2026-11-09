@@ -196,6 +196,9 @@ export const es: Dictionary = {
       ironsworn: "Un d100 con cinco umbrales. Las cifras repetidas, resultados extremos.",
       opse: "Dos d6: uno responde y otro matiza. El más sencillo.",
     },
+    favorite: "Favorito",
+    markFavorite: "Marcar como favorito",
+    favoriteHint: "La app se abre siempre con tu oráculo favorito, aunque la última vez usaras otro.",
   },
   oracleHelp: {
     button: "Cómo funciona el oráculo",

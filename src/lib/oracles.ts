@@ -74,6 +74,38 @@ export function getOracle(id: string): OracleInfo {
   return ORACLES.find((o) => o.id === id) ?? ORACLES[0];
 }
 
+const FAVORITE_KEY = "solo-compass:oracle-favorite";
+
+/** The favourite oracle, if one is marked: the one the app opens with. */
+export function loadFavoriteOracleId(): OracleId | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = window.localStorage.getItem(FAVORITE_KEY);
+    return saved && isOracleId(saved) ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveFavoriteOracleId(id: OracleId | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (id) window.localStorage.setItem(FAVORITE_KEY, id);
+    else window.localStorage.removeItem(FAVORITE_KEY);
+  } catch {
+    // Not critical: the app opens with the last oracle used instead.
+  }
+}
+
+/**
+ * The oracle to open the app with: the favourite if there is one
+ * (switching to another for a while doesn't change it), else the last
+ * one used.
+ */
+export function initialOracleId(): OracleId {
+  return loadFavoriteOracleId() ?? loadOracleId();
+}
+
 export function loadOracleId(): OracleId {
   if (typeof window === "undefined") return DEFAULT_ORACLE_ID;
   try {

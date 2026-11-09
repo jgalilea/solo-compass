@@ -196,6 +196,9 @@ export const en: Dictionary = {
       ironsworn: "One d100 with five thresholds. Matching digits, extreme results.",
       opse: "Two d6: one answers, the other adds a nuance. The simplest.",
     },
+    favorite: "Favorite",
+    markFavorite: "Mark as favorite",
+    favoriteHint: "The app always opens with your favorite oracle, even if you used another one last time.",
   },
   oracleHelp: {
     button: "How the oracle works",
