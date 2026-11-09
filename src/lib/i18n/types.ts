@@ -207,13 +207,30 @@ export interface Dictionary {
     button: string;
     title: string;
     intro: string;
+    stepsHeading: string;
+    steps: string[];
     buttonsHeading: string;
     buttons: { label: string; text: string }[];
+    symbolsHeading: string;
+    /** What each mark in a logged roll means. */
+    symbols: { symbol: string; text: string }[];
     formulasHeading: string;
-    /** `example` is the line it leaves in the journal. */
-    formulas: { formula: string; text: string; example: string }[];
-    reading: string;
-    tip: string;
+    formulasIntro: string;
+    partsLabel: string;
+    examplesLabel: string;
+    usedInLabel: string;
+    formulas: {
+      name: string;
+      formula: string;
+      text: string;
+      /** The formula taken apart, piece by piece. */
+      parts: { token: string; text: string }[];
+      /** `line` is what it leaves in the journal (a test rolls each one). */
+      examples: { line: string; text: string }[];
+      usedIn: string;
+    }[];
+    rulesHeading: string;
+    rules: string[];
   };
   oracle: {
     title: string;

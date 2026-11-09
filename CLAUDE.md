@@ -334,9 +334,10 @@ in `dice.ts`): sums with modifiers, keep highest/lowest (`4d6kh3`,
 advantage/disadvantage buttons), success pools (`5d6>=5`) and
 exploding dice (`3d6!`), written
 so the journal shows them die by die like the buttons' rolls. Its "?" (`DiceHelp`, on the shared
-`HelpDialog` shell like `OracleHelp`) explains the buttons and each
-formula with the line it leaves; a test checks every example there
-is one `rollFormula` can write.
+`HelpDialog` shell like `OracleHelp`) explains the buttons, how to
+read a roll and each formula taken apart, with examples and the line
+each leaves; a test rolls every example and checks the exact line, and
+that the limits it states hold.
 
 ### Journal search and stats
 
@@ -361,7 +362,11 @@ together. Don't write symbols like "+"/"−" as text in UI controls: some
 theme display fonts draw "+" as a cross — use the icon. Every
 dialog uses `Modal` (portal to `<body>`, closes on Esc and backdrop click):
 the sticky desktop header would otherwise clip or cover dialogs rendered
-inside it (`backdrop-filter`/z-index stacking).
+inside it (`backdrop-filter`/z-index stacking). `Modal` owns the panel
+frame and picks its width from a `size` (`sm` confirmations, `md` forms
+and lists, `lg` guides/changelog/sheets, `xl` settings and the dice
+guide); inside go `DialogHeader` (title, icon, close; fixed) and
+`DialogBody` (scrolls) from `Dialog.tsx`. Don't style a panel by hand.
 
 ### Responsive
 

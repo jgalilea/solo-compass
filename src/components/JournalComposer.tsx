@@ -7,13 +7,13 @@ import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
 import type { JournalEntry } from "../lib/lonelog";
 import { buildCast } from "../lib/lonelogTags";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
+import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { TagSuggestions } from "./TagSuggestions";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import {
   IconAction,
   IconChevronUpDown,
-  IconClose,
   IconConsequence,
   IconDice,
   IconInsertBelow,
@@ -284,11 +284,11 @@ export function JournalComposer({
           sheet
           onClose={() => setTool(null)}
           label={openTool.title}
-          className="animate-fade-up flex max-h-[85dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-ink-border bg-ink-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl sm:p-6 md:max-w-3xl sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+          size="lg"
         >
           {/* Tabs instead of a title: go from the oracle to a table
               without closing the sheet (on desktop all three are visible). */}
-          <div className="flex items-center gap-2">
+          <DialogHeader title={openTool.title} onClose={() => setTool(null)}>
             <div role="tablist" aria-label={t.journal.playPanelLabel} className="flex min-w-0 flex-1 gap-1 rounded-xl bg-ink-900/60 p-1">
               {tools.map(({ id, label, Icon }) => (
                 <button
@@ -308,19 +308,12 @@ export function JournalComposer({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => setTool(null)}
-              aria-label={t.common.close}
-              className="shrink-0 p-2 text-parchment-dim transition hover:text-parchment"
-            >
-              <IconClose size={18} />
-            </button>
-          </div>
-          <h2 className="sr-only">{openTool.title}</h2>
-          {tool === "oracle" && <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />}
-          {tool === "dice" && <DiceTool adventureId={adventureId} onRolled={rolled} />}
-          {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
+          </DialogHeader>
+          <DialogBody>
+            {tool === "oracle" && <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />}
+            {tool === "dice" && <DiceTool adventureId={adventureId} onRolled={rolled} />}
+            {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
+          </DialogBody>
         </Modal>
       )}
     </div>

@@ -30,6 +30,21 @@ function unlockPageScroll() {
   savedRootStyle = null;
 }
 
+/**
+ * Panel widths, the same few for every dialog: from `sm` up they're
+ * centred windows; below, full-width bottom sheets.
+ */
+const SIZES = {
+  /** A yes/no question or a short list (confirmations, the oracle picker). */
+  sm: "sm:max-w-sm",
+  /** A form or a list (the table editor, a table's results, the stats). */
+  md: "sm:max-w-lg",
+  /** Reading and tools: the oracle's guide, the changelog, the game table's sheets. */
+  lg: "sm:max-w-xl md:max-w-3xl",
+  /** Two columns on desktop: settings, the dice guide. */
+  xl: "sm:max-w-xl md:max-w-3xl lg:max-w-5xl",
+};
+
 const FOCUSABLE =
   "input:not([type='hidden']):not(.hidden), textarea, select, button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
@@ -38,6 +53,11 @@ const FOCUSABLE =
  * ancestor clips it or leaves it underneath (the sticky desktop header
  * creates its own stacking context). Closes on Esc or on a backdrop
  * click.
+ *
+ * The panel is the same frame for all of them (border, corners, height
+ * limit, room for the phone's home bar); its content is usually a
+ * `DialogHeader` and a `DialogBody` (Dialog.tsx), so the header stays
+ * put and only the body scrolls.
  *
  * With the keyboard: on open, focus moves into the panel (unless a
  * child already took it with autoFocus), Tab doesn't leave it while
@@ -50,7 +70,8 @@ export function Modal({
   labelledBy,
   centered = false,
   sheet = false,
-  className,
+  size,
+  className = "",
   children,
 }: {
   onClose: () => void;
@@ -60,8 +81,9 @@ export function Modal({
   centered?: boolean;
   /** Bottom sheet at every size (the journal's tools). */
   sheet?: boolean;
-  /** Panel classes. */
-  className: string;
+  size: keyof typeof SIZES;
+  /** Extra panel classes. */
+  className?: string;
   children: ReactNode;
 }) {
   const onCloseRef = useRef(onClose);
@@ -123,7 +145,7 @@ export function Modal({
       className={[
         // overscroll-contain: a scroll that reaches the end of the panel stops there.
         "fixed inset-0 z-50 flex justify-center overscroll-contain bg-black/60",
-        centered ? "items-center px-4" : sheet ? "items-end" : "items-end sm:items-center",
+        centered ? "items-center px-4" : sheet ? "items-end" : "items-end sm:items-center sm:px-4",
       ].join(" ")}
       role="dialog"
       aria-modal="true"
@@ -141,7 +163,20 @@ export function Modal({
       }}
     >
       {/* tabIndex -1: focusable from code (on open), with no ring and no Tab stop. */}
-      <div ref={panelRef} tabIndex={-1} className={`${className} outline-none`}>
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        className={[
+          "flex max-h-[88dvh] w-full flex-col overflow-hidden border border-ink-border bg-ink-800 shadow-2xl outline-none",
+          SIZES[size],
+          centered
+            ? "rounded-3xl"
+            : sheet
+              ? "animate-fade-up rounded-t-3xl border-b-0 pb-[env(safe-area-inset-bottom)]"
+              : "rounded-t-3xl max-sm:pb-[env(safe-area-inset-bottom)] sm:rounded-3xl",
+          className,
+        ].join(" ")}
+      >
         {children}
       </div>
     </div>,

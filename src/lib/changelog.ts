@@ -29,6 +29,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "El diario y el historial guardan cada cambio por separado: con años de partidas, tirar sigue siendo igual de rápido.",
           "Al importar un diario muy largo, lo que escribas justo después ya no se cuela entre sus líneas.",
           "En el cuaderno del móvil, su botón queda marcado mientras está abierto, como la búsqueda y las sesiones.",
+          "La ayuda de los dados («?») explica ahora cada fórmula pieza a pieza: qué significa cada parte, varios ejemplos con la línea que deja en el diario y en qué juegos se usa. También cómo leer una tirada (✓, ✗, el ! de los dados que explotan) y sus límites.",
+          "Todas las ventanas (ajustes, ayudas, crónica, estadísticas, tablas…) siguen el mismo patrón: título fijo arriba y solo el contenido se desplaza. En el ordenador, las ayudas aprovechan el ancho de la pantalla.",
         ],
       },
       en: {
@@ -40,6 +42,8 @@ export const CHANGELOG: ChangelogEntry[] = [
           "The journal and the history save each change on its own: after years of play, rolling is just as quick.",
           "When importing a very long journal, what you write right after no longer slips in among its lines.",
           "On phones, the notebook's button stays marked while it's open, like search and sessions.",
+          "The dice help (“?”) now explains each formula piece by piece: what each part means, several examples with the line it leaves in the journal and which games use it. Also how to read a roll (✓, ✗, the ! of exploding dice) and its limits.",
+          "Every window (settings, help, chronicle, stats, tables…) follows the same pattern: the title stays at the top and only the content scrolls. On a computer, the help windows make use of the screen's width.",
         ],
       },
     },

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNod
 import {
   IconAction,
   IconCheck,
-  IconClose,
   IconConsequence,
   IconDice,
   IconDownload,
@@ -48,6 +47,7 @@ import {
 import { ChangelogDialog } from "./ChangelogDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
 import { InstallAppSettings } from "./InstallApp";
+import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { KOFI_URL } from "../lib/support";
 
@@ -107,54 +107,41 @@ export function SettingsDialog() {
         <Modal
           onClose={() => setOpen(false)}
           label={t.settings.title}
-          className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border border-ink-border bg-ink-800 shadow-2xl sm:max-w-lg sm:rounded-3xl lg:max-w-4xl"
+          size="xl"
         >
-          {/* The header stays fixed and only the content scrolls, so the
-              scrollbar doesn't run over the rounded corners. */}
-          <div className="flex shrink-0 items-center justify-between border-b border-ink-border/70 px-5 py-4 sm:px-6">
-            <h2 className="font-display text-xl text-parchment">{t.settings.title}</h2>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label={t.common.close}
-              className="-m-1.5 p-1.5 text-parchment-dim transition hover:text-parchment"
-            >
-              <IconClose size={20} />
-            </button>
-          </div>
-
-          <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-              <div className="flex flex-col gap-6">
-                <Section title={t.settings.appearanceHeading}>
-                  <AppearanceSettings />
-                </Section>
-                <Section title={t.settings.languageHeading}>
-                  <LanguageSettings />
-                </Section>
-                {/* Only with a mouse or a keyboard at hand (or when reached via "?"). */}
-                <Section
-                  ref={shortcutsRef}
-                  title={t.shortcuts.heading}
-                  className={showShortcuts ? "scroll-mt-4" : "hidden any-pointer-fine:flex"}
-                >
-                  <ShortcutsLegend />
-                </Section>
+          <DialogHeader title={t.settings.title} onClose={() => setOpen(false)} />
+          <DialogBody className="block">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+                <div className="flex flex-col gap-6">
+                  <Section title={t.settings.appearanceHeading}>
+                    <AppearanceSettings />
+                  </Section>
+                  <Section title={t.settings.languageHeading}>
+                    <LanguageSettings />
+                  </Section>
+                  {/* Only with a mouse or a keyboard at hand (or when reached via "?"). */}
+                  <Section
+                    ref={shortcutsRef}
+                    title={t.shortcuts.heading}
+                    className={showShortcuts ? "scroll-mt-4" : "hidden any-pointer-fine:flex"}
+                  >
+                    <ShortcutsLegend />
+                  </Section>
+                </div>
+                <div className="flex flex-col gap-6">
+                  <Section title={t.install.sectionTitle}>
+                    <InstallAppSettings />
+                  </Section>
+                  <Section title={t.storage.sectionTitle}>
+                    <StorageProtectionSettings />
+                    <BackupSettings />
+                  </Section>
+                  <Section title={t.settings.aboutHeading}>
+                    <AboutSettings />
+                  </Section>
+                </div>
               </div>
-              <div className="flex flex-col gap-6">
-                <Section title={t.install.sectionTitle}>
-                  <InstallAppSettings />
-                </Section>
-                <Section title={t.storage.sectionTitle}>
-                  <StorageProtectionSettings />
-                  <BackupSettings />
-                </Section>
-                <Section title={t.settings.aboutHeading}>
-                  <AboutSettings />
-                </Section>
-              </div>
-            </div>
-          </div>
+          </DialogBody>
         </Modal>
       )}
     </>
@@ -478,45 +465,47 @@ function BackupSettings() {
           onClose={() => setPendingRestore(null)}
           labelledBy="restore-choice-title"
           centered
-          className="w-full max-w-md rounded-2xl border border-ink-border bg-ink-800 p-6 shadow-2xl"
+          size="md"
         >
-          <h2 id="restore-choice-title" className="font-display text-lg text-parchment">
-            {t.about.restoreChoiceTitle}
-          </h2>
-          {pendingRestore.date && (
-            <p className="mt-1 text-sm text-parchment-dim">
-              {interpolate(t.about.restoreChoiceDescription, { date: pendingRestore.date })}
-            </p>
-          )}
-          {restoring ? (
-            <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>
-          ) : (
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => void confirmRestore("merge")}
-                className="rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-left transition hover:bg-gold/20"
-              >
-                <span className="block text-sm font-semibold text-gold">{t.about.restoreMergeLabel}</span>
-                <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreMergeDescription}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => void confirmRestore("replace")}
-                className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
-              >
-                <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>
-                <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreReplaceDescription}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPendingRestore(null)}
-                className="self-end rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
-              >
-                {t.common.cancel}
-              </button>
-            </div>
-          )}
+          <DialogBody className="block">
+            <h2 id="restore-choice-title" className="font-display text-xl text-parchment">
+              {t.about.restoreChoiceTitle}
+            </h2>
+            {pendingRestore.date && (
+              <p className="mt-1 text-sm text-parchment-dim">
+                {interpolate(t.about.restoreChoiceDescription, { date: pendingRestore.date })}
+              </p>
+            )}
+            {restoring ? (
+              <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>
+            ) : (
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => void confirmRestore("merge")}
+                  className="rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-left transition hover:bg-gold/20"
+                >
+                  <span className="block text-sm font-semibold text-gold">{t.about.restoreMergeLabel}</span>
+                  <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreMergeDescription}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void confirmRestore("replace")}
+                  className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
+                >
+                  <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>
+                  <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreReplaceDescription}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingRestore(null)}
+                  className="self-end rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
+                >
+                  {t.common.cancel}
+                </button>
+              </div>
+            )}
+          </DialogBody>
         </Modal>
       )}
     </div>

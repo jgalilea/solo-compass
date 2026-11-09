@@ -5,10 +5,17 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-07 (escribir debajo y mover entradas, dados que explotan, ayuda del oráculo, descripciones, prueba de humo).
+Última revisión: 2026-11-09 (ayuda de los dados ampliada, diálogos unificados).
 
 ## Hecho recientemente
 
+- Ayuda de los dados ampliada y diálogos unificados (2026-11-09): la
+  guía de los dados explica cómo tirar, cómo leer una tirada y cada
+  fórmula desglosada pieza a pieza, con varios ejemplos (un test
+  comprueba cada línea exacta) y juegos que la usan. Todos los
+  diálogos comparten marco (`Modal` con `size` sm/md/lg/xl) y
+  cabecera fija con cuerpo desplazable (`Dialog.tsx`); las guías y
+  los ajustes aprovechan el ancho en escritorio.
 - Auditoría de código (2026-11-09), todo corregido:
   - Pérdida de datos con dos pestañas o ventanas abiertas: cada una
     escribía su lista entera encima de la otra. Ahora cada tipo de

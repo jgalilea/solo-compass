@@ -16,6 +16,7 @@ import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { AdventureHeader } from "./AdventureHeader";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { JournalComposer } from "./JournalComposer";
+import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
@@ -33,7 +34,6 @@ import {
 } from "../lib/journalUi";
 import {
   IconChevronRight,
-  IconClose,
   IconDice,
   IconJournal,
   IconNotebook,
@@ -632,23 +632,10 @@ export function AdventureDetailView() {
           sheet
           onClose={() => setNotebookOpen(false)}
           label={t.notebook.title}
-          className="animate-fade-up flex max-h-[85dvh] w-full max-w-lg flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-ink-border bg-ink-800 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+          size="lg"
         >
-          <div className="flex items-center gap-2">
-            <h2 className="flex min-w-0 flex-1 items-center gap-2 font-display text-lg text-parchment">
-              <IconNotebook size={19} className="shrink-0 text-gold" />
-              {t.notebook.title}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setNotebookOpen(false)}
-              aria-label={t.common.close}
-              className="shrink-0 p-2 text-parchment-dim transition hover:text-parchment"
-            >
-              <IconClose size={18} />
-            </button>
-          </div>
-          {notebook}
+          <DialogHeader title={t.notebook.title} Icon={IconNotebook} onClose={() => setNotebookOpen(false)} />
+          <DialogBody>{notebook}</DialogBody>
         </Modal>
       )}
 

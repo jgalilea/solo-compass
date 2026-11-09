@@ -54,17 +54,59 @@ describe("rollFormula", () => {
   });
 });
 
+/** Rolls that land on the given faces, each with its own die's sides. */
+function faces(...rolls: [face: number, sides: number][]) {
+  let i = 0;
+  return () => {
+    const [face, sides] = rolls[i++ % rolls.length];
+    return (face - 1) / sides;
+  };
+}
+
 describe("dice help", () => {
   it("only shows examples rollFormula can write", () => {
     for (const locale of LOCALES) {
-      for (const { example } of DICTIONARIES[locale].diceHelp.formulas) {
-        const formula = example.split(" -> ")[0];
-        expect(rollFormula(formula)?.startsWith(`${formula} -> `), example).toBe(true);
+      for (const { examples } of DICTIONARIES[locale].diceHelp.formulas) {
+        for (const { line } of examples) {
+          const formula = line.split(" -> ")[0];
+          expect(rollFormula(formula)?.startsWith(`${formula} -> `), line).toBe(true);
+        }
       }
     }
   });
 
-  it("writes a Fudge formula with a modifier as its example says", () => {
-    expect(rollFormula("4dF+1", dice(3, 2, 3, 1)(3))).toBe("4dF+1 -> +2 (+ 0 + − + 1)");
+  it("writes each example exactly as the help shows it", () => {
+    const lines = DICTIONARIES.es.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line));
+    const rolls: Record<string, [number, number][]> = {
+      "2d6+3": [[4, 6], [2, 6]],
+      "d20+5": [[12, 20]],
+      "1d8+1d6-1": [[5, 8], [3, 6]],
+      "4d6kh3": [[2, 6], [6, 6], [5, 6], [3, 6]],
+      "2d20kh1": [[17, 20], [4, 20]],
+      "2d20kl1": [[4, 20], [17, 20]],
+      "5d6>=5": [[6, 6], [5, 6], [3, 6], [2, 6], [1, 6]],
+      "6d10>=8": [[9, 10], [2, 10], [8, 10], [10, 10], [5, 10], [7, 10]],
+      "4d6<=2": [[5, 6], [2, 6], [6, 6], [4, 6]],
+      "3d6!": [[6, 6], [2, 6], [4, 6], [1, 6]],
+      "1d8!+1d6!": [[8, 8], [3, 8], [2, 6]],
+      "3d10!>=8": [[10, 10], [9, 10], [4, 10], [8, 10]],
+      "4dF+1": [[3, 3], [2, 3], [3, 3], [1, 3]],
+      "d%": [[42, 100]],
+    };
+    for (const line of lines) {
+      const formula = line.split(" -> ")[0];
+      expect(rolls[formula], formula).toBeDefined();
+      expect(rollFormula(formula, faces(...rolls[formula]))).toBe(line);
+    }
+    // Both languages show the same lines.
+    expect(DICTIONARIES.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(lines);
+  });
+
+  it("refuses what its limits say it doesn't take", () => {
+    for (const bad of ["5d6+1>=5", "4d6kh3>=4", "2d20kh3", "4dF!", "4dF>=1", "101d6", "d1001"]) {
+      expect(rollFormula(bad), bad).toBeNull();
+    }
+    expect(rollFormula("2D6 + 3")?.startsWith("2d6+3 -> ")).toBe(true);
+    expect(rollFormula("100d1000")).not.toBeNull();
   });
 });

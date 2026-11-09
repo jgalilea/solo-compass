@@ -4,12 +4,12 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import {
-  IconClose,
   IconDice,
   IconExternalLink,
   IconList,
   IconStar,
 } from "./icons/Icons";
+import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
 
@@ -148,37 +148,33 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
         <Modal
           onClose={() => setOpen(false)}
           label={interpolate(t.tables.allResultsDialogLabel, { name: table.name })}
-          className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-t-3xl border border-ink-border bg-ink-800 p-5 shadow-2xl sm:rounded-3xl"
+          size="md"
         >
-          <div className="mb-1 flex items-start justify-between gap-3">
-            <h2 className="font-display text-lg text-parchment">
-              {table.name}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label={t.common.close}
-              className="-m-1 shrink-0 p-1 text-parchment-dim transition hover:text-parchment"
-            >
-              <IconClose size={16} />
-            </button>
-          </div>
-          <p className="mb-3 text-xs uppercase tracking-wide text-parchment-dim/70">
-            {table.dice} ·{" "}
-            {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
-          </p>
-          {credit.length > 0 && <p className="-mt-1 mb-3 text-xs text-parchment-dim">{credit.join(" · ")}</p>}
-          <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1">
-            {table.entries.map((entry) => (
-              <li
-                key={`${entry.range[0]}-${entry.range[1]}`}
-                className="flex gap-3 rounded-xl border border-ink-border/70 bg-ink-900/50 px-3 py-2 text-sm"
-              >
-                <span className="shrink-0 font-display text-parchment-dim">{formatRange(entry.range)}</span>
-                <span className="text-parchment/90">{entry.text}</span>
-              </li>
-            ))}
-          </ul>
+          <DialogHeader
+            title={table.name}
+            subtitle={
+              <>
+                <p className="text-xs uppercase tracking-wide text-parchment-dim/70">
+                  {table.dice} · {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
+                </p>
+                {credit.length > 0 && <p className="mt-0.5 text-xs">{credit.join(" · ")}</p>}
+              </>
+            }
+            onClose={() => setOpen(false)}
+          />
+          <DialogBody>
+            <ul className="flex flex-col gap-1.5">
+              {table.entries.map((entry) => (
+                <li
+                  key={`${entry.range[0]}-${entry.range[1]}`}
+                  className="flex gap-3 rounded-xl border border-ink-border/70 bg-ink-900/50 px-3 py-2 text-sm"
+                >
+                  <span className="shrink-0 font-display text-parchment-dim">{formatRange(entry.range)}</span>
+                  <span className="text-parchment/90">{entry.text}</span>
+                </li>
+              ))}
+            </ul>
+          </DialogBody>
         </Modal>
       )}
     </>
