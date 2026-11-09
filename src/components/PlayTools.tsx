@@ -16,6 +16,8 @@ import { DiceHelp } from "./DiceHelp";
 import { DiceRoller } from "./DiceRoller";
 import { rollFormula } from "../lib/dice";
 import { LikelihoodPicker } from "./LikelihoodPicker";
+import { OracleHelp } from "./OracleHelp";
+import { OracleSwitcher } from "./OracleSwitcher";
 import { IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 
 /**
@@ -51,6 +53,11 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
         setQuestion("");
       }}
     >
+      {/* Which oracle answers, switchable here too, with its rules and odds. */}
+      <div className="flex items-center gap-2.5">
+        <OracleSwitcher />
+        <OracleHelp />
+      </div>
       <input
         autoFocus={autoFocus}
         value={question}

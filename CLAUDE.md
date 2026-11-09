@@ -292,7 +292,8 @@ the notebook.
 
 Four yes/no oracles, picked from the name next to the Oracle title
 (`OracleSwitcher`, saved per device; a star marks the favorite, the
-one the app opens with): **Recluse** (the default, the
+one the app opens with; the game table's `OracleTool` carries the same
+switcher and help, so it changes from the journal too): **Recluse** (the default, the
 author's favourite; mechanic in `oracle.ts`), **Loner**, **Ironsworn**'s
 "Ask the Oracle" and **One Page Solo Engine** v1.6. `oracles.ts` holds
 each one's credit and verbatim attribution (all listed in Settings →

@@ -613,10 +613,13 @@ export function AdventureDetailView() {
         />
       </div>
 
-      {/* Desktop: the table always open, no sheets covering anything. */}
+      {/* Desktop: the table always open, no sheets covering anything.
+          It scrolls on its own, which clips what pokes out of it: the
+          padding on the left (taken back by the negative margin) leaves
+          room for the keyboard focus ring of what sits at its edge. */}
       <aside
         aria-label={t.journal.playPanelLabel}
-        className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain py-8 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
+        className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain -ml-1.5 py-8 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
       >
         <PanelSection Icon={IconOracle} title={t.journal.toolOracleTitle}>
           <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
