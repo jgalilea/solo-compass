@@ -115,7 +115,7 @@ export function normalizeJournalEntry(value: unknown): JournalEntry | null {
   ) {
     return null;
   }
-  const { linkedRollId, editedAt, ...rest } = v;
+  const { linkedRollId, editedAt, date, ...rest } = v;
   return {
     ...rest,
     id: v.id,
@@ -125,6 +125,7 @@ export function normalizeJournalEntry(value: unknown): JournalEntry | null {
     text: v.text,
     ...(typeof linkedRollId === "string" ? { linkedRollId } : {}),
     ...(isNumber(editedAt) ? { editedAt } : {}),
+    ...(typeof date === "string" && /^(\d{4}-\d{2}-\d{2})?$/.test(date) ? { date } : {}),
   };
 }
 

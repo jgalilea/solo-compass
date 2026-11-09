@@ -1,7 +1,7 @@
 import { createElement, useRef, useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
-import type { JournalEntry, JournalLineKind } from "../lib/lonelog";
+import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
 import { castKey, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
 import { noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
@@ -194,6 +194,25 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
   );
 }
 
+/**
+ * The day a session was played, short ("9 nov 2026"). Nothing when it's
+ * unknown, or when it's already the title (an untitled session is named
+ * after its date).
+ */
+export function SessionDate({ session }: { session: JournalEntry }) {
+  const { locale } = useLocaleContext();
+  const iso = sessionDate(session);
+  if (!iso) return null;
+  const [y, m, d] = iso.split("-").map(Number);
+  const day = new Date(y, m - 1, d);
+  if (session.text === day.toLocaleDateString()) return null;
+  return (
+    <time dateTime={iso} className="shrink-0 text-xs text-parchment-dim">
+      {day.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}
+    </time>
+  );
+}
+
 export function SessionGroupRow({
   group,
   expanded,
@@ -256,6 +275,7 @@ export function SessionGroupRow({
             <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
               {session.text}
             </span>
+            <SessionDate session={session} />
             <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
           </button>
           {/* Expanding it with a tap selects it: that way its

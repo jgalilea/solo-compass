@@ -11,4 +11,11 @@ describe("normalizeJournalEntry", () => {
     }
     expect(normalizeJournalEntry({ id: "e1", adventureId: "a1", timestamp: 1, kind: "chapter", text: "x" })).toBeNull();
   });
+
+  it("keeps a session's date only when it's a day", () => {
+    const session = { id: "e1", adventureId: "a1", timestamp: 1, kind: "session", text: "S" };
+    expect(normalizeJournalEntry({ ...session, date: "2025-09-03" })?.date).toBe("2025-09-03");
+    expect(normalizeJournalEntry({ ...session, date: "" })?.date).toBe("");
+    expect(normalizeJournalEntry({ ...session, date: "ayer" })).not.toHaveProperty("date");
+  });
 });

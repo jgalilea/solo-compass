@@ -7,6 +7,7 @@ import {
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
   parseTitleFromMarkdown,
+  sessionDate,
   type JournalEntry,
   type JournalLineKind,
 } from "./lonelog";
@@ -150,6 +151,41 @@ describe("parseMarkdownToEntries", () => {
     expect(parsed.map((e) => e.timestamp)).toEqual([100, 101, 102]);
     expect(new Set(parsed.map((e) => e.id)).size).toBe(3);
     expect(parsed.every((e) => e.adventureId === "a")).toBe(true);
+  });
+});
+
+describe("session dates", () => {
+  it("writes the date below the session and reads it back", () => {
+    const session = { ...entry("session", "El molino", 0), date: "2025-09-10" };
+    const md = exportAdventureToMarkdown(es, "Aventura", [session, entry("note", "Llueve.", 1)]);
+    expect(md).toContain("=== El molino ===\n\n[Date] 2025-09-10\n\nLlueve.");
+    const back = parseMarkdownToEntries(md, "a1", 0);
+    expect(back.map((e) => [e.kind, e.text, e.date])).toEqual([
+      ["session", "El molino", "2025-09-10"],
+      ["note", "Llueve.", undefined],
+    ]);
+  });
+
+  it("reads every form of Lonelog's date line, keeping the rest", () => {
+    const parse = (md: string) => parseMarkdownToEntries(md, "a1", 0).map((e) => [e.kind, e.text, e.date]);
+    expect(parse("=== Session 1 ===\nDate: 2025-09-03 | Duration: 1h30")).toEqual([
+      ["session", "Session 1", "2025-09-03"],
+      ["note", "Duration: 1h30", undefined],
+    ]);
+    expect(parse("## Session 2\n*Date: 2025-09-10 | Duration: 2h*")[0]).toEqual(["session", "Session 2", "2025-09-10"]);
+    expect(parse("=== Session 3 ===\n[Date]        2025-09-17")).toEqual([["session", "Session 3", "2025-09-17"]]);
+    // Only right below a session.
+    expect(parse("=== S ===\nAlgo\n[Date] 2025-09-17").map((e) => e[0])).toEqual(["session", "note", "note"]);
+  });
+
+  it("an imported session without a date has none, not the day of the import", () => {
+    const [session] = parseMarkdownToEntries("=== Session 1 ===\n@ Go", "a1", Date.now());
+    expect(sessionDate(session)).toBeNull();
+    expect(exportAdventureToMarkdown(es, "A", [session])).not.toContain("[Date]");
+  });
+
+  it("a session from before dates were kept uses the day it was opened", () => {
+    expect(sessionDate({ timestamp: new Date(2026, 10, 9, 20).getTime() })).toBe("2026-11-09");
   });
 });
 

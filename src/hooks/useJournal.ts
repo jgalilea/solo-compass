@@ -11,6 +11,7 @@ import {
   type AdventureStatus,
 } from "../lib/journal";
 import {
+  isoDate,
   parseDescriptionsFromMarkdown,
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
@@ -294,6 +295,8 @@ export function useJournal(): UseJournalResult {
         kind,
         text,
         linkedRollId,
+        // The day of play, which moving the session won't change.
+        ...(kind === "session" ? { date: isoDate(now) } : {}),
       };
       const point = insertionRef.current;
       if (point?.adventureId === adventureId) {

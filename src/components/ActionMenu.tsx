@@ -15,19 +15,25 @@ export interface ActionMenuItem {
  * outside.
  *
  * `compact` is the small version that sits among a journal entry's
- * buttons; near the bottom of the screen (under the composer) it opens
- * upwards.
+ * buttons. It opens downwards unless there's more room above (near
+ * the bottom of the screen, under the composer), and never past the
+ * screen's edge: the page doesn't scroll while it's open, so a long
+ * menu on a small phone scrolls inside itself instead.
  */
 export function ActionMenu({ label, items, compact = false }: { label: string; items: ActionMenuItem[]; compact?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [upwards, setUpwards] = useState(false);
+  const [place, setPlace] = useState<{ upwards: boolean; maxHeight: number }>({ upwards: false, maxHeight: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
 
   function toggle() {
     if (!open && rootRef.current) {
       const menuHeight = items.length * 44 + 16;
-      // Room for the composer and the bottom bar below.
-      setUpwards(rootRef.current.getBoundingClientRect().bottom + menuHeight > window.innerHeight - 160);
+      const rect = rootRef.current.getBoundingClientRect();
+      // Room for the composer and the bottom bar below; a little margin above.
+      const below = window.innerHeight - 160 - rect.bottom - 8;
+      const above = rect.top - 16;
+      const upwards = below < menuHeight && above > below;
+      setPlace({ upwards, maxHeight: Math.max(120, upwards ? above : below) });
     }
     setOpen((v) => !v);
   }
@@ -54,7 +60,8 @@ export function ActionMenu({ label, items, compact = false }: { label: string; i
       {open && (
         <div
           role="menu"
-          className={`animate-fade-up absolute right-0 z-40 ${upwards ? "bottom-full mb-2" : "top-full mt-2"} w-56 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl`}
+          style={{ maxHeight: place.maxHeight }}
+          className={`animate-fade-up absolute right-0 z-40 ${place.upwards ? "bottom-full mb-2" : "top-full mt-2"} w-56 overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl`}
         >
           {items.map(({ label: itemLabel, Icon, onSelect, danger }) => (
             <button

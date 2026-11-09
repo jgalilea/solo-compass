@@ -1,34 +1,10 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { lockPageScroll, unlockPageScroll } from "../lib/scrollLock";
 
 // Stack of open dialogs, so Esc only closes the top one (e.g. the
 // restore-backup confirmation, opened on top of "About").
 const openStack: symbol[] = [];
-
-// The page behind doesn't scroll while any dialog is open (a scroll
-// inside the panel, or on the backdrop, used to move the page too). A
-// counter, since dialogs can be stacked: only the last one to close
-// unlocks it. The scrollbar's width is kept as padding so the page
-// doesn't shift sideways on desktop.
-let scrollLocks = 0;
-let savedRootStyle: { overflow: string; paddingRight: string } | null = null;
-
-function lockPageScroll() {
-  if (scrollLocks++ > 0) return;
-  const root = document.documentElement;
-  const scrollbar = window.innerWidth - root.clientWidth;
-  savedRootStyle = { overflow: root.style.overflow, paddingRight: root.style.paddingRight };
-  root.style.overflow = "hidden";
-  if (scrollbar > 0) root.style.paddingRight = `${scrollbar}px`;
-}
-
-function unlockPageScroll() {
-  if (--scrollLocks > 0 || !savedRootStyle) return;
-  const root = document.documentElement;
-  root.style.overflow = savedRootStyle.overflow;
-  root.style.paddingRight = savedRootStyle.paddingRight;
-  savedRootStyle = null;
-}
 
 /**
  * Panel widths: one for every dialog, so they all open the same on

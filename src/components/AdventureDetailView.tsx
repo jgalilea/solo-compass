@@ -22,7 +22,7 @@ import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
 import { JournalSearchPanel } from "./JournalSearchPanel";
-import { EntryList, LineButtons, SessionGroupRow, type EntryActions } from "./journalShared";
+import { EntryList, LineButtons, SessionDate, SessionGroupRow, type EntryActions } from "./journalShared";
 import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
@@ -566,6 +566,7 @@ export function AdventureDetailView() {
                       <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}
                       </span>
+                      <SessionDate session={currentGroup.sessionEntry} />
                       <LineButtons
                         visible={selectedEntryId === currentGroup.sessionEntry.id}
                         onEdit={() => {

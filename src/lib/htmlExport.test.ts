@@ -21,7 +21,7 @@ describe("exportAdventureToHtml", () => {
     theme,
     exportedAt: new Date(2026, 10, 6),
     entries: [
-      entry("session", "Sesión 1", 1),
+      { ...entry("session", "Sesión 1", 1), date: "2025-09-03" },
       entry("question", "¿Hay alguien?", 2),
       entry("roll", "Recluse — blanco 5 / negro 2 -> Sí", 3),
       entry("consequence", "La posadera, [N:Odile|desconfiada], seca jarras. <script>", 4),
@@ -42,7 +42,7 @@ describe("exportAdventureToHtml", () => {
     expect(html).toContain('<span class="tag"><b>Odile</b> <small>desconfiada</small></span>');
     expect(html).toContain('<span class="answer si">Sí</span>');
     expect(html).toContain('<p class="check done">☑ Pagar</p>');
-    expect(html).toContain("<h2>Sesión 1</h2>");
+    expect(html).toContain('<h2>Sesión 1 <time datetime="2025-09-03">3 de septiembre de 2025</time></h2>');
     expect(html).toContain("<b>Alerta</b> <span>1/4</span>");
   });
 });

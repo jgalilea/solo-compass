@@ -4,6 +4,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { computeAdventureStats } from "../lib/journalStats";
 import type { JournalEntry } from "../lib/lonelog";
+import { ActivityHeatmap } from "./ActivityHeatmap";
 import { IconChart } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -72,6 +73,11 @@ export function AdventureStatsDialog({
                   ? interpolate(s.singleDate, { date: firstDay })
                   : interpolate(s.dateRange, { first: firstDay, last: lastDay })}
               </p>
+            )}
+
+            {/* Only what was written in the app: an imported journal has no days of its own. */}
+            {Object.keys(stats.activity).length > 0 && (
+              <ActivityHeatmap activity={stats.activity} longestStreak={stats.longestStreak} />
             )}
 
             <section className="flex flex-col gap-3">

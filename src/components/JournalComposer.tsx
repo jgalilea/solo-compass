@@ -457,7 +457,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
       {open && (
         <div
           role="menu"
-          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 overflow-hidden rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
+          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 max-h-[calc(100dvh-12rem)] overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
         >
           {kinds.map((o) => {
             const Icon = MODE_ICON[o.mode];

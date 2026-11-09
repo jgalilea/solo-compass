@@ -49,6 +49,13 @@ export interface JournalEntry {
   linkedRollId?: string;
   /** Last edit (ms), if it was edited: the newer edit wins on a merge. */
   editedAt?: number;
+  /**
+   * A session's day of play, "2025-09-03" (Lonelog's "[Date]" line):
+   * set when it's opened, so moving it doesn't change it. "" when
+   * unknown (imported without one); missing on sessions from before
+   * it was kept, which use their timestamp (see sessionDate).
+   */
+  date?: string;
 }
 
 const PREFIX: Record<Exclude<JournalLineKind, "note" | "session" | "scene">, string> = {
@@ -142,7 +149,12 @@ export function exportAdventureToMarkdown(
   dates?: { createdAt: number; updatedAt: number },
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
-  const lines = sorted.map((e) => formatLine(e));
+  // A session's date goes on its own line below it, as in Lonelog's
+  // session header (§5.2).
+  const lines = sorted.flatMap((e) => {
+    const date = e.kind === "session" ? sessionDate(e) : null;
+    return date ? [formatLine(e), `[Date] ${date}`] : [formatLine(e)];
+  });
   const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
   const header = [
     `title: ${JSON.stringify(adventureName)}`,
@@ -151,8 +163,22 @@ export function exportAdventureToMarkdown(
   return formatFrontMatter(notes, formatDescriptions(sorted, descriptions), header) + blocks.join("\n\n") + "\n";
 }
 
+/**
+ * Whether an entry came from an imported file (its id is
+ * "start-index-random", see parseMarkdownToEntries): its timestamp is
+ * the moment of the import, not when it was written.
+ */
+export function isImportedEntry(entry: Pick<JournalEntry, "id">): boolean {
+  return /^\d+-\d+-[a-z0-9]{1,6}$/.test(entry.id);
+}
+
+/** The day a session was played ("2025-09-03"), or null if unknown. */
+export function sessionDate(entry: Pick<JournalEntry, "timestamp" | "date">): string | null {
+  return entry.date === undefined ? isoDate(entry.timestamp) : entry.date || null;
+}
+
 /** "2025-09-03", in local time like the dates shown in the app. */
-function isoDate(time: number): string {
+export function isoDate(time: number): string {
   const d = new Date(time);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -332,6 +358,11 @@ const LEGACY_SESSION_LINE = /^===\s*(.+?)\s*===$/;
  *  in case the file comes from elsewhere and uses a Markdown heading
  *  instead of Lonelog's marker for sessions. */
 const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
+/**
+ * The date below a session: "[Date] 2025-09-03", "Date: 2025-09-03 |
+ * Duration: 1h30" or in italics (§5.2); the rest of the line is kept.
+ */
+const SESSION_DATE_LINE = /^\*?\s*(?:\[(?:Date|Fecha)\]|(?:Date|Fecha):)\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*(.*?)\s*\*?$/i;
 /** H1 title (# alone, not ## or more) — the adventure name to ignore. */
 const H1_TITLE_LINE = /^#(?!#)/;
 
@@ -345,7 +376,8 @@ const H1_TITLE_LINE = /^#(?!#)/;
  *   quotes after it, like our credit) is only ignored at the start:
  *   further down, "#clue" or "> a quote" are notes.
  * - Sessions are recognised in "=== Title ===" (what we export) and
- *   also in "## Title", in case the file comes from elsewhere.
+ *   also in "## Title", in case the file comes from elsewhere; a date
+ *   line right below ("[Date] 2025-09-03") is the session's date.
  * - An indented line continues the previous entry (multi-line
  *   entries), unless it starts with a symbol; a leading "\\" escapes a
  *   note or a continuation line that starts with one.
@@ -376,12 +408,15 @@ export function parseMarkdownToEntries(
     const index = entries.length;
     entries.push({
       // Plain text has no real timestamp per line: sequential ones are
-      // generated to keep the file's order when displaying it.
+      // generated to keep the file's order when displaying it. The id
+      // says so (isImportedEntry).
       id: `${startTimestamp}-${index}-${Math.random().toString(36).slice(2, 8)}`,
       adventureId,
       timestamp: startTimestamp + index,
       kind,
       text,
+      // Unknown until the line below says (an import isn't the day of play).
+      ...(kind === "session" ? { date: "" } : {}),
     });
   };
 
@@ -438,6 +473,14 @@ export function parseMarkdownToEntries(
       // The analog campaign header's first line names the adventure (parseTitleFromMarkdown).
       if (CAMPAIGN_LOG_LINE.test(line)) continue;
       inHeader = false;
+    }
+
+    // The line right below a session can be its date.
+    const dateMatch = previous?.kind === "session" && !previous.date ? line.match(SESSION_DATE_LINE) : null;
+    if (dateMatch) {
+      previous.date = dateMatch[1];
+      if (dateMatch[2]) push("note", dateMatch[2]);
+      continue;
     }
 
     const h2Match = line.match(H2_SESSION_LINE);

@@ -26,6 +26,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         items: [
           "Tres oráculos nuevos, además de Recluse: Loner (dados de oportunidad y riesgo, con giros cuando salen dobles), el «Pregunta al oráculo» de Ironsworn (un d100) y One Page Solo Engine (dos d6, el más sencillo). Se cambian tocando el nombre del oráculo junto al título.",
           "Marca un oráculo como favorito con la estrella del selector: la app se abrirá siempre con él, aunque cambies a otro un momento.",
+          "Las estadísticas de cada aventura traen un mapa del último año: una fila por mes y una casilla por día, más intensa cuanto más escribiste, con tu racha más larga de días seguidos.",
+          "Cada sesión muestra el día en que se jugó, en su cabecera. Va también en el .md (como «[Date]», igual que en Lonelog) y en la página HTML, y al importar un diario se lee la suya.",
+          "Con un menú desplegable abierto (el tipo de entrada, las opciones, las sesiones), la página de detrás ya no se desplaza.",
           "Si quieres, el oráculo pone a prueba cada escena nueva: al crearla, activa «Probar la escena» y tu oráculo dirá si va como esperabas, cambia o se interrumpe. Es opcional y la app recuerda si lo usas.",
           "El oráculo también se cambia desde el diario: el nombre del oráculo y su «?» están en la mesa de juego, en el panel del ordenador y en la hoja del móvil.",
           "Todas las ventanas se abren igual de anchas en el ordenador, y lo aprovechan: los oráculos, en dos columnas; los resultados de una tabla, también.",
@@ -44,6 +47,9 @@ export const CHANGELOG: ChangelogEntry[] = [
         items: [
           "Three new oracles besides Recluse: Loner (Chance and Risk dice, with twists on doubles), Ironsworn's “Ask the Oracle” (a d100) and the One Page Solo Engine (two d6, the simplest). Switch by tapping the oracle's name next to the title.",
           "Mark an oracle as your favorite with the star in the switcher: the app will always open with it, even if you switch to another for a while.",
+          "Each adventure's statistics show a map of the last year: one row per month and one square per day, brighter the more you wrote, with your longest streak of days in a row.",
+          "Each session shows the day it was played, in its header. It also goes in the .md (as “[Date]”, as in Lonelog) and in the HTML page, and importing a journal reads its own.",
+          "With a dropdown menu open (the entry kind, the options, the sessions), the page behind no longer scrolls.",
           "If you like, the oracle tests each new scene: when you create it, turn on “Test the scene” and your oracle says whether it goes as expected, changes or is interrupted. It's optional and the app remembers whether you use it.",
           "The oracle can be switched from the journal too: its name and its “?” are on the game table, in the desktop panel and in the phone's sheet.",
           "Every window opens just as wide on a computer, and makes use of it: the oracles side by side, a table's results in two columns.",

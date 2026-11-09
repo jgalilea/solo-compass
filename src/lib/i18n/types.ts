@@ -562,6 +562,16 @@ export interface Dictionary {
       topTable: string;
       dateRange: string;
       singleDate: string;
+      activityHeading: string;
+      activityHint: string;
+      activityLess: string;
+      activityMore: string;
+      /** A day's square, on hover: "9 nov 2026: 3 entries". */
+      activityDay: string;
+      activityDays: string;
+      activityDaysOne: string;
+      streak: string;
+      streakOne: string;
       empty: string;
     };
     exportButton: string;

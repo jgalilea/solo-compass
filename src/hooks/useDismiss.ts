@@ -1,9 +1,11 @@
 import { useEffect, type RefObject } from "react";
+import { lockPageScroll, unlockPageScroll } from "../lib/scrollLock";
 
 /**
  * Closes a dropdown on a click outside `rootRef`, on Esc or when
  * tabbing out of it, while it's open. Shared by the app's menus
- * (actions, entry kind, sessions).
+ * (actions, entry kind, sessions). Like a dialog, an open menu keeps
+ * the page behind from scrolling.
  *
  * With the keyboard: the arrows (and Home/End) move through the menu's
  * options, and Esc returns focus to the button that opened it (the one
@@ -13,6 +15,7 @@ export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>
   useEffect(() => {
     if (!open) return;
     const root = rootRef.current;
+    lockPageScroll();
     function handlePointerDown(e: PointerEvent) {
       if (!root?.contains(e.target as Node)) onClose();
     }
@@ -51,6 +54,7 @@ export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>
     document.addEventListener("keydown", handleKeyDown);
     root?.addEventListener("focusout", handleFocusOut);
     return () => {
+      unlockPageScroll();
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
       root?.removeEventListener("focusout", handleFocusOut);

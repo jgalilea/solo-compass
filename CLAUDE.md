@@ -165,7 +165,13 @@ No backend; persistence is split by access pattern, not by feature:
 The journal's storage/interchange format is [Lonelog](https://lonelog.itch.io/lonelog)
 (spec 1.6.0, source in github.com/zeruhur/lonelog), an open plain-text
 notation (`@` action, `?` question, `d:` roll, `=>` consequence,
-`=== Title ===` for sessions, `S1 *context*` for scenes). Rolls that
+`=== Title ===` for sessions, `S1 *context*` for scenes). A session
+keeps its day of play (`date`, set when it's opened so moving it
+doesn't change it; shown in its header by `SessionDate`), written as
+a `[Date] 2025-09-03` line below it and read back from that or
+Lonelog's other forms (`Date: … | Duration: …`); an imported session
+without one has none (`""`), and older ones fall back to their
+timestamp (`sessionDate`). Rolls that
 carry their own symbol (`tbl:` table, `gen:` generator, a bare
 `-> result`) keep it in the roll's text and are written back as is;
 the app's own table rolls are `tbl: Name d66=42 -> …` (`formatTableRoll`)
@@ -423,6 +429,10 @@ the session and highlights the entry via `entry-<id>` ids) and across
 all journals from the list view (navigates with `state.entryId`).
 `journalStats.ts` derives the adventure statistics from entries plus
 the linked history, falling back to parsing roll text for imports.
+Their heat map (`ActivityHeatmap`) is the last year as one row per
+month and one square per day (31 columns fit a phone), with the
+longest streak of days in a row; it counts only entries written in the
+app (`isImportedEntry`: an import's timestamps are the import's).
 Sharing (`share.ts`, Web Share API) is only offered where
 `navigator.share` exists and falls back to download on failure.
 
@@ -474,6 +484,10 @@ The pointer cursor on clickable elements and the keyboard focus ring
 state (on a selected item, the selection itself is enough). `Modal` moves
 focus into the panel, traps Tab and gives focus back on close;
 `useDismiss` adds arrow keys and Esc-returns-focus to dropdown menus.
+Both keep the page behind from scrolling while open (`scrollLock.ts`,
+a counter shared by dialogs and menus), so a menu must fit on screen:
+`ActionMenu` opens towards the side with more room and scrolls inside
+itself if it's still too long.
 
 Desktop keyboard shortcuts (`src/hooks/useHotkeys.ts`, legend in Settings,
 `?` opens it): registered in `Layout` (screens, `/`, O/T/D) and
