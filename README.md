@@ -11,7 +11,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workspace-dark.png">
-  <img src="docs/screenshots/workspace-light.png" alt="An adventure open on desktop: a session index on the left, the journal with actions, oracle questions, rolls and consequences in the middle, and the oracle, tables and dice on the right">
+  <img src="docs/screenshots/workspace-light.png" alt="An adventure open on desktop: sessions with their scenes, pinned notes and the cast on the left, the journal with a scene, actions, a table roll, oracle questions and consequences in the middle, and the oracle, dice and tables on the right">
 </picture>
 
 ## Why Solo Compass
@@ -36,6 +36,8 @@ To use it like an app (its own icon, full screen, offline), install it from the 
 - **Android / Chrome / Edge:** open the browser menu and choose *Install app* (or *Add to Home screen*).
 - **iPhone / iPad (Safari):** tap *Share*, then *Add to Home Screen*.
 
+On iPhone and iPad this matters more than elsewhere: Safari deletes a site's data after a week of use without visiting it, while an installed app keeps it. The installed app also starts empty, because iOS keeps its storage apart from Safari's, so if you've already played in Safari, carry your games over with a backup (see [Your data](#your-data)). The journal reminds you of this when you open it from Safari.
+
 When a new version is out, the app shows an **Update** banner. It never reloads on its own, so nothing you're halfway through typing is lost.
 
 New to solo play? Open **Journal**. While it's empty, it offers a short **sample adventure**, "The Crossroads Inn": two finished sessions that show what a game looks like in the log. You can keep playing it or delete it from its `⋯` menu.
@@ -46,7 +48,7 @@ New to solo play? Open **Journal**. While it's empty, it offers a short **sample
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/oracle-dark.png">
-  <img src="docs/screenshots/oracle-light.png" alt="The oracle screen: the question 'Is the miller hiding something about the box?' with Likely selected, two white dice against one black die, and the answer No">
+  <img src="docs/screenshots/oracle-light.png" alt="The oracle screen with Recluse: the question 'Is the miller hiding something about the box?' with Likely selected, two white dice against one black die, and the answer Yes, and">
 </picture>
 
 Type a yes/no question, pick how likely it is, and roll. The **Recluse** rules (by Graven Utterance, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)) work like this:
@@ -79,7 +81,7 @@ Roll for inspiration when a yes or no isn't enough. Besides its own generic tabl
 
 ### Journal
 
-Create adventures, split them into sessions, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
+Create adventures, split them into sessions and scenes, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
 
 - Only one adventure is **active** at a time. Rolls go there, and the chip in the header shows which one it is from every screen.
 - Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, 4dF for Fate/Fudge, advantage and disadvantage, and typed formulas such as `2d6+3`, `4d6kh3` or `4d6dl1` (keep the highest three), `5d6>=5` (count successes, `f<3` to subtract failures), `3d6!` and `d6!!` (exploding and compounding) or `4d6dl1 // Strength` (with a description). This lets you log rolls from your own system without leaving the app.
@@ -93,7 +95,7 @@ Create adventures, split them into sessions, and log actions, rolls, consequence
 - **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
 
 <p align="center">
-  <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with the one-row composer; and the meaning tables list" width="860">
+  <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with a scene and the one-row composer; and the meaning tables, one folding block per game" width="860">
 </p>
 
 ### Themes and language
@@ -128,6 +130,8 @@ There are three ways to keep your data safe, all in **Settings**:
 - **Storage protection:** asks the browser not to clear the app's data when space runs low. It's only requested when you press the button, because some browsers show their own permission prompt.
 - **Backup reminder:** a small dot appears on the Settings button only when you've written 10 or more entries since your last backup and it's been at least 14 days. There are no pop-ups.
 
+On iPhone and iPad, install the app rather than playing in Safari, which clears a site's data after a week of use without visiting it (see [Getting started](#getting-started)).
+
 Clearing the site's data in your browser deletes everything, so export a backup first.
 
 ## Development
@@ -141,21 +145,25 @@ npm install
 npm run dev       # dev server at http://localhost:5173/solo-compass/
 ```
 
+The browser tests need Playwright's Chromium once: `npx playwright install chromium`.
+
 | Command | What it does |
 |---|---|
 | `npm run dev` | Vite dev server |
 | `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
 | `npm run preview` | Serve the production build |
-| `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, journal grouping, tables, sample adventure, backup reminder) |
+| `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup) |
+| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport |
+| `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU. Not part of the deploy |
 | `npm run lint` | oxlint |
 
 The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, and [Tabler Icons](https://tabler.io/icons).
 
-The UI text lives in `src/lib/i18n/locales/{es,en}.ts`, which share one typed `Dictionary`, so TypeScript flags a missing key. The code comments and commit messages are in Spanish. [`CLAUDE.md`](CLAUDE.md) describes the architecture in more depth: state, storage, theming and responsive layout.
+The UI text lives in `src/lib/i18n/locales/{es,en}.ts`, which share one typed `Dictionary`, so TypeScript flags a missing key. The UI is Spanish first; the code comments, test names and commit messages are in English. [`CLAUDE.md`](CLAUDE.md) describes the architecture in more depth: state, storage, theming and responsive layout.
 
 ### Deploying
 
-Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It installs dependencies, runs the tests, builds the app and publishes `dist/` to GitHub Pages; a failing test stops the deploy. To set this up on a fork:
+Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It installs dependencies, runs the unit tests, builds the app, runs the Playwright smoke test against the build and publishes `dist/` to GitHub Pages; any failure stops the deploy. To set this up on a fork:
 
 1. In **Settings → Pages**, set **Source** to **GitHub Actions**.
 2. If your repository isn't called `solo-compass`, change `base` in `vite.config.ts` to match.
@@ -171,7 +179,7 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - Solo Compass's own meaning tables are original and written for this app.
 - **Ironsworn, Delve and Starforged** oracle tables: this work is based on Ironsworn, Ironsworn: Delve and Ironsworn: Starforged, created by Shawn Tomkin, and licensed for our use under the [Creative Commons Attribution 4.0 International license](https://creativecommons.org/licenses/by/4.0/). Not an official Tomkin Press or Ironsworn product.
 - **Starsmith: Expanded Oracles** by Eric Bright, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-- **Loner** v2.3 by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://zeruhur.itch.io/loner-2nd-edition>
+- **Loner** v2.3 by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://zeruhur.itch.io/loner>
 - **Knave** by Ben Milton, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://questingbeast.itch.io/knave>
 - **Cairn** (second edition) by Yochai Gal, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://cairnrpg.com>. English text from its [open source](https://github.com/yochaigal/cairn).
 - This work includes material taken from the **Lazy GM's Resource Document** by Michael E. Shea of SlyFlourish.com, available under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). It also includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC, licensed under the same license.

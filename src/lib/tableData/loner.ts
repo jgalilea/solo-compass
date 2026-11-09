@@ -1,7 +1,7 @@
 /**
  * Oracle tables from Loner v2.3, by Roberto Bisceglie, licensed under
  * CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/):
- * https://zeruhur.itch.io/loner-2nd-edition. English text from the
+ * https://zeruhur.itch.io/loner. English text from the
  * game's open source (the Keeper edition, farirpgs/keeper). The Spanish
  * translation is Solo Compass's own and, as an adaptation, is shared
  * under the same CC BY-SA 4.0 licence.

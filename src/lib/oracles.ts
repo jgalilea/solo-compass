@@ -38,7 +38,7 @@ export const ORACLES: OracleInfo[] = [
     author: "Roberto Bisceglie",
     license: "CC BY-SA 4.0",
     licenseUrl: CC_BY_SA,
-    url: "https://zeruhur.itch.io/loner-2nd-edition",
+    url: "https://zeruhur.itch.io/loner",
     attribution:
       "Loner v2.3 (CC) 2023 Roberto Bisceglie, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.",
   },

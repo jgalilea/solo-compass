@@ -105,7 +105,7 @@ const KNAVE_GAME: GameRef = {
   tag: "Knave",
 };
 
-export const LONER_URL = "https://zeruhur.itch.io/loner-2nd-edition";
+export const LONER_URL = "https://zeruhur.itch.io/loner";
 
 const LONER_GAME: GameRef = {
   name: "Loner",
