@@ -2,15 +2,16 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { isTypingTarget } from "../hooks/useHotkeys";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
+import { exportAdventureToMarkdown, sectionToLonelog, type JournalEntry } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
-import { buildCast, combineSteps } from "../lib/lonelogTags";
+import { buildCast, castKey, combineSteps, renameInEntry } from "../lib/lonelogTags";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
-import { shareTextFile } from "../lib/share";
+import { copyText, shareTextFile } from "../lib/share";
 import { AdventureNotebook } from "./AdventureNotebook";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { AdventureHeader } from "./AdventureHeader";
@@ -34,6 +35,7 @@ import {
   type ComposerMode,
 } from "../lib/journalUi";
 import {
+  IconCheck,
   IconChevronRight,
   IconClose,
   IconDice,
@@ -174,6 +176,27 @@ export function AdventureDetailView() {
     [entries, removeEntry, setSelectedEntryId],
   );
   const dismissUndo = useCallback(() => setDeletedEntry(null), []);
+  // Ctrl/Cmd+Z: the toast's "Undo", while it's there (a text field keeps
+  // its own undo).
+  useEffect(() => {
+    if (!deletedEntry) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key.toLowerCase() !== "z" || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || isTypingTarget(e.target)) return;
+      e.preventDefault();
+      restoreEntry(deletedEntry!);
+      setDeletedEntry(null);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [deletedEntry, restoreEntry]);
+  // Any other short notice (renamed, copied), maybe with an action.
+  const [notice, setNotice] = useState<{ key: number; title: string; action?: { label: string; onClick: () => void } } | null>(null);
+  const dismissNotice = useCallback(() => setNotice(null), []);
+
+  // A session, a scene or the whole adventure as Lonelog, to paste elsewhere.
+  function copyToClipboard(text: string, done: string) {
+    void copyText(text).then((ok) => setNotice({ key: Date.now(), title: ok ? done : t.journal.copyFailed }));
+  }
   const dismissExported = useCallback(() => setExportedFilename(null), []);
 
   const entryActions: EntryActions = {
@@ -207,6 +230,7 @@ export function AdventureDetailView() {
       setLinkedRollId(entry?.kind === "roll" ? entry.linkedRollId : undefined);
       if (window.matchMedia("(pointer: fine)").matches) composerInputRef.current?.focus();
     },
+    onCopy: (id) => copyToClipboard(sectionToLonelog(adventureEntries, id), t.journal.copiedSection),
     onTagClick: (key) => {
       setCastFocus((prev) => ({ key, tick: prev.tick + 1 }));
       // From xl the notebook is always visible in the left column.
@@ -442,6 +466,31 @@ export function AdventureDetailView() {
         setNotebookOpen(false);
         composerInsertRef.current?.(text);
       }}
+      onRename={(member, name) => {
+        // Every entry that names it, rewritten; Undo puts them back.
+        const before = adventureEntries.filter((e) => renameInEntry(e, member, name) !== e.text);
+        for (const e of before) editEntry(e.id, renameInEntry(e, member, name));
+        const description = adventure.descriptions?.[member.key];
+        const newKey = castKey(member.kind, name);
+        if (description?.text && newKey !== member.key) {
+          setCastDescription(adventure.id, newKey, description.text);
+          setCastDescription(adventure.id, member.key, "");
+        }
+        setNotice({
+          key: Date.now(),
+          title: interpolate(t.notebook.renamed, { name: name.trim(), count: before.length }),
+          action: {
+            label: t.common.undo,
+            onClick: () => {
+              for (const e of before) editEntry(e.id, e.text);
+              if (description?.text && newKey !== member.key) {
+                setCastDescription(adventure.id, member.key, description.text);
+                setCastDescription(adventure.id, newKey, "");
+              }
+            },
+          },
+        });
+      }}
       onFilter={(key) => {
         setNotebookOpen(false);
         setSearchOpen(false);
@@ -494,6 +543,12 @@ export function AdventureDetailView() {
           onJumpToEntry={jumpToEntry}
           onStats={() => setStatsOpen(true)}
           onExport={handleExport}
+          onCopy={() =>
+            copyToClipboard(
+              exportAdventureToMarkdown(t, adventure.name, adventureEntries, adventure.notes, adventure.descriptions, adventure),
+              t.journal.copiedAdventure,
+            )
+          }
           onExportHtml={() => void handleExportHtml()}
           onShare={handleShare}
           onDelete={() => setDeleting(true)}
@@ -657,6 +712,7 @@ export function AdventureDetailView() {
                           adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
                         }
                         onInsertBelow={() => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
+                        onCopy={() => entryActions.onCopy!(currentGroup.sessionEntry!.id)}
                       />
                     </div>
                   </div>
@@ -671,6 +727,7 @@ export function AdventureDetailView() {
         <div ref={listEndRef} className="-mt-4" />
 
         <JournalComposer
+          key={adventure.id}
           ref={composerRef}
           inputRef={composerInputRef}
           insertRef={composerInsertRef}
@@ -748,6 +805,16 @@ export function AdventureDetailView() {
           action={{ label: t.common.undo, onClick: () => restoreEntry(deletedEntry) }}
           duration={6000}
           onDismiss={dismissUndo}
+        />
+      ) : notice ? (
+        <Toast
+          key={notice.key}
+          Icon={IconCheck}
+          title={notice.title}
+          closeLabel={t.common.close}
+          action={notice.action}
+          duration={notice.action ? 6000 : 3000}
+          onDismiss={dismissNotice}
         />
       ) : (
         exportedFilename && (

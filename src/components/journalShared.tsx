@@ -2,7 +2,7 @@ import { createElement, useRef, useState, type ComponentType } from "react";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
-import { castKey, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
+import { castKey, progressDone, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
 import { noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
@@ -17,17 +17,18 @@ import {
   IconArrowDown,
   IconArrowUp,
   IconChevronRight,
+  IconCombat,
   IconConsequence,
+  IconCopy,
+  IconDialogue,
   IconDice,
+  IconExcerpt,
+  IconGenerator,
   IconInsertBelow,
+  IconInventory,
   IconNote,
   IconPencil,
   IconQuestion,
-  IconCombat,
-  IconDialogue,
-  IconExcerpt,
-  IconGenerator,
-  IconInventory,
   IconRoom,
   IconScene,
   IconSession,
@@ -76,17 +77,27 @@ export interface EntryActions {
   onMove?: (id: string, direction: "up" | "down") => void;
   canMove?: (id: string, direction: "up" | "down") => boolean;
   onInsertBelow?: (id: string) => void;
+  /** A session or a scene, with all it holds, to the clipboard as Lonelog. */
+  onCopy?: (id: string) => void;
   /** Where new entries are being written ("write below"): kept in view. */
   anchorId?: string | null;
 }
 
-/** The "⋯" order items of an entry's buttons, if the screen offers them. */
-function orderProps(actions: EntryActions, id: string): Pick<LineButtonsProps, "onMoveUp" | "onMoveDown" | "onInsertBelow"> {
-  const { onMove, canMove, onInsertBelow } = actions;
+/**
+ * The "⋯" items of an entry's buttons, if the screen offers them: order,
+ * and copying a session or a scene (`copyable`).
+ */
+function orderProps(
+  actions: EntryActions,
+  id: string,
+  copyable = false,
+): Pick<LineButtonsProps, "onMoveUp" | "onMoveDown" | "onInsertBelow" | "onCopy"> {
+  const { onMove, canMove, onInsertBelow, onCopy } = actions;
   return {
     onMoveUp: onMove && canMove?.(id, "up") !== false ? () => onMove(id, "up") : undefined,
     onMoveDown: onMove && canMove?.(id, "down") !== false ? () => onMove(id, "down") : undefined,
     onInsertBelow: onInsertBelow && (() => onInsertBelow(id)),
+    onCopy: copyable && onCopy ? () => onCopy(id) : undefined,
   };
 }
 
@@ -287,7 +298,7 @@ export function SessionGroupRow({
               actions.onStartEdit(session.id);
             }}
             onDelete={() => actions.onDelete(session.id)}
-            {...orderProps(actions, session.id)}
+            {...orderProps(actions, session.id, true)}
           />
         </div>
       )}
@@ -391,7 +402,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
           actions.onStartEdit(entry.id);
         }}
         onDelete={() => actions.onDelete(entry.id)}
-        {...orderProps(actions, entry.id)}
+        {...orderProps(actions, entry.id, entry.kind === "scene")}
       />
     </div>
   );
@@ -589,7 +600,12 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
       <>
         <CastIcon kind={kind} size={13} className="shrink-0 self-center text-gold" />
         <span className="font-medium text-parchment">{name}</span>
-        {progress && <span className="text-[0.85em] font-medium text-gold">{progressText(progress)}</span>}
+        {progress && (
+          <span className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}>
+            {progressText(progress)}
+            {progressDone(kind, progress) && ` · ${kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
+          </span>
+        )}
         {details.length > 0 && <span className="text-[0.85em] text-parchment-dim">{details.join(" · ")}</span>}
       </>
     );
@@ -635,15 +651,19 @@ interface LineButtonsProps {
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   onInsertBelow?: () => void;
+  /** A session or a scene: copy it, with all it holds, as Lonelog. */
+  onCopy?: () => void;
 }
 
 /**
- * Pencil and trash, plus a "⋯" with the less frequent ones (move up or
- * down, write below), so the buttons don't cover half the line.
+ * Pencil and trash, plus a "⋯" with the less frequent ones (copy a
+ * session or scene, move up or down, write below), so the buttons
+ * don't cover half the line.
  */
-export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow }: LineButtonsProps) {
+export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow, onCopy }: LineButtonsProps) {
   const { t } = useLocaleContext();
   const more: ActionMenuItem[] = [];
+  if (onCopy) more.push({ label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy });
   if (onInsertBelow) more.push({ label: t.journal.insertBelow, Icon: IconInsertBelow, onSelect: onInsertBelow });
   if (onMoveUp) more.push({ label: t.journal.moveUp, Icon: IconArrowUp, onSelect: onMoveUp });
   if (onMoveDown) more.push({ label: t.journal.moveDown, Icon: IconArrowDown, onSelect: onMoveDown });

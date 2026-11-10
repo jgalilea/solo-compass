@@ -127,6 +127,7 @@ export interface Dictionary {
     journalHeading: string;
     entryType: string;
     askOracle: string;
+    undoDelete: string;
     heading: string;
     intro: string;
     navigationHeading: string;
@@ -455,6 +456,11 @@ export interface Dictionary {
     backToOracle: string;
     backToDice: string;
     backToTables: string;
+    adventureFilterLabel: string;
+    adventureAll: string;
+    adventureFree: string;
+    backToAdventure: string;
+    showRolls: string;
     clearAll: string;
     filterAll: string;
     filterOracle: string;
@@ -568,6 +574,10 @@ export interface Dictionary {
     dialoguePlaceholder: string;
     dialoguePlaceholderPc: string;
     askFromComposer: string;
+    copyLonelog: string;
+    copiedSection: string;
+    copiedAdventure: string;
+    copyFailed: string;
     filterShowing: string;
     filterShowingOne: string;
     filterClear: string;
@@ -736,6 +746,14 @@ export interface Dictionary {
     mentionButton: string;
     filterButton: string;
     filterHint: string;
+    renameButton: string;
+    renameLabel: string;
+    renameHint: string;
+    renamed: string;
+    progressFull: string;
+    timerDone: string;
+    searchPlaceholder: string;
+    searchEmpty: string;
     mentionHint: string;
     changeButton: string;
     changePlaceholder: string;

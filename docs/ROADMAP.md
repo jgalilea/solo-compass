@@ -9,6 +9,17 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Segunda tanda del 2026-11-10: borrador de la casilla por aventura
+  (`drafts.ts`); «Renombrar» en todo el diario (`renameInEntry`, con
+  Deshacer); relojes llenos y cuentas atrás a cero señalados sin avisos
+  (`progressDone`); copiar en Lonelog escena, sesión o aventura
+  (`sectionToLonelog`); historial filtrado por aventura (`?aventura=`);
+  probabilidad compartida (`OracleContext`); buscador en el cuaderno;
+  Ctrl+Z para el último borrado; la
+  crónica se carga al abrirla (el paquete principal volvía a pasar de
+  700 kB); test de humo con dados propios, diálogo, borrador e
+  historial; revisión en tablet (820 px): solo apareció «exits» en las
+  salas en español, ya corregido.
 - Tanda de calidad de vida (2026-11-10): pestaña «Dados» con dados
   propios (nombre y fórmula, `savedRolls.ts`, colección propia, en la
   copia: esquema 5) y dados favoritos, de serie o propios, que son los

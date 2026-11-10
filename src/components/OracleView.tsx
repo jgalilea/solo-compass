@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Likelihood, OracleRoll } from "../lib/oracle";
+import type { OracleRoll } from "../lib/oracle";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useOracleContext } from "../hooks/useOracleContext";
@@ -20,8 +20,7 @@ export function OracleView() {
   const { adventures, activeAdventureId } = useJournalContext();
   const { askOracle, addConsequence } = usePlayActions();
   const [question, setQuestion] = useState("");
-  const { oracleId } = useOracleContext();
-  const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
+  const { oracleId, likelihood, setLikelihood } = useOracleContext();
   // Kept as picked: going back to an oracle with five levels restores it.
   const level = fitLikelihood(oracleId, likelihood);
   const [lastRoll, setLastRoll] = useState<OracleRoll | null>(null);

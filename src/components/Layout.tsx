@@ -33,12 +33,15 @@ export function Layout() {
   const historyOf = location.pathname.startsWith("/historial") ? new URLSearchParams(location.search).get("tipo") : null;
   const fromDice = historyOf === "dados";
   const fromTables = historyOf === "tabla";
+  // ...and from an adventure's menu, part of the journal.
+  const fromAdventure = location.pathname.startsWith("/historial") && new URLSearchParams(location.search).has("aventura");
   const tabs = [
     {
       to: "/",
       label: t.nav.oracle,
       Icon: IconOracle,
-      isActive: location.pathname === "/" || (location.pathname.startsWith("/historial") && !fromDice && !fromTables),
+      isActive:
+        location.pathname === "/" || (location.pathname.startsWith("/historial") && !fromDice && !fromTables && !fromAdventure),
       hotkey: "1",
     },
     {
@@ -64,7 +67,7 @@ export function Layout() {
       to: activeAdventureId ? `/diario/${activeAdventureId}` : "/diario",
       label: t.nav.journal,
       Icon: IconJournal,
-      isActive: location.pathname.startsWith("/diario"),
+      isActive: location.pathname.startsWith("/diario") || fromAdventure,
       hotkey: "4",
     },
   ];

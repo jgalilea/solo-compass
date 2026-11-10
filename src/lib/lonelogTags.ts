@@ -336,7 +336,7 @@ const isGroup = (tag: string) => /^×\d+$/.test(tag);
 // "depleted", "agotado": an item or supply that's gone.
 const DEPLETED = /^(depleted|agotad[oa]s?|gastad[oa]s?)$/i;
 // A room's connections: "exits N:R2, E:R5(secret)" (or "salidas …").
-const EXITS = /^(?:exits|salidas)\s+(.+)$/i;
+const EXITS = /^(exits|salidas)\s+(.+)$/i;
 
 /** A room's state, kept by field (dungeon crawling add-on §1–2). */
 interface RoomState {
@@ -344,6 +344,8 @@ interface RoomState {
   description?: string;
   /** By direction (or by room, when there's none): "N" → "N:R2". */
   exits: Map<string, string>;
+  /** The word written before them, "exits" or "salidas", shown as is. */
+  exitsWord?: string;
 }
 
 function applyRoomUpdates(room: RoomState, details: string[]): void {
@@ -351,7 +353,8 @@ function applyRoomUpdates(room: RoomState, details: string[]): void {
   for (const detail of details) {
     const exits = detail.match(EXITS);
     if (exits) {
-      for (const exit of exits[1].split(",").map((x) => x.trim()).filter(Boolean)) {
+      room.exitsWord = exits[1];
+      for (const exit of exits[2].split(",").map((x) => x.trim()).filter(Boolean)) {
         room.exits.set(normalizeForSearch(exit.includes(":") ? exit.split(":")[0] : exit.replace(/\(.*\)$/, "")), exit);
       }
     } else if (/^[+-]\S/.test(detail)) {
@@ -372,7 +375,7 @@ function roomTags(room: RoomState): string[] {
   return [
     room.status.join(", "),
     room.description ?? "",
-    room.exits.size ? `exits ${[...room.exits.values()].join(", ")}` : "",
+    room.exits.size ? `${room.exitsWord ?? "exits"} ${[...room.exits.values()].join(", ")}` : "",
   ].filter(Boolean);
 }
 
@@ -465,6 +468,16 @@ export function foeIsOut(member: CastMember): boolean {
 }
 
 /** "5/12", "3", "+1". */
+/**
+ * A clock or a track that's full, or a timer that's run out: shown
+ * apart (colour and a word), quietly, where its number is.
+ */
+export function progressDone(kind: CastKind, progress: Progress | { value: number; max?: number } | undefined): boolean {
+  if (!progress || ("relative" in progress && progress.relative)) return false;
+  if (kind === "timer") return progress.value <= 0;
+  return (kind === "clock" || kind === "track") && progress.max !== undefined && progress.value >= progress.max;
+}
+
 export function progressText(progress: Progress | { value: number; max?: number }): string {
   if ("relative" in progress && progress.relative) return `${progress.value >= 0 ? "+" : ""}${progress.value}`;
   return `${progress.value}${progress.max !== undefined ? `/${progress.max}` : ""}`;
@@ -562,3 +575,35 @@ export function tagOptionText(option: TagOption): string {
     ? formatProgressTag(kind, name, NEW_PROGRESS_SIZE)
     : formatProgressTag(kind, name, 0, NEW_PROGRESS_SIZE);
 }
+
+/**
+ * An element renamed in one entry's text ("Odille" → "Odile"): every tag
+ * of its kind with that name, references and numbered ones too
+ * ("[Clock:Alarm 2/6]", "[Inv:Torch-1]") keeping their number and
+ * details; for an NPC, also the lines they say (`N (Odille): …`) and
+ * what they do (`@(Odille) …`). The text as it was if it isn't there.
+ */
+export function renameInEntry(
+  entry: Pick<JournalEntry, "kind" | "text">,
+  member: Pick<CastMember, "kind" | "name">,
+  newName: string,
+): string {
+  const name = newName.replace(/[[\]|\n]/g, " ").replace(/\s+/g, " ").trim();
+  if (!name) return entry.text;
+  const target = normalizeForSearch(member.name.trim());
+  const numbered = PROGRESS_KINDS.has(member.kind) || QUANTITY_KINDS.has(member.kind);
+  let text = entry.text.replace(new RegExp(TAG.source, "g"), (whole, hash: string, prefix: string, tagName: string, details: string) => {
+    if (KIND_OF_PREFIX[prefix] !== member.kind) return whole;
+    const split = numbered ? tagName.match(/^(.*?)(\s*[+-]?\s*\d+(?:\/\d+)?)?$/) : null;
+    const base = split ? split[1] : tagName;
+    if (normalizeForSearch(base.trim()) !== target) return whole;
+    return `[${hash}${prefix}:${name}${split?.[2] ?? ""}${details}]`;
+  });
+  if (member.kind === "npc") {
+    const same = (s: string) => normalizeForSearch(s.trim()) === target;
+    if (entry.kind === "note") text = text.replace(/^(N\s*\()([^()\n]+)(\)\s*:)/, (w, a, n: string, b) => (same(n) ? a + name + b : w));
+    if (entry.kind === "action") text = text.replace(/^\(([^()\n]+)\)/, (w, n: string) => (same(n) ? `(${name})` : w));
+  }
+  return text;
+}
+

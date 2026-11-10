@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { CHANGELOG } from "../lib/changelog";
+import type { ChangelogEntry } from "../lib/changelog";
 import { IconChevronRight, IconChronicle } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -12,10 +12,19 @@ function formatDate(dateLocale: string, iso: string): string {
   );
 }
 
-/** Button (in Settings → About) + dialog with the changelog. */
+/**
+ * Button (in Settings → About) + dialog with the changelog. The text of
+ * every chapter in both languages is loaded when it's opened, not with
+ * the app: it's a good part of the main bundle otherwise.
+ */
 export function ChangelogDialog() {
   const { t, locale } = useLocaleContext();
   const [open, setOpen] = useState(false);
+  const [chapters, setChapters] = useState<ChangelogEntry[] | null>(null);
+  useEffect(() => {
+    if (!open || chapters) return;
+    import("../lib/changelog").then((m) => setChapters(m.CHANGELOG)).catch(() => setChapters([]));
+  }, [open, chapters]);
 
   return (
     <>
@@ -45,8 +54,9 @@ export function ChangelogDialog() {
             onClose={() => setOpen(false)}
           />
           <DialogBody>
+            {!chapters && <p className="text-sm text-parchment-dim">{t.common.loading}</p>}
             <ol className="flex flex-col gap-6">
-              {CHANGELOG.map((entry, i) => {
+              {(chapters ?? []).map((entry, i) => {
                 const text = entry.text[locale];
                 return (
                   <li key={entry.date} className="relative border-l-2 border-ink-border pl-5">

@@ -188,12 +188,13 @@ describe("composerShortcut", () => {
       text: "Run",
       speaker: { pc: false, name: "Grey Cloak" },
     });
-    expect(composerShortcut("\\---\n")).toEqual({ mode: "excerpt", text: "" });
+    expect(composerShortcut("\\--- ")).toEqual({ mode: "excerpt", text: "" });
+    expect(composerShortcut("\\--- Dear Jonah")).toEqual({ mode: "excerpt", text: "Dear Jonah" });
     expect(composerShortcut("=== ")).toEqual({ mode: "session", text: "" });
   });
 
   it("waits for the space and leaves everything else alone", () => {
-    for (const text of ["@", "=>", "PC:", "N (Odile)", "\\---", "===", "Email me @ home", "PCs: two", "", "? Is it?"]) {
+    for (const text of ["@", "=>", "PC:", "N (Odile)", "\\---", "\\-- Dear", "===", "Email me @ home", "PCs: two", "", "? Is it?"]) {
       expect(composerShortcut(text)).toBeNull();
     }
   });

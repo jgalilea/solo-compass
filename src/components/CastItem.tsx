@@ -8,6 +8,7 @@ import {
   formatTag,
   PROGRESS_KINDS,
   QUANTITY_KINDS,
+  progressDone,
   progressText,
   tagsToPlainText,
   threadStatus,
@@ -20,6 +21,7 @@ import { CastIcon } from "./CastIcon";
 import {
   IconChevronRight,
   IconFilter,
+  IconRename,
   IconMention,
   IconMinus,
   IconPencil,
@@ -35,6 +37,7 @@ export function CastItem({
   onJump,
   onMention,
   onFilter,
+  onRename,
   onLog,
   description,
   onDescriptionChange,
@@ -48,6 +51,8 @@ export function CastItem({
   onMention: (text: string) => void;
   /** Show only this element's entries in the journal. */
   onFilter: () => void;
+  /** Rename it in every entry of the journal. */
+  onRename: (name: string) => void;
   /** `step`: a −/+, which may join the one just before (see combineSteps). */
   onLog: (text: string, step?: boolean) => void;
   description: string;
@@ -63,6 +68,7 @@ export function CastItem({
     if (focused) setOpen(true);
   }
   const [changing, setChanging] = useState(false);
+  const [renaming, setRenaming] = useState<string | null>(null);
   const [change, setChange] = useState("");
   const rootRef = useRef<HTMLLIElement>(null);
 
@@ -81,6 +87,8 @@ export function CastItem({
   const progress = member.progress;
   const isProgress = PROGRESS_KINDS.has(member.kind);
   const isQuantity = QUANTITY_KINDS.has(member.kind);
+  // A full clock or a timer at zero: its number says so, quietly.
+  const complete = isProgress && progressDone(member.kind, progress);
   // A closed thread or a foe out of the fight: dimmed and struck through.
   const done = (status && status !== "open") || (member.kind === "foe" && foeIsOut(member));
 
@@ -152,8 +160,14 @@ export function CastItem({
             )}
           </span>
           {(member.kind === "pc" || isProgress || (isQuantity && progress)) && (
-            <span className="shrink-0 rounded border border-gold/40 px-1 text-[0.65rem] font-medium tabular-nums text-gold">
+            <span
+              className={[
+                "shrink-0 rounded border px-1 text-[0.65rem] font-medium tabular-nums",
+                complete ? "border-no/50 bg-no/10 text-no" : "border-gold/40 text-gold",
+              ].join(" ")}
+            >
               {(isProgress || isQuantity) && progress ? progressText(progress) : kindLabel}
+              {complete && ` · ${member.kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
             </span>
           )}
           {!isProgress && !isQuantity && (
@@ -225,7 +239,41 @@ export function CastItem({
             })}
           </ul>
 
-          {changing ? (
+          {renaming !== null ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (renaming.trim() && renaming.trim() !== member.name) onRename(renaming);
+                setRenaming(null);
+              }}
+              className="flex flex-col gap-1.5"
+            >
+              <div className="flex gap-1.5">
+                <input
+                  autoFocus
+                  value={renaming}
+                  onChange={(e) => setRenaming(e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.stopPropagation();
+                      setRenaming(null);
+                    }
+                  }}
+                  aria-label={t.notebook.renameLabel}
+                  className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-base`}
+                />
+                <button
+                  type="submit"
+                  disabled={!renaming.trim()}
+                  className="shrink-0 rounded-lg bg-gold px-3 text-xs font-semibold text-ink-950 transition hover:bg-gold-soft disabled:bg-ink-700 disabled:text-parchment-dim/50"
+                >
+                  {t.notebook.renameButton}
+                </button>
+              </div>
+              <p className="text-[0.7rem] text-parchment-dim/70">{t.notebook.renameHint}</p>
+            </form>
+          ) : changing ? (
             <form onSubmit={logChange} className="flex flex-col gap-1.5">
               <div className="flex gap-1.5">
                 <input
@@ -284,6 +332,14 @@ export function CastItem({
               >
                 <IconFilter size={13} />
                 {t.notebook.filterButton}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRenaming(member.name)}
+                className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+              >
+                <IconRename size={13} />
+                {t.notebook.renameButton}
               </button>
               <button
                 type="button"

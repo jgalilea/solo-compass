@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
@@ -25,6 +25,8 @@ import {
   IconTrash,
   IconWebPage,
   IconHelp,
+  IconCopy,
+  IconHistory,
 } from "./icons/Icons";
 
 /**
@@ -46,6 +48,7 @@ export function AdventureHeader({
   onJumpToEntry,
   onStats,
   onExport,
+  onCopy,
   onExportHtml,
   onShare,
   onDelete,
@@ -62,11 +65,14 @@ export function AdventureHeader({
   onJumpToEntry: (id: string) => void;
   onStats: () => void;
   onExport: () => void;
+  /** The whole adventure as Lonelog, to the clipboard. */
+  onCopy: () => void;
   onExportHtml: () => void;
   onShare: () => void;
   onDelete: () => void;
 }) {
   const { t } = useLocaleContext();
+  const navigate = useNavigate();
   const { renameAdventure, setActiveAdventureId, setAdventureStatus, toggleAdventureFavorite } = useJournalContext();
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
@@ -195,8 +201,10 @@ export function AdventureHeader({
                 : []),
               { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
               { label: t.journal.statsButton, Icon: IconChart, onSelect: onStats },
+              { label: t.history.showRolls, Icon: IconHistory, onSelect: () => navigate(`/historial?aventura=${adventure.id}`) },
               { label: t.guide.title, Icon: IconHelp, onSelect: openGuide },
               { label: t.journal.exportButton, Icon: IconDownload, onSelect: onExport },
+              { label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy },
               { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: onExportHtml },
               ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: onShare }] : []),
               isArchived

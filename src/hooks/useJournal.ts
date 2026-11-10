@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { saveDraft } from "../lib/drafts";
 import {
   createAdventure as buildAdventure,
   createJournalEntryId,
@@ -234,6 +235,7 @@ export function useJournal(): UseJournalResult {
       updateAdventures((prev) => prev.filter((a) => a.id !== id));
       updateEntries((prev) => prev.filter((e) => e.adventureId !== id));
       if (activeAdventureId === id) setActiveAdventureId(null);
+      saveDraft(id, { text: "", mode: "note" });
     },
     [activeAdventureId, latestEntries, updateAdventures, updateEntries, setActiveAdventureId],
   );

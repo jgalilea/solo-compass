@@ -239,6 +239,14 @@ export function IconCheckbox(props: IconProps) {
 export function IconCheckboxChecked(props: IconProps) {
   return <TablerIcon icon={Tabler.IconSquareCheck} {...props} />;
 }
+// Copying a session, a scene or an adventure as Lonelog.
+export function IconCopy(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconCopy} {...props} />;
+}
+// Renaming an element everywhere in the journal.
+export function IconRename(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconCursorText} {...props} />;
+}
 // Showing only one element's entries in the journal.
 export function IconFilter(props: IconProps) {
   return <TablerIcon icon={Tabler.IconFilter} {...props} />;

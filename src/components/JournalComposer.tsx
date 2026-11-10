@@ -1,4 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type Ref, type RefObject } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type PointerEvent as ReactPointerEvent,
+  type Ref,
+  type RefObject,
+} from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -6,6 +16,7 @@ import { useOracleContext } from "../hooks/useOracleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/journalUi";
+import { loadDraft, saveDraft } from "../lib/drafts";
 import type { JournalEntry } from "../lib/lonelog";
 import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
 import { buildCast, formatTag, type CastMember } from "../lib/lonelogTags";
@@ -78,7 +89,8 @@ function modeShortcut(mode: ComposerMode, alt: string, shift: string): string {
  *
  * A question typed as a note or an action (it ends in "?") can be put
  * to the oracle instead, optionally: a button beside "send" (or
- * Ctrl+Enter) logs it with the selected oracle's answer, at even odds.
+ * Ctrl+Enter) logs it with the selected oracle's answer, at the
+ * likelihood picked on the game table (the oracle's own).
  * Sending it as usual keeps it a plain entry.
  *
  * With a keyboard, Alt+Shift+1…7 pick the entry type (MODE_ORDER):
@@ -93,6 +105,9 @@ function modeShortcut(mode: ComposerMode, alt: string, shift: string): string {
  * The kind and the linked roll are kept by the parent, because the
  * desktop panel changes them too: after any roll it switches to
  * "Consequence", which is what usually gets written next.
+ *
+ * What's half written (with its type and who speaks) is kept per
+ * adventure on this device (drafts.ts), so leaving doesn't lose it.
  *
  * While writing below an entry (insertAfter) a line above the field
  * says where, with a way back to the end.
@@ -142,13 +157,21 @@ export function JournalComposer({
   const { t } = useLocaleContext();
   const { entries, addEntry } = useJournalContext();
   const { askOracle } = usePlayActions();
-  const { oracleId } = useOracleContext();
+  const { oracleId, likelihood } = useOracleContext();
   const [sceneCheck, setSceneCheck] = useState(loadSceneCheck);
   // The last scene test, so its consequence asks what the answer means.
   const [verdict, setVerdict] = useState<{ rollId: string; verdict: SceneVerdict } | null>(null);
   const [tool, setTool] = useState<Tool | null>(null);
-  const [text, setText] = useState("");
-  const [speaker, setSpeaker] = useState<Speaker>({ pc: true });
+  // What was half written here last time (drafts.ts) comes back.
+  const [draft] = useState(() => loadDraft(adventureId));
+  const [text, setText] = useState(draft?.text ?? "");
+  const [speaker, setSpeaker] = useState<Speaker>(draft?.speaker ?? { pc: true });
+  useEffect(() => {
+    if (draft) onModeChange(draft.mode);
+    // Only the draft found on opening.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => saveDraft(adventureId, { text, mode, speaker }), [adventureId, text, mode, speaker]);
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
   // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
@@ -213,7 +236,7 @@ export function JournalComposer({
   const isQuestion = (mode === "note" || mode === "action") && text.trim().endsWith("?");
 
   function askFromComposer() {
-    const roll = askOracle(text.trim(), fitLikelihood(oracleId, "equilibrado"), adventureId);
+    const roll = askOracle(text.trim(), fitLikelihood(oracleId, likelihood), adventureId);
     setText("");
     onRolled(roll.id);
   }
@@ -404,7 +427,7 @@ export function JournalComposer({
             handleSubmit();
           }}
         >
-          <ModePicker mode={mode} onChange={onModeChange} />
+          <ModePicker mode={mode} onChange={onModeChange} onPicked={() => inputRef.current?.focus()} />
           <textarea
             ref={inputRef}
             data-hotkey="write"
@@ -509,7 +532,21 @@ export function JournalComposer({
  * each with a line explaining it (it replaces the tabs and the fixed
  * hint that took up two rows of the composer).
  */
-function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: ComposerMode) => void }) {
+/** On pointer down: leave the focus where it is (see ModePicker). */
+function keepTextFocus(e: ReactPointerEvent<HTMLElement>) {
+  if (document.activeElement?.tagName === "TEXTAREA") e.preventDefault();
+}
+
+function ModePicker({
+  mode,
+  onChange,
+  onPicked,
+}: {
+  mode: ComposerMode;
+  onChange: (mode: ComposerMode) => void;
+  /** A type was picked: on to writing (focus within the tap, or iOS keeps its keyboard shut). */
+  onPicked: () => void;
+}) {
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -539,6 +576,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
   function pick(next: ComposerMode) {
     onChange(next);
     setOpen(false);
+    onPicked();
   }
 
   return (
@@ -553,6 +591,10 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
         title={current.label}
         aria-haspopup="menu"
         aria-expanded={open}
+        // A tap doesn't take the focus from the text: on a narrow phone the
+        // tools come back when it leaves, the button moves mid-tap and the
+        // tap lands elsewhere. The keyboard still reaches it as before.
+        onPointerDown={keepTextFocus}
         // With a border and an arrow so it reads as a dropdown: without
         // them it looked like a label and "New session" went unnoticed.
         className={[
@@ -582,6 +624,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                 type="button"
                 role="menuitemradio"
                 aria-checked={selected}
+                onPointerDown={keepTextFocus}
                 onClick={() => pick(o.mode)}
                 className={[
                   "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",
@@ -610,6 +653,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                 type="button"
                 role="menuitemradio"
                 aria-checked={mode === o.mode}
+                onPointerDown={keepTextFocus}
                 onClick={() => pick(o.mode)}
                 className={[
                   "flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-ink-700",

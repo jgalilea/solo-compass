@@ -7,7 +7,7 @@ import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
-import { IconArrowLeft, IconChevronDown, IconHistory, IconTrash } from "./icons/Icons";
+import { IconArrowLeft, IconChevronDown, IconHistory, IconJournal, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
 
 type Filter = "todo" | "oraculo" | "tabla" | "dados" | "favoritas";
@@ -18,6 +18,10 @@ type Filter = "todo" | "oraculo" | "tabla" | "dados" | "favoritas";
  * all at once took seconds on a phone (e2e/volume.perf.ts).
  */
 const PAGE_SIZE = 60;
+
+// The adventure filter's two values that aren't an adventure's id.
+const ALL = "";
+const FREE = "-";
 
 export function HistoryView() {
   const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
@@ -37,7 +41,11 @@ export function HistoryView() {
     for (const e of journalEntries) if (e.linkedRollId) map.set(e.linkedRollId, e.adventureId);
     return map;
   }, [journalEntries]);
-  const adventureOf = (entry: HistoryEntry) => entry.adventureId ?? loggedIn.get(entry.id);
+  const adventureOf = useCallback((entry: HistoryEntry) => entry.adventureId ?? loggedIn.get(entry.id), [loggedIn]);
+  // One adventure's rolls (its mechanics, without the narration), the
+  // free ones, or all. From an adventure's menu it comes already set.
+  const fromAdventure = searchParams.get("aventura");
+  const [adventureFilter, setAdventureFilter] = useState<string>(fromAdventure ?? ALL);
   const [confirmingClear, setConfirmingClear] = useState(false);
   // Deleting a roll doesn't ask for confirmation: it's undone from the toast.
   // Clearing the whole history does ask (it's big and irreversible).
@@ -51,10 +59,14 @@ export function HistoryView() {
   }
 
   const filtered = useMemo(() => {
-    if (filter === "todo") return entries;
-    if (filter === "favoritas") return entries.filter((e) => e.favorite);
-    return entries.filter((e) => e.kind === filter);
-  }, [entries, filter]);
+    const byAdventure =
+      adventureFilter === ALL
+        ? entries
+        : entries.filter((e) => (adventureFilter === FREE ? !adventureOf(e) : adventureOf(e) === adventureFilter));
+    if (filter === "todo") return byAdventure;
+    if (filter === "favoritas") return byAdventure.filter((e) => e.favorite);
+    return byAdventure.filter((e) => e.kind === filter);
+  }, [entries, filter, adventureFilter, adventureOf]);
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const showMore = useCallback(() => setShown((n) => n + PAGE_SIZE), []);
@@ -88,8 +100,13 @@ export function HistoryView() {
     ["favoritas", t.history.filterFavorites],
   ];
 
-  const backLabel =
-    origin === "tabla" ? t.history.backToTables : origin === "dados" ? t.history.backToDice : t.history.backToOracle;
+  const backLabel = fromAdventure
+    ? t.history.backToAdventure
+    : origin === "tabla"
+      ? t.history.backToTables
+      : origin === "dados"
+        ? t.history.backToDice
+        : t.history.backToOracle;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
@@ -97,7 +114,7 @@ export function HistoryView() {
         <div className="min-w-0">
           <div className="flex items-center gap-1">
             <Link
-              to={origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
+              to={fromAdventure ? `/diario/${fromAdventure}` : origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
               aria-label={backLabel}
               title={backLabel}
               className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
@@ -128,22 +145,44 @@ export function HistoryView() {
       </header>
 
       {status === "ready" && entries.length > 0 && (
-        <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl">
-          {filters.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => changeFilter(key)}
-              className={[
-                "flex-1 rounded-xl px-1 py-1.5 transition",
-                filter === key
-                  ? "bg-gold text-ink-950 font-medium"
-                  : "text-parchment-dim hover:text-parchment",
-              ].join(" ")}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl md:flex-1">
+            {filters.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => changeFilter(key)}
+                className={[
+                  "flex-1 rounded-xl px-1 py-1.5 transition",
+                  filter === key
+                    ? "bg-gold text-ink-950 font-medium"
+                    : "text-parchment-dim hover:text-parchment",
+                ].join(" ")}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <label className="flex min-w-0 items-center gap-2 text-sm text-parchment-dim">
+            <IconJournal size={16} className="shrink-0 text-gold" />
+            <span className="sr-only">{t.history.adventureFilterLabel}</span>
+            <select
+              value={adventureFilter}
+              onChange={(e) => {
+                setAdventureFilter(e.target.value);
+                setShown(PAGE_SIZE);
+              }}
+              className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-3 py-2 text-base text-parchment focus:border-gold focus:outline-none md:w-64 md:flex-none md:text-sm"
             >
-              {label}
-            </button>
-          ))}
+              <option value={ALL}>{t.history.adventureAll}</option>
+              <option value={FREE}>{t.history.adventureFree}</option>
+              {adventures.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       )}
 

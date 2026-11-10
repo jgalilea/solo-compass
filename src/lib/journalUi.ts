@@ -47,7 +47,7 @@ export type ComposerMode = ComposerKind | "dialogue" | "excerpt" | "session" | "
  * Lonelog typed at the start of the composer picks the entry type by
  * itself and the symbol goes (the type puts it back on export): "@ " an
  * action ("@(Odile) …" someone else's), "=> " a consequence, "PC: " or
- * "N (Odile): " a dialogue line and who says it, "\---" in-world text,
+ * "N (Odile): " a dialogue line and who says it, "\--- " in-world text,
  * "=== " a session. Null when the text doesn't start with one.
  */
 export function composerShortcut(text: string): { mode: ComposerMode; text: string; speaker?: Speaker } | null {
@@ -59,7 +59,7 @@ export function composerShortcut(text: string): { mode: ComposerMode; text: stri
   if ((m = text.match(/^N \(([^()\n]+)\): ([\s\S]*)$/))) {
     return { mode: "dialogue", text: m[2], speaker: { pc: false, name: m[1].trim() } };
   }
-  if ((m = text.match(/^\\---[ \n]([\s\S]*)$/))) return { mode: "excerpt", text: m[1] };
+  if ((m = text.match(/^\\--- ([\s\S]*)$/))) return { mode: "excerpt", text: m[1] };
   if ((m = text.match(/^=== ([\s\S]*)$/))) return { mode: "session", text: m[1].replace(/\s*===\s*$/, "") };
   return null;
 }

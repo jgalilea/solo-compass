@@ -45,3 +45,17 @@ export async function shareTextFile(
     throw err;
   }
 }
+
+/**
+ * Text to the clipboard (a session or an adventure in Lonelog, to paste
+ * it elsewhere). False if the browser wouldn't.
+ */
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+

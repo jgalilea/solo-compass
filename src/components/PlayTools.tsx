@@ -4,7 +4,6 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { createDiceRollEntry } from "../lib/history";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
-import type { Likelihood } from "../lib/oracle";
 import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
 import { useOracleContext } from "../hooks/useOracleContext";
 import type { MeaningTable } from "../lib/tables";
@@ -45,8 +44,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
   const { t } = useLocaleContext();
   const { askOracle } = usePlayActions();
   const [question, setQuestion] = useState("");
-  const { oracleId } = useOracleContext();
-  const [likelihood, setLikelihood] = useState<Likelihood>("equilibrado");
+  const { oracleId, likelihood, setLikelihood } = useOracleContext();
   const level = fitLikelihood(oracleId, likelihood);
 
   return (

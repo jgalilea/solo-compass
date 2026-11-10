@@ -65,7 +65,9 @@ keys 1–4): `/historial` is
 reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
 highlights the Oráculo tab; the Tables and Dice screens have their own
 (`kind`: only their rolls), which open `/historial?tipo=tabla|dados`,
-filtered, highlighting that tab and going back there. Theme, mode, language, backup and credits all
+filtered, highlighting that tab and going back there. The history also
+filters by adventure (or free rolls), and an adventure's menu opens it
+that way (`?aventura=<id>`). Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
 (`ActiveAdventureChip`), the same on every screen.
@@ -118,7 +120,8 @@ No backend; persistence is split by access pattern, not by feature:
   language, selected oracle and favorite oracle (the app opens with the
   favorite, `initialOracleId`; the last used otherwise), favorite tables, unfolded table blocks,
   folded notebook lists and blocks (`notebookSections.ts`, also the
-  session index), whether new scenes are tested, active-adventure
+  session index), the composer's draft per adventure (`drafts.ts`:
+  text, entry type and speaker, gone once sent), whether new scenes are tested, active-adventure
   id (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
   `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`).
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
@@ -233,11 +236,16 @@ is a new line and the send button sends. Its "Dialogue" mode picks who
 speaks (the PC, the cast's NPCs or any name) and logs a note in
 Lonelog's dialogue form (`formatDialogue`: `N (Odile): "…"`); "In-world
 text" is typed as is and logged as a narrative block (`formatExcerpt`).
-Lonelog typed at the start ("@ ", "=> ", "N (Odile): ", "\---", "=== ")
+Lonelog typed at the start ("@ ", "=> ", "N (Odile): ", "\--- ", "=== ")
 switches the type by itself (`composerShortcut`); a typed question (ends
 in "?") can optionally go to the oracle (a button beside send, or
 Ctrl+Enter), and Alt+Shift+1…7 pick the type (plain Alt+number/letter
-belongs to the browser). The composer's entry type and the roll a consequence links
+belongs to the browser). The likelihood picked is shared by the Oracle
+screen, the game table and that question (`OracleContext`, not saved).
+A session or a scene (their "⋯") and the whole adventure (its menu)
+copy to the clipboard as Lonelog with all they hold
+(`sectionToLonelog`). Ctrl/Cmd+Z brings back the entry just deleted
+while its toast is there. The composer's entry type and the roll a consequence links
 to live in `AdventureDetailView`, because both places change them (after
 any roll the composer switches to "Consecuencia").
 
@@ -304,6 +312,12 @@ descriptions (`t.sample.descriptions`).
   (`progress`, also "+1"/"-1"). The notebook's −/+ log the new value as
   an entry (the journal is a record); several in a row on the same
   element, at the end and within minutes, become one (`combineSteps`).
+  "Rename" changes it in every entry (`renameInEntry`: its tags, numbered
+  ones too, and an NPC's dialogue and `@(Name)` actions; its
+  description moves to the new key), with Undo. A full clock or track,
+  or a timer at 0, says so quietly where its number is
+  (`progressDone`), in the notebook and the journal's chips. Past six
+  elements the notebook has a search (name or trait).
   "Show its entries" filters the journal to one element (`filterGroups`:
   its tags, and a character's dialogue and `@(Name)` actions, each with
   its block) until the filter is removed. "Roll on the list" (NPCs, places,
@@ -608,6 +622,7 @@ review findings. Update it when an item ships or priorities change.
 ## Changelog
 
 `src/lib/changelog.ts` is shown in-app (Settings → About → "Crónica de
-cambios"). It's written for curious players, not developers: role-playing
+cambios"), loaded only when opened (it's a big part of the main bundle
+otherwise). It's written for curious players, not developers: role-playing
 flavor ("Capítulo V · …"), no technical jargon, both languages per entry.
 When shipping a user-visible change, add or extend the top entry.

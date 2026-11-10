@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { foeIsOut,
   applyTagUpdates,
   combineSteps,
+  progressDone,
+  renameInEntry,
   buildCast,
   castKey,
   findTagQuery,
@@ -242,6 +244,9 @@ describe("the official add-ons' tags", () => {
       "room:4",
     );
     expect(room?.tags).toEqual(["cleared, looted", "storage room, dusty shelves", "exits S:R2, E:R7(secret)"]);
+    // In Spanish, the word as written.
+    const sala = buildCast([entry("note", "[R:1|explorada|sala de la rueda|salidas Arriba:R2, Abajo:R3]", 1)])[0];
+    expect(sala.tags.at(-1)).toBe("salidas Arriba:R2, Abajo:R3");
     expect(room?.mentions).toHaveLength(4);
     expect(find(["[R:1|cleared]", "[R:1|+looted]", "[R:1|-cleared]"], "room:1")?.tags).toEqual(["looted"]);
   });
@@ -303,3 +308,44 @@ describe("combineSteps", () => {
     expect(combineSteps("[Inv:Torch-1]", "[Clock:Torch 1/4]")).toBeNull();
   });
 });
+
+describe("renameInEntry", () => {
+  const odille = { kind: "npc" as const, name: "Odille" };
+  const note = (text: string) => ({ kind: "note" as const, text });
+  it("renames its tags, references included, and nothing else", () => {
+    expect(renameInEntry(note("[N:Odille|wary] dries tankards. [#N:odille] nods. [L:Odille's inn]"), odille, "Odile")).toBe(
+      "[N:Odile|wary] dries tankards. [#N:Odile] nods. [L:Odille's inn]",
+    );
+    expect(renameInEntry(note("[PC:Odille]"), odille, "Odile")).toBe("[PC:Odille]");
+  });
+
+  it("keeps the number of a clock or a quantity", () => {
+    expect(renameInEntry(note("[Clock:Alrm 2/6]"), { kind: "clock", name: "Alrm" }, "Alarm")).toBe("[Clock:Alarm 2/6]");
+    expect(renameInEntry(note("[Inv:Torh-1] [Inv:Torh|3]"), { kind: "item", name: "Torh" }, "Torch")).toBe("[Inv:Torch-1] [Inv:Torch|3]");
+  });
+
+  it("renames an NPC's dialogue and actions too", () => {
+    expect(renameInEntry(note('N (Odille): "Maybe."'), odille, "Odile")).toBe('N (Odile): "Maybe."');
+    expect(renameInEntry({ kind: "action", text: "(Odille) Shuts the door" }, odille, "Odile")).toBe("(Odile) Shuts the door");
+    expect(renameInEntry({ kind: "action", text: "(Jonah) Waits" }, odille, "Odile")).toBe("(Jonah) Waits");
+  });
+
+  it("won't write a name that breaks the tag", () => {
+    expect(renameInEntry(note("[N:Odille]"), odille, "Odile [the innkeeper]")).toBe("[N:Odile the innkeeper ]".replace(" ]", "]"));
+    expect(renameInEntry(note("[N:Odille]"), odille, "  ")).toBe("[N:Odille]");
+  });
+});
+
+describe("progressDone", () => {
+  it("tells a full clock or track and a timer that's run out", () => {
+    expect(progressDone("clock", { value: 4, max: 4 })).toBe(true);
+    expect(progressDone("clock", { value: 3, max: 4 })).toBe(false);
+    expect(progressDone("track", { value: 8, max: 8 })).toBe(true);
+    expect(progressDone("timer", { value: 0 })).toBe(true);
+    expect(progressDone("timer", { value: 2 })).toBe(false);
+    // A change ("+1") says nothing about where it stands.
+    expect(progressDone("timer", { value: -1, relative: true })).toBe(false);
+    expect(progressDone("item", { value: 0 })).toBe(false);
+  });
+});
+

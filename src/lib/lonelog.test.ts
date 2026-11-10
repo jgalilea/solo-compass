@@ -7,6 +7,7 @@ import {
   parseMarkdownToEntries,
   parseNotesFromMarkdown,
   parseTitleFromMarkdown,
+  sectionToLonelog,
   sessionDate,
   type JournalEntry,
   type JournalLineKind,
@@ -333,3 +334,31 @@ describe("a full Lonelog 1.6 log with the add-ons", () => {
     expect(parseTitleFromMarkdown(LOG)).toBe("Clearview Mystery");
   });
 });
+
+describe("sectionToLonelog", () => {
+  const entries = [
+    { ...entry("session", "Session 1", 1), date: "2026-10-03" },
+    entry("scene", "S1 *The inn*", 2),
+    entry("action", "I look around", 3),
+    entry("scene", "S2 *The road*", 4),
+    entry("note", "Rain.", 5),
+    entry("session", "Session 2", 6),
+    entry("note", "Later.", 7),
+  ];
+
+  it("copies a session with everything in it, up to the next session", () => {
+    expect(sectionToLonelog(entries, "e1")).toBe(
+      "=== Session 1 ===\n\n[Date] 2026-10-03\n\nS1 *The inn*\n\n@ I look around\n\nS2 *The road*\n\nRain.\n",
+    );
+  });
+
+  it("copies a scene up to the next scene or session", () => {
+    expect(sectionToLonelog(entries, "e2")).toBe("S1 *The inn*\n\n@ I look around\n");
+    expect(sectionToLonelog(entries, "e4")).toBe("S2 *The road*\n\nRain.\n");
+  });
+
+  it("copies nothing for an entry that isn't a session or a scene", () => {
+    expect(sectionToLonelog(entries, "e3")).toBe("");
+  });
+});
+

@@ -11,6 +11,7 @@ import {
   type CastMember,
 } from "../lib/lonelogTags";
 import { groupBySession } from "../lib/journalUi";
+import { normalizeForSearch } from "../lib/text";
 import {
   loadFoldedNotebookSections,
   toggleFoldedNotebookSection,
@@ -28,8 +29,12 @@ import {
   IconInventory,
   IconPinned,
   IconPlus,
+  IconSearch,
   IconThread,
 } from "./icons/Icons";
+
+/** From how many elements the notebook offers a search. */
+const SEARCH_FROM = 6;
 
 /** The block each list is in, unfolded with it when an element is shown. */
 const BLOCK_OF: Record<NotebookSection, NotebookBlock> = {
@@ -74,6 +79,7 @@ export function AdventureNotebook({
   onJump,
   onMention,
   onFilter,
+  onRename,
   onLog,
   onRoll,
 }: {
@@ -92,6 +98,8 @@ export function AdventureNotebook({
   onMention: (text: string) => void;
   /** Show only this element's entries in the journal. */
   onFilter: (key: string) => void;
+  /** Rename an element in every entry of the journal. */
+  onRename: (member: CastMember, name: string) => void;
   /** Log this text as a journal note (`step`: a −/+, see CastItem). */
   onLog: (text: string, step?: boolean) => void;
   /** Log this text as a roll (a list was rolled on). */
@@ -112,20 +120,28 @@ export function AdventureNotebook({
   const [adding, setAdding] = useState<"cast" | "threads" | "inventory" | null>(null);
   const [folded, setFolded] = useState(loadFoldedNotebookSections);
 
+  // A long cast: a search by name or trait (lists and blocks open while
+  // it's on, and only those with something found show).
+  const [query, setQuery] = useState("");
+  const q = normalizeForSearch(query.trim());
+  const shown = q
+    ? cast.filter((c) => normalizeForSearch(c.name).includes(q) || c.tags.some((tag) => normalizeForSearch(tag).includes(q)))
+    : cast;
+
   const lists: Record<NotebookSection, CastMember[]> = {
-    characters: cast.filter((c) => c.kind === "pc" || c.kind === "npc"),
-    places: cast.filter((c) => c.kind === "place"),
-    rooms: cast.filter((c) => c.kind === "room"),
+    characters: shown.filter((c) => c.kind === "pc" || c.kind === "npc"),
+    places: shown.filter((c) => c.kind === "place"),
+    rooms: shown.filter((c) => c.kind === "room"),
     // Still fighting first: the dead and the fled are history.
-    foes: [...cast.filter((c) => c.kind === "foe" && !foeIsOut(c)), ...cast.filter((c) => c.kind === "foe" && foeIsOut(c))],
+    foes: [...shown.filter((c) => c.kind === "foe" && !foeIsOut(c)), ...shown.filter((c) => c.kind === "foe" && foeIsOut(c))],
     // Open ones first: the closed are history.
     threads: [
-      ...cast.filter((c) => c.kind === "thread" && threadStatus(c) === "open"),
-      ...cast.filter((c) => c.kind === "thread" && threadStatus(c) !== "open"),
+      ...shown.filter((c) => c.kind === "thread" && threadStatus(c) === "open"),
+      ...shown.filter((c) => c.kind === "thread" && threadStatus(c) !== "open"),
     ],
-    progress: cast.filter((c) => PROGRESS_KINDS.has(c.kind)),
-    items: cast.filter((c) => c.kind === "item"),
-    wealth: cast.filter((c) => c.kind === "wealth"),
+    progress: shown.filter((c) => PROGRESS_KINDS.has(c.kind)),
+    items: shown.filter((c) => c.kind === "item"),
+    wealth: shown.filter((c) => c.kind === "wealth"),
   };
   // What "roll on the list" picks from: NPCs (not the PC), places, open threads.
   const rollable: Record<NotebookSection, CastMember[]> = {
@@ -168,7 +184,8 @@ export function AdventureNotebook({
 
   // A whole block, under a heading that folds it.
   function block(id: NotebookBlock, Icon: typeof IconCast, title: string, count: number, children: ReactNode) {
-    const isFolded = folded.has(id);
+    if (q && count === 0) return null;
+    const isFolded = !q && folded.has(id);
     return (
       <section className="flex flex-col gap-2">
         <FoldingHeading Icon={Icon} title={title} folded={isFolded} onToggle={() => toggleSection(id)} count={count} />
@@ -187,7 +204,7 @@ export function AdventureNotebook({
   function group(id: NotebookSection) {
     const members = lists[id];
     if (members.length === 0) return null;
-    const isFolded = folded.has(id);
+    const isFolded = !q && folded.has(id);
     return (
       <div key={id} className="flex flex-col gap-1">
         <div className="flex items-center gap-1">
@@ -228,6 +245,7 @@ export function AdventureNotebook({
                 onJump={onJump}
                 onMention={onMention}
                 onFilter={() => onFilter(member.key)}
+                onRename={(name) => onRename(member, name)}
                 onLog={onLog}
                 description={descriptions[member.key]?.text ?? ""}
                 onDescriptionChange={(text) => onDescriptionChange(member.key, text)}
@@ -275,7 +293,29 @@ export function AdventureNotebook({
 
   return (
     <div className="flex flex-col gap-6">
-      {block("notesBlock", IconPinned, t.notebook.notesTitle, 0, <PinnedNotes notes={notes} onChange={onNotesChange} />)}
+      {!q && block("notesBlock", IconPinned, t.notebook.notesTitle, 0, <PinnedNotes notes={notes} onChange={onNotesChange} />)}
+
+      {cast.length > SEARCH_FROM && (
+        <div className="flex flex-col gap-2">
+          <label className="relative block">
+            <IconSearch
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-dim/60"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t.notebook.searchPlaceholder}
+              aria-label={t.notebook.searchPlaceholder}
+              className="w-full rounded-xl border border-ink-border bg-ink-900/70 py-1.5 pl-9 pr-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none"
+            />
+          </label>
+          {q && shown.length === 0 && (
+            <p className="px-1 text-xs text-parchment-dim">{interpolate(t.notebook.searchEmpty, { query: query.trim() })}</p>
+          )}
+        </div>
+      )}
 
       {block(
         "castBlock",

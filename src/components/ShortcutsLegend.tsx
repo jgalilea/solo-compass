@@ -33,6 +33,7 @@ export function ShortcutsLegend() {
       rows: [
         [[s.altKey, s.shiftKey, "1…7"], s.entryType],
         [[s.ctrlKey, s.enterKey], s.askOracle],
+        [[s.ctrlKey, "Z"], s.undoDelete],
       ],
     },
   ];

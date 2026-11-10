@@ -149,18 +149,40 @@ export function exportAdventureToMarkdown(
   dates?: { createdAt: number; updatedAt: number },
 ): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
-  // A session's date goes on its own line below it, as in Lonelog's
-  // session header (§5.2).
-  const lines = sorted.flatMap((e) => {
-    const date = e.kind === "session" ? sessionDate(e) : null;
-    return date ? [formatLine(e), `[Date] ${date}`] : [formatLine(e)];
-  });
-  const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...lines];
+  const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...formatEntries(sorted)];
   const header = [
     `title: ${JSON.stringify(adventureName)}`,
     ...(dates ? [`start_date: ${isoDate(dates.createdAt)}`, `last_update: ${isoDate(dates.updatedAt)}`] : []),
   ];
   return formatFrontMatter(notes, formatDescriptions(sorted, descriptions), header) + blocks.join("\n\n") + "\n";
+}
+
+/**
+ * Entries (in journal order) as Lonelog paragraphs. A session's date
+ * goes on its own line below it, as in Lonelog's session header (§5.2).
+ */
+function formatEntries(sorted: JournalEntry[]): string[] {
+  return sorted.flatMap((e) => {
+    const date = e.kind === "session" ? sessionDate(e) : null;
+    return date ? [formatLine(e), `[Date] ${date}`] : [formatLine(e)];
+  });
+}
+
+/**
+ * A session or a scene with everything in it, as Lonelog to paste
+ * elsewhere (a forum, a chat, other notes): from it to the next one of
+ * its level (a session ends at the next session; a scene, at the next
+ * scene or session). Empty if the id isn't a session or a scene.
+ */
+export function sectionToLonelog(entries: JournalEntry[], id: string): string {
+  const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
+  const start = sorted.findIndex((e) => e.id === id);
+  const head = sorted[start];
+  if (!head || (head.kind !== "session" && head.kind !== "scene")) return "";
+  const ends = (e: JournalEntry) => e.kind === "session" || (head.kind === "scene" && e.kind === "scene");
+  const after = sorted.slice(start + 1);
+  const end = after.findIndex(ends);
+  return formatEntries([head, ...(end < 0 ? after : after.slice(0, end))]).join("\n\n") + "\n";
 }
 
 /**
