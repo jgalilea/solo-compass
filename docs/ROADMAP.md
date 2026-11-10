@@ -9,6 +9,17 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Pulido del 2026-11-10: la fuente de cada tema queda para nombres que
+  hacen de título (no en menús, chips ni texto pequeño); campos
+  numéricos con −/+ propios (`NumberField`); ventaja y desventaja como
+  interruptor para la siguiente tirada, sea dado o fórmula
+  (`withEdge`); los dados se juntan en una bandeja con × por tirada;
+  hueco de scroll reservado en las columnas; cada entrada lleva el día
+  de su sesión (`playDay`) en cuaderno, búsqueda y estadísticas.
+- Aventura de ejemplo rehecha (2026-11-10): tres sesiones con fechas
+  que usan cada tipo de entrada, nota, tirada y sección del cuaderno
+  (combate por rondas, salas, inventario, rastro, cuenta atrás,
+  descripciones); un test vigila que siga siendo así.
 - Más oráculos (2026-11-09): Loner (con contador de giros derivado del
   historial y tablas de giro tiradas solas), «Ask the Oracle» de
   Ironsworn (d100, coincidencias) y One Page Solo Engine v1.6 (CC BY-SA,

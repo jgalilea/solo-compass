@@ -67,6 +67,15 @@ describe("play activity", () => {
     expect(stats.activity).toEqual({ "2026-11-08": 2, "2026-11-09": 1 });
   });
 
+  it("counts every entry on its session's day, imported ones too", () => {
+    const session = { ...at(2026, 11, 9, "1762717200000-0-abc123"), kind: "session" as const, date: "2025-09-03" };
+    const later = { ...at(2026, 11, 10), timestamp: session.timestamp + 1 };
+    const imported = { ...at(2026, 11, 9, "1762717200000-1-abc123"), timestamp: session.timestamp + 2 };
+    const stats = computeAdventureStats([session, later, imported], new Map());
+    expect(stats.activity).toEqual({ "2025-09-03": 3 });
+    expect(stats).toMatchObject({ daysPlayed: 1, first: "2025-09-03", last: "2025-09-03" });
+  });
+
   it("finds the longest run of days in a row, across months", () => {
     expect(longestStreak([])).toBe(0);
     expect(longestStreak(["2026-01-05"])).toBe(1);

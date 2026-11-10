@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rollFormula } from "./diceNotation";
+import { rollFormula, withEdge } from "./diceNotation";
 import { DICTIONARIES, LOCALES } from "./i18n";
 
 /** A die roll that always lands on the given faces, in order (1-based). */
@@ -16,6 +16,30 @@ function faces(...rolls: [face: number, sides: number][]) {
     return (face - 1) / sides;
   };
 }
+
+describe("withEdge", () => {
+  it("rolls a single die twice and keeps one", () => {
+    expect(withEdge("d20", "advantage")).toBe("2d20kh1");
+    expect(withEdge("1d6", "disadvantage")).toBe("2d6kl1");
+    expect(withEdge("d%", "advantage")).toBe("2d%kh1");
+  });
+
+  it("rolls anything else twice as a group", () => {
+    expect(withEdge("2d6+3", "advantage")).toBe("{2d6+3,2d6+3}kh1");
+    expect(withEdge("4dF", "disadvantage")).toBe("{4dF,4dF}kl1");
+    expect(rollFormula(withEdge("2d6+3", "advantage"), dice(1, 1, 6, 5)(6))).toBe(
+      "{2d6+3,2d6+3}kh1 -> 14 ({(1+1 + 3)✗, 6+5 + 3})",
+    );
+    expect(rollFormula(withEdge("5d6>=5", "disadvantage"), dice(5, 6, 1, 1, 1, 6, 1, 1, 1, 1)(6))).toBe(
+      "{5d6>=5,5d6>=5}kl1 -> 1 ({(5✓ 6✓ 1 1 1)✗, 6✓ 1 1 1 1})",
+    );
+  });
+
+  it("keeps the description outside", () => {
+    expect(withEdge("3d6 // Fuerza", "advantage")).toBe("{3d6,3d6}kh1 // Fuerza");
+    expect(rollFormula(withEdge("d20 // Sigilo", "advantage"), dice(4, 17)(20))).toBe("Sigilo 2d20kh1 -> 17 (17, 4✗)");
+  });
+});
 
 describe("rollFormula", () => {
   it("adds dice and modifiers", () => {

@@ -37,8 +37,9 @@ export function AdventureStatsDialog({
   const { oracle } = stats;
   const yesTenths = oracle.total ? Math.round((oracle.si / oracle.total) * 10) : 0;
   const mood = yesTenths >= 6 ? s.moodKind : yesTenths <= 4 ? s.moodStubborn : s.moodFair;
-  const firstDay = stats.first !== null ? date.format(stats.first) : null;
-  const lastDay = stats.last !== null ? date.format(stats.last) : null;
+  const longDay = (iso: string) => date.format(new Date(`${iso}T12:00`));
+  const firstDay = stats.first !== null ? longDay(stats.first) : null;
+  const lastDay = stats.last !== null ? longDay(stats.last) : null;
 
   return (
     <Modal
@@ -63,7 +64,7 @@ export function AdventureStatsDialog({
               ).map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
                   <dt className="text-xs text-parchment-dim">{label}</dt>
-                  <dd className="font-display text-2xl text-parchment">{number.format(value)}</dd>
+                  <dd className="font-display text-2xl tabular-nums text-parchment">{number.format(value)}</dd>
                 </div>
               ))}
             </dl>
@@ -102,7 +103,7 @@ export function AdventureStatsDialog({
                       ] as const
                     ).map(([label, value, color]) => (
                       <li key={label} className="rounded-xl border border-ink-border/70 px-2 py-2">
-                        <span className={`block font-display text-lg ${color}`}>{number.format(value)}</span>
+                        <span className={`block text-lg font-semibold tabular-nums ${color}`}>{number.format(value)}</span>
                         <span className="text-parchment-dim">{label}</span>
                       </li>
                     ))}

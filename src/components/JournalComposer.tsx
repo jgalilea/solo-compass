@@ -505,7 +505,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                   <Icon size={16} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-sm font-semibold text-gold">{o.label}</span>
+                  <span className="block text-sm font-medium text-gold">{o.label}</span>
                   <span className="block text-xs text-parchment-dim">{o.hint}</span>
                 </span>
               </button>

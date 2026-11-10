@@ -235,7 +235,13 @@ created on its own, and opened without making it active). The script
 lives in the dictionaries (`t.sample.script`); rolls are given as dice
 and written with the same format as `usePlayActions` (oracle verdict via
 `judgeDice` in `oracle.ts`, table results from the real tables, loaded
-first with `loadMeaningTables`), then imported as Lonelog. A test keeps both languages' scripts in step.
+first with `loadMeaningTables`; quick inspiration as the same `gen:`;
+dice formulas written as `rollFormula` writes them), then imported as
+Lonelog, with session dates, pinned notes and notebook descriptions
+(`t.sample.descriptions`). It's the showcase: it uses every kind of
+entry, note form, roll and notebook section, and a test checks it
+still does (and keeps both languages' scripts in step). When adding a
+visible journal or notebook feature, work it into the sample.
 
 ### Notebook: pinned notes, characters and places
 
@@ -267,7 +273,8 @@ header below that.
   alphabetical) and offers a new one of any kind
   (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
   `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
-  adventure uses tags and has pinned notes (`t.sample.notes`).
+  adventure uses tags and has pinned notes (`t.sample.notes`) and
+descriptions (`t.sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms
   `[R:4|status|description|exits N:R2]` (first field is the status,
   replaced; `+looted` adds; exits merge by direction), foes
@@ -415,7 +422,9 @@ written so the journal shows each roll die by die like the buttons'
 rolls (`✓`/`✗`, `1→4` rerolled, `2↑`/`3↓` min/max, `▲`/`▼`
 criticals); in a list of rolls each one keeps its own description
 (`splitRollSeries`), and `d66=25 ->` stays a table roll's value, not
-a formula. Its "?" (`DiceHelp`, on the shared
+a formula. Advantage/disadvantage is a switch for the next roll,
+button or formula (`withEdge`: `d20` → `2d20kh1`, anything else
+`{F,F}kh1`), then turns itself off. Its "?" (`DiceHelp`, on the shared
 `HelpDialog` shell like `OracleHelp`) explains the buttons, how to
 read a roll and each formula taken apart, with examples and the line
 each leaves; a test rolls every example and checks the exact line, and
@@ -431,8 +440,12 @@ all journals from the list view (navigates with `state.entryId`).
 the linked history, falling back to parsing roll text for imports.
 Their heat map (`ActivityHeatmap`) is the last year as one row per
 month and one square per day (31 columns fit a phone), with the
-longest streak of days in a row; it counts only entries written in the
-app (`isImportedEntry`: an import's timestamps are the import's).
+longest streak of days in a row. Every date shown for an entry (stats,
+heat map, search results, notebook mentions) is its day of play
+(`playDay`): its session's date, since everything in a session happens
+during it; before any session or in an undated one, the day it was
+written, and none for an imported one (`isImportedEntry`: an import's
+timestamps are the import's).
 Sharing (`share.ts`, Web Share API) is only offered where
 `navigator.share` exists and falls back to download on failure.
 
@@ -445,7 +458,9 @@ compass logo is custom). Screens import only from `Icons.tsx`. The
 logo (`IconCompass`, a four-point compass rose) is the same drawing as
 `public/favicon.svg` and the PWA icons in `public/icons/`; change them
 together. Don't write symbols like "+"/"−" as text in UI controls: some
-theme display fonts draw "+" as a cross — use the icon. Every
+theme display fonts draw "+" as a cross — use the icon. Number
+fields use `NumberField` (−/+ icons; the browser's spinners are hidden
+in `index.css`, they don't follow the themes). Every
 dialog uses `Modal` (portal to `<body>`, closes on Esc and backdrop click):
 the sticky desktop header would otherwise clip or cover dialogs rendered
 inside it (`backdrop-filter`/z-index stacking). `Modal` owns the panel
@@ -512,6 +527,16 @@ classes (`bg-gold`, `text-parchment`, ...) that resolve to these variables,
 so a theme is purely a CSS-variable swap, no component changes. Light mode
 is a second, higher-specificity block per theme
 (`:root[data-theme="x"][data-mode="light"]`) — mode is independent of theme.
+`font-display` (the theme's display font) carries each theme's
+character, so it's kept for short names that work as titles, at
+`text-base` or larger: screen titles, the adventure title, the logo,
+dialog titles, session and scene titles, game blocks and table names,
+card headings, empty states, the big oracle button and answer, the
+twist, big stat numbers, changelog chapters. Not for running text,
+anything smaller than `text-base`, menu items, answer chips, tool
+buttons or help headings: some display fonts are hard to read small
+and the app gets visually crowded. The HTML export follows the same
+rule.
 `THEMES` in `theme.ts` must stay in sync with the color values actually
 defined in `index.css` (used for the theme-picker swatches). Because some
 themes (notably `osr`) map the "gold" accent to a near-white/near-monochrome

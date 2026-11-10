@@ -69,7 +69,7 @@ export function DiceHelp() {
               className="flex flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/50 p-4"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <h4 className="font-display text-base text-parchment">{name}</h4>
+                <h4 className="text-base font-semibold text-parchment">{name}</h4>
                 <code className="font-mono text-sm font-semibold text-gold">{formula}</code>
               </div>
               <p className="text-sm text-parchment-dim">{text}</p>
@@ -109,7 +109,7 @@ export function DiceHelp() {
           ))}
           {/* Last card: with the formulas it fills the grid's last row on desktop. */}
           <li className="flex flex-col gap-2 rounded-2xl border border-dashed border-ink-border p-4">
-            <h4 className="font-display text-base text-parchment">{help.rulesHeading}</h4>
+            <h4 className="text-base font-semibold text-parchment">{help.rulesHeading}</h4>
             <ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-parchment-dim marker:text-gold">
               {help.rules.map((rule) => (
                 <li key={rule}>{rule}</li>

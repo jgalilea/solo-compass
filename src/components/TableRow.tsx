@@ -169,7 +169,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
                   key={`${entry.range[0]}-${entry.range[1]}`}
                   className="flex gap-3 rounded-xl border border-ink-border/70 bg-ink-900/50 px-3 py-2 text-sm"
                 >
-                  <span className="shrink-0 font-display text-parchment-dim">{formatRange(entry.range)}</span>
+                  <span className="shrink-0 font-medium tabular-nums text-parchment-dim">{formatRange(entry.range)}</span>
                   <span className="text-parchment/90">{entry.text}</span>
                 </li>
               ))}

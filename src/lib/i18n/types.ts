@@ -25,9 +25,13 @@ export const LOCALES: Locale[] = ["es", "en"];
  * name, answer, table result), in the app's language.
  */
 export type SampleLine =
-  | { kind: "note" | "action" | "question" | "consequence" | "session" | "scene" | "roll"; text: string }
+  | { kind: "note" | "action" | "question" | "consequence" | "scene" | "roll"; text: string }
+  /** A session with its day of play ("2025-09-03"). */
+  | { kind: "session"; text: string; date?: string }
   | { oracle: [white: number, black: number] }
-  | { table: SoloCompassTableId; roll: number[] };
+  | { table: SoloCompassTableId; roll: number[] }
+  /** Quick inspiration: the Action and Theme rolls, as d66 digits. */
+  | { inspiration: [action: number[], theme: number[]] };
 
 export interface Dictionary {
   common: {
@@ -40,6 +44,8 @@ export interface Dictionary {
     save: string;
     delete: string;
     undo: string;
+    decrease: string;
+    increase: string;
   };
   nav: {
     oracle: string;
@@ -503,9 +509,14 @@ export interface Dictionary {
     diceLabelPlaceholder: string;
     diceHint: string;
     diceLog: string;
+    diceLogMany: string;
+    diceRemove: string;
+    diceTrayLabel: string;
     diceClear: string;
     diceAdvantage: string;
     diceDisadvantage: string;
+    diceAdvantageHint: string;
+    diceDisadvantageHint: string;
     diceFormulaLabel: string;
     diceFormulaPlaceholder: string;
     diceFormulaRoll: string;
@@ -670,6 +681,8 @@ export interface Dictionary {
     name: string;
     /** Its pinned notes (in the .md's front matter). */
     notes: string;
+    /** Notebook descriptions, one "[N:Name] text" line each (front matter too). */
+    descriptions: string;
     script: SampleLine[];
   };
   dateLocale: string;

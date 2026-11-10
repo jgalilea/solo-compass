@@ -9,7 +9,7 @@ import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
 import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
-import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, splitRollSeries, splitRollText } from "../lib/journalUi";
+import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, formatIsoDay, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
 import {
@@ -488,7 +488,7 @@ function EntryContent({
         {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, detail].filter(Boolean).join(" · ")}</p>}
         {knownAnswer ? (
           <span
-            className={`w-fit rounded-full border px-2.5 py-0.5 font-display text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
+            className={`w-fit rounded-full border px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
           >
             {result}
           </span>
@@ -539,7 +539,7 @@ function NoteContent({ form, onTagClick }: { form: Exclude<NoteForm, { form: "pl
   switch (form.form) {
     case "excerpt":
       return (
-        <blockquote className="whitespace-pre-wrap border-l-2 border-gold/50 pl-3 font-display text-base italic text-parchment">
+        <blockquote className="whitespace-pre-wrap border-l-2 border-gold/50 pl-3 text-base italic text-parchment">
           {form.text}
         </blockquote>
       );
@@ -697,7 +697,6 @@ export function SearchResultList({
   adventureName?: (adventureId: string) => string | undefined;
 }) {
   const { t } = useLocaleContext();
-  const dateFormat = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "short", year: "numeric" });
   return (
     <ul className="flex flex-col gap-1.5">
       {matches.map((match) => {
@@ -706,7 +705,7 @@ export function SearchResultList({
         const where = [
           adventureName?.(entry.adventureId),
           entry.kind === "session" ? null : (match.sessionTitle ?? t.journal.prologueLabel),
-          dateFormat.format(entry.timestamp),
+          match.day && formatIsoDay(match.day, t.dateLocale),
         ].filter(Boolean);
         return (
           <li key={entry.id}>

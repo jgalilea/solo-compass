@@ -31,6 +31,19 @@ describe("journal search", () => {
     expect(searchEntries(entries, "")).toEqual([]);
   });
 
+  it("dates each match by its session's day of play", () => {
+    const written = new Date(2026, 10, 10, 20).getTime();
+    const entries = [
+      entry("1", "note", "Bram antes de jugar", written),
+      { ...entry("2", "session", "Sesión 1", written + 1), date: "2025-09-03" },
+      entry("3", "note", "Bram en la sesión", written + 2),
+      // Imported (id "start-index-random"), in a session with no date.
+      { ...entry("1762717200000-0-abc", "session", "Sesión 2", written + 3), date: "" },
+      entry("1762717200000-1-abc", "note", "Bram importado", written + 4),
+    ];
+    expect(searchEntries(entries, "bram").map((m) => m.day)).toEqual(["2026-11-10", "2025-09-03", null]);
+  });
+
   it("highlights the matching parts, keeping the original accents", () => {
     expect(highlightParts("La Acción final", "accion")).toEqual([
       { text: "La ", match: false },

@@ -1,5 +1,5 @@
 import type { HistoryEntry } from "./history";
-import { isImportedEntry, isoDate, type JournalEntry } from "./lonelog";
+import { isoDate, playDay, type JournalEntry } from "./lonelog";
 import type { Answer } from "./oracle";
 import { OWN_ROLL, splitRollSeries, splitRollText } from "./journalUi";
 
@@ -19,14 +19,16 @@ export interface AdventureStats {
   /** Distinct days with at least one entry. */
   daysPlayed: number;
   /**
-   * Entries written on each day ("2026-11-09"), only those written in
-   * the app: an imported entry's time is that of the import.
+   * Entries played on each day ("2026-11-09"): their session's day (see
+   * playDay). An imported entry without a dated session isn't counted:
+   * its time is that of the import.
    */
   activity: Record<string, number>;
-  /** The most days in a row with something written (in the app). */
+  /** The most days in a row with something played. */
   longestStreak: number;
-  first: number | null;
-  last: number | null;
+  /** First and last day played ("2026-11-09"). */
+  first: string | null;
+  last: string | null;
 }
 
 
@@ -84,16 +86,16 @@ export function computeAdventureStats(
     longestStreak: 0,
   };
   const tableCounts = new Map<string, number>();
-  const days = new Set<string>();
+  let session: JournalEntry | null = null;
 
   for (const entry of [...entries].sort((a, b) => a.timestamp - b.timestamp)) {
-    stats.first ??= entry.timestamp;
-    stats.last = entry.timestamp;
-    const day = new Date(entry.timestamp);
-    days.add(`${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`);
-    if (!isImportedEntry(entry)) {
-      const iso = isoDate(entry.timestamp);
-      stats.activity[iso] = (stats.activity[iso] ?? 0) + 1;
+    if (entry.kind === "session") session = entry;
+    const day = playDay(entry, session);
+    if (day) {
+      // Sessions can be moved, so the days don't always go in order.
+      if (!stats.first || day < stats.first) stats.first = day;
+      if (!stats.last || day > stats.last) stats.last = day;
+      stats.activity[day] = (stats.activity[day] ?? 0) + 1;
     }
 
     if (entry.kind === "session") {
@@ -123,7 +125,7 @@ export function computeAdventureStats(
   for (const [name, count] of tableCounts) {
     if (!stats.topTable || count > stats.topTable.count) stats.topTable = { name, count };
   }
-  stats.daysPlayed = days.size;
+  stats.daysPlayed = Object.keys(stats.activity).length;
   stats.longestStreak = longestStreak(Object.keys(stats.activity));
   return stats;
 }

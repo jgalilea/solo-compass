@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { CastDescription } from "../lib/journal";
-import type { JournalEntry } from "../lib/lonelog";
+import { playDay, type JournalEntry } from "../lib/lonelog";
 import {
   buildCast,
   foeIsOut,
@@ -78,11 +78,13 @@ export function AdventureNotebook({
 }) {
   const { t } = useLocaleContext();
   const cast = useMemo(() => buildCast(entries), [entries]);
-  // The session each entry is in, to say where every mention is.
+  // The session each entry is in and the day it was played, to say
+  // where and when every mention is.
   const sessionOf = useMemo(() => {
-    const map = new Map<string, string | null>();
+    const map = new Map<string, { title: string | null; day: string | null }>();
     for (const group of groupBySession(entries)) {
-      for (const entry of group.items) map.set(entry.id, group.sessionEntry?.text ?? null);
+      const session = group.sessionEntry ?? null;
+      for (const entry of group.items) map.set(entry.id, { title: session?.text ?? null, day: playDay(entry, session) });
     }
     return map;
   }, [entries]);

@@ -207,3 +207,9 @@ export function splitRollSeries(
   if (rolls.length < 2 || leftover) return null;
   return { label, rolls };
 }
+
+/** "2025-09-03" as a short date ("3 sept 2025"), on that day in local time. */
+export function formatIsoDay(iso: string, locale: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
+}

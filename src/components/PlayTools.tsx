@@ -14,11 +14,11 @@ import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { DiceHelp } from "./DiceHelp";
 import { DiceRoller } from "./DiceRoller";
-import { rollFormula } from "../lib/diceNotation";
+import { rollFormula, withEdge, type Edge } from "../lib/diceNotation";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
-import { IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import { IconClose, IconPlus, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 
 /**
  * The three tools of an adventure's "game table": oracle, dice and
@@ -70,7 +70,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
       <LikelihoodPicker value={level} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
       <button
         type="submit"
-        className="w-full rounded-xl bg-gold py-2.5 font-display text-base font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
+        className="w-full rounded-xl bg-gold py-2.5 text-base font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
       >
         {t.oracle.rollButton}
       </button>
@@ -169,8 +169,9 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
  * Rolls from your own system: they accumulate ("d20 -> 14, d6 -> 3")
  * with an optional text in front, and are logged together as a single
  * "Roll" entry — so they show up in the journal as one group. Besides
- * the single dice, advantage/disadvantage and a typed formula
- * ("2d6+3", "4d6kh3", "5d6>=5"; see rollFormula).
+ * the single dice and a typed formula ("2d6+3", "4d6kh3", "5d6>=5";
+ * see rollFormula). Advantage/disadvantage is a switch for the next
+ * roll, whichever it is: rolled twice, keeping the higher or lower.
  */
 export function DiceTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();
@@ -179,13 +180,15 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
   const [rolls, setRolls] = useState<string[]>([]);
   const [formula, setFormula] = useState("");
   const [formulaError, setFormulaError] = useState(false);
+  const [edge, setEdge] = useState<Edge | null>(null);
 
   function add(roll: string) {
     setRolls((prev) => [...prev, roll]);
+    setEdge(null);
   }
 
   function rollTyped() {
-    const roll = rollFormula(formula);
+    const roll = rollFormula(edge ? withEdge(formula, edge) : formula);
     setFormulaError(!roll);
     if (roll) add(roll);
   }
@@ -206,26 +209,38 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         placeholder={t.journal.diceLabelPlaceholder}
         className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
       />
-      <DiceRoller onRoll={add} ariaLabel={t.journal.diceRollerLabel} />
+      <DiceRoller onRoll={add} ariaLabel={t.journal.diceRollerLabel} edge={edge ?? undefined} />
       <div className="flex flex-wrap items-center gap-1.5">
-        {[
-          { label: t.journal.diceAdvantage, formula: "2d20kh1" },
-          { label: t.journal.diceDisadvantage, formula: "2d20kl1" },
-        ].map((d) => (
+        {(
+          [
+            ["advantage", t.journal.diceAdvantage],
+            ["disadvantage", t.journal.diceDisadvantage],
+          ] as const
+        ).map(([id, label]) => (
           <button
-            key={d.formula}
+            key={id}
             type="button"
-            onClick={() => add(rollFormula(d.formula)!)}
-            title={d.formula}
-            className="rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+            aria-pressed={edge === id}
+            onClick={() => setEdge((current) => (current === id ? null : id))}
+            className={[
+              "rounded-lg border px-2.5 py-1.5 text-xs font-medium transition active:scale-95",
+              edge === id
+                ? "border-gold bg-gold text-ink-950"
+                : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+            ].join(" ")}
           >
-            {d.label}
+            {label}
           </button>
         ))}
         <span className="ml-auto flex">
           <DiceHelp />
         </span>
       </div>
+      {edge && (
+        <p aria-live="polite" className="-mt-1 text-xs text-gold">
+          {edge === "advantage" ? t.journal.diceAdvantageHint : t.journal.diceDisadvantageHint}
+        </p>
+      )}
       <form
         className="flex gap-1.5"
         onSubmit={(e) => {
@@ -248,12 +263,15 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
           spellCheck={false}
           className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 text-sm`}
         />
+        {/* Adds to the tray like a die button, so it looks like one. */}
         <button
           type="submit"
           disabled={!formula.trim()}
-          className="shrink-0 rounded-lg border border-gold/50 px-3 text-xs font-semibold text-gold transition hover:bg-gold/10 disabled:border-ink-border disabled:text-parchment-dim/50"
+          aria-label={t.journal.diceFormulaRoll}
+          title={t.journal.diceFormulaRoll}
+          className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 disabled:text-parchment-dim/40 disabled:hover:border-ink-border"
         >
-          {t.journal.diceFormulaRoll}
+          <IconPlus size={16} />
         </button>
       </form>
       {formulaError && (
@@ -261,29 +279,55 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
           {t.journal.diceFormulaError}
         </p>
       )}
-      {rolls.length === 0 ? (
-        <p className="text-xs text-parchment-dim/70">{t.journal.diceHint}</p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <p aria-live="polite" className="text-sm font-medium text-parchment">
-            {rolls.join(", ")}
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setRolls([])}
-              className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment"
-            >
-              {t.journal.diceClear}
-            </button>
-            <button
-              type="button"
-              onClick={log}
-              className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
-            >
-              {t.journal.diceLog}
-            </button>
-          </div>
+      {/* The tray: every roll waits here until it's logged as one entry. */}
+      <div
+        aria-live="polite"
+        aria-label={t.journal.diceTrayLabel}
+        className={[
+          "rounded-xl border p-2",
+          rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
+        ].join(" ")}
+      >
+        {rolls.length === 0 ? (
+          <p className="px-1 py-0.5 text-xs text-parchment-dim/70">{t.journal.diceHint}</p>
+        ) : (
+          <ul className="flex flex-wrap gap-1.5">
+            {rolls.map((roll, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
+              >
+                <span className="break-all">{roll}</span>
+                <button
+                  type="button"
+                  onClick={() => setRolls((prev) => prev.filter((_, j) => j !== i))}
+                  aria-label={interpolate(t.journal.diceRemove, { roll })}
+                  title={interpolate(t.journal.diceRemove, { roll })}
+                  className="shrink-0 rounded-md p-0.5 text-parchment-dim transition hover:text-no"
+                >
+                  <IconClose size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {rolls.length > 0 && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setRolls([])}
+            className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment"
+          >
+            {t.journal.diceClear}
+          </button>
+          <button
+            type="button"
+            onClick={log}
+            className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
+          >
+            {rolls.length === 1 ? t.journal.diceLog : interpolate(t.journal.diceLogMany, { count: rolls.length })}
+          </button>
         </div>
       )}
     </div>

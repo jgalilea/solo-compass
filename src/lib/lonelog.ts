@@ -177,6 +177,19 @@ export function sessionDate(entry: Pick<JournalEntry, "timestamp" | "date">): st
   return entry.date === undefined ? isoDate(entry.timestamp) : entry.date || null;
 }
 
+/**
+ * The day an entry was played: its session's ("2025-09-03"), since
+ * everything in a session happens during it. Before the first session,
+ * or in one with no date, the day it was written; null for an imported
+ * one, whose time is the import's.
+ */
+export function playDay(
+  entry: Pick<JournalEntry, "id" | "timestamp">,
+  session: Pick<JournalEntry, "timestamp" | "date"> | null,
+): string | null {
+  return (session && sessionDate(session)) || (isImportedEntry(entry) ? null : isoDate(entry.timestamp));
+}
+
 /** "2025-09-03", in local time like the dates shown in the app. */
 export function isoDate(time: number): string {
   const d = new Date(time);

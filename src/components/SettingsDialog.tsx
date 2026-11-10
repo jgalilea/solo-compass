@@ -605,7 +605,7 @@ function CreditList({ label, credits }: { label: string; credits: typeof TABLE_C
               href={credit.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 font-display text-base text-parchment transition hover:text-gold"
+              className="inline-flex items-center gap-1 text-base font-semibold text-parchment transition hover:text-gold"
             >
               {credit.name}
               <IconExternalLink size={13} />

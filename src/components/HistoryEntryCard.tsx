@@ -201,7 +201,7 @@ export function HistoryEntryCard({
                   // Same size for every variant (the short ones like "Yes"/"No"
                   // used to be bigger than the long ones, which looked
                   // inconsistent).
-                  "break-words font-display text-sm font-semibold",
+                  "break-words text-sm font-semibold",
                   ANSWER_COLOR[entry.answer],
                 ].join(" ")}
               >

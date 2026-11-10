@@ -3,6 +3,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatProgressTag, formatTag, type CastKind } from "../lib/lonelogTags";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { CastIcon } from "./CastIcon";
+import { NumberField } from "./NumberField";
 
 /**
  * A new element, logged as its tag: "[N:Odile|innkeeper]",
@@ -26,6 +27,7 @@ export function AddCastForm({
   const [size, setSize] = useState(6);
   const [quantity, setQuantity] = useState(1);
   const hint = kind in t.notebook.kindHints ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints] : t.notebook.addHint;
+  const sizeLabel = kind === "timer" ? t.notebook.timerStartLabel : t.notebook.segmentsLabel;
   const hasDetails = kind === "pc" || kind === "npc" || kind === "place" || kind === "room" || kind === "foe" || kind === "item";
 
   function tag(): string {
@@ -90,29 +92,16 @@ export function AddCastForm({
         />
       )}
       {(kind === "clock" || kind === "track" || kind === "timer") && (
-        <label className="flex items-center gap-2 text-xs text-parchment-dim">
-          <span className="flex-1">{kind === "timer" ? t.notebook.timerStartLabel : t.notebook.segmentsLabel}</span>
-          <input
-            type="number"
-            min={1}
-            max={99}
-            value={size}
-            onChange={(e) => setSize(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-            className={`${INPUT_CLASS} w-20 flex-none bg-ink-900/70 py-1.5 text-sm`}
-          />
-        </label>
+        <div className="flex items-center gap-2 text-xs text-parchment-dim">
+          <span className="flex-1">{sizeLabel}</span>
+          <NumberField value={size} onChange={setSize} min={1} max={99} label={sizeLabel} />
+        </div>
       )}
       {(kind === "item" || kind === "wealth") && (
-        <label className="flex items-center gap-2 text-xs text-parchment-dim">
+        <div className="flex items-center gap-2 text-xs text-parchment-dim">
           <span className="flex-1">{t.notebook.quantityLabel}</span>
-          <input
-            type="number"
-            min={0}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(0, Number(e.target.value) || 0))}
-            className={`${INPUT_CLASS} w-24 flex-none bg-ink-900/70 py-1.5 text-sm`}
-          />
-        </label>
+          <NumberField value={quantity} onChange={setQuantity} min={0} label={t.notebook.quantityLabel} />
+        </div>
       )}
       <p className="text-[0.7rem] text-parchment-dim/70">{hint}</p>
       <div className="flex justify-end gap-1.5">

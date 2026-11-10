@@ -588,6 +588,23 @@ function splitDescription(input: string): { formula: string; description: string
   return { formula, description: parts.map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).join(" ") };
 }
 
+export type Edge = "advantage" | "disadvantage";
+
+/**
+ * The same roll with advantage or disadvantage: rolled twice, keeping
+ * the higher or the lower. A single die stays a dice roll ("d6" →
+ * "2d6kh1"); anything else becomes a group of two ("2d6+3" →
+ * "{2d6+3,2d6+3}kh1"). The description stays outside.
+ */
+export function withEdge(input: string, edge: Edge): string {
+  const { formula, description } = splitDescription(input);
+  const keep = edge === "advantage" ? "kh1" : "kl1";
+  const trimmed = formula.trim();
+  const single = trimmed.match(/^1?(d(?:\d+|%))$/i);
+  const edged = single ? `2${single[1]}${keep}` : `{${trimmed},${trimmed}}${keep}`;
+  return description ? `${edged} // ${description}` : edged;
+}
+
 /**
  * Rolls a formula (see the header) and writes it as a Lonelog roll:
  * "Strength 4d6dl1 -> 14 (6+5+3, 2✗)". Null if it can't be read.

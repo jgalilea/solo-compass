@@ -48,7 +48,7 @@ export function RecentRolls({ limit = 3, excludeId }: { limit?: number; excludeI
                   {entry.question ? `“${entry.question}”` : t.history.kindOracle}
                 </span>
                 <span
-                  className={`shrink-0 font-display font-semibold ${ANSWER_COLOR[entry.answer]}`}
+                  className={`shrink-0 font-semibold ${ANSWER_COLOR[entry.answer]}`}
                 >
                   {formatAnswer(t, entry)}
                 </span>

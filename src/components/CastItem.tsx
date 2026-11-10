@@ -14,7 +14,7 @@ import {
   type CastKind,
   type CastMember,
 } from "../lib/lonelogTags";
-import { INPUT_CLASS } from "../lib/journalUi";
+import { INPUT_CLASS, formatIsoDay } from "../lib/journalUi";
 import { CastIcon } from "./CastIcon";
 import {
   IconChevronRight,
@@ -38,7 +38,7 @@ export function CastItem({
 }: {
   member: CastMember;
   entries: JournalEntry[];
-  sessionOf: Map<string, string | null>;
+  sessionOf: Map<string, { title: string | null; day: string | null }>;
   focused: boolean;
   focusTick: number;
   onJump: (entryId: string) => void;
@@ -65,7 +65,10 @@ export function CastItem({
   }, [focused, focusTick]);
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
-  const dateFormat = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "short", year: "numeric" });
+  const dayOf = (id: string) => {
+    const day = sessionOf.get(id)?.day;
+    return day ? formatIsoDay(day, t.dateLocale) : null;
+  };
   const kindLabel = t.notebook.kinds[member.kind];
   const count = member.mentions.length;
   const status = member.kind === "thread" ? threadStatus(member) : null;
@@ -203,7 +206,7 @@ export function CastItem({
                     <span className="line-clamp-2">{tagsToPlainText(entry.text)}</span>
                     {/* Where it is, as in the journal search. */}
                     <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-dim/60">
-                      {sessionOf.get(id) ?? t.journal.prologueLabel} · {dateFormat.format(entry.timestamp)}
+                      {[sessionOf.get(id)?.title ?? t.journal.prologueLabel, dayOf(id)].filter(Boolean).join(" · ")}
                     </span>
                   </button>
                 </li>

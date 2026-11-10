@@ -265,13 +265,13 @@ h2 time { float: right; font: .8rem/1.6 var(--font-text); color: var(--color-par
 .sym { color: var(--color-gold); font: 600 .8rem/1.9 ui-monospace, monospace; }
 .question p { font-style: italic; }
 .note p { color: color-mix(in srgb, var(--color-parchment) 90%, transparent); }
-h3.scene { font-size: 1rem; color: var(--color-gold); margin: .4rem 0 0; font-weight: 600; }
+h3.scene { font-size: 1rem; font-weight: 600; color: var(--color-gold); margin: .4rem 0 0; }
 blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid color-mix(in srgb, var(--color-gold) 50%, transparent); font-style: italic; }
 .meta, .marker { color: var(--color-parchment-dim); font-size: .9em; }
 .meta { font-style: italic; }
 .detail { font-size: .78rem; color: var(--color-parchment-dim); }
 .result { font-weight: 600; }
-.answer { display: inline-block; border: 1px solid; border-radius: 999px; padding: .05rem .7rem; font: 700 .9rem/1.6 var(--font-display); text-transform: uppercase; letter-spacing: .04em; }
+.answer { display: inline-block; border: 1px solid; border-radius: 999px; padding: .05rem .7rem; font: 700 .9rem/1.6 var(--font-text); text-transform: uppercase; letter-spacing: .04em; }
 .answer.si { color: var(--color-yes); background: color-mix(in srgb, var(--color-yes) 10%, transparent); }
 .answer.no { color: var(--color-no); background: color-mix(in srgb, var(--color-no) 10%, transparent); }
 .answer.contradiccion { color: var(--color-contradiction); background: color-mix(in srgb, var(--color-contradiction) 10%, transparent); }
@@ -282,7 +282,7 @@ blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid col
 .tag small { color: var(--color-parchment-dim); }
 aside { display: grid; gap: 1rem; }
 .box { border: 1px solid var(--color-ink-border); background: var(--color-ink-900); border-radius: .75rem; padding: .9rem 1rem; font-size: .9rem; }
-.box h3 { font-size: .8rem; text-transform: uppercase; color: var(--color-gold); margin-bottom: .5rem; }
+.box h3 { font: 700 .8rem/1.6 var(--font-text); letter-spacing: .04em; text-transform: uppercase; color: var(--color-gold); margin-bottom: .5rem; }
 .box p { margin: 0; }
 .box .gap { height: .5rem; }
 .box .done { color: var(--color-parchment-dim); text-decoration: line-through; }

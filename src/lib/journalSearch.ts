@@ -1,10 +1,12 @@
-import type { JournalEntry } from "./lonelog";
+import { playDay, type JournalEntry } from "./lonelog";
 import { matchesAllWords } from "./text";
 
 export interface EntryMatch {
   entry: JournalEntry;
   /** Title of the session it's in (null: before the first session). */
   sessionTitle: string | null;
+  /** The day it was played (see playDay), null if unknown. */
+  day: string | null;
 }
 
 /**
@@ -27,10 +29,12 @@ export function searchEntries(entries: JournalEntry[], query: string, limit = In
   }
   const matches: EntryMatch[] = [];
   for (const list of byAdventure.values()) {
-    let session: string | null = null;
+    let session: JournalEntry | null = null;
     for (const entry of [...list].sort((a, b) => a.timestamp - b.timestamp)) {
-      if (entry.kind === "session") session = entry.text;
-      if (matchesAllWords(entry.text, query)) matches.push({ entry, sessionTitle: session });
+      if (entry.kind === "session") session = entry;
+      if (matchesAllWords(entry.text, query)) {
+        matches.push({ entry, sessionTitle: session?.text ?? null, day: playDay(entry, session) });
+      }
     }
   }
   matches.sort((a, b) => a.entry.timestamp - b.entry.timestamp);
