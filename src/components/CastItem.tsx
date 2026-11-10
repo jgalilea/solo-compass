@@ -15,6 +15,7 @@ import {
   type CastMember,
 } from "../lib/lonelogTags";
 import { INPUT_CLASS, formatIsoDay } from "../lib/journalUi";
+import { titleIfCut } from "../lib/truncation";
 import { CastIcon } from "./CastIcon";
 import {
   IconChevronRight,
@@ -127,6 +128,7 @@ export function CastItem({
           <CastIcon kind={member.kind} size={16} className={`shrink-0 ${done ? "text-parchment-dim" : "text-gold"}`} />
           <span className="min-w-0 flex-1">
             <span
+              onMouseEnter={titleIfCut(member.name)}
               className={[
                 "block truncate text-sm font-medium",
                 done ? "text-parchment-dim line-through" : "text-parchment",
@@ -138,7 +140,9 @@ export function CastItem({
               <ProgressBar kind={member.kind} progress={progress} />
             ) : (
               member.tags.length > 0 && (
-                <span className="block truncate text-xs text-parchment-dim">{member.tags.join(" · ")}</span>
+                <span onMouseEnter={titleIfCut(member.tags.join(" · "))} className="block truncate text-xs text-parchment-dim">
+                  {member.tags.join(" · ")}
+                </span>
               )
             )}
           </span>
@@ -203,7 +207,9 @@ export function CastItem({
                     className="w-full rounded-md px-1.5 py-1 text-left text-xs text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
                   >
                     {/* Clamped inside: on the padded button a third line peeked out. */}
-                    <span className="line-clamp-2">{tagsToPlainText(entry.text)}</span>
+                    <span onMouseEnter={titleIfCut(tagsToPlainText(entry.text))} className="line-clamp-2">
+                      {tagsToPlainText(entry.text)}
+                    </span>
                     {/* Where it is, as in the journal search. */}
                     <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-dim/60">
                       {[sessionOf.get(id)?.title ?? t.journal.prologueLabel, dayOf(id)].filter(Boolean).join(" · ")}

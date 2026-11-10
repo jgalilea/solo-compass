@@ -33,8 +33,13 @@ export type ComposerKind = Exclude<JournalLineKind, "session" | "scene" | "quest
 
 export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "consequence"];
 
-/** What can be picked in the composer: the entry kinds and starting a session or a scene. */
-export type ComposerMode = ComposerKind | "session" | "scene";
+/**
+ * What can be picked in the composer: the entry kinds, a dialogue line
+ * and in-world text (notes in Lonelog's dialogue form and narrative
+ * block, see formatDialogue and formatExcerpt) and starting a session
+ * or a scene.
+ */
+export type ComposerMode = ComposerKind | "dialogue" | "excerpt" | "session" | "scene";
 
 export const SYMBOL: Record<JournalLineKind, string> = {
   action: "@",

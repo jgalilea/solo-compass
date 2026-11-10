@@ -16,6 +16,11 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   (`withEdge`); los dados se juntan en una bandeja con × por tirada;
   hueco de scroll reservado en las columnas; cada entrada lleva el día
   de su sesión (`playDay`) en cuaderno, búsqueda y estadísticas.
+- Guía rápida y columna plegable (2026-11-10): `GuideDialog` (atajos,
+  escribir en el diario, notación Lonelog, etiquetas y sus cambios; un
+  test comprueba cada ejemplo), con «?», Ajustes y el menú ⋯. Bloques
+  plegables en la columna izquierda y escenas solo de la sesión en
+  curso en el índice. Arreglado: «a→b» ya no repite «b» si ya estaba.
 - Aventura de ejemplo rehecha (2026-11-10): tres sesiones con fechas
   que usan cada tipo de entrada, nota, tirada y sección del cuaderno
   (combate por rondas, salas, inventario, rastro, cuenta atrás,

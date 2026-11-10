@@ -113,7 +113,8 @@ No backend; persistence is split by access pattern, not by feature:
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
   language, selected oracle and favorite oracle (the app opens with the
   favorite, `initialOracleId`; the last used otherwise), favorite tables, unfolded table blocks,
-  folded notebook lists, whether new scenes are tested, active-adventure
+  folded notebook lists and blocks (`notebookSections.ts`, also the
+  session index), whether new scenes are tested, active-adventure
   id (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
   `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`).
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
@@ -224,7 +225,10 @@ mobile and tablet; `Modal` with `sheet`, so it stays a bottom sheet on
 tablet too) and a fixed right-hand panel (desktop, where the composer
 has no tool buttons). The composer's text is an auto-growing textarea:
 Enter sends with a fine pointer (Shift+Enter = new line); on touch Enter
-is a new line and the send button sends. The composer's entry type and the roll a consequence links
+is a new line and the send button sends. Its "Dialogue" mode picks who
+speaks (the PC, the cast's NPCs or any name) and logs a note in
+Lonelog's dialogue form (`formatDialogue`: `N (Odile): "…"`); "In-world
+text" is typed as is and logged as a narrative block (`formatExcerpt`). The composer's entry type and the roll a consequence links
 to live in `AdventureDetailView`, because both places change them (after
 any roll the composer switches to "Consecuencia").
 
@@ -480,6 +484,9 @@ hides the bottom bar and uses two columns where it helps (oracle
 form/result, tables list/result panel). An adventure becomes a workspace:
 journal + game table panel at `lg`, plus a session index on the left at
 `xl` (below `xl` the same index is a dropdown in the adventure header).
+Every block of that left column (sessions, pinned notes, cast, threads,
+inventory) folds under its heading (`FoldingHeading`), and each
+session's scenes show only for the current one until opened.
 Every page uses the same content width as the header
 (`max-w-xl md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]`), so switching
 tabs doesn't make the content jump; `2xl` means more columns, not
@@ -504,13 +511,17 @@ a counter shared by dialogs and menus), so a menu must fit on screen:
 `ActionMenu` opens towards the side with more room and scrolls inside
 itself if it's still too long.
 
-Desktop keyboard shortcuts (`src/hooks/useHotkeys.ts`, legend in Settings,
-`?` opens it): registered in `Layout` (screens, `/`, O/T/D) and
-`SettingsDialog` (`?`). Screens don't pass refs up: they mark targets with
+Desktop keyboard shortcuts (`src/hooks/useHotkeys.ts`): registered in
+`Layout` (screens, `/`, O/T/D, `?`). Their legend (`ShortcutsLegend`)
+is part of the quick guide (`GuideDialog`, drawn once by `Layout`,
+opened with `openGuide` from `guide.ts`: `?`, Settings and the
+adventure's ⋯ menu), which also explains writing in the journal, the
+Lonelog notation and the tags; a test checks every example in it does
+what it says. Screens don't pass refs up: they mark targets with
 `data-hotkey="write"` / `"oracle"` / `"table"` / `"dice"` (space-separated
 list) and, where the tool is folded away (composer sheet),
 `data-hotkey-open="…"` on the button that opens it. When adding a shortcut,
-add it to `ShortcutsLegend` too.
+add it to `ShortcutsLegend` too; new notation or tags go in the guide.
 
 Deleting a journal entry or a history roll is immediate with a "Deshacer"
 toast (`Toast` with `action`); `ConfirmDialog` is only for big,

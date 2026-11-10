@@ -7,8 +7,9 @@ import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
 import type { JournalEntry } from "../lib/lonelog";
-import { formatScene, nextSceneId } from "../lib/lonelogLines";
-import { buildCast } from "../lib/lonelogTags";
+import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
+import { buildCast, type CastMember } from "../lib/lonelogTags";
+import { normalizeForSearch } from "../lib/text";
 import { fitLikelihood } from "../lib/oracleEngines";
 import { getOracle } from "../lib/oracles";
 import { SCENE_CHECK_LIKELIHOOD, loadSceneCheck, saveSceneCheck, sceneVerdict, type SceneVerdict } from "../lib/sceneCheck";
@@ -21,12 +22,15 @@ import {
   IconAction,
   IconChevronUpDown,
   IconConsequence,
+  IconDialogue,
   IconDice,
+  IconExcerpt,
   IconInsertBelow,
   IconNote,
   IconOracle,
   IconSend,
   IconScene,
+  IconSearch,
   IconSession,
   IconTable,
 } from "./icons/Icons";
@@ -38,6 +42,8 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
   note: IconNote,
   action: IconAction,
   consequence: IconConsequence,
+  dialogue: IconDialogue,
+  excerpt: IconExcerpt,
   session: IconSession,
   scene: IconScene,
 };
@@ -69,6 +75,13 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
  *
  * While writing below an entry (insertAfter) a line above the field
  * says where, with a way back to the end.
+ *
+ * A dialogue line: who speaks is picked above the field (your
+ * character or one of the adventure's NPCs, the latest named first, or
+ * anyone else by name) and only the words are typed; it's logged as a
+ * note in Lonelog's dialogue form (`N (Odile): "…"`). In-world text
+ * (a letter, an inscription) is typed as is and logged as a narrative
+ * block (`\\---` … `---\\`).
  *
  * A new scene can be tested with the selected oracle, if the player
  * turns it on (a switch above the field, remembered per device): the
@@ -114,6 +127,7 @@ export function JournalComposer({
   const [verdict, setVerdict] = useState<{ rollId: string; verdict: SceneVerdict } | null>(null);
   const [tool, setTool] = useState<Tool | null>(null);
   const [text, setText] = useState("");
+  const [speaker, setSpeaker] = useState<Speaker>({ pc: true });
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
   // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
@@ -171,19 +185,29 @@ export function JournalComposer({
   const tags = useTagAutocomplete({ text, setText, inputRef, cast, enabled: mode !== "session" });
 
   // A session title is optional (it falls back to the date), and so is
-  // a scene's context (it's numbered anyway); anything else needs text.
-  const canSend = marker || text.trim() !== "";
+  // a scene's context (it's numbered anyway); anything else needs text,
+  // and a dialogue line someone who says it.
+  const canSend = marker || (text.trim() !== "" && (mode !== "dialogue" || speaker.pc || speaker.name.trim() !== ""));
+  const pc = cast.find((c) => c.kind === "pc");
 
   const placeholder =
     mode === "consequence"
       ? verdict && verdict.rollId === linkedRollId
         ? t.journal.sceneVerdict[verdict.verdict]
         : t.oracle.consequencePlaceholder
-      : mode === "session"
-        ? t.journal.newSessionPlaceholder
-        : mode === "scene"
-          ? interpolate(t.journal.newScenePlaceholder, { id: nextSceneId(entries.filter((e) => e.adventureId === adventureId)) })
-          : t.journal.addPlaceholder;
+      : mode === "dialogue"
+        ? speaker.pc
+          ? pc
+            ? interpolate(t.journal.dialoguePlaceholder, { name: pc.name })
+            : t.journal.dialoguePlaceholderPc
+          : interpolate(t.journal.dialoguePlaceholder, { name: speaker.name.trim() || "…" })
+        : mode === "excerpt"
+          ? t.journal.excerptPlaceholder
+          : mode === "session"
+          ? t.journal.newSessionPlaceholder
+          : mode === "scene"
+            ? interpolate(t.journal.newScenePlaceholder, { id: nextSceneId(entries.filter((e) => e.adventureId === adventureId)) })
+            : t.journal.addPlaceholder;
 
   function handleSubmit() {
     if (mode === "session") {
@@ -202,6 +226,12 @@ export function JournalComposer({
         return;
       }
       onModeChange("note");
+    } else if (mode === "dialogue") {
+      if (!canSend) return;
+      addEntry(adventureId, "note", formatDialogue(speaker, text));
+    } else if (mode === "excerpt") {
+      if (!canSend) return;
+      addEntry(adventureId, "note", formatExcerpt(text));
     } else {
       if (!canSend) return;
       addEntry(adventureId, mode, text.trim(), mode === "consequence" ? linkedRollId : undefined);
@@ -292,6 +322,9 @@ export function JournalComposer({
             <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
           )}
         </p>
+      )}
+      {mode === "dialogue" && (
+        <SpeakerPicker speaker={speaker} onChange={setSpeaker} cast={cast} pc={pc} onDone={() => inputRef.current?.focus()} />
       )}
       <div className="flex items-center gap-1.5">
         {/* While typing on a narrow phone they fold away, to leave the
@@ -415,6 +448,10 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
       consequence: t.journal.composerHintConsequence,
     }[k],
   }));
+  // Dialogue right after the action: what your character does, then says.
+  kinds.splice(2, 0, { mode: "dialogue", label: t.journal.kindDialogue, hint: t.journal.composerHintDialogue });
+  // In-world text goes last: it's the rarest.
+  kinds.push({ mode: "excerpt", label: t.journal.kindExcerpt, hint: t.journal.composerHintExcerpt });
   const markers = [
     { mode: "session" as const, label: t.journal.newSessionButton, hint: t.journal.composerHintSession },
     { mode: "scene" as const, label: t.journal.newSceneButton, hint: t.journal.composerHintScene },
@@ -512,6 +549,182 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
             );
           })}
         </div>
+      )}
+    </div>
+  );
+}
+
+/** How many NPCs get a chip of their own; the rest are found by name. */
+const SPEAKER_CHIPS = 4;
+
+/**
+ * Who says the dialogue line: your character and the NPCs named most
+ * recently (the ones in the scene, usually) as chips; anyone else is
+ * found by name in "Other", which searches every NPC in the notebook
+ * and takes a new name as typed. A long cast never makes the row
+ * longer than one or two lines.
+ */
+function SpeakerPicker({
+  speaker,
+  onChange,
+  cast,
+  pc,
+  onDone,
+}: {
+  speaker: Speaker;
+  onChange: (speaker: Speaker) => void;
+  cast: CastMember[];
+  pc: CastMember | undefined;
+  /** Picked from the search with the keyboard: on to the words. */
+  onDone: () => void;
+}) {
+  const { t } = useLocaleContext();
+  const npcs = useMemo(() => cast.filter((c) => c.kind === "npc").sort((a, b) => b.lastSeen - a.lastSeen), [cast]);
+  const [searching, setSearching] = useState(false);
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Not useDismiss: the arrows belong to the search here, not to the chips.
+  useEffect(() => {
+    if (!searching) return;
+    function handlePointerDown(e: PointerEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setSearching(false);
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [searching]);
+
+  // The recent ones, plus whoever was picked from the search.
+  const chips = npcs.slice(0, SPEAKER_CHIPS);
+  const picked = !speaker.pc ? npcs.find((c) => c.name === speaker.name) : undefined;
+  if (picked && !chips.includes(picked)) chips.push(picked);
+  // A name typed by hand, not in the notebook: its own chip, selected.
+  const typed = !speaker.pc && !picked && speaker.name.trim() ? speaker.name.trim() : null;
+
+  const matches = query.trim()
+    ? npcs.filter((c) => normalizeForSearch(c.name).includes(normalizeForSearch(query.trim())))
+    : npcs;
+
+  function pick(next: Speaker) {
+    onChange(next);
+    setSearching(false);
+    setQuery("");
+  }
+
+  // Enter: the highlighted match, or the name as typed.
+  function accept() {
+    const match = matches[active];
+    if (match) pick({ pc: false, name: match.name });
+    else if (query.trim()) pick({ pc: false, name: query.trim() });
+    else return;
+    onDone();
+  }
+
+  const chip = (selected: boolean) =>
+    [
+      "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition",
+      selected ? "border-gold bg-gold text-ink-950" : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+    ].join(" ");
+
+  return (
+    <div ref={rootRef} className="relative mb-2 flex items-start gap-1.5 px-1">
+      <span id="dialogue-speaker" className="shrink-0 py-1 text-xs text-parchment-dim">
+        {t.journal.dialogueSpeaker}
+      </span>
+      <div role="radiogroup" aria-labelledby="dialogue-speaker" className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+        <button type="button" role="radio" aria-checked={speaker.pc} onClick={() => pick({ pc: true })} className={chip(speaker.pc)}>
+          {pc?.name ?? t.journal.dialoguePc}
+        </button>
+        {chips.map((npc) => {
+          const selected = !speaker.pc && speaker.name === npc.name;
+          return (
+            <button
+              key={npc.key}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => pick({ pc: false, name: npc.name })}
+              className={chip(selected)}
+            >
+              {npc.name}
+            </button>
+          );
+        })}
+        {typed && !searching && (
+          <button type="button" role="radio" aria-checked onClick={() => setSearching(true)} className={chip(true)}>
+            {typed}
+          </button>
+        )}
+        {searching ? (
+          <input
+            autoFocus
+            role="combobox"
+            aria-expanded={matches.length > 0}
+            aria-controls="dialogue-speaker-list"
+            aria-activedescendant={matches[active] ? `dialogue-speaker-${active}` : undefined}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setActive(0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault();
+                const step = e.key === "ArrowDown" ? 1 : -1;
+                setActive((i) => (matches.length ? (i + step + matches.length) % matches.length : 0));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                accept();
+              } else if (e.key === "Escape") {
+                e.stopPropagation();
+                setSearching(false);
+              }
+            }}
+            placeholder={t.journal.dialogueOtherName}
+            aria-label={t.journal.dialogueOtherName}
+            className="h-7 w-40 shrink-0 rounded-full border border-gold bg-ink-900/70 px-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setSearching(true);
+              setActive(0);
+            }}
+            aria-haspopup="listbox"
+            className={`${chip(false)} flex items-center gap-1`}
+          >
+            <IconSearch size={12} />
+            {t.journal.dialogueOther}
+          </button>
+        )}
+      </div>
+      {searching && matches.length > 0 && (
+        <ul
+          id="dialogue-speaker-list"
+          role="listbox"
+          aria-label={t.journal.dialogueOtherName}
+          className="animate-fade-up absolute inset-x-0 bottom-full z-40 mb-2 max-h-60 overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-72"
+        >
+          {matches.map((npc, i) => (
+            <li
+              key={npc.key}
+              id={`dialogue-speaker-${i}`}
+              role="option"
+              aria-selected={i === active}
+              // Before the input loses focus, so the pick isn't lost.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => pick({ pc: false, name: npc.name })}
+              className={[
+                "flex cursor-pointer flex-col px-4 py-1.5 text-sm transition hover:bg-ink-700",
+                i === active ? "bg-ink-700" : "",
+              ].join(" ")}
+            >
+              <span className="truncate text-parchment">{npc.name}</span>
+              {npc.tags.length > 0 && <span className="truncate text-xs text-parchment-dim">{npc.tags.join(" · ")}</span>}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

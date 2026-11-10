@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatScene, nextSceneId, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
+import { formatDialogue, formatExcerpt, formatScene, nextSceneId, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
 
 describe("splitRollSymbol", () => {
   it("tells mechanics, tables, generators and bare results apart", () => {
@@ -69,5 +69,32 @@ describe("noteForm", () => {
     expect(noteForm("The rain keeps falling.")).toEqual({ form: "plain" });
     expect(noteForm("(a) and (b)")).toEqual({ form: "plain" });
     expect(noteForm("PCs gather around")).toEqual({ form: "plain" });
+  });
+});
+
+describe("formatDialogue", () => {
+  it("writes what someone says as Lonelog dialogue", () => {
+    expect(formatDialogue({ pc: true }, " Who's there? ")).toBe('PC: "Who\'s there?"');
+    expect(formatDialogue({ pc: false, name: "Odile" }, "Maybe.")).toBe('N (Odile): "Maybe."');
+    // Its own quotes are kept, and a name can't break the brackets.
+    expect(formatDialogue({ pc: false, name: "Odile (innkeeper)" }, "«Quizá»")).toBe("N (Odile innkeeper): «Quizá»");
+  });
+
+  it("is read back as dialogue", () => {
+    expect(noteForm(formatDialogue({ pc: false, name: "Grey Cloak" }, "Run.\nNow."))).toEqual({
+      form: "dialogue",
+      speaker: "Grey Cloak",
+      pc: false,
+      text: '"Run.\nNow."',
+    });
+    expect(noteForm(formatDialogue({ pc: true }, "Wait")).form).toBe("dialogue");
+  });
+});
+
+describe("formatExcerpt", () => {
+  it("wraps in-world text in a narrative block and reads it back", () => {
+    const block = formatExcerpt("  Dear Jonah,\nthe stag must not reach the guild.\n");
+    expect(block).toBe("\\---\nDear Jonah,\nthe stag must not reach the guild.\n---\\");
+    expect(noteForm(block)).toEqual({ form: "excerpt", text: "Dear Jonah,\nthe stag must not reach the guild." });
   });
 });

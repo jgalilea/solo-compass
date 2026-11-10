@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
@@ -181,6 +181,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
   const [formula, setFormula] = useState("");
   const [formulaError, setFormulaError] = useState(false);
   const [edge, setEdge] = useState<Edge | null>(null);
+  const formulaRef = useRef<HTMLInputElement>(null);
 
   function add(roll: string) {
     setRolls((prev) => [...prev, roll]);
@@ -248,21 +249,39 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
           rollTyped();
         }}
       >
-        <input
-          value={formula}
-          onChange={(e) => {
-            setFormula(e.target.value);
-            setFormulaError(false);
-          }}
-          placeholder={t.journal.diceFormulaPlaceholder}
-          aria-label={t.journal.diceFormulaLabel}
-          aria-invalid={formulaError}
-          enterKeyHint="go"
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 text-sm`}
-        />
+        <div className="relative flex min-w-0 flex-1">
+          <input
+            ref={formulaRef}
+            value={formula}
+            onChange={(e) => {
+              setFormula(e.target.value);
+              setFormulaError(false);
+            }}
+            placeholder={t.journal.diceFormulaPlaceholder}
+            aria-label={t.journal.diceFormulaLabel}
+            aria-invalid={formulaError}
+            enterKeyHint="go"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 pr-9 text-sm`}
+          />
+          {formula && (
+            <button
+              type="button"
+              onClick={() => {
+                setFormula("");
+                setFormulaError(false);
+                formulaRef.current?.focus();
+              }}
+              aria-label={t.journal.diceFormulaClear}
+              title={t.journal.diceFormulaClear}
+              className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
+            >
+              <IconClose size={15} />
+            </button>
+          )}
+        </div>
         {/* Adds to the tray like a die button, so it looks like one. */}
         <button
           type="submit"

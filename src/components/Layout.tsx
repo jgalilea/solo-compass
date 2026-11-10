@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { IconCoffee, IconCompass, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
+import { GuideDialog } from "./GuideDialog";
+import { openGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -63,6 +65,7 @@ export function Layout() {
     o: () => focusHotkeyTarget("oracle"),
     t: () => focusHotkeyTarget("table"),
     d: () => focusHotkeyTarget("dice"),
+    "?": openGuide,
   });
 
   // Esc in a text field drops focus, so shortcuts keep working without
@@ -143,6 +146,7 @@ export function Layout() {
       </header>
 
       <UpdatePrompt />
+      <GuideDialog />
 
       <main className="flex flex-1 flex-col">
         <Outlet />

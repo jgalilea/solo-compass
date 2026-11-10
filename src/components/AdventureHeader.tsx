@@ -6,6 +6,7 @@ import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup } from "../lib/journalUi";
 import { canShare } from "../lib/share";
+import { openGuide } from "../lib/guide";
 import { ActionMenu } from "./ActionMenu";
 import { SessionMenu } from "./SessionNavigation";
 import {
@@ -23,6 +24,7 @@ import {
   IconStar,
   IconTrash,
   IconWebPage,
+  IconHelp,
 } from "./icons/Icons";
 
 /**
@@ -193,6 +195,7 @@ export function AdventureHeader({
                 : []),
               { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
               { label: t.journal.statsButton, Icon: IconChart, onSelect: onStats },
+              { label: t.guide.title, Icon: IconHelp, onSelect: openGuide },
               { label: t.journal.exportButton, Icon: IconDownload, onSelect: onExport },
               { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: onExportHtml },
               ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: onShare }] : []),

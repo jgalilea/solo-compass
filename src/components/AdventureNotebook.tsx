@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { CastDescription } from "../lib/journal";
@@ -11,7 +11,13 @@ import {
   type CastMember,
 } from "../lib/lonelogTags";
 import { groupBySession } from "../lib/journalUi";
-import { loadFoldedNotebookSections, saveFoldedNotebookSections, type NotebookSection } from "../lib/notebookSections";
+import {
+  loadFoldedNotebookSections,
+  toggleFoldedNotebookSection,
+  type NotebookBlock,
+  type NotebookSection,
+} from "../lib/notebookSections";
+import { FoldingHeading } from "./FoldingHeading";
 import { AddCastForm } from "./AddCastForm";
 import { CastItem } from "./CastItem";
 import { PinnedNotes } from "./PinnedNotes";
@@ -24,6 +30,18 @@ import {
   IconPlus,
   IconThread,
 } from "./icons/Icons";
+
+/** The block each list is in, unfolded with it when an element is shown. */
+const BLOCK_OF: Record<NotebookSection, NotebookBlock> = {
+  characters: "castBlock",
+  places: "castBlock",
+  rooms: "castBlock",
+  foes: "castBlock",
+  threads: "threadsBlock",
+  progress: "threadsBlock",
+  items: "inventoryBlock",
+  wealth: "inventoryBlock",
+};
 
 /**
  * An adventure's notebook: what's kept at hand beside the journal.
@@ -133,19 +151,27 @@ export function AdventureNotebook({
   if (seenTick !== focusTick) {
     setSeenTick(focusTick);
     const section = (Object.keys(lists) as NotebookSection[]).find((id) => lists[id].some((c) => c.key === focusKey));
-    if (section && folded.has(section)) {
+    if (section && (folded.has(section) || folded.has(BLOCK_OF[section]))) {
       const next = new Set(folded);
       next.delete(section);
+      next.delete(BLOCK_OF[section]);
       setFolded(next);
     }
   }
 
-  function toggleSection(id: NotebookSection) {
-    const next = new Set(folded);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setFolded(next);
-    saveFoldedNotebookSections(next);
+  function toggleSection(id: NotebookSection | NotebookBlock) {
+    setFolded(toggleFoldedNotebookSection(id));
+  }
+
+  // A whole block, under a heading that folds it.
+  function block(id: NotebookBlock, Icon: typeof IconCast, title: string, count: number, children: ReactNode) {
+    const isFolded = folded.has(id);
+    return (
+      <section className="flex flex-col gap-2">
+        <FoldingHeading Icon={Icon} title={title} folded={isFolded} onToggle={() => toggleSection(id)} count={count} />
+        {!isFolded && children}
+      </section>
+    );
   }
 
   function rollOn(id: NotebookSection) {
@@ -241,50 +267,52 @@ export function AdventureNotebook({
   const hasInventory = lists.items.length + lists.wealth.length > 0;
   const hasThreads = lists.threads.length + lists.progress.length > 0;
 
+  const count = (...ids: NotebookSection[]) => ids.reduce((n, id) => n + lists[id].length, 0);
+
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-2">
-        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-          <IconPinned size={15} className="text-gold" />
-          {t.notebook.notesTitle}
-        </h2>
-        <PinnedNotes notes={notes} onChange={onNotesChange} />
-      </section>
+      {block("notesBlock", IconPinned, t.notebook.notesTitle, 0, <PinnedNotes notes={notes} onChange={onNotesChange} />)}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-          <IconCast size={15} className="text-gold" />
-          {t.notebook.castTitle}
-        </h2>
-        {!hasCast && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
-        {group("characters")}
-        {group("places")}
-        {group("rooms")}
-        {group("foes")}
-        {addButton("cast", t.notebook.addButton)}
-      </section>
+      {block(
+        "castBlock",
+        IconCast,
+        t.notebook.castTitle,
+        count("characters", "places", "rooms", "foes"),
+        <>
+          {!hasCast && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
+          {group("characters")}
+          {group("places")}
+          {group("rooms")}
+          {group("foes")}
+          {addButton("cast", t.notebook.addButton)}
+        </>,
+      )}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-          <IconThread size={15} className="text-gold" />
-          {t.notebook.threadsTitle}
-        </h2>
-        {!hasThreads && <p className="text-xs text-parchment-dim/80">{t.notebook.threadsEmpty}</p>}
-        {group("threads")}
-        {group("progress")}
-        {addButton("threads", t.notebook.addThreadButton)}
-      </section>
+      {block(
+        "threadsBlock",
+        IconThread,
+        t.notebook.threadsTitle,
+        count("threads", "progress"),
+        <>
+          {!hasThreads && <p className="text-xs text-parchment-dim/80">{t.notebook.threadsEmpty}</p>}
+          {group("threads")}
+          {group("progress")}
+          {addButton("threads", t.notebook.addThreadButton)}
+        </>,
+      )}
 
-      <section className="flex flex-col gap-2">
-        <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-          <IconInventory size={15} className="text-gold" />
-          {t.notebook.inventoryTitle}
-        </h2>
-        {!hasInventory && <p className="text-xs text-parchment-dim/80">{t.notebook.inventoryEmpty}</p>}
-        {group("items")}
-        {group("wealth")}
-        {addButton("inventory", t.notebook.addInventoryButton)}
-      </section>
+      {block(
+        "inventoryBlock",
+        IconInventory,
+        t.notebook.inventoryTitle,
+        count("items", "wealth"),
+        <>
+          {!hasInventory && <p className="text-xs text-parchment-dim/80">{t.notebook.inventoryEmpty}</p>}
+          {group("items")}
+          {group("wealth")}
+          {addButton("inventory", t.notebook.addInventoryButton)}
+        </>,
+      )}
     </div>
   );
 }

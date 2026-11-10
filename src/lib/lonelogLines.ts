@@ -58,6 +58,30 @@ export function formatScene(id: string, context: string): string {
   return clean ? `${id} *${clean}*` : id;
 }
 
+/** Who speaks in a dialogue line: your character, or someone by name. */
+export type Speaker = { pc: true } | { pc: false; name: string };
+
+/**
+ * A dialogue line as Lonelog writes it (a note): `PC: "…"` or
+ * `N (Odile): "…"`. The words go in straight quotes, as in the spec,
+ * unless they already open with a quote of their own.
+ */
+export function formatDialogue(speaker: Speaker, words: string): string {
+  const text = words.trim();
+  const quoted = /^["“«'‘]/.test(text) ? text : `"${text}"`;
+  if (speaker.pc) return `PC: ${quoted}`;
+  const name = speaker.name.replace(/[()\n]/g, " ").replace(/\s+/g, " ").trim();
+  return `N (${name}): ${quoted}`;
+}
+
+/**
+ * In-world text (a letter, an inscription) as a narrative block
+ * (Lonelog §4.4): the text between a `\---` line and a `---\` line.
+ */
+export function formatExcerpt(text: string): string {
+  return `\\---\n${text.trim()}\n---\\`;
+}
+
 /** `@(Jonah) Keeps watch` → Jonah and the action; null when it's the PC's own. */
 export function splitActor(text: string): { actor: string | null; text: string } {
   const m = text.match(/^\(([^()\n]+)\)\s*([\s\S]*)$/);

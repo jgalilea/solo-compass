@@ -67,6 +67,11 @@ describe("splitTags", () => {
 });
 
 describe("applyTagUpdates", () => {
+  it("doesn't repeat a value a swap brings that's already there", () => {
+    expect(applyTagUpdates(["ally"], ["wary→ally"])).toEqual(["ally"]);
+    expect(applyTagUpdates(["wary", "ally"], ["wary→ally"])).toEqual(["ally"]);
+  });
+
   it("adds plain and + tags, removes - tags and replaces with →", () => {
     let tags = applyTagUpdates([], ["friendly", "wounded"]);
     tags = applyTagUpdates(tags, ["captured"]);

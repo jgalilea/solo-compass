@@ -225,8 +225,12 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
       const label = labelled && !/[:\s]/.test(replace[2].trim()) ? labelled[1] : null;
       const next = label ? `${label}${replace[2]}` : replace[2];
       const index = tags.findIndex((t) => same(t, replace[1]) || (!!label && same(t.slice(0, label.length), label)));
-      if (index >= 0) tags[index] = next;
-      else tags.push(next);
+      // Never twice: "wary→ally" when it's already an ally.
+      const existing = tags.findIndex((t) => same(t, next));
+      if (index >= 0) {
+        tags[index] = next;
+        if (existing >= 0 && existing !== index) tags.splice(existing, 1);
+      } else if (existing < 0) tags.push(next);
       continue;
     }
     const stat = value.match(STAT);

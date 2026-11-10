@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import {
   IconAction,
   IconCast,
@@ -10,6 +10,7 @@ import {
   IconDice,
   IconDownload,
   IconExternalLink,
+  IconHelp,
   IconNote,
   IconQuestion,
   IconScene,
@@ -23,7 +24,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useThemeContext } from "../hooks/useThemeContext";
 import { useModeContext } from "../hooks/useModeContext";
 import { useJournalContext } from "../hooks/useJournalContext";
-import { useHotkeys } from "../hooks/useHotkeys";
+import { openGuide } from "../lib/guide";
 import { ORACLES } from "../lib/oracles";
 import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
@@ -64,15 +65,11 @@ export function SettingsDialog() {
   const { t } = useLocaleContext();
   const { entries } = useJournalContext();
   const [open, setOpen] = useState(false);
-  // "?" opens Settings straight at the shortcut legend.
-  const [showShortcuts, setShowShortcuts] = useState(false);
-  const shortcutsRef = useRef<HTMLElement>(null);
   const [nudgeSeen, setNudgeSeen] = useState(false);
   const backupDue = useMemo(() => shouldNudgeBackup(entries.map((e) => e.timestamp)), [entries]);
   const nudge = backupDue && !nudgeSeen;
 
-  function openSettings(shortcuts = false) {
-    setShowShortcuts(shortcuts);
+  function openSettings() {
     setOpen(true);
     // Once the dot has been seen, don't insist for a while even if no backup is made.
     if (nudge) {
@@ -80,12 +77,6 @@ export function SettingsDialog() {
       setNudgeSeen(true);
     }
   }
-
-  useHotkeys({ "?": () => openSettings(true) });
-
-  useEffect(() => {
-    if (open && showShortcuts) shortcutsRef.current?.scrollIntoView({ block: "start" });
-  }, [open, showShortcuts]);
 
   const triggerLabel = nudge ? t.settings.triggerLabelBackupDue : t.settings.triggerLabel;
 
@@ -96,7 +87,6 @@ export function SettingsDialog() {
         onClick={() => openSettings()}
         aria-label={triggerLabel}
         title={triggerLabel}
-        aria-keyshortcuts="?"
         className="relative -m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
       >
         <IconSettings size={22} />
@@ -122,13 +112,22 @@ export function SettingsDialog() {
                   <Section title={t.settings.languageHeading}>
                     <LanguageSettings />
                   </Section>
-                  {/* Only with a mouse or a keyboard at hand (or when reached via "?"). */}
-                  <Section
-                    ref={shortcutsRef}
-                    title={t.shortcuts.heading}
-                    className={showShortcuts ? "scroll-mt-4" : "hidden any-pointer-fine:flex"}
-                  >
-                    <ShortcutsLegend />
+                  <Section title={t.guide.title}>
+                    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+                      <p className="text-sm text-parchment-dim">{t.guide.settingsText}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpen(false);
+                          openGuide();
+                        }}
+                        aria-keyshortcuts="?"
+                        className="mt-3 flex items-center gap-1.5 rounded-xl border border-gold/50 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/10"
+                      >
+                        <IconHelp size={16} />
+                        {t.guide.settingsButton}
+                      </button>
+                    </div>
                   </Section>
                 </div>
                 <div className="flex flex-col gap-6">
@@ -261,64 +260,6 @@ function LanguageSettings() {
           </button>
         );
       })}
-    </div>
-  );
-}
-
-function ShortcutsLegend() {
-  const { t } = useLocaleContext();
-  const s = t.shortcuts;
-  const groups: { heading: string; rows: [keys: string[], label: string][] }[] = [
-    {
-      heading: s.navigationHeading,
-      rows: [
-        [["1"], s.goOracle],
-        [["2"], s.goTables],
-        [["3"], s.goJournal],
-        [["H"], s.goHistory],
-      ],
-    },
-    {
-      heading: s.playHeading,
-      rows: [
-        [["/"], s.write],
-        [["O"], s.oracle],
-        [["T"], s.table],
-        [["D"], s.dice],
-        [[s.enterKey], s.send],
-        [[s.shiftKey, s.enterKey], s.newLine],
-        [["Esc"], s.leaveField],
-        [["?"], s.help],
-      ],
-    },
-  ];
-
-  return (
-    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
-      <p className="text-sm text-parchment-dim">{s.intro}</p>
-      {groups.map(({ heading, rows }) => (
-        <div key={heading} className="mt-3.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{heading}</p>
-          {/* Fixed-width key column: both lists line up. */}
-          <dl className="mt-2 grid grid-cols-[6.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
-            {rows.map(([keys, label]) => (
-              <div key={label} className="contents">
-                <dt className="flex gap-1">
-                  {keys.map((k) => (
-                    <kbd
-                      key={k}
-                      className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-b-2 border-ink-border bg-ink-800 px-1.5 font-sans text-xs font-medium text-parchment"
-                    >
-                      {k}
-                    </kbd>
-                  ))}
-                </dt>
-                <dd className="min-w-0 text-parchment-dim">{label}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      ))}
     </div>
   );
 }

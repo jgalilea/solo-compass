@@ -33,6 +33,12 @@ export type SampleLine =
   /** Quick inspiration: the Action and Theme rolls, as d66 digits. */
   | { inspiration: [action: number[], theme: number[]] };
 
+/** One line of the quick guide: what to write, and what it's for. */
+export interface GuideRow {
+  code: string;
+  text: string;
+}
+
 export interface Dictionary {
   common: {
     close: string;
@@ -69,6 +75,23 @@ export interface Dictionary {
     aboutHeading: string;
     /** Settings button title when it shows the backup-due dot. */
     triggerLabelBackupDue: string;
+  };
+  guide: {
+    title: string;
+    intro: string;
+    settingsText: string;
+    settingsButton: string;
+    writingHeading: string;
+    writing: string[];
+    notationHeading: string;
+    notationIntro: string;
+    notation: GuideRow[];
+    tagsHeading: string;
+    tagsIntro: string;
+    tags: GuideRow[];
+    updatesHeading: string;
+    updatesIntro: string;
+    updates: GuideRow[];
   };
   shortcuts: {
     heading: string;
@@ -494,6 +517,16 @@ export interface Dictionary {
     toolTableTitle: string;
     moreActions: string;
     composerHintAction: string;
+    kindExcerpt: string;
+    composerHintExcerpt: string;
+    excerptPlaceholder: string;
+    kindDialogue: string;
+    composerHintDialogue: string;
+    dialogueSpeaker: string;
+    dialogueOther: string;
+    dialogueOtherName: string;
+    dialoguePlaceholder: string;
+    dialoguePlaceholderPc: string;
     composerHintConsequence: string;
     composerHintNote: string;
     addPlaceholder: string;
@@ -520,9 +553,12 @@ export interface Dictionary {
     diceFormulaLabel: string;
     diceFormulaPlaceholder: string;
     diceFormulaRoll: string;
+    diceFormulaClear: string;
     diceFormulaError: string;
     entryDeleted: string;
     sessionsHeading: string;
+    showScenes: string;
+    hideScenes: string;
     prologueLabel: string;
     noActiveChip: string;
     noActiveChipTitle: string;
