@@ -58,7 +58,8 @@ export const en: Dictionary = {
     saveFormula: "Save as a die",
     saveFormulaHint: "Save this formula as a die of your own, a favorite, with the text of “What's the roll for?” if any",
     saved: "Saved to your dice",
-    trayHint: "Tap a die or type a formula: the results gather here.",
+    trayHint: "Tap a die or type a formula: the results gather here until you save them.",
+    saveToHistory: "Save to history",
     builtinTitle: "Built-in",
     customTitle: "Yours",
     favoritesHint: "Favorites (★) are the ones on the journal's game table: the ones you use most.",
@@ -80,7 +81,7 @@ export const en: Dictionary = {
     shuffle: "Shuffle",
     shuffled: "Deck shuffled: every card is back.",
     cardsHint: "Draw a card: they gather here and go into the journal as one entry.",
-    cardsTrayHint: "Draw a card: it shows up here.",
+    cardsTrayHint: "Draw a card: they show up here until you save them.",
   },
   guide: {
     title: "Quick guide",
@@ -367,7 +368,7 @@ export const en: Dictionary = {
       "If you like, write at the top what the roll is for (“Sword attack”): it goes in front of the roll in the journal.",
       "Tap a die, or type a formula in the box and press + (or Enter).",
       "Each roll is added to the tray below, not yet to the journal. Remove one with its ×, or clear it all.",
-      "Press “Log it” and the whole tray goes to the journal as one entry.",
+      "Press “Log it” and the whole tray goes to the journal as one entry, and each roll to the history. What you remove or clear isn't kept anywhere. With no adventure, “Save to history” keeps it there only.",
     ],
     buttonsHeading: "The buttons",
     buttons: [

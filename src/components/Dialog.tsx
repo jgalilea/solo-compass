@@ -77,3 +77,16 @@ export function DialogBody({
     </div>
   );
 }
+
+/**
+ * A dialog's buttons (Cancel, Save), fixed under the part that scrolls:
+ * a form that grows (a generator's tables) never pushes them out of
+ * sight. Its submit button names the form with `form`.
+ */
+export function DialogFooter({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex shrink-0 justify-end gap-2 border-t border-ink-border/70 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+      {children}
+    </div>
+  );
+}

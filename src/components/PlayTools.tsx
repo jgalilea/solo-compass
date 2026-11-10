@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHistoryContext } from "../hooks/useHistoryContext";
-import { createDiceRollEntry, type DiceRollEntry } from "../lib/history";
+import { createDiceRollEntries, type DiceRollEntry } from "../lib/history";
 import { loadCardSettings, saveCardSettings, type CardSettings } from "../lib/cardSettings";
 import { isCardDraw, showDraws } from "../lib/cards";
 import { CardControls } from "./CardControls";
@@ -236,7 +236,8 @@ export function DiceTool({
   const builtins = dice === "all" ? BUILTIN_DICE : BUILTIN_DICE.filter((d) => favoriteDice.has(d));
   const own = dice === "all" ? savedRolls : savedRolls.filter((r) => r.favorite);
   const [label, setLabel] = useState("");
-  const [rolls, setRolls] = useState<string[]>([]);
+  const [tray, setTray] = useState<TrayItem[]>([]);
+  const rolls = tray.map((item) => item.text);
   const [formula, setFormula] = useState("");
   const [formulaError, setFormulaError] = useState(false);
   const [edge, setEdge] = useState<Edge | null>(null);
@@ -251,13 +252,17 @@ export function DiceTool({
   const canSave =
     !justSaved && isRollable(formula) && !savedRolls.some((r) => r.formula === formula.trim() && r.name === label.trim());
 
-  // Every roll goes to the history as it's made, like the oracle's and
-  // the tables' (and can be starred there); the tray only gathers what
-  // goes into the journal.
+  // The tray is a preview: nothing is kept until it's logged (journal
+  // and history) or, with no adventure, saved to the history. A card in
+  // it is out of the deck meanwhile; taken off, it's back.
   function add(roll: string, card?: DiceRollEntry["card"]) {
-    setRolls((prev) => [...prev, roll]);
+    setTray((prev) => [...prev, { text: roll, card }]);
     setEdge(null);
-    addHistoryEntry(createDiceRollEntry([label.trim(), roll].filter(Boolean).join(" "), adventureId, card));
+  }
+
+  function removeFromTray(items: TrayItem[]) {
+    const gone = new Set(items);
+    setTray((prev) => prev.filter((item) => !gone.has(item)));
   }
 
   function rollTyped() {
@@ -267,10 +272,15 @@ export function DiceTool({
   }
 
   function log() {
-    if (rolls.length === 0 || !adventureId) return;
-    addEntry(adventureId, "roll", [label.trim(), rolls.join(", ")].filter(Boolean).join(" "));
-    setRolls([]);
+    if (rolls.length === 0) return;
+    const text = (roll: string) => [label.trim(), roll].filter(Boolean).join(" ");
+    for (const entry of createDiceRollEntries(tray.map((item) => ({ text: text(item.text), card: item.card })), adventureId)) {
+      addHistoryEntry(entry);
+    }
+    setTray([]);
     setLabel("");
+    if (!adventureId) return;
+    addEntry(adventureId, "roll", text(rolls.join(", ")));
     onRolled();
   }
 
@@ -305,7 +315,13 @@ export function DiceTool({
         className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
       />
       {cards.tool === "cards" ? (
-        <CardControls adventureId={adventureId} settings={cards} onChange={changeCards} onDraw={add} />
+        <CardControls
+          adventureId={adventureId}
+          settings={cards}
+          inTray={tray.flatMap((item) => (item.card ? [item.card] : []))}
+          onChange={changeCards}
+          onDraw={add}
+        />
       ) : (
         <>
         <div role="group" aria-label={t.journal.diceRollerLabel} className="flex flex-wrap gap-1.5">
@@ -470,17 +486,17 @@ export function DiceTool({
           </p>
         ) : (
           <ul className="flex flex-wrap gap-1.5">
-            {rolls.map((roll, i) => (
+            {tray.map((item, i) => (
               <li
                 key={i}
                 className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
               >
-                <span className="break-all">{trayText(roll)}</span>
+                <span className="break-all">{trayText(item.text)}</span>
                 <button
                   type="button"
-                  onClick={() => setRolls((prev) => prev.filter((_, j) => j !== i))}
-                  aria-label={interpolate(t.journal.diceRemove, { roll: trayText(roll) })}
-                  title={interpolate(t.journal.diceRemove, { roll: trayText(roll) })}
+                  onClick={() => removeFromTray([item])}
+                  aria-label={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
+                  title={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
                   className="shrink-0 rounded-md p-0.5 text-parchment-dim transition hover:text-no"
                 >
                   <IconClose size={14} />
@@ -494,26 +510,33 @@ export function DiceTool({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setRolls([])}
+            onClick={() => removeFromTray(tray)}
             className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment"
           >
             {t.journal.diceClear}
           </button>
-          {/* With no adventure there's nowhere to log them (the Dice
-              screen says so above). */}
-          {adventureId && (
-            <button
-              type="button"
-              onClick={log}
-              className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
-            >
-              {rolls.length === 1 ? t.journal.diceLog : interpolate(t.journal.diceLogMany, { count: rolls.length })}
-            </button>
-          )}
+          {/* With no adventure there's no journal: they go to the history only. */}
+          <button
+            type="button"
+            onClick={log}
+            className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
+          >
+            {!adventureId
+              ? t.dice.saveToHistory
+              : rolls.length === 1
+                ? t.journal.diceLog
+                : interpolate(t.journal.diceLogMany, { count: rolls.length })}
+          </button>
         </div>
       )}
     </div>
   );
+}
+
+/** A roll waiting in the tray (a card keeps which, so it's out of the deck meanwhile). */
+interface TrayItem {
+  text: string;
+  card?: DiceRollEntry["card"];
 }
 
 /** A roll in the tray: a card as "Q♠ Reina de picas", dice as written. */

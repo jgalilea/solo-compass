@@ -138,6 +138,10 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   await dice.getByRole("button", { name: "Cartas" }).click();
   await dice.getByRole("button", { name: "Sacar carta" }).click();
   await expect(dice.getByText("Quedan 51 de 52")).toBeVisible();
+  // Taken off the tray unlogged, it goes back into the deck.
+  await dice.getByRole("button", { name: "Vaciar" }).click();
+  await expect(dice.getByText("Quedan 52 de 52")).toBeVisible();
+  await dice.getByRole("button", { name: "Sacar carta" }).click();
   await dice.getByRole("button", { name: "Apuntar" }).click();
   await expect(page.locator("[id^=entry-]").getByText(/ de (picas|corazones|diamantes|tréboles)$/)).toBeVisible();
 

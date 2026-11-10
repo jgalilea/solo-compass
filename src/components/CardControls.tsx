@@ -22,11 +22,14 @@ const CHIP_OFF = "border-ink-border text-parchment-dim hover:border-gold/50 hove
 export function CardControls({
   adventureId,
   settings,
+  inTray,
   onChange,
   onDraw,
 }: {
   adventureId?: string;
   settings: CardSettings;
+  /** Cards drawn but not kept yet: out of the deck while they wait in the tray. */
+  inTray: NonNullable<DiceRollEntry["card"]>[];
   onChange: (next: CardSettings) => void;
   onDraw: (text: string, card: NonNullable<DiceRollEntry["card"]>) => void;
 }) {
@@ -38,7 +41,13 @@ export function CardControls({
   const options = { jokers: settings.jokers, reversed: settings.reversed };
   const key = shuffleKey(adventureId, deck);
   const shuffledAt = settings.shuffles[key] ?? 0;
-  const drawn = useMemo(() => cardsDrawn(entries, adventureId, deck, shuffledAt), [entries, adventureId, deck, shuffledAt]);
+  const drawn = useMemo(
+    () => [
+      ...cardsDrawn(entries, adventureId, deck, shuffledAt),
+      ...inTray.filter((card) => card.deck === deck).map((card) => cardIdentity(card.id)),
+    ],
+    [entries, adventureId, deck, shuffledAt, inTray],
+  );
   const all = deckCards(deck, options);
   const out = new Set(drawn);
   const left = unique ? all.filter((card) => !out.has(cardIdentity(card))).length : all.length;

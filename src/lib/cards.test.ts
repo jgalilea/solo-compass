@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cardFace, cardIdentity, cardName, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
 import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
-import { cardsDrawn, createDiceRollEntry, normalizeHistoryEntry } from "./history";
+import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
 import { splitRollSeries, splitRollText } from "./journalUi";
 import { exportAdventureToMarkdown, parseMarkdownToEntries } from "./lonelog";
 import { es } from "./i18n/locales/es";
@@ -98,6 +98,13 @@ describe("the deck of an adventure", () => {
     expect(cardsDrawn(history, "a", "poker", 20)).toEqual(["3h"]);
     expect(cardsDrawn(history, undefined, "poker", 0)).toEqual(["2c"]);
     expect(cardsDrawn(history, "a", "tarot", 0)).toEqual(["M16"]);
+  });
+
+  it("keeps a tray's rolls in their order, a millisecond apart", () => {
+    const [a, b] = createDiceRollEntries([{ text: "d6 -> 4" }, { text: "draw=Qs -> x", card: { deck: "poker", id: "Qs" } }], "a", 100);
+    expect([a.timestamp, b.timestamp]).toEqual([100, 101]);
+    expect(b).toMatchObject({ adventureId: "a", card: { deck: "poker", id: "Qs" } });
+    expect(a).not.toHaveProperty("card");
   });
 
   it("keeps a draw's card in the history", () => {

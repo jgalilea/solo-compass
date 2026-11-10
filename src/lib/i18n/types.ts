@@ -99,6 +99,7 @@ export interface Dictionary {
     saveFormulaHint: string;
     saved: string;
     trayHint: string;
+    saveToHistory: string;
     builtinTitle: string;
     customTitle: string;
     favoritesHint: string;

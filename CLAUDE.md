@@ -459,9 +459,11 @@ table's `DiceTool` shows only the favorite dice, built-in
 (`diceFavorites.ts`, localStorage, all of them until changed; in the
 backup's settings) or their own; a typed formula can be saved from it
 as a favorite die of one's own.
-Every dice roll goes to the history as it's made (kind `"dados"`, its
-text as the journal writes it; starred and filtered there like the
-oracle's and the tables'); with no active adventure that's all. Every
+The tray is a preview: nothing is kept until "Log it" (the journal
+entry, and one history roll per die, kind `"dados"`, its text as the
+journal writes it; starred and filtered there like the oracle's and
+the tables') or, with no adventure, "Save to history"; what's removed
+or cleared isn't kept anywhere (`createDiceRollEntries`). Every
 history roll keeps the adventure it was for (`adventureId`, set by
 `usePlayActions` and `DiceTool`; older ones are found through the
 journal entry linked to them), shown on its card; none means a free
@@ -495,7 +497,8 @@ ours, `cardName`), shown with suit symbols (`showDraws`) and read as a
 roll by the journal (a draw counts as a die in `splitRollSeries`).
 Each draw is a `"dados"` history roll that keeps its `card`; without
 repeats, what's left of an adventure's deck is derived from those
-since its last shuffle (`cardsDrawn`), nothing else stored but the
+since its last shuffle (`cardsDrawn`), plus the cards waiting in the
+tray; one taken off it goes back. Nothing else stored but the
 shuffle times (`cardSettings.ts`, localStorage and the backup's
 settings, merged by the latest).
 
@@ -536,8 +539,9 @@ inside it (`backdrop-filter`/z-index stacking). `Modal` owns the panel
 frame and its width: every dialog is `size="lg"` (the same width on
 desktop; its content goes into columns there rather than staying a
 narrow strip), only a question to answer is `sm` (confirmations,
-restoring a backup); inside go `DialogHeader` (title, icon, close; fixed) and
-`DialogBody` (scrolls) from `Dialog.tsx`. Don't style a panel by hand.
+restoring a backup); inside go `DialogHeader` (title, icon, close; fixed),
+`DialogBody` (scrolls) and, for a form's buttons, `DialogFooter` (fixed,
+the submit names the form) from `Dialog.tsx`. Don't style a panel by hand.
 
 ### Responsive
 

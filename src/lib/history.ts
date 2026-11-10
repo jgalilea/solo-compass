@@ -53,6 +53,19 @@ export function createDiceRollEntry(
 }
 
 /**
+ * The rolls of the dice tool's tray, kept when it's logged (or saved,
+ * with no adventure): one history roll each, a millisecond apart so
+ * they keep their order.
+ */
+export function createDiceRollEntries(
+  rolls: { text: string; card?: DiceRollEntry["card"] }[],
+  adventureId?: string,
+  now = Date.now(),
+): HistoryEntry[] {
+  return rolls.map((roll, i) => createDiceRollEntry(roll.text, adventureId, roll.card, now + i));
+}
+
+/**
  * The cards drawn from one adventure's deck (free draws: none) since it
  * was last shuffled, by identity (cards.ts).
  */

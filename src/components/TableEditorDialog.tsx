@@ -14,7 +14,7 @@ import { interpolate } from "../lib/i18n";
 import { TABLE_THEMES, type TableTheme } from "../lib/tables";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
 import { IconAlertCircle, IconCheck, IconChevronRight } from "./icons/Icons";
-import { DialogBody, DialogHeader } from "./Dialog";
+import { DialogBody, DialogFooter, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 
 const LABEL_CLASS = "text-xs font-medium uppercase tracking-wide text-parchment-dim";
@@ -41,6 +41,7 @@ export function TableEditorDialog({
   const { t } = useLocaleContext();
   const e = t.tables.editor;
   const titleId = useId();
+  const formId = useId();
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [choice, setChoice] = useState<DiceChoice>(initial ? diceChoiceFor(initial) : "auto");
@@ -87,6 +88,7 @@ export function TableEditorDialog({
       <DialogHeader id={titleId} title={editing ? e.editTitle : e.newTitle} onClose={onClose} />
       <DialogBody>
         <form
+          id={formId}
           className="flex flex-col gap-4"
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -207,16 +209,16 @@ export function TableEditorDialog({
 
           <p className="text-xs text-parchment-dim">{e.ownershipNote}</p>
 
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>
-              {t.common.cancel}
-            </button>
-            <button type="submit" className={PRIMARY_BUTTON_CLASS}>
-              {e.save}
-            </button>
-          </div>
         </form>
       </DialogBody>
+      <DialogFooter>
+        <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>
+          {t.common.cancel}
+        </button>
+        <button type="submit" form={formId} className={PRIMARY_BUTTON_CLASS}>
+          {e.save}
+        </button>
+      </DialogFooter>
     </Modal>
   );
 }

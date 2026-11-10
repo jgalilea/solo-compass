@@ -7,7 +7,7 @@ import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../li
 import type { MeaningTable } from "../lib/tables";
 import { normalizeForSearch } from "../lib/text";
 import { IconArrowDown, IconArrowUp, IconClose, IconPlus, IconSearch } from "./icons/Icons";
-import { DialogBody, DialogHeader } from "./Dialog";
+import { DialogBody, DialogFooter, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 
 const LABEL_CLASS = "text-xs font-medium uppercase tracking-wide text-parchment-dim";
@@ -32,6 +32,7 @@ export function GeneratorEditorDialog({
 }) {
   const { t } = useLocaleContext();
   const titleId = useId();
+  const formId = useId();
   const searchId = useId();
   const [name, setName] = useState(initial?.name ?? "");
   const [tableIds, setTableIds] = useState<string[]>(initial?.tableIds ?? []);
@@ -73,6 +74,7 @@ export function GeneratorEditorDialog({
       <DialogHeader id={titleId} title={editing ? t.tables.generatorEditTitle : t.tables.generatorNewTitle} onClose={onClose} />
       <DialogBody>
         <form
+          id={formId}
           className="flex flex-col gap-4"
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -174,16 +176,16 @@ export function GeneratorEditorDialog({
             )}
           </div>
 
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>
-              {t.common.cancel}
-            </button>
-            <button type="submit" className={PRIMARY_BUTTON_CLASS}>
-              {t.common.save}
-            </button>
-          </div>
         </form>
       </DialogBody>
+      <DialogFooter>
+        <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>
+          {t.common.cancel}
+        </button>
+        <button type="submit" form={formId} className={PRIMARY_BUTTON_CLASS}>
+          {t.common.save}
+        </button>
+      </DialogFooter>
     </Modal>
   );
 }

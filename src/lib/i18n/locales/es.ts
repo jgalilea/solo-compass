@@ -58,7 +58,8 @@ export const es: Dictionary = {
     saveFormula: "Guardar como dado",
     saveFormulaHint: "Guardar esta fórmula como un dado tuyo, favorito, con el texto de «¿Para qué tiras?» si lo hay",
     saved: "Guardado en tus dados",
-    trayHint: "Toca un dado o escribe una fórmula: los resultados se juntan aquí.",
+    trayHint: "Toca un dado o escribe una fórmula: los resultados se juntan aquí hasta que los guardas.",
+    saveToHistory: "Guardar en el historial",
     builtinTitle: "De serie",
     customTitle: "Tuyos",
     favoritesHint: "Los favoritos (★) son los que salen en la mesa de juego del diario: los que más usas.",
@@ -80,7 +81,7 @@ export const es: Dictionary = {
     shuffle: "Barajar",
     shuffled: "Mazo barajado: vuelven todas las cartas.",
     cardsHint: "Saca una carta: se juntan aquí y se apuntan en el diario en una sola entrada.",
-    cardsTrayHint: "Saca una carta: aparecen aquí.",
+    cardsTrayHint: "Saca una carta: aparecen aquí hasta que las guardas.",
   },
   guide: {
     title: "Guía rápida",
@@ -367,7 +368,7 @@ export const es: Dictionary = {
       "Si quieres, escribe arriba para qué tiras («Ataque con espada»): irá delante de la tirada en el diario.",
       "Toca un dado, o escribe una fórmula en la casilla y pulsa + (o Enter).",
       "Cada tirada se añade a la bandeja de debajo, sin ir aún al diario. Quita una con su ×, o vacíala entera.",
-      "Pulsa «Apuntar» y toda la bandeja va al diario en una sola entrada.",
+      "Pulsa «Apuntar» y toda la bandeja va al diario en una sola entrada, y cada tirada al historial. Lo que quites o vacíes no queda en ningún sitio. Sin aventura, «Guardar en el historial» la guarda solo allí.",
     ],
     buttonsHeading: "Los botones",
     buttons: [
