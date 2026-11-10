@@ -109,7 +109,7 @@ export function OracleView() {
           />
         )}
 
-        <RecentRolls excludeId={lastRoll?.id} />
+        <RecentRolls exclude={lastRoll ? [lastRoll.id] : []} />
       </div>
     </div>
   );

@@ -672,6 +672,8 @@ export const en: Dictionary = {
     swipeHint: "Swipe a roll right to favorite it, or left to delete it.",
     showMore: "Show more rolls",
     backToOracle: "Back to the oracle",
+    backToDice: "Back to the dice",
+    backToTables: "Back to the tables",
     clearAll: "Clear all",
     filterAll: "All",
     filterOracle: "Oracle",

@@ -453,6 +453,8 @@ export interface Dictionary {
     swipeHint: string;
     showMore: string;
     backToOracle: string;
+    backToDice: string;
+    backToTables: string;
     clearAll: string;
     filterAll: string;
     filterOracle: string;

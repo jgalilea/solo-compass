@@ -29,26 +29,30 @@ export function Layout() {
   // reached from "Recent rolls" on the oracle (and counts as part of
   // that section for highlighting). Dice sit with the other tools,
   // before the journal.
+  // The history reached from the Tables or Dice screen counts as part of it.
+  const historyOf = location.pathname.startsWith("/historial") ? new URLSearchParams(location.search).get("tipo") : null;
+  const fromDice = historyOf === "dados";
+  const fromTables = historyOf === "tabla";
   const tabs = [
     {
       to: "/",
       label: t.nav.oracle,
       Icon: IconOracle,
-      isActive: location.pathname === "/" || location.pathname.startsWith("/historial"),
+      isActive: location.pathname === "/" || (location.pathname.startsWith("/historial") && !fromDice && !fromTables),
       hotkey: "1",
     },
     {
       to: "/tablas",
       label: t.nav.tables,
       Icon: IconTable,
-      isActive: location.pathname.startsWith("/tablas"),
+      isActive: location.pathname.startsWith("/tablas") || fromTables,
       hotkey: "2",
     },
     {
       to: "/dados",
       label: t.nav.dice,
       Icon: IconDice,
-      isActive: location.pathname.startsWith("/dados"),
+      isActive: location.pathname.startsWith("/dados") || fromDice,
       hotkey: "3",
     },
     {

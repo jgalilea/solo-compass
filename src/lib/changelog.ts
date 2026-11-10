@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre y lleva el diario a su ritmo.",
         items: [
           "Nueva pestaña «Dados»: los dados de serie, las fórmulas y tus propios dados, con un texto opcional que va delante en el diario (Atletismo 4dF+2, Ataque d20+5). Marca con la estrella tus dados favoritos, de serie o tuyos: son los que salen en la mesa de juego del diario. Una fórmula que escribas allí se guarda como dado con la estrella.",
+          "Las pestañas Tablas y Dados muestran sus últimas tiradas, como el oráculo las suyas, con el enlace al historial ya filtrado.",
           "Las tiradas de dados quedan en el historial, como las del oráculo y las tablas: con su resultado, para marcarlas como favoritas y filtrarlas. Y cada tirada del historial dice de qué aventura es, con un enlace a su diario, o si fue una tirada libre.",
           "Si conoces Lonelog, escríbelo en la casilla: empezar con «@ », «=> », «N (Odile): », «PC: », «\\---» o «=== » cambia el tipo de entrada solo.",
           "Pregunta al oráculo desde la casilla: si lo que escribes acaba en «?», el botón del oráculo (o Ctrl+Intro) se la hace. Es opcional: enviarla normal la deja como texto.",
@@ -40,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, and the journal keeps up with her.",
         items: [
           "A new “Dice” tab: built-in dice, formulas and dice of your own, with an optional text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Star your favorite dice, built-in or yours: they're the ones on the journal's game table. A formula you type there is saved as a die with the star.",
+          "The Tables and Dice tabs show their latest rolls, as the oracle shows its own, with the link to the history already filtered.",
           "Dice rolls stay in the history, like the oracle's and the tables': with their result, to star them and filter them. And every roll in the history says which adventure it's from, with a link to its journal, or that it was a free roll.",
           "If you know Lonelog, type it in the box: starting with “@ ”, “=> ”, “N (Odile): ”, “PC: ”, “\\---” or “=== ” changes the entry type by itself.",
           "Ask the oracle from the box: if what you type ends in “?”, the oracle's button (or Ctrl+Enter) asks it. It's optional: sending it as usual keeps it as text.",

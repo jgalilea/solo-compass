@@ -21,6 +21,8 @@ function makeId(): string {
 export interface Inspiration {
   /** History id of the first roll (the one the journal entry links to). */
   id: string;
+  /** Every roll's history id (one per table). */
+  rollIds: string[];
   /** "Action d66=34, Theme d66=25". */
   detail: string;
   /** "Reveal · Secret". */
@@ -123,6 +125,7 @@ export function usePlayActions() {
       for (const roll of rolls) record(roll, adventureId);
       const inspiration: Inspiration = {
         id: rolls[0].id,
+        rollIds: rolls.map((r) => r.id),
         detail: rolls.map((r, i) => `${r.tableName} ${tables[i].dice}=${r.total}`).join(", "),
         text: rolls.map((r) => r.resultText).join(" · "),
       };

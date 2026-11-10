@@ -63,7 +63,9 @@ Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/dados`,
 `/historial`. The nav has four tabs (Oráculo, Tablas, Dados, Diario;
 keys 1–4): `/historial` is
 reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
-highlights the Oráculo tab. Theme, mode, language, backup and credits all
+highlights the Oráculo tab; the Tables and Dice screens have their own
+(`kind`: only their rolls), which open `/historial?tipo=tabla|dados`,
+filtered, highlighting that tab and going back there. Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
 (`ActiveAdventureChip`), the same on every screen.

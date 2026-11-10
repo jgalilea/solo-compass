@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -23,7 +23,11 @@ export function HistoryView() {
   const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
     useHistoryContext();
   const { t } = useLocaleContext();
-  const [filter, setFilter] = useState<Filter>("todo");
+  // Coming from the Tables or Dice screen: their rolls only, and back there.
+  const [searchParams] = useSearchParams();
+  const from = searchParams.get("tipo");
+  const origin = from === "tabla" ? "tabla" : from === "dados" ? "dados" : null;
+  const [filter, setFilter] = useState<Filter>(origin ?? "todo");
   const { adventures, entries: journalEntries } = useJournalContext();
   const adventureNames = useMemo(() => new Map(adventures.map((a) => [a.id, a.name])), [adventures]);
   // Rolls from before they kept their adventure: the journal entry
@@ -84,15 +88,18 @@ export function HistoryView() {
     ["favoritas", t.history.filterFavorites],
   ];
 
+  const backLabel =
+    origin === "tabla" ? t.history.backToTables : origin === "dados" ? t.history.backToDice : t.history.backToOracle;
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-1">
             <Link
-              to="/"
-              aria-label={t.history.backToOracle}
-              title={t.history.backToOracle}
+              to={origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
+              aria-label={backLabel}
+              title={backLabel}
               className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
             >
               <IconArrowLeft size={20} />

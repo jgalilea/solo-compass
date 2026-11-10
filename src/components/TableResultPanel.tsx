@@ -9,6 +9,8 @@ export interface LastResult {
   sourceId: string;
   /** History id, to link the consequence. */
   rollId: string;
+  /** Every history roll it's made of (the inspiration's two tables). */
+  rollIds?: string[];
   title: string;
   /** "d20 · 14", or the inspiration's "Action 3/4, Theme 2/5". */
   detail: string;

@@ -8,6 +8,7 @@ import { isRollable, savedRollLabel, type SavedRoll } from "../lib/savedRolls";
 import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
 import { loadFavoriteDice, saveFavoriteDice } from "../lib/diceFavorites";
 import { DiceTool } from "./PlayTools";
+import { RecentRolls } from "./RecentRolls";
 import { Toast } from "./Toast";
 import { IconCheck, IconDice, IconPencil, IconPlus, IconStar, IconTrash } from "./icons/Icons";
 
@@ -33,12 +34,16 @@ export function DiceView() {
       </header>
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-12">
-        <section className="flex flex-col gap-3 rounded-3xl border border-ink-border bg-ink-800/70 p-5">
-          <p className="text-xs text-parchment-dim">
-            {active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
-          </p>
-          <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" />
-        </section>
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col gap-3 rounded-3xl border border-ink-border bg-ink-800/70 p-5">
+            <p className="text-xs text-parchment-dim">
+              {active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
+            </p>
+            <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" />
+          </section>
+          {/* As on the Oracle screen: the latest dice rolls, and the full history. */}
+          <RecentRolls kind="dados" limit={5} />
+        </div>
         <SavedRollsPanel />
       </div>
 

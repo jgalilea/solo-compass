@@ -672,6 +672,8 @@ export const es: Dictionary = {
     swipeHint: "Desliza una tirada a la derecha para marcarla como favorita o a la izquierda para borrarla.",
     showMore: "Ver más tiradas",
     backToOracle: "Volver al oráculo",
+    backToDice: "Volver a los dados",
+    backToTables: "Volver a las tablas",
     clearAll: "Borrar todo",
     filterAll: "Todo",
     filterOracle: "Oráculo",

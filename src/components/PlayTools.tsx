@@ -422,7 +422,9 @@ export function DiceTool({
           >
             {t.journal.diceClear}
           </button>
-          {adventureId ? (
+          {/* With no adventure there's nowhere to log them (the Dice
+              screen says so above). */}
+          {adventureId && (
             <button
               type="button"
               onClick={log}
@@ -430,8 +432,6 @@ export function DiceTool({
             >
               {rolls.length === 1 ? t.journal.diceLog : interpolate(t.journal.diceLogMany, { count: rolls.length })}
             </button>
-          ) : (
-            <p className="min-w-0 flex-1 text-xs text-parchment-dim">{t.dice.noAdventure}</p>
           )}
         </div>
       )}
