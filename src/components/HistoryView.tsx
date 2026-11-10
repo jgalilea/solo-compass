@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -9,7 +10,7 @@ import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { IconArrowLeft, IconChevronDown, IconHistory, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
 
-type Filter = "todo" | "oraculo" | "tabla" | "favoritas";
+type Filter = "todo" | "oraculo" | "tabla" | "dados" | "favoritas";
 
 /**
  * Rolls shown at first, and added each time the end of the list comes
@@ -23,6 +24,16 @@ export function HistoryView() {
     useHistoryContext();
   const { t } = useLocaleContext();
   const [filter, setFilter] = useState<Filter>("todo");
+  const { adventures, entries: journalEntries } = useJournalContext();
+  const adventureNames = useMemo(() => new Map(adventures.map((a) => [a.id, a.name])), [adventures]);
+  // Rolls from before they kept their adventure: the journal entry
+  // linked to them says which one (oracle and table rolls logged there).
+  const loggedIn = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of journalEntries) if (e.linkedRollId) map.set(e.linkedRollId, e.adventureId);
+    return map;
+  }, [journalEntries]);
+  const adventureOf = (entry: HistoryEntry) => entry.adventureId ?? loggedIn.get(entry.id);
   const [confirmingClear, setConfirmingClear] = useState(false);
   // Deleting a roll doesn't ask for confirmation: it's undone from the toast.
   // Clearing the whole history does ask (it's big and irreversible).
@@ -69,6 +80,7 @@ export function HistoryView() {
     ["todo", t.history.filterAll],
     ["oraculo", t.history.filterOracle],
     ["tabla", t.history.filterTables],
+    ["dados", t.history.filterDice],
     ["favoritas", t.history.filterFavorites],
   ];
 
@@ -165,6 +177,8 @@ export function HistoryView() {
             <li key={entry.id}>
               <HistoryEntryCard
                 entry={entry}
+                adventureId={adventureOf(entry)}
+                adventureName={adventureOf(entry) ? (adventureNames.get(adventureOf(entry)!) ?? null) : undefined}
                 onRequestDelete={deleteWithUndo}
                 onToggleFavorite={toggleFavorite}
               />

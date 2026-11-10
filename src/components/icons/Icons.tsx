@@ -239,6 +239,10 @@ export function IconCheckbox(props: IconProps) {
 export function IconCheckboxChecked(props: IconProps) {
   return <TablerIcon icon={Tabler.IconSquareCheck} {...props} />;
 }
+// Showing only one element's entries in the journal.
+export function IconFilter(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconFilter} {...props} />;
+}
 // Mentioning an element in the composer.
 export function IconMention(props: IconProps) {
   return <TablerIcon icon={Tabler.IconAt} {...props} />;

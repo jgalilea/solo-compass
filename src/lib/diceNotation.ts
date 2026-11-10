@@ -541,9 +541,11 @@ function detail(node: Node): string {
     case "bin": {
       const side = (child: Node) => {
         const text = detail(child);
+        // Dice written with spaces (Fudge faces, a pool's successes) go in
+        // brackets too: "(+ 0 + −) + 1", not "+ 0 + − + 1".
         const loose =
           (child.kind === "bin" && PRECEDENCE[child.op] < PRECEDENCE[node.op]) ||
-          (child.kind === "dice" && PRECEDENCE[node.op] > 1 && /[ +,]/.test(text));
+          (child.kind === "dice" && (PRECEDENCE[node.op] > 1 || child.fudge || !!child.target) && /[ +,]/.test(text));
         return loose ? `(${text})` : text;
       };
       return `${side(node.left)} ${SHOWN_OP[node.op]} ${side(node.right)}`;

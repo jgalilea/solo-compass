@@ -19,6 +19,7 @@ import { titleIfCut } from "../lib/truncation";
 import { CastIcon } from "./CastIcon";
 import {
   IconChevronRight,
+  IconFilter,
   IconMention,
   IconMinus,
   IconPencil,
@@ -33,6 +34,7 @@ export function CastItem({
   focusTick,
   onJump,
   onMention,
+  onFilter,
   onLog,
   description,
   onDescriptionChange,
@@ -44,7 +46,10 @@ export function CastItem({
   focusTick: number;
   onJump: (entryId: string) => void;
   onMention: (text: string) => void;
-  onLog: (text: string) => void;
+  /** Show only this element's entries in the journal. */
+  onFilter: () => void;
+  /** `step`: a −/+, which may join the one just before (see combineSteps). */
+  onLog: (text: string, step?: boolean) => void;
   description: string;
   onDescriptionChange: (text: string) => void;
 }) {
@@ -87,8 +92,8 @@ export function CastItem({
     if (value < 0 || (progress?.max !== undefined && value > progress.max)) return;
     // An item or money logs the change ("[Inv:Torch-1]"), as the
     // resource add-on writes it; a clock, where it stands now.
-    if (isQuantity) onLog(formatTag(member.kind, `${member.name}${delta > 0 ? "+" : "-"}${Math.abs(delta)}`));
-    else onLog(formatProgressTag(member.kind, member.name, value, progress?.max));
+    if (isQuantity) onLog(formatTag(member.kind, `${member.name}${delta > 0 ? "+" : "-"}${Math.abs(delta)}`), true);
+    else onLog(formatProgressTag(member.kind, member.name, value, progress?.max), true);
   }
 
   function logChange(e: FormEvent) {
@@ -270,6 +275,15 @@ export function CastItem({
               >
                 <IconMention size={13} />
                 {t.notebook.mentionButton}
+              </button>
+              <button
+                type="button"
+                onClick={onFilter}
+                title={t.notebook.filterHint}
+                className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+              >
+                <IconFilter size={13} />
+                {t.notebook.filterButton}
               </button>
               <button
                 type="button"

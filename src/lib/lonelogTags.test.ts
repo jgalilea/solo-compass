@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { foeIsOut,
   applyTagUpdates,
+  combineSteps,
   buildCast,
   castKey,
   findTagQuery,
@@ -279,5 +280,26 @@ describe("the official add-ons' tags", () => {
     expect(foe.tag).toMatchObject({ kind: "foe", name: "Goblins", details: ["×2", "Close"] });
     expect(splitTags("[Inv:Arrow-1]")[0].tag).toMatchObject({ kind: "item", name: "Arrow", progress: { value: -1, relative: true } });
     expect(splitTags("[Wealth:Gold 45→52]")[0].tag).toMatchObject({ kind: "wealth", name: "Gold", progress: { value: 52 } });
+  });
+});
+
+describe("combineSteps", () => {
+  it("keeps a clock's latest value", () => {
+    expect(combineSteps("[Clock:Alarm 2/6]", "[Clock:Alarm 3/6]")).toBe("[Clock:Alarm 3/6]");
+    expect(combineSteps("[Timer:Dawn 3]", "[Timer:dawn 2]")).toBe("[Timer:dawn 2]");
+  });
+
+  it("adds up a quantity's changes, and drops them when they cancel out", () => {
+    expect(combineSteps("[Inv:Torch-1]", "[Inv:Torch-1]")).toBe("[Inv:Torch-2]");
+    expect(combineSteps("[Wealth:Gold+1]", "[Wealth:Gold-3]")).toBe("[Wealth:Gold-2]");
+    expect(combineSteps("[Inv:Torch-1]", "[Inv:Torch+1]")).toBe("");
+  });
+
+  it("leaves alone what isn't a step of the same thing", () => {
+    expect(combineSteps("[Clock:Alarm 2/6]", "[Clock:Ritual 3/6]")).toBeNull();
+    expect(combineSteps("[Clock:Alarm 2/6]", "[Track:Alarm 3/6]")).toBeNull();
+    expect(combineSteps("The alarm rings. [Clock:Alarm 2/6]", "[Clock:Alarm 3/6]")).toBeNull();
+    expect(combineSteps("[Inv:Torch-1]", "[Inv:Rope-1]")).toBeNull();
+    expect(combineSteps("[Inv:Torch-1]", "[Clock:Torch 1/4]")).toBeNull();
   });
 });

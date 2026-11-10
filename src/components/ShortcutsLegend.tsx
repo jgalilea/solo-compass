@@ -10,7 +10,8 @@ export function ShortcutsLegend() {
       rows: [
         [["1"], s.goOracle],
         [["2"], s.goTables],
-        [["3"], s.goJournal],
+        [["3"], s.goDice],
+        [["4"], s.goJournal],
         [["H"], s.goHistory],
       ],
     },
@@ -27,6 +28,13 @@ export function ShortcutsLegend() {
         [["?"], s.help],
       ],
     },
+    {
+      heading: s.journalHeading,
+      rows: [
+        [[s.altKey, s.shiftKey, "1…7"], s.entryType],
+        [[s.ctrlKey, s.enterKey], s.askOracle],
+      ],
+    },
   ];
 
   return (
@@ -36,7 +44,7 @@ export function ShortcutsLegend() {
         <div key={heading} className="mt-3.5">
           <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{heading}</p>
           {/* Fixed-width key column: both lists line up. */}
-          <dl className="mt-2 grid grid-cols-[6.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
+          <dl className="mt-2 grid grid-cols-[8.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
             {rows.map(([keys, label]) => (
               <div key={label} className="contents">
                 <dt className="flex gap-1">

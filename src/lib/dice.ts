@@ -43,3 +43,12 @@ export function formatFudgeRoll(values: number[]): string {
   const symbols = values.map(fudgeSymbol).join(" ");
   return `4dF -> ${totalText} (${symbols})`;
 }
+
+/** Every built-in die, by the name its button shows: the d&d set and 4dF. */
+export const BUILTIN_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d%", "4dF"] as const;
+export type BuiltinDie = (typeof BUILTIN_DICE)[number];
+
+export function isBuiltinDie(value: unknown): value is BuiltinDie {
+  return typeof value === "string" && (BUILTIN_DICE as readonly string[]).includes(value);
+}
+

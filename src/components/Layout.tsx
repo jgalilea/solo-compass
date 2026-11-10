@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { IconCoffee, IconCompass, IconJournal, IconOracle, IconTable } from "./icons/Icons";
+import { IconCoffee, IconCompass, IconDice, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { GuideDialog } from "./GuideDialog";
 import { openGuide } from "../lib/guide";
@@ -25,9 +25,10 @@ export function Layout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Three sections: the full history no longer has its own tab — it's
+  // Four sections: the full history has no tab of its own — it's
   // reached from "Recent rolls" on the oracle (and counts as part of
-  // that section for highlighting).
+  // that section for highlighting). Dice sit with the other tools,
+  // before the journal.
   const tabs = [
     {
       to: "/",
@@ -44,6 +45,13 @@ export function Layout() {
       hotkey: "2",
     },
     {
+      to: "/dados",
+      label: t.nav.dice,
+      Icon: IconDice,
+      isActive: location.pathname.startsWith("/dados"),
+      hotkey: "3",
+    },
+    {
       // With an active adventure, the bar shortcut goes straight to it —
       // the list is still reachable from the detail's "back" arrow.
       // The tab's own highlight is based on the section ("/diario"), not
@@ -53,7 +61,7 @@ export function Layout() {
       label: t.nav.journal,
       Icon: IconJournal,
       isActive: location.pathname.startsWith("/diario"),
-      hotkey: "3",
+      hotkey: "4",
     },
   ];
 

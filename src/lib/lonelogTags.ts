@@ -177,6 +177,29 @@ export function castKey(kind: CastKind, name: string): string {
   return `${kind}:${normalizeForSearch(name.trim())}`;
 }
 
+// A step from the notebook's −/+, alone in its entry.
+const PROGRESS_STEP = /^\[(Clock|Track|Timer|E):\s*(.+?)\s+(\d+)(?:\/(\d+))?\]$/;
+const QUANTITY_STEP = /^\[(Inv|Wealth):\s*(.+?)\s*([+-])\s*(\d+)\]$/;
+
+/**
+ * Two −/+ in a row on the same clock or quantity become one entry
+ * instead of three "+1" lines: what replaces the previous entry's text
+ * (a clock's latest value; the two changes of a quantity added up), ""
+ * if they cancel out, or null when they aren't steps of the same thing.
+ */
+export function combineSteps(previous: string, next: string): string | null {
+  const same = (a: string, b: string) => normalizeForSearch(a) === normalizeForSearch(b);
+  const p = previous.trim().match(PROGRESS_STEP);
+  const n = next.trim().match(PROGRESS_STEP);
+  if (p && n) return p[1] === n[1] && same(p[2], n[2]) ? next.trim() : null;
+  const pq = previous.trim().match(QUANTITY_STEP);
+  const nq = next.trim().match(QUANTITY_STEP);
+  if (!pq || !nq || pq[1] !== nq[1] || !same(pq[2], nq[2])) return null;
+  const total = Number(`${pq[3]}${pq[4]}`) + Number(`${nq[3]}${nq[4]}`);
+  if (total === 0) return "";
+  return `[${pq[1]}:${pq[2]}${total > 0 ? "+" : "-"}${Math.abs(total)}]`;
+}
+
 /** A clock, track or timer with its number: `[Clock:Ritual 6/12]`, `[Timer:Dawn 2]`. */
 export function formatProgressTag(kind: CastKind, name: string, value: number, max?: number): string {
   return formatTag(kind, `${name.replace(/[[\]|]/g, " ").trim()} ${value}${max !== undefined ? `/${max}` : ""}`);

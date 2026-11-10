@@ -12,6 +12,8 @@ import { LocaleProvider } from "./hooks/LocaleContext";
 import { OracleProvider } from "./hooks/OracleContext";
 import { JournalProvider } from "./hooks/JournalContext";
 import { CustomTablesProvider } from "./hooks/CustomTablesContext";
+import { SavedRollsProvider } from "./hooks/SavedRollsContext";
+import { DiceView } from "./components/DiceView";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 function App() {
@@ -27,17 +29,20 @@ function App() {
               <JournalProvider>
                 <HistoryProvider>
                   <CustomTablesProvider>
-                    <HashRouter>
-                      <Routes>
-                        <Route element={<Layout />}>
-                          <Route index element={<OracleView />} />
-                          <Route path="tablas" element={<TablesView />} />
-                          <Route path="diario" element={<JournalListView />} />
-                          <Route path="diario/:adventureId" element={<AdventureDetailView />} />
-                          <Route path="historial" element={<HistoryView />} />
-                        </Route>
-                      </Routes>
-                    </HashRouter>
+                    <SavedRollsProvider>
+                      <HashRouter>
+                        <Routes>
+                          <Route element={<Layout />}>
+                            <Route index element={<OracleView />} />
+                            <Route path="tablas" element={<TablesView />} />
+                            <Route path="dados" element={<DiceView />} />
+                            <Route path="diario" element={<JournalListView />} />
+                            <Route path="diario/:adventureId" element={<AdventureDetailView />} />
+                            <Route path="historial" element={<HistoryView />} />
+                          </Route>
+                        </Routes>
+                      </HashRouter>
+                    </SavedRollsProvider>
                   </CustomTablesProvider>
                 </HistoryProvider>
               </JournalProvider>

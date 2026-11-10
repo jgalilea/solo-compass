@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildEntryBlocks, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
+import { buildEntryBlocks, composerShortcut, filterGroups, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
+import { buildCast } from "./lonelogTags";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 let n = 0;
@@ -172,5 +173,51 @@ describe("Lonelog 1.6 lines", () => {
     expect(blocks.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"], ["e3", "e4"]]);
     const afterBlock = buildEntryBlocks([e("note", "[/RESOURCES]", 1), e("consequence", "I light a torch.", 2)]);
     expect(afterBlock.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"]]);
+  });
+});
+
+describe("composerShortcut", () => {
+  it("picks the entry type from the Lonelog typed at the start", () => {
+    expect(composerShortcut("@ ")).toEqual({ mode: "action", text: "" });
+    expect(composerShortcut("@ I force the door")).toEqual({ mode: "action", text: "I force the door" });
+    expect(composerShortcut("@(Odile) Shuts it")).toEqual({ mode: "action", text: "(Odile) Shuts it" });
+    expect(composerShortcut("=> ")).toEqual({ mode: "consequence", text: "" });
+    expect(composerShortcut("PC: ")).toEqual({ mode: "dialogue", text: "", speaker: { pc: true } });
+    expect(composerShortcut("N (Grey Cloak): Run")).toEqual({
+      mode: "dialogue",
+      text: "Run",
+      speaker: { pc: false, name: "Grey Cloak" },
+    });
+    expect(composerShortcut("\\---\n")).toEqual({ mode: "excerpt", text: "" });
+    expect(composerShortcut("=== ")).toEqual({ mode: "session", text: "" });
+  });
+
+  it("waits for the space and leaves everything else alone", () => {
+    for (const text of ["@", "=>", "PC:", "N (Odile)", "\\---", "===", "Email me @ home", "PCs: two", "", "? Is it?"]) {
+      expect(composerShortcut(text)).toBeNull();
+    }
+  });
+});
+
+describe("filterGroups", () => {
+  it("keeps what's about one element, with its block, by session", () => {
+    const entries = [
+      entry("session", "S1"),
+      entry("note", "I reach the [L:Inn]."),
+      entry("question", "Is [N:Odile|wary] awake?"),
+      entry("roll", "Recluse — white 5 / black 2 -> Yes"),
+      entry("consequence", "She dries tankards."),
+      entry("note", 'N (Odile): "Maybe."'),
+      entry("action", "(Odile) Shuts the door"),
+      entry("session", "S2"),
+      entry("note", "Nobody here."),
+    ];
+    const odile = buildCast(entries).find((c) => c.name === "Odile")!;
+    const { groups, count } = filterGroups(groupBySession(entries), odile);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].sessionEntry?.text).toBe("S1");
+    // The question names her; its roll and consequence come along.
+    expect(groups[0].items.map((e) => e.kind)).toEqual(["question", "roll", "consequence", "note", "action"]);
+    expect(count).toBe(3);
   });
 });

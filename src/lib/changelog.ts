@@ -18,6 +18,41 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-10",
+    text: {
+      es: {
+        title: "Capítulo XVI · La bolsa de dados",
+        intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre y lleva el diario a su ritmo.",
+        items: [
+          "Nueva pestaña «Dados»: los dados de serie, las fórmulas y tus propios dados, con un texto opcional que va delante en el diario (Atletismo 4dF+2, Ataque d20+5). Marca con la estrella tus dados favoritos, de serie o tuyos: son los que salen en la mesa de juego del diario. Una fórmula que escribas allí se guarda como dado con la estrella.",
+          "Las tiradas de dados quedan en el historial, como las del oráculo y las tablas: con su resultado, para marcarlas como favoritas y filtrarlas. Y cada tirada del historial dice de qué aventura es, con un enlace a su diario, o si fue una tirada libre.",
+          "Si conoces Lonelog, escríbelo en la casilla: empezar con «@ », «=> », «N (Odile): », «PC: », «\\---» o «=== » cambia el tipo de entrada solo.",
+          "Pregunta al oráculo desde la casilla: si lo que escribes acaba en «?», el botón del oráculo (o Ctrl+Intro) se la hace. Es opcional: enviarla normal la deja como texto.",
+          "En un diálogo con alguien nuevo, «Al cuaderno» lo apunta como PNJ.",
+          "Varios − o + seguidos en un reloj o en el inventario se juntan en una sola entrada; si se anulan, no queda ninguna.",
+          "«Ver sus entradas» en el cuaderno deja en el diario solo lo que trata de un personaje, un lugar o un hilo (sus diálogos y acciones también), hasta que quitas el filtro.",
+          "Con teclado, Alt+Mayús+1…7 elige el tipo de entrada. La pestaña Dados es la tecla 3 y el Diario pasa a la 4.",
+          "Para Fate: los dados Fudge con habilidad se leen mejor, (+ 0 + −) + 1.",
+        ],
+      },
+      en: {
+        title: "Chapter XVI · The dice bag",
+        intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, and the journal keeps up with her.",
+        items: [
+          "A new “Dice” tab: built-in dice, formulas and dice of your own, with an optional text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Star your favorite dice, built-in or yours: they're the ones on the journal's game table. A formula you type there is saved as a die with the star.",
+          "Dice rolls stay in the history, like the oracle's and the tables': with their result, to star them and filter them. And every roll in the history says which adventure it's from, with a link to its journal, or that it was a free roll.",
+          "If you know Lonelog, type it in the box: starting with “@ ”, “=> ”, “N (Odile): ”, “PC: ”, “\\---” or “=== ” changes the entry type by itself.",
+          "Ask the oracle from the box: if what you type ends in “?”, the oracle's button (or Ctrl+Enter) asks it. It's optional: sending it as usual keeps it as text.",
+          "In a dialogue with someone new, “To the notebook” logs them as an NPC.",
+          "Several − or + in a row on a clock or the inventory join into one entry; if they cancel out, none is left.",
+          "“Show its entries” in the notebook leaves only what's about a character, a place or a thread in the journal (their dialogue and actions too), until you remove the filter.",
+          "With a keyboard, Alt+Shift+1…7 picks the entry type. The Dice tab is key 3 and the Journal moves to 4.",
+          "For Fate: Fudge dice with a skill read better, (+ 0 + −) + 1.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-09",
     text: {
       es: {

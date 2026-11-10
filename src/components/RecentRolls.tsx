@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
-import { IconChevronRight, IconOracle, IconTable } from "./icons/Icons";
+import { IconChevronRight, IconDice, IconOracle, IconTable } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -52,6 +52,11 @@ export function RecentRolls({ limit = 3, excludeId }: { limit?: number; excludeI
                 >
                   {formatAnswer(t, entry)}
                 </span>
+              </>
+            ) : entry.kind === "dados" ? (
+              <>
+                <IconDice size={16} className="shrink-0 text-parchment-dim/70" />
+                <span className="min-w-0 flex-1 truncate text-parchment/85">{entry.text}</span>
               </>
             ) : (
               <>

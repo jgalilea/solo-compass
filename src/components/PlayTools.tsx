@@ -1,5 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { useHistoryContext } from "../hooks/useHistoryContext";
+import { createDiceRollEntry } from "../lib/history";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import type { Likelihood } from "../lib/oracle";
@@ -13,12 +15,16 @@ import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { DiceHelp } from "./DiceHelp";
-import { DiceRoller } from "./DiceRoller";
 import { rollFormula, withEdge, type Edge } from "../lib/diceNotation";
+import { isRollable, rollSaved, savedRollLabel } from "../lib/savedRolls";
+import { BUILTIN_DICE, formatDieRoll, formatFudgeRoll, rollDie, rollFudgeSet, type BuiltinDie } from "../lib/dice";
+import { loadFavoriteDice } from "../lib/diceFavorites";
+import { Link } from "react-router-dom";
+import { useSavedRollsContext } from "../hooks/useSavedRollsContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
-import { IconClose, IconPlus, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import { IconCheck, IconClose, IconPlus, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 
 /**
  * The three tools of an adventure's "game table": oracle, dice and
@@ -172,20 +178,45 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
  * the single dice and a typed formula ("2d6+3", "4d6kh3", "5d6>=5";
  * see rollFormula). Advantage/disadvantage is a switch for the next
  * roll, whichever it is: rolled twice, keeping the higher or lower.
+ *
+ * The dice are the built-in ones and the player's own (a name and a
+ * formula, savedRolls.ts): on the game table only the favorites (the
+ * ones most used), on the Dice screen all of them (`dice="all"`). A
+ * formula typed here can be kept as a favorite die of one's own.
+ * Every roll is kept in the history too (to star it there); with no
+ * adventure (the Dice screen with none active) that's all it does.
  */
-export function DiceTool({ adventureId, onRolled }: ToolProps) {
+export function DiceTool({
+  adventureId,
+  onRolled,
+  dice = "favorites",
+}: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all" }) {
   const { t } = useLocaleContext();
   const { addEntry } = useJournalContext();
+  const { rolls: savedRolls, load: loadSavedRolls, addRoll } = useSavedRollsContext();
+  const { addEntry: addHistoryEntry } = useHistoryContext();
+  useEffect(() => loadSavedRolls(), [loadSavedRolls]);
+  const [favoriteDice] = useState(loadFavoriteDice);
+  const builtins = dice === "all" ? BUILTIN_DICE : BUILTIN_DICE.filter((d) => favoriteDice.has(d));
+  const own = dice === "all" ? savedRolls : savedRolls.filter((r) => r.favorite);
   const [label, setLabel] = useState("");
   const [rolls, setRolls] = useState<string[]>([]);
   const [formula, setFormula] = useState("");
   const [formulaError, setFormulaError] = useState(false);
   const [edge, setEdge] = useState<Edge | null>(null);
   const formulaRef = useRef<HTMLInputElement>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  // A formula the dice can read, not saved yet: it can become a saved roll.
+  const canSave =
+    !justSaved && isRollable(formula) && !savedRolls.some((r) => r.formula === formula.trim() && r.name === label.trim());
 
+  // Every roll goes to the history as it's made, like the oracle's and
+  // the tables' (and can be starred there); the tray only gathers what
+  // goes into the journal.
   function add(roll: string) {
     setRolls((prev) => [...prev, roll]);
     setEdge(null);
+    addHistoryEntry(createDiceRollEntry([label.trim(), roll].filter(Boolean).join(" "), adventureId));
   }
 
   function rollTyped() {
@@ -195,7 +226,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
   }
 
   function log() {
-    if (rolls.length === 0) return;
+    if (rolls.length === 0 || !adventureId) return;
     addEntry(adventureId, "roll", [label.trim(), rolls.join(", ")].filter(Boolean).join(" "));
     setRolls([]);
     setLabel("");
@@ -210,7 +241,38 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         placeholder={t.journal.diceLabelPlaceholder}
         className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
       />
-      <DiceRoller onRoll={add} ariaLabel={t.journal.diceRollerLabel} edge={edge ?? undefined} />
+      <div role="group" aria-label={t.journal.diceRollerLabel} className="flex flex-wrap gap-1.5">
+        {builtins.map((die) => (
+          <button
+            key={die}
+            type="button"
+            onClick={() => add(rollBuiltin(die, edge ?? undefined))}
+            className="rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+          >
+            {die}
+          </button>
+        ))}
+        {/* The player's own dice: their name, in the accent colour. */}
+        {own.map((roll) => (
+          <button
+            key={roll.id}
+            type="button"
+            onClick={() => add(rollSaved(roll, edge ?? undefined)!)}
+            title={roll.formula}
+            className="rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1.5 text-xs font-medium text-gold transition hover:bg-gold/20 active:scale-95"
+          >
+            {savedRollLabel(roll)}
+          </button>
+        ))}
+        {builtins.length + own.length === 0 && (
+          <p className="text-xs text-parchment-dim">
+            {t.dice.noFavorites}{" "}
+            <Link to="/dados" className="font-medium text-gold underline decoration-dotted hover:text-gold-soft">
+              {t.dice.title}
+            </Link>
+          </p>
+        )}
+      </div>
       <div className="flex flex-wrap items-center gap-1.5">
         {(
           [
@@ -282,6 +344,26 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
             </button>
           )}
         </div>
+        {canSave && (
+          <button
+            type="button"
+            onClick={() => {
+              addRoll({ name: label.trim(), formula }, true);
+              setJustSaved(true);
+              window.setTimeout(() => setJustSaved(false), 1500);
+            }}
+            aria-label={t.dice.saveFormula}
+            title={t.dice.saveFormulaHint}
+            className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+          >
+            <IconStar size={16} />
+          </button>
+        )}
+        {justSaved && (
+          <span role="status" className="flex shrink-0 items-center px-1 text-gold" title={t.dice.saved}>
+            <IconCheck size={16} />
+          </span>
+        )}
         {/* Adds to the tray like a die button, so it looks like one. */}
         <button
           type="submit"
@@ -308,7 +390,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         ].join(" ")}
       >
         {rolls.length === 0 ? (
-          <p className="px-1 py-0.5 text-xs text-parchment-dim/70">{t.journal.diceHint}</p>
+          <p className="px-1 py-0.5 text-xs text-parchment-dim/70">{adventureId ? t.journal.diceHint : t.dice.trayHint}</p>
         ) : (
           <ul className="flex flex-wrap gap-1.5">
             {rolls.map((roll, i) => (
@@ -332,7 +414,7 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
         )}
       </div>
       {rolls.length > 0 && (
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setRolls([])}
@@ -340,15 +422,27 @@ export function DiceTool({ adventureId, onRolled }: ToolProps) {
           >
             {t.journal.diceClear}
           </button>
-          <button
-            type="button"
-            onClick={log}
-            className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
-          >
-            {rolls.length === 1 ? t.journal.diceLog : interpolate(t.journal.diceLogMany, { count: rolls.length })}
-          </button>
+          {adventureId ? (
+            <button
+              type="button"
+              onClick={log}
+              className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
+            >
+              {rolls.length === 1 ? t.journal.diceLog : interpolate(t.journal.diceLogMany, { count: rolls.length })}
+            </button>
+          ) : (
+            <p className="min-w-0 flex-1 text-xs text-parchment-dim">{t.dice.noAdventure}</p>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+/** A built-in die's roll as the journal writes it ("d6 -> 4", "4dF -> +1 (+ 0 + −)"). */
+function rollBuiltin(die: BuiltinDie, edge?: Edge): string {
+  if (edge) return rollFormula(withEdge(die, edge))!;
+  if (die === "4dF") return formatFudgeRoll(rollFudgeSet());
+  const sides = die === "d%" ? 100 : Number(die.slice(1));
+  return formatDieRoll(sides, rollDie(sides));
 }

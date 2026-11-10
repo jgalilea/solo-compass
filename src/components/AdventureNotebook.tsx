@@ -73,6 +73,7 @@ export function AdventureNotebook({
   focusTick,
   onJump,
   onMention,
+  onFilter,
   onLog,
   onRoll,
 }: {
@@ -89,8 +90,10 @@ export function AdventureNotebook({
   onJump: (entryId: string) => void;
   /** Insert this text in the composer. */
   onMention: (text: string) => void;
-  /** Log this text as a journal note. */
-  onLog: (text: string) => void;
+  /** Show only this element's entries in the journal. */
+  onFilter: (key: string) => void;
+  /** Log this text as a journal note (`step`: a −/+, see CastItem). */
+  onLog: (text: string, step?: boolean) => void;
   /** Log this text as a roll (a list was rolled on). */
   onRoll: (text: string) => void;
 }) {
@@ -224,6 +227,7 @@ export function AdventureNotebook({
                 focusTick={focusTick}
                 onJump={onJump}
                 onMention={onMention}
+                onFilter={() => onFilter(member.key)}
                 onLog={onLog}
                 description={descriptions[member.key]?.text ?? ""}
                 onDescriptionChange={(text) => onDescriptionChange(member.key, text)}

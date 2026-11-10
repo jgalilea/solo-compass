@@ -5,8 +5,8 @@
  * device's IndexedDB/localStorage, with no server or sync).
  *
  * Built on top of each module's load/save functions (history.ts,
- * journal.ts, customTables.ts, theme.ts, mode.ts, i18n, oracles.ts,
- * tableFavorites.ts, activeAdventure.ts) instead of reading/writing the storage keys by
+ * journal.ts, customTables.ts, savedRolls.ts, theme.ts, mode.ts, i18n, oracles.ts,
+ * tableFavorites.ts, diceFavorites.ts, activeAdventure.ts) instead of reading/writing the storage keys by
  * hand here — so none of the validation/migration logic those modules
  * already handle gets duplicated.
  */
@@ -23,11 +23,14 @@ import {
 } from "./journal";
 import type { JournalEntry } from "./lonelog";
 import { isCustomTable, loadCustomTables, replaceCustomTables, type CustomTable } from "./customTables";
+import { loadSavedRolls, normalizeSavedRoll, replaceSavedRolls, type SavedRoll } from "./savedRolls";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
 import { isOracleId, loadFavoriteOracleId, loadOracleId, saveFavoriteOracleId, saveOracleId } from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
+import { loadFavoriteDice, saveFavoriteDice } from "./diceFavorites";
+import { isBuiltinDie } from "./dice";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
 import { mergeData } from "./backupMerge";
@@ -40,7 +43,9 @@ import { announceChange } from "./sync";
 // restore; they just leave this device's own tables as they are.
 // 4: journal.deleted (ids deleted on that device, for merging). Older
 // backups merge as if nothing had been deleted there.
-export const BACKUP_SCHEMA_VERSION = 4;
+// 5: savedRolls (the player's saved dice rolls). Older backups leave
+// this device's as they are.
+export const BACKUP_SCHEMA_VERSION = 5;
 
 export interface BackupPayload {
   app: "solo-compass";
@@ -53,6 +58,7 @@ export interface BackupPayload {
     deleted?: Deletion[];
   };
   customTables?: CustomTable[];
+  savedRolls?: SavedRoll[];
   settings: {
     theme: string;
     mode: string;
@@ -62,17 +68,20 @@ export interface BackupPayload {
     favoriteOracleId?: string | null;
     activeAdventureId: string | null;
     favoriteTableIds: string[];
+    /** Missing in backups from before it existed: left as it is. */
+    favoriteDice?: string[];
   };
 }
 
 export class BackupError extends Error {}
 
 export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
-  const [history, adventures, entries, customTables, deleted] = await Promise.all([
+  const [history, adventures, entries, customTables, savedRolls, deleted] = await Promise.all([
     loadHistory(t),
     loadAdventures(t),
     loadJournalEntries(t),
     loadCustomTables(t),
+    loadSavedRolls(t),
     loadDeletions(),
   ]);
   return {
@@ -82,6 +91,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
     history,
     journal: { adventures, entries, deleted },
     customTables,
+    savedRolls,
     settings: {
       theme: loadTheme(),
       mode: loadMode(),
@@ -90,6 +100,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
       favoriteOracleId: loadFavoriteOracleId(),
       activeAdventureId: loadActiveAdventureId(),
       favoriteTableIds: [...loadFavoriteTableIds()],
+      favoriteDice: [...loadFavoriteDice()],
     },
   };
 }
@@ -138,6 +149,9 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
   const incomingAdventures = parsed.journal.adventures.map(normalizeAdventure).filter((x) => x !== null);
   const incomingEntries = parsed.journal.entries.map(normalizeJournalEntry).filter((x) => x !== null);
   const incomingTables = Array.isArray(parsed.customTables) ? parsed.customTables.filter(isCustomTable) : null;
+  const incomingRolls = Array.isArray(parsed.savedRolls)
+    ? parsed.savedRolls.map(normalizeSavedRoll).filter((x) => x !== null)
+    : null;
   const incomingDeleted = recentDeletions(
     (Array.isArray(parsed.journal.deleted) ? parsed.journal.deleted : []).filter(
       (d): d is Deletion => !!d && typeof d.id === "string" && typeof d.at === "number",
@@ -145,20 +159,22 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
   );
 
   if (mode === "merge") {
-    const [history, adventures, entries, customTables, deleted] = await Promise.all([
+    const [history, adventures, entries, customTables, savedRolls, deleted] = await Promise.all([
       loadHistory(t),
       loadAdventures(t),
       loadJournalEntries(t),
       loadCustomTables(t),
+      loadSavedRolls(t),
       loadDeletions(),
     ]);
     const merged = mergeData(
-      { history, adventures, entries, customTables, deleted },
+      { history, adventures, entries, customTables, savedRolls, deleted },
       {
         history: incomingHistory,
         adventures: incomingAdventures,
         entries: incomingEntries,
         customTables: incomingTables ?? [],
+        savedRolls: incomingRolls ?? [],
         deleted: incomingDeleted,
       },
     );
@@ -167,6 +183,7 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
       replaceAdventures(t, merged.adventures),
       replaceJournalEntries(t, merged.entries),
       replaceCustomTables(t, merged.customTables),
+      replaceSavedRolls(t, merged.savedRolls),
       replaceDeletions(merged.deleted),
     ]);
     announceRestore();
@@ -180,6 +197,8 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     replaceJournalEntries(t, incomingEntries),
     // Older backups have no custom tables: the ones here are kept.
     incomingTables ? replaceCustomTables(t, incomingTables) : Promise.resolve(),
+    // The same with saved rolls, from before they existed.
+    incomingRolls ? replaceSavedRolls(t, incomingRolls) : Promise.resolve(),
   ]);
   announceRestore();
   // What's here now is exactly that backup: it counts as the latest.
@@ -200,6 +219,7 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     if (Array.isArray(s.favoriteTableIds)) {
       saveFavoriteTableIds(new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")));
     }
+    if (Array.isArray(s.favoriteDice)) saveFavoriteDice(new Set(s.favoriteDice.filter(isBuiltinDie)));
   }
 }
 
@@ -208,6 +228,7 @@ function announceRestore(): void {
   announceChange("journal");
   announceChange("history");
   announceChange("customTables");
+  announceChange("savedRolls");
 }
 
 export function backupFilename(): string {

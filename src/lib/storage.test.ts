@@ -3,7 +3,7 @@ import { set } from "idb-keyval";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { restoreBackup } from "./backup";
 import { recentDeletions } from "./deletions";
-import { loadHistory, normalizeHistoryEntry } from "./history";
+import { createDiceRollEntry, loadHistory, normalizeHistoryEntry } from "./history";
 import { DICTIONARIES } from "./i18n";
 import {
   loadAdventures,
@@ -76,6 +76,20 @@ describe("normalizeHistoryEntry", () => {
     expect(normalizeHistoryEntry({ ...table, resultText: null })).toBeNull();
     expect(normalizeHistoryEntry({ ...table, kind: "other" })).toBeNull();
     expect(normalizeHistoryEntry({ kind: "oraculo", id: "o", timestamp: 1, question: "?", answer: "si" })).toBeNull();
+  });
+
+  it("keeps dice rolls with their text, starred or not", () => {
+    const dice = createDiceRollEntry("Attack d20+5 -> 19 (14 + 5)", undefined, 5);
+    expect(normalizeHistoryEntry({ ...dice, favorite: true })).toEqual({ ...dice, favorite: true });
+    expect(normalizeHistoryEntry({ ...dice, text: " " })).toBeNull();
+  });
+
+  it("keeps the adventure a roll was for, if it reads as one", () => {
+    const dice = createDiceRollEntry("d6 -> 4", "adv-1", 5);
+    expect(normalizeHistoryEntry(dice)).toMatchObject({ adventureId: "adv-1" });
+    expect(normalizeHistoryEntry({ ...dice, adventureId: 7 })).not.toHaveProperty("adventureId");
+    const table = { kind: "tabla", id: "r", timestamp: 1, tableName: "T", resultText: "x", rolls: [3], total: 3 };
+    expect(normalizeHistoryEntry({ ...table, adventureId: "adv-2" })).toMatchObject({ adventureId: "adv-2" });
   });
 });
 

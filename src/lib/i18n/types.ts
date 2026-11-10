@@ -56,6 +56,7 @@ export interface Dictionary {
   nav: {
     oracle: string;
     tables: string;
+    dice: string;
     journal: string;
     history: string;
   };
@@ -76,6 +77,33 @@ export interface Dictionary {
     /** Settings button title when it shows the backup-due dot. */
     triggerLabelBackupDue: string;
   };
+  dice: {
+    title: string;
+    subtitle: string;
+    loggingTo: string;
+    noAdventure: string;
+    loggedIn: string;
+    savedTitle: string;
+    savedEmpty: string;
+    newRoll: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    favoriteAdd: string;
+    favoriteRemove: string;
+    favoriteAddHint: string;
+    favoriteRemoveHint: string;
+    edit: string;
+    delete: string;
+    deleted: string;
+    saveFormula: string;
+    saveFormulaHint: string;
+    saved: string;
+    trayHint: string;
+    builtinTitle: string;
+    customTitle: string;
+    favoritesHint: string;
+    noFavorites: string;
+  };
   guide: {
     title: string;
     intro: string;
@@ -94,11 +122,17 @@ export interface Dictionary {
     updates: GuideRow[];
   };
   shortcuts: {
+    ctrlKey: string;
+    altKey: string;
+    journalHeading: string;
+    entryType: string;
+    askOracle: string;
     heading: string;
     intro: string;
     navigationHeading: string;
     goOracle: string;
     goTables: string;
+    goDice: string;
     goJournal: string;
     goHistory: string;
     playHeading: string;
@@ -423,6 +457,7 @@ export interface Dictionary {
     filterAll: string;
     filterOracle: string;
     filterTables: string;
+    filterDice: string;
     filterFavorites: string;
     loading: string;
     loadErrorTitle: string;
@@ -432,6 +467,9 @@ export interface Dictionary {
     emptyFavoritesDescription: string;
     emptyFilterTitle: string;
     kindOracle: string;
+    kindDice: string;
+    freeRoll: string;
+    deletedAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;
     deleteEntry: string;
@@ -527,6 +565,13 @@ export interface Dictionary {
     dialogueOtherName: string;
     dialoguePlaceholder: string;
     dialoguePlaceholderPc: string;
+    askFromComposer: string;
+    filterShowing: string;
+    filterShowingOne: string;
+    filterClear: string;
+    filterEmpty: string;
+    dialogueAddToNotebook: string;
+    dialogueAddToNotebookTitle: string;
     composerHintConsequence: string;
     composerHintNote: string;
     addPlaceholder: string;
@@ -687,6 +732,8 @@ export interface Dictionary {
     mentionCount: string;
     mentionCountOne: string;
     mentionButton: string;
+    filterButton: string;
+    filterHint: string;
     mentionHint: string;
     changeButton: string;
     changePlaceholder: string;

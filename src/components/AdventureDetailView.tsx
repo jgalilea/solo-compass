@@ -7,7 +7,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, type JournalEntry } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
-import { buildCast } from "../lib/lonelogTags";
+import { buildCast, combineSteps } from "../lib/lonelogTags";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
 import { shareTextFile } from "../lib/share";
@@ -26,6 +26,7 @@ import { EntryList, LineButtons, SessionDate, SessionGroupRow, type EntryActions
 import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
+  filterGroups,
   groupBySession,
   INPUT_CLASS,
   PRIMARY_BUTTON_CLASS,
@@ -34,7 +35,9 @@ import {
 } from "../lib/journalUi";
 import {
   IconChevronRight,
+  IconClose,
   IconDice,
+  IconFilter,
   IconJournal,
   IconNotebook,
   IconOracle,
@@ -57,6 +60,9 @@ import {
  * earlier ones folded at the top; the current one (the last) open
  * below, with its title pinned at the top while scrolling.
  */
+/** How long after a −/+ the next one on the same element still joins it. */
+const STEP_JOIN_MS = 5 * 60_000;
+
 export function AdventureDetailView() {
   const { adventureId = "" } = useParams<{ adventureId: string }>();
   const navigate = useNavigate();
@@ -105,6 +111,12 @@ export function AdventureDetailView() {
   }, [insertionPoint, inserting, setInsertionPoint]);
   useEffect(() => () => setInsertionPoint(null), [adventureId, setInsertionPoint]);
   const cast = useMemo(() => buildCast(adventureEntries), [adventureEntries]);
+
+  // "Show their entries" from the notebook: the journal shows only what's
+  // about one element until the filter is taken off.
+  const [journalFilter, setJournalFilter] = useState<string | null>(null);
+  const filterMember = journalFilter ? (cast.find((c) => c.key === journalFilter) ?? null) : null;
+  const filtered = useMemo(() => (filterMember ? filterGroups(groups, filterMember) : null), [groups, filterMember]);
 
   // The current session is the last one: always open. The earlier ones
   // (and the session-less "prologue", if any) are folded above it.
@@ -217,6 +229,7 @@ export function AdventureDetailView() {
       const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
       if (index < 0) return;
       const group = groups[index];
+      setJournalFilter(null);
       if (index < groups.length - 1) {
         setPreviousExpanded(true);
         if (group.sessionEntry) setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
@@ -367,6 +380,8 @@ export function AdventureDetailView() {
   }
 
   function handleLogged() {
+    // What was just written shows in the whole journal, not hidden by a filter.
+    setJournalFilter(null);
     if (composerMode !== "consequence") setLinkedRollId(undefined);
     keepInSight();
   }
@@ -374,6 +389,7 @@ export function AdventureDetailView() {
   // After a roll (oracle, table or dice) the next thing is usually to
   // write what happens: the composer switches to "Consequence" by itself.
   function handleRolled(rollId?: string) {
+    setJournalFilter(null);
     setComposerMode("consequence");
     setLinkedRollId(rollId);
     keepInSight();
@@ -396,6 +412,7 @@ export function AdventureDetailView() {
     const group = groups[index];
     if (!group) return;
     let target = group.sessionEntry?.id ?? "current";
+    if (filtered) flushSync(() => setJournalFilter(null));
     if (index < groups.length - 1) {
       flushSync(() => {
         setPreviousExpanded(true);
@@ -425,8 +442,23 @@ export function AdventureDetailView() {
         setNotebookOpen(false);
         composerInsertRef.current?.(text);
       }}
-      onLog={(text) => {
-        addEntry(adventure.id, "note", text);
+      onFilter={(key) => {
+        setNotebookOpen(false);
+        setSearchOpen(false);
+        setJournalFilter(key);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      onLog={(text, step) => {
+        // −/+ in a row on the same clock or quantity: one entry, not one
+        // per tap (only at the end of the journal, and only shortly after).
+        const last = adventureEntries.at(-1);
+        const combined =
+          step && !inserting && last?.kind === "note" && Date.now() - (last.editedAt ?? last.timestamp) < STEP_JOIN_MS
+            ? combineSteps(last.text, text)
+            : null;
+        if (combined === "") removeEntry(last!.id);
+        else if (combined !== null) editEntry(last!.id, combined);
+        else addEntry(adventure.id, "note", text);
         handleLogged();
       }}
       onRoll={(text) => {
@@ -477,7 +509,51 @@ export function AdventureDetailView() {
           />
         )}
 
-        {previousGroups.length > 0 && (
+        {filterMember && filtered && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-parchment">
+              <IconFilter size={16} className="shrink-0 text-gold" />
+              <span className="min-w-0 flex-1">
+                {interpolate(filtered.count === 1 ? t.journal.filterShowingOne : t.journal.filterShowing, {
+                  name: filterMember.name,
+                  count: filtered.count,
+                })}
+              </span>
+              <button
+                type="button"
+                onClick={() => setJournalFilter(null)}
+                aria-label={t.journal.filterClear}
+                title={t.journal.filterClear}
+                className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10"
+              >
+                <IconClose size={14} />
+                <span className="max-sm:hidden">{t.journal.filterClear}</span>
+              </button>
+            </div>
+            {filtered.groups.length === 0 ? (
+              <p className="px-1 text-sm text-parchment-dim">{interpolate(t.journal.filterEmpty, { name: filterMember.name })}</p>
+            ) : (
+              filtered.groups.map((group, i) => (
+                <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
+                  {group.sessionEntry && (
+                    <h3 className="flex items-center gap-2 rounded-xl border border-ink-border px-4 py-2">
+                      <IconSession size={16} className="shrink-0 text-gold" />
+                      <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                        {group.sessionEntry.text}
+                      </span>
+                      <SessionDate session={group.sessionEntry} />
+                    </h3>
+                  )}
+                  <ul className={group.sessionEntry ? "flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3" : "flex flex-col gap-2"}>
+                    <EntryList items={group.items} actions={entryActions} />
+                  </ul>
+                </section>
+              ))
+            )}
+          </div>
+        )}
+
+        {!filtered && previousGroups.length > 0 && (
           <section id="session-previous" className="flex scroll-mt-16 flex-col gap-2">
             <button
               type="button"
@@ -524,7 +600,7 @@ export function AdventureDetailView() {
           </section>
         )}
 
-        {adventureEntries.length === 0 ? (
+        {filtered ? null : adventureEntries.length === 0 ? (
           <EmptyState
             icon={<IconJournal size={22} />}
             title={t.journal.noEntriesTitle}

@@ -9,6 +9,19 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Tanda de calidad de vida (2026-11-10): pestaña «Dados» con dados
+  propios (nombre y fórmula, `savedRolls.ts`, colección propia, en la
+  copia: esquema 5) y dados favoritos, de serie o propios, que son los
+  de la mesa de juego; las tiradas de dados van al historial (tipo
+  `dados`, con estrella y filtro) y cada tirada del historial guarda su
+  aventura (`adventureId`) o sale como libre; notación Lonelog al escribir en la
+  casilla (`composerShortcut`); preguntar al oráculo desde la casilla,
+  opcional; «Al cuaderno» para un nombre nuevo en un diálogo; −/+
+  seguidos en una sola entrada (`combineSteps`, cierra el pendiente del
+  punto 1); filtro del diario por elemento (`filterGroups`, cierra el
+  pendiente del punto 4); Alt+Mayús+1…7 para el tipo de entrada.
+  Descartado de momento: tamaño de letra (se ve bien) y ficha del PJ con
+  −/+ (no encaja con todos los sistemas, p. ej. Fate).
 - Pulido del 2026-11-10: la fuente de cada tema queda para nombres que
   hacen de título (no en menús, chips ni texto pequeño); campos
   numéricos con −/+ propios (`NumberField`); ventaja y desventaja como

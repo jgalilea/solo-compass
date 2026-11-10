@@ -58,9 +58,10 @@ staging/preview step — a push to `main` goes live. `base` in
 ### Routing and providers (`src/App.tsx`)
 
 `HashRouter` (required for GitHub Pages — no server-side rewrite support).
-Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/diario`
-(journal list), `/diario/:adventureId` (adventure detail), `/historial`.
-The nav has only three tabs (Oráculo, Tablas, Diario): `/historial` is
+Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/dados`,
+`/diario` (journal list), `/diario/:adventureId` (adventure detail),
+`/historial`. The nav has four tabs (Oráculo, Tablas, Dados, Diario;
+keys 1–4): `/historial` is
 reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
 highlights the Oráculo tab. Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`). Which adventure rolls are
@@ -92,8 +93,9 @@ file.
 No backend; persistence is split by access pattern, not by feature:
 
 - **IndexedDB** (via `idb-keyval`), for anything that can grow unbounded:
-  journal (`journal.ts`), oracle/table roll history (`history.ts`) and
-  the player's own tables (`customTables.ts`).
+  journal (`journal.ts`), oracle/table roll history (`history.ts`), the
+  player's own tables (`customTables.ts`) and their own dice
+  (`savedRolls.ts`: name, formula, favorite; schema 5 of the backup).
   `localStorage` is ~5 MiB per origin and shared with every other app on the
   same `github.io` subdomain, so it's unsuitable for this.
   Each kind of record (adventures, journal entries, rolls, tables,
@@ -228,7 +230,12 @@ Enter sends with a fine pointer (Shift+Enter = new line); on touch Enter
 is a new line and the send button sends. Its "Dialogue" mode picks who
 speaks (the PC, the cast's NPCs or any name) and logs a note in
 Lonelog's dialogue form (`formatDialogue`: `N (Odile): "…"`); "In-world
-text" is typed as is and logged as a narrative block (`formatExcerpt`). The composer's entry type and the roll a consequence links
+text" is typed as is and logged as a narrative block (`formatExcerpt`).
+Lonelog typed at the start ("@ ", "=> ", "N (Odile): ", "\---", "=== ")
+switches the type by itself (`composerShortcut`); a typed question (ends
+in "?") can optionally go to the oracle (a button beside send, or
+Ctrl+Enter), and Alt+Shift+1…7 pick the type (plain Alt+number/letter
+belongs to the browser). The composer's entry type and the roll a consequence links
 to live in `AdventureDetailView`, because both places change them (after
 any roll the composer switches to "Consecuencia").
 
@@ -293,7 +300,11 @@ descriptions (`t.sample.descriptions`).
   `[Clock:Name 2/6]` (and the older `[E:…]`), tracks `[Track:…]` and
   timers `[Timer:Name 3]`; the number is read from the name
   (`progress`, also "+1"/"-1"). The notebook's −/+ log the new value as
-  an entry (the journal is a record). "Roll on the list" (NPCs, places,
+  an entry (the journal is a record); several in a row on the same
+  element, at the end and within minutes, become one (`combineSteps`).
+  "Show its entries" filters the journal to one element (`filterGroups`:
+  its tags, and a character's dialogue and `@(Name)` actions, each with
+  its block) until the filter is removed. "Roll on the list" (NPCs, places,
   open threads) logs a `roll` entry and closes the sheet like any roll.
 
 ### Journal rendering (`src/components/journalShared.tsx`)
@@ -414,7 +425,22 @@ the ones currently loaded (mostly for the player's own tables). The
 extra results are joined with "→" and "·", never "->" (the journal
 splits a roll's text at its last "->").
 
-The game table's dice (`DiceTool`) also take a formula (`rollFormula`
+The Dice screen (`DiceView`, `/dados`) is the same `DiceTool` with every
+die: the built-in ones (`BUILTIN_DICE`) and the player's own (a name and
+a formula, `savedRolls.ts`), where they're made and starred. The game
+table's `DiceTool` shows only the favorite dice, built-in
+(`diceFavorites.ts`, localStorage, all of them until changed; in the
+backup's settings) or their own; a typed formula can be saved from it
+as a favorite die of one's own.
+Every dice roll goes to the history as it's made (kind `"dados"`, its
+text as the journal writes it; starred and filtered there like the
+oracle's and the tables'); with no active adventure that's all. Every
+history roll keeps the adventure it was for (`adventureId`, set by
+`usePlayActions` and `DiceTool`; older ones are found through the
+journal entry linked to them), shown on its card; none means a free
+roll. A die of one's own has an optional text, which goes in front of
+its roll in the journal (`savedRollLabel`: the formula names it
+otherwise). The dice (`DiceTool`) also take a formula (`rollFormula`
 in `diceNotation.ts`): the whole of Lonelog's dice notation add-on, a
 small parser over its grammar (arithmetic and parentheses, `{…}`
 groups, min/max, exploding with a condition, compounding,

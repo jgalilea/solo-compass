@@ -1,5 +1,7 @@
 import type { JournalEntry, JournalLineKind } from "./lonelog";
-import { noteForm, splitRollSymbol } from "./lonelogLines";
+import { noteForm, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
+import type { CastMember } from "./lonelogTags";
+import { normalizeForSearch } from "./text";
 
 /** A scene or an add-on's [COMBAT]/[/COMBAT]-style marker: never joined by what follows. */
 function isMarker(entry: JournalEntry): boolean {
@@ -40,6 +42,27 @@ export const COMPOSER_KINDS: ComposerKind[] = ["note", "action", "consequence"];
  * or a scene.
  */
 export type ComposerMode = ComposerKind | "dialogue" | "excerpt" | "session" | "scene";
+
+/**
+ * Lonelog typed at the start of the composer picks the entry type by
+ * itself and the symbol goes (the type puts it back on export): "@ " an
+ * action ("@(Odile) …" someone else's), "=> " a consequence, "PC: " or
+ * "N (Odile): " a dialogue line and who says it, "\---" in-world text,
+ * "=== " a session. Null when the text doesn't start with one.
+ */
+export function composerShortcut(text: string): { mode: ComposerMode; text: string; speaker?: Speaker } | null {
+  let m: RegExpMatchArray | null;
+  if ((m = text.match(/^@ ([\s\S]*)$/))) return { mode: "action", text: m[1] };
+  if ((m = text.match(/^@(\([\s\S]*)$/))) return { mode: "action", text: m[1] };
+  if ((m = text.match(/^=> ?([\s\S]*)$/)) && text.length > 2) return { mode: "consequence", text: m[1] };
+  if ((m = text.match(/^PC: ([\s\S]*)$/))) return { mode: "dialogue", text: m[1], speaker: { pc: true } };
+  if ((m = text.match(/^N \(([^()\n]+)\): ([\s\S]*)$/))) {
+    return { mode: "dialogue", text: m[2], speaker: { pc: false, name: m[1].trim() } };
+  }
+  if ((m = text.match(/^\\---[ \n]([\s\S]*)$/))) return { mode: "excerpt", text: m[1] };
+  if ((m = text.match(/^=== ([\s\S]*)$/))) return { mode: "session", text: m[1].replace(/\s*===\s*$/, "") };
+  return null;
+}
 
 export const SYMBOL: Record<JournalLineKind, string> = {
   action: "@",
@@ -217,4 +240,39 @@ export function splitRollSeries(
 export function formatIsoDay(iso: string, locale: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
+}
+
+/**
+ * The journal filtered to one element of the notebook: the entries that
+ * name it, and for a character the lines they say and what they do
+ * (`@(Odile) …`). Each with its whole block (the question and roll a
+ * consequence answers), so it still reads in context; sessions with
+ * none are left out. `count` is how many entries are about it.
+ */
+export function filterGroups(
+  groups: EntryGroup[],
+  member: Pick<CastMember, "kind" | "name" | "mentions">,
+): { groups: EntryGroup[]; count: number } {
+  const ids = new Set(member.mentions);
+  const name = normalizeForSearch(member.name);
+  const about = (e: JournalEntry) => {
+    if (ids.has(e.id)) return true;
+    if (member.kind !== "npc" && member.kind !== "pc") return false;
+    if (e.kind === "action") {
+      const actor = splitActor(e.text).actor;
+      return !!actor && normalizeForSearch(actor) === name;
+    }
+    if (e.kind !== "note") return false;
+    const form = noteForm(e.text);
+    return form.form === "dialogue" && (form.pc ? member.kind === "pc" : normalizeForSearch(form.speaker) === name);
+  };
+  let count = 0;
+  const filtered = groups
+    .map((g) => {
+      const blocks = buildEntryBlocks(g.items).filter((block) => block.some(about));
+      count += blocks.reduce((n, block) => n + block.filter(about).length, 0);
+      return { sessionEntry: g.sessionEntry, items: blocks.flat() };
+    })
+    .filter((g) => g.items.length > 0);
+  return { groups: filtered, count };
 }

@@ -5,10 +5,10 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { interpolate } from "../lib/i18n";
-import { COMPOSER_KINDS, type ComposerMode } from "../lib/journalUi";
+import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/journalUi";
 import type { JournalEntry } from "../lib/lonelog";
 import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
-import { buildCast, type CastMember } from "../lib/lonelogTags";
+import { buildCast, formatTag, type CastMember } from "../lib/lonelogTags";
 import { normalizeForSearch } from "../lib/text";
 import { fitLikelihood } from "../lib/oracleEngines";
 import { getOracle } from "../lib/oracles";
@@ -28,6 +28,7 @@ import {
   IconInsertBelow,
   IconNote,
   IconOracle,
+  IconPlus,
   IconSend,
   IconScene,
   IconSearch,
@@ -48,6 +49,14 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
   scene: IconScene,
 };
 
+/** The selector's order, which Alt+Shift+1…7 follow. */
+const MODE_ORDER: ComposerMode[] = ["note", "action", "dialogue", "consequence", "excerpt", "session", "scene"];
+
+/** "Alt+Shift+3" for a mode, as the legend writes it. */
+function modeShortcut(mode: ComposerMode, alt: string, shift: string): string {
+  return `${alt}+${shift}+${MODE_ORDER.indexOf(mode) + 1}`;
+}
+
 /**
  * Composer pinned to the bottom of the journal, on a single row to
  * leave the screen to the journal: tools (oracle, dice, table), the
@@ -63,6 +72,18 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
  * between them, and close after rolling. On desktop they don't appear
  * here: they live in the fixed right-hand panel (see
  * AdventureDetailView).
+ *
+ * Lonelog typed at the start ("@ ", "=> ", "N (Odile): ", "\\---",
+ * "=== ") switches to that entry type (composerShortcut).
+ *
+ * A question typed as a note or an action (it ends in "?") can be put
+ * to the oracle instead, optionally: a button beside "send" (or
+ * Ctrl+Enter) logs it with the selected oracle's answer, at even odds.
+ * Sending it as usual keeps it a plain entry.
+ *
+ * With a keyboard, Alt+Shift+1…7 pick the entry type (MODE_ORDER):
+ * plain Alt with a number or a letter belongs to the browser (tabs,
+ * menus, the address bar).
  *
  * Typing "[" suggests the adventure's characters and places (and
  * offers to name a new one), so Lonelog tags can be written without
@@ -189,6 +210,27 @@ export function JournalComposer({
   // and a dialogue line someone who says it.
   const canSend = marker || (text.trim() !== "" && (mode !== "dialogue" || speaker.pc || speaker.name.trim() !== ""));
   const pc = cast.find((c) => c.kind === "pc");
+  const isQuestion = (mode === "note" || mode === "action") && text.trim().endsWith("?");
+
+  function askFromComposer() {
+    const roll = askOracle(text.trim(), fitLikelihood(oracleId, "equilibrado"), adventureId);
+    setText("");
+    onRolled(roll.id);
+  }
+
+  // Alt+Shift+1…7: the entry type, from anywhere on the adventure.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey) return;
+      const next = MODE_ORDER[Number(e.code.match(/^Digit([1-7])$/)?.[1] ?? 0) - 1];
+      if (!next) return;
+      e.preventDefault();
+      onModeChange(next);
+      inputRef.current?.focus();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onModeChange, inputRef]);
 
   const placeholder =
     mode === "consequence"
@@ -324,7 +366,17 @@ export function JournalComposer({
         </p>
       )}
       {mode === "dialogue" && (
-        <SpeakerPicker speaker={speaker} onChange={setSpeaker} cast={cast} pc={pc} onDone={() => inputRef.current?.focus()} />
+        <SpeakerPicker
+          speaker={speaker}
+          onChange={setSpeaker}
+          cast={cast}
+          pc={pc}
+          onDone={() => inputRef.current?.focus()}
+          onAddToNotebook={(name) => {
+            addEntry(adventureId, "note", formatTag("npc", name));
+            onLogged();
+          }}
+        />
       )}
       <div className="flex items-center gap-1.5">
         {/* While typing on a narrow phone they fold away, to leave the
@@ -359,12 +411,26 @@ export function JournalComposer({
             rows={1}
             value={text}
             onChange={(e) => {
+              // Lonelog typed at the start picks the entry type (and the
+              // symbol goes: the type writes it back on export).
+              const shortcut = mode === "session" || mode === "scene" ? null : composerShortcut(e.target.value);
+              if (shortcut) {
+                onModeChange(shortcut.mode);
+                if (shortcut.speaker) setSpeaker(shortcut.speaker);
+                setText(shortcut.text);
+                return;
+              }
               setText(e.target.value);
               tags.onChange(e.target);
             }}
             {...tags.inputProps}
             onKeyDown={(e) => {
               if (tags.onKeyDown(e)) return;
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && isQuestion) {
+                e.preventDefault();
+                askFromComposer();
+                return;
+              }
               if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing || !sendsOnEnter) return;
               e.preventDefault();
               handleSubmit();
@@ -374,6 +440,17 @@ export function JournalComposer({
             enterKeyHint={sendsOnEnter ? "send" : "enter"}
             className="max-h-40 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-1.5 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
           />
+          {isQuestion && (
+            <button
+              type="button"
+              onClick={askFromComposer}
+              aria-label={t.journal.askFromComposer}
+              title={`${t.journal.askFromComposer} (${t.shortcuts.ctrlKey}+${t.shortcuts.enterKey})`}
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold/50 text-gold transition hover:bg-gold/10 active:scale-95"
+            >
+              <IconOracle size={18} />
+            </button>
+          )}
           <button
             type="submit"
             disabled={!canSend}
@@ -494,7 +571,7 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
       {open && (
         <div
           role="menu"
-          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 max-h-[calc(100dvh-12rem)] overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-80"
+          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 max-h-[calc(100dvh-12rem)] overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-96"
         >
           {kinds.map((o) => {
             const Icon = MODE_ICON[o.mode];
@@ -512,12 +589,13 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                 ].join(" ")}
               >
                 <Icon size={18} className={`mt-0.5 shrink-0 ${selected ? "text-gold" : "text-parchment-dim"}`} />
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className={`block text-sm font-medium ${selected ? "text-gold" : "text-parchment"}`}>
                     {o.label}
                   </span>
                   <span className="block text-xs text-parchment-dim">{o.hint}</span>
                 </span>
+                <ShortcutHint mode={o.mode} />
               </button>
             );
           })}
@@ -541,10 +619,11 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-gold/40 bg-gold/10 text-gold">
                   <Icon size={16} />
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-gold">{o.label}</span>
                   <span className="block text-xs text-parchment-dim">{o.hint}</span>
                 </span>
+                <ShortcutHint mode={o.mode} />
               </button>
             );
           })}
@@ -556,6 +635,16 @@ function ModePicker({ mode, onChange }: { mode: ComposerMode; onChange: (mode: C
 
 /** How many NPCs get a chip of their own; the rest are found by name. */
 const SPEAKER_CHIPS = 4;
+
+/** The entry type's shortcut, only where there's a keyboard. */
+function ShortcutHint({ mode }: { mode: ComposerMode }) {
+  const { t } = useLocaleContext();
+  return (
+    <kbd className="mt-0.5 hidden shrink-0 font-sans text-[0.65rem] text-parchment-dim/60 any-pointer-fine:block">
+      {modeShortcut(mode, t.shortcuts.altKey, t.shortcuts.shiftKey)}
+    </kbd>
+  );
+}
 
 /**
  * Who says the dialogue line: your character and the NPCs named most
@@ -570,6 +659,7 @@ function SpeakerPicker({
   cast,
   pc,
   onDone,
+  onAddToNotebook,
 }: {
   speaker: Speaker;
   onChange: (speaker: Speaker) => void;
@@ -577,6 +667,8 @@ function SpeakerPicker({
   pc: CastMember | undefined;
   /** Picked from the search with the keyboard: on to the words. */
   onDone: () => void;
+  /** A name typed by hand becomes an NPC of the notebook. */
+  onAddToNotebook: (name: string) => void;
 }) {
   const { t } = useLocaleContext();
   const npcs = useMemo(() => cast.filter((c) => c.kind === "npc").sort((a, b) => b.lastSeen - a.lastSeen), [cast]);
@@ -651,9 +743,21 @@ function SpeakerPicker({
           );
         })}
         {typed && !searching && (
-          <button type="button" role="radio" aria-checked onClick={() => setSearching(true)} className={chip(true)}>
-            {typed}
-          </button>
+          <>
+            <button type="button" role="radio" aria-checked onClick={() => setSearching(true)} className={chip(true)}>
+              {typed}
+            </button>
+            {/* Not in the notebook yet: one tap names them there. */}
+            <button
+              type="button"
+              onClick={() => onAddToNotebook(typed)}
+              title={interpolate(t.journal.dialogueAddToNotebookTitle, { name: typed })}
+              className="flex shrink-0 items-center gap-1 rounded-full px-1.5 py-1 text-xs font-medium text-gold transition hover:text-gold-soft"
+            >
+              <IconPlus size={12} />
+              {t.journal.dialogueAddToNotebook}
+            </button>
+          </>
         )}
         {searching ? (
           <input

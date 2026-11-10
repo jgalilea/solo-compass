@@ -27,6 +27,7 @@ const data = (d: Partial<MergeData>): MergeData => ({
   adventures: [],
   entries: [],
   customTables: [],
+  savedRolls: [],
   deleted: [],
   ...d,
 });
@@ -90,3 +91,18 @@ describe("mergeData", () => {
     expect(merged.deleted.map((d) => d.id).sort()).toEqual(["b", "e2", "r1"]);
   });
 });
+
+describe("mergeData: saved rolls", () => {
+  const saved = (id: string, name: string, updatedAt: number) => ({ id, name, formula: "4dF+2", favorite: false, createdAt: 1, updatedAt });
+  it("joins them by id, the newer edit wins, and deleted ones stay deleted", () => {
+    const merged = mergeData(
+      data({ savedRolls: [saved("s1", "Athletics", 5), saved("s2", "Fight", 1)] }),
+      data({ savedRolls: [saved("s1", "Athletics +3", 9), saved("s3", "Notice", 1)], deleted: [{ id: "s2", at: 2 }] }),
+    );
+    expect(merged.savedRolls.map((r) => [r.id, r.name])).toEqual([
+      ["s1", "Athletics +3"],
+      ["s3", "Notice"],
+    ]);
+  });
+});
+

@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import type { Likelihood, OracleRoll } from "../lib/oracle";
 import { lonerTwistCounter, rollOracleWith } from "../lib/oracleEngines";
 import { formatTableRoll, resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
-import type { TableRollEntry } from "../lib/history";
+import type { HistoryEntry, TableRollEntry } from "../lib/history";
 import { getOracle } from "../lib/oracles";
 import { formatOracleDice, formatOracleResult } from "../lib/i18n/answerText";
 import { gameState, loadGame, TABLE_GAMES, toMeaningTables } from "../lib/tableGames";
@@ -66,6 +66,13 @@ export function usePlayActions() {
     [t],
   );
 
+  // To the history, with the adventure it's for (none: a free roll).
+  const record = useCallback(
+    (entry: HistoryEntry, adventureId: string | null | undefined) =>
+      addHistoryEntry(adventureId ? { ...entry, adventureId } : entry),
+    [addHistoryEntry],
+  );
+
   const askOracle = useCallback(
     (question: string, likelihood: Likelihood, adventureId = activeAdventureId): OracleRoll => {
       const roll = rollOracleWith(oracleId, question, likelihood, lonerTwistCounter(historyEntries));
@@ -77,10 +84,10 @@ export function usePlayActions() {
           .map((id) => tables.find((table) => table.id === id))
           .filter((table) => table !== undefined)
           .map((table) => buildTableRoll(table));
-        for (const twistRoll of twistRolls) addHistoryEntry(twistRoll);
+        for (const twistRoll of twistRolls) record(twistRoll, adventureId);
         if (twistRolls.length) roll.twist.result = twistRolls.map((r) => r.resultText).join(" · ");
       }
-      addHistoryEntry(roll);
+      record(roll, adventureId);
       if (adventureId) {
         if (roll.question) addJournalEntry(adventureId, "question", roll.question, roll.id);
         const diceText = `${getOracle(oracleId).name} — ${formatOracleDice(t, roll)} -> ${formatOracleResult(t, roll)}`;
@@ -88,20 +95,20 @@ export function usePlayActions() {
       }
       return roll;
     },
-    [activeAdventureId, addHistoryEntry, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, t],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, t],
   );
 
   const rollTable = useCallback(
     (table: MeaningTable, adventureId = activeAdventureId, tables: MeaningTable[] = []): TableRollEntry => {
       const entry = buildTableRoll(table, tables);
-      addHistoryEntry(entry);
+      record(entry, adventureId);
       if (adventureId) {
         const diceText = formatTableRoll(entry.tableName, table.dice, entry.total, entry.resultText);
         addJournalEntry(adventureId, "roll", diceText, entry.id);
       }
       return entry;
     },
-    [activeAdventureId, addHistoryEntry, addJournalEntry, buildTableRoll],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll],
   );
 
   /**
@@ -113,7 +120,7 @@ export function usePlayActions() {
   const rollInspiration = useCallback(
     (tables: MeaningTable[], adventureId = activeAdventureId): Inspiration => {
       const rolls = tables.map((table) => buildTableRoll(table));
-      for (const roll of rolls) addHistoryEntry(roll);
+      for (const roll of rolls) record(roll, adventureId);
       const inspiration: Inspiration = {
         id: rolls[0].id,
         detail: rolls.map((r, i) => `${r.tableName} ${tables[i].dice}=${r.total}`).join(", "),
@@ -127,7 +134,7 @@ export function usePlayActions() {
       }
       return inspiration;
     },
-    [activeAdventureId, addHistoryEntry, addJournalEntry, buildTableRoll, t],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll, t],
   );
 
   const addConsequence = useCallback(

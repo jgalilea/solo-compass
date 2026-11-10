@@ -1,6 +1,7 @@
 import { createCollection, diffById } from "./collectionStore";
 import type { OracleRoll } from "./oracle";
 import type { Dictionary } from "./i18n";
+import { makeId } from "./ids";
 
 export interface TableRollEntry {
   kind: "tabla";
@@ -14,7 +15,26 @@ export interface TableRollEntry {
   favorite: boolean;
 }
 
-export type HistoryEntry = OracleRoll | TableRollEntry;
+/** A roll of the player's dice (a built-in die, one of their own or a formula), as the journal writes it. */
+export interface DiceRollEntry {
+  kind: "dados";
+  id: string;
+  timestamp: number;
+  /** "Attack d20+5 -> 19 (14 + 5)". */
+  text: string;
+  favorite: boolean;
+}
+
+/**
+ * Any roll in the history. `adventureId`: the adventure it was rolled
+ * for (logged in its journal, or rolled on its game table); none for a
+ * free roll, made with no adventure.
+ */
+export type HistoryEntry = (OracleRoll | TableRollEntry | DiceRollEntry) & { adventureId?: string };
+
+export function createDiceRollEntry(text: string, adventureId?: string, now = Date.now()): HistoryEntry {
+  return { kind: "dados", id: makeId(), timestamp: now, text, favorite: false, ...(adventureId ? { adventureId } : {}) };
+}
 
 // Stored in IndexedDB instead of localStorage: the history has no
 // natural size cap and localStorage is limited to ~5 MiB per origin,
@@ -34,6 +54,15 @@ export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
   const v = value as Record<string, unknown>;
   if (typeof v.id !== "string" || !isNumber(v.timestamp)) return null;
   const favorite = v.favorite === true;
+  const entry = normalizeRoll(v, favorite);
+  if (!entry) return null;
+  // The adventure it was for, only if it reads as one.
+  const clean: HistoryEntry = { ...entry };
+  delete clean.adventureId;
+  return typeof v.adventureId === "string" && v.adventureId ? { ...clean, adventureId: v.adventureId } : clean;
+}
+
+function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEntry | null {
   if (v.kind === "oraculo") {
     // Recluse rolls carry white/black; any oracle's, `dice` (oracleEngines.ts).
     const hasDice =
@@ -49,6 +78,10 @@ export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
       return null;
     }
     return { ...(v as unknown as TableRollEntry), favorite };
+  }
+  if (v.kind === "dados") {
+    if (typeof v.text !== "string" || !v.text.trim()) return null;
+    return { kind: "dados", id: v.id as string, timestamp: v.timestamp as number, text: v.text, favorite };
   }
   return null;
 }

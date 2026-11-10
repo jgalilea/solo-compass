@@ -8,7 +8,8 @@
  *   all have one): what's only on one side is kept.
  * - When both have the same item, the newer change wins: an entry's
  *   last edit, an adventure's last update (its notes separately, by
- *   their own date, and each description too), a table's last update. Rolls don't change, so this
+ *   their own date, and each description too), a table's or a saved
+ *   roll's last update. History rolls don't change, so this
  *   device's copy stays.
  * - What either side deleted stays deleted (deletions.ts): an adventure
  *   deleted on one device takes its entries with it.
@@ -17,6 +18,7 @@
  */
 
 import type { CustomTable } from "./customTables";
+import type { SavedRoll } from "./savedRolls";
 import type { Deletion } from "./deletions";
 import type { HistoryEntry } from "./history";
 import type { Adventure } from "./journal";
@@ -27,6 +29,7 @@ export interface MergeData {
   adventures: Adventure[];
   entries: JournalEntry[];
   customTables: CustomTable[];
+  savedRolls: SavedRoll[];
   deleted: Deletion[];
 }
 
@@ -75,5 +78,9 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     theirs.updatedAt > mine.updatedAt ? theirs : mine,
   ).filter((x) => !gone.has(x.id));
 
-  return { history, adventures, entries, customTables, deleted };
+  const savedRolls = unionById(local.savedRolls, incoming.savedRolls, (mine, theirs) =>
+    theirs.updatedAt > mine.updatedAt ? theirs : mine,
+  ).filter((x) => !gone.has(x.id));
+
+  return { history, adventures, entries, customTables, savedRolls, deleted };
 }

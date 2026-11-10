@@ -4,7 +4,8 @@ import { formatOracleResult } from "../lib/i18n/answerText";
 import { oracleDice } from "../lib/oracle";
 import { ROLE_COLOR } from "../lib/oracleEngines";
 import type { HistoryEntry } from "../lib/history";
-import { IconStar, IconTrash } from "./icons/Icons";
+import { Link } from "react-router-dom";
+import { IconJournal, IconStar, IconTrash } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 
@@ -28,10 +29,15 @@ function formatTime(dateLocale: string, ts: number): string {
 
 export function HistoryEntryCard({
   entry,
+  adventureId,
+  adventureName,
   onRequestDelete,
   onToggleFavorite,
 }: {
   entry: HistoryEntry;
+  /** The adventure it was rolled for (none: a free roll) and its name (null: deleted since). */
+  adventureId?: string;
+  adventureName?: string | null;
   onRequestDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
 }) {
@@ -144,7 +150,7 @@ export function HistoryEntryCard({
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim/70">
-          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.tableName}</span>
+          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? t.history.kindDice : entry.tableName}</span>
           <div className="flex items-center gap-2.5">
             <span className="normal-case tracking-normal">
               {formatTime(t.dateLocale, entry.timestamp)}
@@ -175,6 +181,22 @@ export function HistoryEntryCard({
             </button>
           </div>
         </div>
+
+        {/* Which story it belongs to, or that it was a free roll. */}
+        <p className="mt-1 flex min-w-0 items-center gap-1 text-xs text-parchment-dim">
+          <IconJournal size={12} className="shrink-0" />
+          {adventureId && adventureName ? (
+            <Link
+              to={`/diario/${adventureId}`}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="min-w-0 truncate text-gold/90 underline decoration-dotted underline-offset-2 hover:text-gold"
+            >
+              {adventureName}
+            </Link>
+          ) : (
+            <span className="truncate italic">{adventureId ? t.history.deletedAdventure : t.history.freeRoll}</span>
+          )}
+        </p>
 
         {entry.kind === "oraculo" ? (
           <div className="mt-2">
@@ -209,6 +231,8 @@ export function HistoryEntryCard({
               </span>
             </div>
           </div>
+        ) : entry.kind === "dados" ? (
+          <DiceRollText text={entry.text} />
         ) : (
           <div className="mt-2">
             <p className="text-sm text-parchment/90">{entry.resultText}</p>
@@ -224,3 +248,16 @@ export function HistoryEntryCard({
     </div>
   );
 }
+
+/** "Attack d20+5 -> 19 (14 + 5)": what was rolled small, the result below. */
+function DiceRollText({ text }: { text: string }) {
+  const arrow = text.lastIndexOf(" -> ");
+  if (arrow < 0) return <p className="mt-2 text-sm text-parchment/90">{text}</p>;
+  return (
+    <div className="mt-2">
+      <p className="text-xs text-parchment-dim">{text.slice(0, arrow)}</p>
+      <p className="mt-0.5 break-words text-sm font-medium text-parchment">{text.slice(arrow + 4)}</p>
+    </div>
+  );
+}
+
