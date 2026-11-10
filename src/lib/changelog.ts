@@ -21,8 +21,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-10",
     text: {
       es: {
-        title: "Capítulo XVI · La bolsa de dados",
-        intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre y lleva el diario a su ritmo.",
+        title: "Capítulo XVI · La bolsa de dados y la baraja",
+        intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre, lleva una baraja para los presagios y el diario a su ritmo.",
         items: [
           "Nueva pestaña «Dados»: los dados de serie, las fórmulas y tus propios dados, con un texto opcional que va delante en el diario (Atletismo 4dF+2, Ataque d20+5). Marca con la estrella tus dados favoritos, de serie o tuyos: son los que salen en la mesa de juego del diario. Una fórmula que escribas allí se guarda como dado con la estrella.",
           "Las pestañas Tablas y Dados muestran sus últimas tiradas, como el oráculo las suyas, con el enlace al historial ya filtrado.",
@@ -43,11 +43,17 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Con muchos personajes, el cuaderno tiene un buscador.",
           "Con teclado, Ctrl+Z recupera la entrada que acabas de borrar.",
           "Al elegir un tipo de entrada, el cursor se queda en la casilla para escribir directamente; en el móvil, el selector ya no se escapa del dedo mientras escribes.",
+          "Cartas en la mesa de juego: en los dados, cambia a «Cartas» y saca de una baraja de póker (con comodines si quieres) o de un tarot (con cartas invertidas). Sin repetir, cada carta sale una vez por aventura hasta que barajas; o deja que se repitan. Se apuntan como cualquier tirada, en la notación de cartas de Lonelog.",
+          "Nueva tabla de One Page Solo Engine, «Oráculo: ¿cuánto?», para preguntas de cantidad: ¿cuántos guardias?, ¿cómo de grave?",
+          "El contador de giros de Loner es ahora de cada aventura: los dobles de una partida ya no cuentan en otra. Y se ve, discreto, junto al nombre del oráculo.",
+          "Generadores propios: junta varias tablas (de cualquier juego, o tuyas) en un solo botón que las tira todas y lo apunta en una sola entrada, como «Inspírame». Están en Tablas, en su propio bloque, y en la mesa de juego del diario.",
+          "Cuatro tablas nuevas para los lugares: Tipo de lugar (de la aldea a la capital, templos, atalayas, campamentos, ruinas…), Estado del lugar, Qué llama la atención y Problema del lugar.",
+          "Más fácil de leer: las fechas, cuentas y pistas en gris se ven mejor en todos los temas, los botones dorados del modo claro tienen más contraste y el rojo de OSR oscuro se lee mejor. Con un lector de pantalla, la respuesta del oráculo y el resultado de una tabla se leen en voz alta.",
         ],
       },
       en: {
-        title: "Chapter XVI · The dice bag",
-        intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, and the journal keeps up with her.",
+        title: "Chapter XVI · The dice bag and the deck",
+        intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, a deck for omens beside them, and the journal keeps up with her.",
         items: [
           "A new “Dice” tab: built-in dice, formulas and dice of your own, with an optional text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Star your favorite dice, built-in or yours: they're the ones on the journal's game table. A formula you type there is saved as a die with the star.",
           "The Tables and Dice tabs show their latest rolls, as the oracle shows its own, with the link to the history already filtered.",
@@ -68,6 +74,12 @@ export const CHANGELOG: ChangelogEntry[] = [
           "With a large cast, the notebook has a search.",
           "With a keyboard, Ctrl+Z brings back the entry you just deleted.",
           "Picking an entry type leaves the cursor in the box to write straight away; on a phone, the selector no longer slips from under your finger while you type.",
+          "Cards on the game table: in the dice, switch to “Cards” and draw from a deck of playing cards (with jokers if you like) or a tarot (with reversed cards). With no repeats, each card comes out once per adventure until you shuffle; or let them repeat. They're logged like any roll, in Lonelog's card notation.",
+          "A new One Page Solo Engine table, “Oracle: How much?”, for questions of amount: how many guards, how bad is it?",
+          "Loner's Twist Counter now belongs to each adventure: doubles in one game no longer count in another. And it shows, quietly, beside the oracle's name.",
+          "Generators of your own: gather several tables (from any game, or yours) under one button that rolls them all and logs one entry, like “Inspire me”. They're on the Tables screen, in their own block, and on the journal's game table.",
+          "Four new tables for places: Kind of place (from hamlet to capital, temples, watchtowers, camps, ruins…), State of the place, What stands out and Trouble in the place.",
+          "Easier to read: grey dates, counts and hints show better in every theme, gold buttons in light mode have more contrast and the red in dark OSR reads better. With a screen reader, the oracle's answer and a table's result are read aloud.",
         ],
       },
     },

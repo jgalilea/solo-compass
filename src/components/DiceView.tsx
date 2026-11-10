@@ -82,10 +82,10 @@ function SavedRollsPanel() {
       <p className="text-xs text-parchment-dim">{t.dice.favoritesHint}</p>
       {error && <p className="text-xs text-no">{error}</p>}
 
-      <h3 className="text-[0.7rem] font-medium text-parchment-dim/70">{t.dice.builtinTitle}</h3>
+      <h3 className="text-[0.7rem] font-medium text-parchment-faint">{t.dice.builtinTitle}</h3>
       <BuiltinFavorites />
       <div className="mt-1 flex items-center gap-2">
-        <h3 className="min-w-0 flex-1 text-[0.7rem] font-medium text-parchment-dim/70">{t.dice.customTitle}</h3>
+        <h3 className="min-w-0 flex-1 text-[0.7rem] font-medium text-parchment-faint">{t.dice.customTitle}</h3>
         {editing !== "new" && (
           <button
             type="button"
@@ -132,7 +132,7 @@ function SavedRollsPanel() {
                   aria-pressed={roll.favorite}
                   aria-label={interpolate(roll.favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, { name: savedRollLabel(roll) })}
                   title={roll.favorite ? t.dice.favoriteRemoveHint : t.dice.favoriteAddHint}
-                  className={`-m-1 shrink-0 p-1 transition ${roll.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold"}`}
+                  className={`-m-1 shrink-0 p-1 transition ${roll.favorite ? "text-gold" : "text-parchment-faint hover:text-gold"}`}
                 >
                   <IconStar size={16} filled={roll.favorite} />
                 </button>
@@ -217,7 +217,7 @@ function BuiltinFavorites() {
               "flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
               favorite
                 ? "border-gold/50 text-parchment hover:border-gold"
-                : "border-ink-border text-parchment-dim/70 hover:border-gold/50 hover:text-parchment",
+                : "border-ink-border text-parchment-faint hover:border-gold/50 hover:text-parchment",
             ].join(" ")}
           >
             <IconStar size={13} filled={favorite} className={favorite ? "text-gold" : ""} />

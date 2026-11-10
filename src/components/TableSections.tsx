@@ -63,6 +63,7 @@ export function FoldingSection({
   title,
   note,
   count,
+  countText,
   open,
   onToggle,
   children,
@@ -70,6 +71,8 @@ export function FoldingSection({
   title: string;
   note?: string;
   count: number;
+  /** What's counted, if not tables ("2 generators"). */
+  countText?: string;
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
@@ -91,8 +94,8 @@ export function FoldingSection({
           <span className="block font-display text-lg leading-snug text-parchment">{title}</span>
           {note && <span className="mt-0.5 block text-xs text-parchment-dim">{note}</span>}
         </span>
-        <span className="shrink-0 text-xs text-parchment-dim/60">
-          {interpolate(t.tables.sectionCount, { count })}
+        <span className="shrink-0 text-xs text-parchment-faint">
+          {countText ?? interpolate(count === 1 ? t.tables.sectionCountOne : t.tables.sectionCount, { count })}
         </span>
       </button>
       {open && <div className="px-3 pb-3 sm:px-4 sm:pb-4">{children}</div>}

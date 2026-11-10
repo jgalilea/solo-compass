@@ -13,6 +13,7 @@ import { OracleProvider } from "./hooks/OracleContext";
 import { JournalProvider } from "./hooks/JournalContext";
 import { CustomTablesProvider } from "./hooks/CustomTablesContext";
 import { SavedRollsProvider } from "./hooks/SavedRollsContext";
+import { GeneratorsProvider } from "./hooks/GeneratorsContext";
 import { DiceView } from "./components/DiceView";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
@@ -30,18 +31,20 @@ function App() {
                 <HistoryProvider>
                   <CustomTablesProvider>
                     <SavedRollsProvider>
-                      <HashRouter>
-                        <Routes>
-                          <Route element={<Layout />}>
-                            <Route index element={<OracleView />} />
-                            <Route path="tablas" element={<TablesView />} />
-                            <Route path="dados" element={<DiceView />} />
-                            <Route path="diario" element={<JournalListView />} />
-                            <Route path="diario/:adventureId" element={<AdventureDetailView />} />
-                            <Route path="historial" element={<HistoryView />} />
-                          </Route>
-                        </Routes>
-                      </HashRouter>
+                      <GeneratorsProvider>
+                        <HashRouter>
+                          <Routes>
+                            <Route element={<Layout />}>
+                              <Route index element={<OracleView />} />
+                              <Route path="tablas" element={<TablesView />} />
+                              <Route path="dados" element={<DiceView />} />
+                              <Route path="diario" element={<JournalListView />} />
+                              <Route path="diario/:adventureId" element={<AdventureDetailView />} />
+                              <Route path="historial" element={<HistoryView />} />
+                            </Route>
+                          </Routes>
+                        </HashRouter>
+                      </GeneratorsProvider>
                     </SavedRollsProvider>
                   </CustomTablesProvider>
                 </HistoryProvider>

@@ -347,12 +347,12 @@ function BackupSettings() {
 
   return (
     <div className="rounded-2xl border border-gold/30 bg-gold/[0.05] p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">
         {t.about.dataSectionTitle}
       </p>
       <p className="mt-1.5 text-sm text-parchment-dim">{t.about.dataSectionDescription}</p>
       <p className="mt-1.5 text-sm text-parchment-dim">{t.storage.backupStillMatters}</p>
-      <p className="mt-2 flex items-center gap-1.5 text-xs text-parchment-dim/80">
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-parchment-dim">
         {stale && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-gold" />}
         {lastBackupAt
           ? interpolate(t.about.lastBackup, { when: formatSince(lastBackupAt, locale) })
@@ -483,7 +483,7 @@ function AboutSettings() {
         url={LONELOG_URL}
       >
         <div className="mt-4 border-t border-ink-border pt-3.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">
             {t.about.legendTitle}
           </p>
           <p className="mt-1.5 text-xs text-parchment-dim">{t.about.legendIntro}</p>
@@ -538,7 +538,7 @@ function CreditList({ label, credits }: { label: string; credits: typeof TABLE_C
   const { t } = useLocaleContext();
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">{label}</p>
       <ul className="mt-2 flex flex-col gap-3">
         {credits.map((credit) => (
           <li key={credit.name}>
@@ -565,7 +565,7 @@ function CreditList({ label, credits }: { label: string; credits: typeof TABLE_C
             </p>
             {/* The wording each source asks for, in English as published. */}
             {credit.attribution.map((line) => (
-              <p key={line} className="mt-1 text-xs italic text-parchment-dim/80">
+              <p key={line} className="mt-1 text-xs italic text-parchment-dim">
                 {line}
               </p>
             ))}
@@ -599,7 +599,7 @@ function Credit({
   const { t } = useLocaleContext();
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">{label}</p>
       <p className="mt-1 font-display text-base text-parchment">{name}</p>
       <p className="mt-1 text-sm text-parchment-dim">
         {interpolate(t.about.creditBy, { author })}{" "}

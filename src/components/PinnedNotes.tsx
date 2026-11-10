@@ -92,7 +92,7 @@ export function PinnedNotes({ notes, onChange }: { notes: string; onChange: (not
       <button
         type="button"
         onClick={startEditing}
-        className="rounded-xl border border-dashed border-ink-border px-3.5 py-3 text-left text-xs text-parchment-dim/80 transition hover:border-gold/50 hover:text-parchment-dim"
+        className="rounded-xl border border-dashed border-ink-border px-3.5 py-3 text-left text-xs text-parchment-dim transition hover:border-gold/50 hover:text-parchment-dim"
       >
         {t.notebook.notesEmpty}
       </button>

@@ -102,7 +102,7 @@ export function OracleSwitcher() {
                 );
               })}
             </div>
-            <p className="text-center text-xs text-parchment-dim/80">{t.oracleSwitcher.favoriteHint}</p>
+            <p className="text-center text-xs text-parchment-dim">{t.oracleSwitcher.favoriteHint}</p>
           </DialogBody>
         </Modal>
       )}

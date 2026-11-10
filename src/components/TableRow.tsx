@@ -61,7 +61,7 @@ export function TableRow({
               aria-label={favorite ? t.tables.favoriteRemove : t.tables.favoriteAdd}
               className={[
                 "-m-1 mt-0 shrink-0 p-1 transition",
-                favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+                favorite ? "text-gold" : "text-parchment-faint hover:text-gold",
               ].join(" ")}
             >
               <IconStar size={16} filled={favorite} />
@@ -139,7 +139,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
         <IconList size={14} />
         {t.tables.viewResultsHint}
         {/* The table's real range: a d66 goes from 11 to 66, not 1 to 66. */}
-        <span className="text-parchment-dim/60">
+        <span className="text-parchment-faint">
           · {table.entries[0]?.range[0]}–{table.entries.at(-1)?.range[1]}
         </span>
       </button>
@@ -154,7 +154,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
             title={table.name}
             subtitle={
               <>
-                <p className="text-xs uppercase tracking-wide text-parchment-dim/70">
+                <p className="text-xs uppercase tracking-wide text-parchment-faint">
                   {table.dice} · {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
                 </p>
                 {credit.length > 0 && <p className="mt-0.5 text-xs">{credit.join(" · ")}</p>}

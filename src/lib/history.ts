@@ -2,6 +2,7 @@ import { createCollection, diffById } from "./collectionStore";
 import type { OracleRoll } from "./oracle";
 import type { Dictionary } from "./i18n";
 import { makeId } from "./ids";
+import { cardIdentity, isDeckId, type DeckId } from "./cards";
 
 export interface TableRollEntry {
   kind: "tabla";
@@ -20,9 +21,11 @@ export interface DiceRollEntry {
   kind: "dados";
   id: string;
   timestamp: number;
-  /** "Attack d20+5 -> 19 (14 + 5)". */
+  /** "Attack d20+5 -> 19 (14 + 5)", "draw=Qs -> Queen of Spades". */
   text: string;
   favorite: boolean;
+  /** A card drawn (cards.ts): its deck and card, so it's out of that deck until shuffled. */
+  card?: { deck: DeckId; id: string };
 }
 
 /**
@@ -32,8 +35,42 @@ export interface DiceRollEntry {
  */
 export type HistoryEntry = (OracleRoll | TableRollEntry | DiceRollEntry) & { adventureId?: string };
 
-export function createDiceRollEntry(text: string, adventureId?: string, now = Date.now()): HistoryEntry {
-  return { kind: "dados", id: makeId(), timestamp: now, text, favorite: false, ...(adventureId ? { adventureId } : {}) };
+export function createDiceRollEntry(
+  text: string,
+  adventureId?: string,
+  card?: DiceRollEntry["card"],
+  now = Date.now(),
+): HistoryEntry {
+  return {
+    kind: "dados",
+    id: makeId(),
+    timestamp: now,
+    text,
+    favorite: false,
+    ...(card ? { card } : {}),
+    ...(adventureId ? { adventureId } : {}),
+  };
+}
+
+/**
+ * The cards drawn from one adventure's deck (free draws: none) since it
+ * was last shuffled, by identity (cards.ts).
+ */
+export function cardsDrawn(
+  history: readonly HistoryEntry[],
+  adventureId: string | undefined,
+  deck: DeckId,
+  shuffledAt: number,
+): string[] {
+  return history
+    .filter(
+      (h): h is DiceRollEntry & { adventureId?: string } =>
+        h.kind === "dados" &&
+        h.card?.deck === deck &&
+        (h.adventureId ?? "") === (adventureId ?? "") &&
+        h.timestamp > shuffledAt,
+    )
+    .map((h) => cardIdentity(h.card!.id));
 }
 
 // Stored in IndexedDB instead of localStorage: the history has no
@@ -81,7 +118,15 @@ function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEn
   }
   if (v.kind === "dados") {
     if (typeof v.text !== "string" || !v.text.trim()) return null;
-    return { kind: "dados", id: v.id as string, timestamp: v.timestamp as number, text: v.text, favorite };
+    const card = v.card as Record<string, unknown> | undefined;
+    return {
+      kind: "dados",
+      id: v.id as string,
+      timestamp: v.timestamp as number,
+      text: v.text,
+      favorite,
+      ...(card && isDeckId(card.deck) && typeof card.id === "string" ? { card: { deck: card.deck, id: card.id } } : {}),
+    };
   }
   return null;
 }

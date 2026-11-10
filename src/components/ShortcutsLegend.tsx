@@ -43,7 +43,7 @@ export function ShortcutsLegend() {
       <p className="text-sm text-parchment-dim">{s.intro}</p>
       {groups.map(({ heading, rows }) => (
         <div key={heading} className="mt-3.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim/70">{heading}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">{heading}</p>
           {/* Fixed-width key column: both lists line up. */}
           <dl className="mt-2 grid grid-cols-[8.5rem_1fr] items-center gap-x-3 gap-y-2 text-sm">
             {rows.map(([keys, label]) => (

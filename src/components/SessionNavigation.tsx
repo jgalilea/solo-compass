@@ -120,7 +120,7 @@ function SessionList({ groups, onJump, onJumpToEntry }: IndexProps) {
                   aria-expanded={open}
                   aria-label={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, { session: title })}
                   title={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, { session: title })}
-                  className="shrink-0 rounded-md p-1 text-parchment-dim/60 transition hover:text-gold"
+                  className="shrink-0 rounded-md p-1 text-parchment-faint transition hover:text-gold"
                 >
                   <IconChevronRight size={12} className={`transition-transform ${open ? "rotate-90" : ""}`} />
                 </button>
@@ -139,7 +139,7 @@ function SessionList({ groups, onJump, onJumpToEntry }: IndexProps) {
                 <span onMouseEnter={titleIfCut(title)} className="min-w-0 flex-1 truncate">
                   {title}
                 </span>
-                <span className="shrink-0 text-xs text-parchment-dim/50">{g.items.length}</span>
+                <span className="shrink-0 text-xs text-parchment-faint">{g.items.length}</span>
               </button>
             </div>
             {open && scenes.length > 0 && (

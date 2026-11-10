@@ -205,7 +205,7 @@ export function JournalListView() {
             <div className="relative flex">
               <IconSearch
                 size={17}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/50"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-faint"
               />
               <input
                 value={search}
@@ -219,7 +219,7 @@ export function JournalListView() {
                   type="button"
                   onClick={() => setSearch("")}
                   aria-label={t.common.close}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-dim/60 transition hover:text-parchment"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-faint transition hover:text-parchment"
                 >
                   <IconClose size={15} />
                 </button>
@@ -328,7 +328,7 @@ export function JournalListView() {
             )}
 
             {hasAnyAdventures && !activeAdventureId && (
-              <p className="text-center text-sm text-parchment-dim/70">
+              <p className="text-center text-sm text-parchment-faint">
                 {t.journal.noActiveAdventureNote}
               </p>
             )}
@@ -340,7 +340,7 @@ export function JournalListView() {
             <section className="flex flex-col gap-2.5">
               <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
                 {t.journal.searchEntriesHeading}
-                <span className="ml-2 normal-case tracking-normal text-parchment-dim/60">
+                <span className="ml-2 normal-case tracking-normal text-parchment-faint">
                   {entryMatches.length > ENTRY_RESULTS_LIMIT
                     ? interpolate(t.journal.searchMoreResults, { count: ENTRY_RESULTS_LIMIT })
                     : entryMatches.length === 1
@@ -372,7 +372,7 @@ export function JournalListView() {
                   className={`shrink-0 transition-transform ${showArchivedContents ? "rotate-90" : ""}`}
                 />
                 {t.journal.archivedHeading}
-                <span className="text-parchment-dim/50">{archivedAdventures.length}</span>
+                <span className="text-parchment-faint">{archivedAdventures.length}</span>
               </button>
               {showArchivedContents && (
                 <ul className="grid gap-2.5 lg:grid-cols-2">
@@ -458,7 +458,7 @@ function AdventureRow({
         }}
         aria-label={t.journal.dragHandle}
         style={{ touchAction: "none" }}
-        className="-m-1 shrink-0 cursor-grab p-3 text-parchment-dim/40 transition hover:text-parchment-dim active:cursor-grabbing"
+        className="-m-1 shrink-0 cursor-grab p-3 text-parchment-faint transition hover:text-parchment-dim active:cursor-grabbing"
       >
         <IconGripVertical size={18} />
       </button>
@@ -469,7 +469,7 @@ function AdventureRow({
         aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
         className={[
           "-m-1 shrink-0 p-3 transition",
-          adventure.favorite ? "text-gold" : "text-parchment-dim/40 hover:text-gold",
+          adventure.favorite ? "text-gold" : "text-parchment-faint hover:text-gold",
         ].join(" ")}
       >
         <IconStar size={16} filled={adventure.favorite} />

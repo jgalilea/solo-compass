@@ -213,11 +213,11 @@ export function AdventureNotebook({
               type="button"
               onClick={() => toggleSection(id)}
               aria-expanded={!isFolded}
-              className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-dim/70 transition hover:text-parchment"
+              className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-faint transition hover:text-parchment"
             >
               <IconChevronRight size={12} className={`shrink-0 transition-transform ${isFolded ? "" : "rotate-90"}`} />
               <span className="flex-1">{titles[id]}</span>
-              <span className="text-parchment-dim/50">{members.length}</span>
+              <span className="text-parchment-faint">{members.length}</span>
             </button>
           </h3>
           {rollable[id].length > 1 && (
@@ -226,7 +226,7 @@ export function AdventureNotebook({
               onClick={() => rollOn(id)}
               aria-label={interpolate(t.notebook.rollList, { list: titles[id] })}
               title={interpolate(t.notebook.rollList, { list: titles[id] })}
-              className="shrink-0 rounded-md p-1 text-parchment-dim/70 transition hover:text-gold"
+              className="shrink-0 rounded-md p-1 text-parchment-faint transition hover:text-gold"
             >
               <IconDice size={14} />
             </button>
@@ -300,7 +300,7 @@ export function AdventureNotebook({
           <label className="relative block">
             <IconSearch
               size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-dim/60"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint"
             />
             <input
               type="search"
@@ -308,7 +308,7 @@ export function AdventureNotebook({
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.notebook.searchPlaceholder}
               aria-label={t.notebook.searchPlaceholder}
-              className="w-full rounded-xl border border-ink-border bg-ink-900/70 py-1.5 pl-9 pr-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none"
+              className="w-full rounded-xl border border-ink-border bg-ink-900/70 py-1.5 pl-9 pr-3 text-base text-parchment placeholder:text-parchment-faint focus:border-gold focus:outline-none"
             />
           </label>
           {q && shown.length === 0 && (
@@ -323,7 +323,7 @@ export function AdventureNotebook({
         t.notebook.castTitle,
         count("characters", "places", "rooms", "foes"),
         <>
-          {!hasCast && <p className="text-xs text-parchment-dim/80">{t.notebook.castEmpty}</p>}
+          {!hasCast && <p className="text-xs text-parchment-dim">{t.notebook.castEmpty}</p>}
           {group("characters")}
           {group("places")}
           {group("rooms")}
@@ -338,7 +338,7 @@ export function AdventureNotebook({
         t.notebook.threadsTitle,
         count("threads", "progress"),
         <>
-          {!hasThreads && <p className="text-xs text-parchment-dim/80">{t.notebook.threadsEmpty}</p>}
+          {!hasThreads && <p className="text-xs text-parchment-dim">{t.notebook.threadsEmpty}</p>}
           {group("threads")}
           {group("progress")}
           {addButton("threads", t.notebook.addThreadButton)}
@@ -351,7 +351,7 @@ export function AdventureNotebook({
         t.notebook.inventoryTitle,
         count("items", "wealth"),
         <>
-          {!hasInventory && <p className="text-xs text-parchment-dim/80">{t.notebook.inventoryEmpty}</p>}
+          {!hasInventory && <p className="text-xs text-parchment-dim">{t.notebook.inventoryEmpty}</p>}
           {group("items")}
           {group("wealth")}
           {addButton("inventory", t.notebook.addInventoryButton)}

@@ -1,4 +1,5 @@
 import { createElement, useRef, useState, type ComponentType } from "react";
+import { isCardDraw, showDraws } from "../lib/cards";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
@@ -21,6 +22,7 @@ import {
   IconConsequence,
   IconCopy,
   IconDialogue,
+  IconCards,
   IconDice,
   IconExcerpt,
   IconGenerator,
@@ -122,7 +124,9 @@ const BLOCK_ICON: Record<"combat" | "dungeon" | "resources", IconType> = {
 function entryIcon(entry: JournalEntry): IconType {
   if (entry.kind === "roll") {
     const { symbol } = splitRollSymbol(entry.text);
-    return symbol === "tbl" ? IconTable : symbol === "gen" ? IconGenerator : IconDice;
+    if (symbol === "tbl") return IconTable;
+    if (symbol === "gen") return IconGenerator;
+    return isCardDraw(entry.text) ? IconCards : IconDice;
   }
   if (entry.kind === "note") {
     const form = noteForm(entry.text);
@@ -287,7 +291,7 @@ export function SessionGroupRow({
               {session.text}
             </span>
             <SessionDate session={session} />
-            <span className="shrink-0 text-xs text-parchment-dim/50">{group.items.length}</span>
+            <span className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
           </button>
           {/* Expanding it with a tap selects it: that way its
               buttons are reachable on touch too. */}
@@ -345,7 +349,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   const icon = createElement(Icon, {
     size: 18,
     "aria-label": kindLabel,
-    className: ["mt-0.5 shrink-0", entry.kind === "note" ? "text-parchment-dim/50" : "text-gold"].join(" "),
+    className: ["mt-0.5 shrink-0", entry.kind === "note" ? "text-parchment-faint" : "text-gold"].join(" "),
   } as { size: number; className: string });
 
   if (editing) {
@@ -472,7 +476,7 @@ function EntryContent({
               >
                 <span className="text-[0.65rem] leading-tight text-parchment-dim">
                   {roll.label && `${roll.label} · `}
-                  {roll.die}
+                  {showDraws(roll.die)}
                 </span>
                 <RollResult result={roll.result} />
               </li>
@@ -490,13 +494,13 @@ function EntryContent({
       return (
         <p className="whitespace-pre-wrap text-base text-parchment/90">
           {kind && <span className="text-xs text-parchment-dim">{kind} · </span>}
-          {detail}
+          {showDraws(detail)}
         </p>
       );
     }
     return (
       <div className="flex flex-col gap-1">
-        {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, detail].filter(Boolean).join(" · ")}</p>}
+        {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, showDraws(detail)].filter(Boolean).join(" · ")}</p>}
         {knownAnswer ? (
           <span
             className={`w-fit rounded-full border px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}

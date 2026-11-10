@@ -28,6 +28,7 @@ const data = (d: Partial<MergeData>): MergeData => ({
   entries: [],
   customTables: [],
   savedRolls: [],
+  generators: [],
   deleted: [],
   ...d,
 });
@@ -106,3 +107,17 @@ describe("mergeData: saved rolls", () => {
   });
 });
 
+
+describe("mergeData: generators", () => {
+  const gen = (id: string, name: string, updatedAt: number) => ({ id, name, tableIds: ["tipo-lugar", "estado-lugar"], createdAt: 1, updatedAt });
+  it("joins them by id, the newer edit wins, and deleted ones stay deleted", () => {
+    const merged = mergeData(
+      data({ generators: [gen("g1", "Place", 5), gen("g2", "NPC", 1)] }),
+      data({ generators: [gen("g1", "New place", 9), gen("g3", "Encounter", 1)], deleted: [{ id: "g2", at: 2 }] }),
+    );
+    expect(merged.generators.map((g) => [g.id, g.name])).toEqual([
+      ["g1", "New place"],
+      ["g3", "Encounter"],
+    ]);
+  });
+});

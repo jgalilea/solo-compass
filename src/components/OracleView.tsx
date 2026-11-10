@@ -10,6 +10,7 @@ import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
+import { TwistCounter } from "./TwistCounter";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
 import { EmptyState } from "./StateViews";
@@ -51,6 +52,7 @@ export function OracleView() {
         <header className="flex items-center justify-center gap-2.5">
           <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.oracle.title}</h1>
           <OracleSwitcher />
+          <TwistCounter adventureId={activeAdventureId} />
           <OracleHelp />
         </header>
 
@@ -68,7 +70,7 @@ export function OracleView() {
             aria-label={t.oracle.questionLabel}
             placeholder={t.oracle.questionPlaceholder}
             enterKeyHint="go"
-            className="w-full rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3.5 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+            className="w-full rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3.5 text-base text-parchment placeholder:text-parchment-faint focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
           />
 
           <LikelihoodPicker value={level} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
@@ -79,7 +81,7 @@ export function OracleView() {
           >
             {t.oracle.rollButton}
           </button>
-          <p className="-mt-1 hidden text-center text-xs text-parchment-dim/60 pointer-fine:block">
+          <p className="-mt-1 hidden text-center text-xs text-parchment-faint pointer-fine:block">
             {t.oracle.enterHint}
           </p>
         </form>

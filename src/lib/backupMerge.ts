@@ -19,6 +19,7 @@
 
 import type { CustomTable } from "./customTables";
 import type { SavedRoll } from "./savedRolls";
+import type { Generator } from "./generators";
 import type { Deletion } from "./deletions";
 import type { HistoryEntry } from "./history";
 import type { Adventure } from "./journal";
@@ -30,6 +31,7 @@ export interface MergeData {
   entries: JournalEntry[];
   customTables: CustomTable[];
   savedRolls: SavedRoll[];
+  generators: Generator[];
   deleted: Deletion[];
 }
 
@@ -82,5 +84,9 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     theirs.updatedAt > mine.updatedAt ? theirs : mine,
   ).filter((x) => !gone.has(x.id));
 
-  return { history, adventures, entries, customTables, savedRolls, deleted };
+  const generators = unionById(local.generators, incoming.generators, (mine, theirs) =>
+    theirs.updatedAt > mine.updatedAt ? theirs : mine,
+  ).filter((x) => !gone.has(x.id));
+
+  return { history, adventures, entries, customTables, savedRolls, generators, deleted };
 }

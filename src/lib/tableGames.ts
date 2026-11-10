@@ -42,7 +42,8 @@ export type GameId =
   | "starforged"
   | "starsmith"
   | "lazy-gm"
-  | "cairn";
+  | "cairn"
+  | "opse";
 
 export interface TableGame {
   id: GameId;
@@ -71,6 +72,10 @@ export const SOLO_COMPASS_TABLE_IDS = [
   "motivacion",
   "complicacion",
   "lugar",
+  "tipo-lugar",
+  "estado-lugar",
+  "rasgo-lugar",
+  "problema-lugar",
   "hallazgo",
   "clima",
 ] as const;
@@ -145,6 +150,16 @@ const CAIRN_GAME: GameRef = {
   tag: "Cairn",
 };
 
+export const OPSE_URL = "https://inflatablestudios.itch.io/one-page-solo-engine";
+
+const OPSE_GAME: GameRef = {
+  name: "One Page Solo Engine",
+  url: OPSE_URL,
+  author: "Karl Hendricks (Inflatable Studios)",
+  license: "CC BY-SA 4.0",
+  tag: "OPSE",
+};
+
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const CC_BY_SA = "https://creativecommons.org/licenses/by-sa/4.0/";
 
@@ -212,6 +227,14 @@ export const TABLE_CREDITS: {
       "This work includes material taken from the Lazy GM's Resource Document by Michael E. Shea of SlyFlourish.com, available under the Creative Commons Attribution 4.0 International License.",
       "This work includes material taken from the System Reference Document 5.1 (\"SRD 5.1\") by Wizards of the Coast LLC. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License.",
     ],
+  },
+  {
+    name: "One Page Solo Engine",
+    author: "Karl Hendricks (Inflatable Studios)",
+    license: "CC BY-SA 4.0",
+    licenseUrl: CC_BY_SA,
+    url: OPSE_URL,
+    attribution: ["One Page Solo Engine v1.6 by Karl Hendricks (Inflatable Studios), licensed under CC BY-SA 4.0."],
   },
 ];
 
@@ -300,6 +323,15 @@ export const TABLE_GAMES: TableGame[] = [
     count: 82,
     owns: (id) => id.startsWith("cairn-"),
     load: () => import("./tableData/cairn").then((m) => m.TABLES),
+  },
+  {
+    id: "opse",
+    title: () => OPSE_GAME.name,
+    note: (t) => creditNote(t, OPSE_GAME),
+    game: () => OPSE_GAME,
+    count: 1,
+    owns: (id) => id.startsWith("opse-"),
+    load: () => import("./tableData/opse").then((m) => m.TABLES),
   },
 ];
 

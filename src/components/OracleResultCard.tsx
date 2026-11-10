@@ -46,7 +46,7 @@ export function OracleResultCard({
       <div className="flex items-start justify-center gap-6">
         {groups.map((group, i) => (
           <div key={group.role} className="contents">
-            {i > 0 && contest && <span className="self-center text-base text-parchment-dim/60">{t.oracle.vs}</span>}
+            {i > 0 && contest && <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>}
             <div className="flex flex-col items-center gap-1.5">
               <DiceGroup group={group} animate={animate} large={singleDie} />
               {oracle !== "recluse" && (

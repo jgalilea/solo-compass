@@ -202,7 +202,8 @@ export function splitRollText(text: string): {
  */
 // Not ending in "=9": "d6=5 ->" is Lonelog's rolled value (a table
 // roll, "Theme d66=25 -> …"), not a formula.
-const DIE = String.raw`[-({\d]*d(?:\d|%|F|\()[^\s]*?(?<!(?:^|[^<>!])=\d+)`;
+// A card drawn ("draw=Qs", cards.ts) counts as one too.
+const DIE = String.raw`(?:draw=[A-Za-z0-9]+|[-({\d]*d(?:\d|%|F|\()[^\s]*?(?<!(?:^|[^<>!])=\d+))`;
 /** Text with a roll of the generic roller in it ("Attack 2d6+3 -> 9 (…)"). */
 export const OWN_ROLL = new RegExp(String.raw`(^|\s)${DIE}\s*->`);
 // Each roll, and the description of every one after the first

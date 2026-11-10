@@ -158,7 +158,7 @@ export function TableEditorDialog({
               spellCheck
               className={`${INPUT_CLASS} flex-none resize-y py-2.5 text-sm leading-relaxed`}
             />
-            <span className="text-xs text-parchment-dim/80">{e.entriesHint}</span>
+            <span className="text-xs text-parchment-dim">{e.entriesHint}</span>
           </label>
 
           {/* Live check: nothing until something's typed, unless saving was tried. */}
@@ -205,7 +205,7 @@ export function TableEditorDialog({
             </div>
           </details>
 
-          <p className="text-xs text-parchment-dim/80">{e.ownershipNote}</p>
+          <p className="text-xs text-parchment-dim">{e.ownershipNote}</p>
 
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>

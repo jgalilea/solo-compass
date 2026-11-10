@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TABLE_THEMES, type MeaningTable, type TableTheme } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import { loadOpenTableSections, saveOpenTableSections } from "../lib/tableSections";
@@ -20,7 +20,6 @@ import { canShare, shareTextFile } from "../lib/share";
 import { normalizeForSearch } from "../lib/text";
 import { ActionMenu } from "./ActionMenu";
 import { EmptyState } from "./StateViews";
-import { TableEditorDialog } from "./TableEditorDialog";
 import { Toast } from "./Toast";
 import {
   IconAlertCircle,
@@ -39,11 +38,21 @@ import { FoldingSection, TableSection, ThemeFilter } from "./TableSections";
 import { TableRow } from "./TableRow";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
 import { RecentRolls } from "./RecentRolls";
+import { GeneratorRow } from "./GeneratorRow";
+import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
+import { generatorGames, generatorTables, type Generator, type GeneratorDraft } from "../lib/generators";
 
 const INSPIRATION_ID = "inspiration";
 
+// The editors load when opened: they're a good part of the main bundle otherwise.
+const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
+const GeneratorEditorDialog = lazy(() =>
+  import("./GeneratorEditorDialog").then((m) => ({ default: m.GeneratorEditorDialog })),
+);
+
 type ToastState =
   | { kind: "deleted"; table: CustomTable; index: number }
+  | { kind: "generatorDeleted"; generator: Generator }
   | { kind: "message"; title: string; error?: boolean };
 
 /**
@@ -58,7 +67,17 @@ type ToastState =
  */
 export function TablesView() {
   const { adventures, activeAdventureId } = useJournalContext();
-  const { rollTable, rollInspiration, addConsequence } = usePlayActions();
+  const { rollTable, rollInspiration, rollGenerator, addConsequence } = usePlayActions();
+  const {
+    generators,
+    load: loadGenerators,
+    addGenerator,
+    updateGenerator,
+    removeGenerator,
+    restoreGenerator,
+  } = useGeneratorsContext();
+  useEffect(() => loadGenerators(), [loadGenerators]);
+  const [generatorEditor, setGeneratorEditor] = useState<{ id?: string; draft?: GeneratorDraft } | null>(null);
   const { tables: customTables, addTables, updateTable, removeTable, restoreTable } = useCustomTablesContext();
   const { t } = useLocaleContext();
   const [last, setLast] = useState<LastResult | null>(null);
@@ -82,6 +101,8 @@ export function TablesView() {
           "solo-compass",
           ...TABLE_GAMES.filter((g) => openSections.has(g.id)).map((g) => g.id),
           ...[...favoriteIds].map(gameOfTable).filter((id) => id !== undefined),
+          // What the generators roll on.
+          ...generatorGames(generators),
         ],
   );
   const builtIn = blocks.flatMap((b) => b.tables);
@@ -130,6 +151,28 @@ export function TablesView() {
         text: rolled.text,
       };
     });
+  }
+
+  function handleGenerator(generator: Generator) {
+    const tables = generatorTables(generator, all);
+    if (tables.length === 0) return;
+    withRollPause(generatorSource(generator), () => {
+      const rolled = rollGenerator(generator.name, tables, undefined, all);
+      return {
+        sourceId: generatorSource(generator),
+        rollId: rolled.id,
+        rollIds: rolled.rollIds,
+        title: generator.name,
+        detail: rolled.detail,
+        text: rolled.text,
+      };
+    });
+  }
+
+  function saveGenerator(draft: GeneratorDraft) {
+    if (generatorEditor?.id) updateGenerator(generatorEditor.id, draft);
+    else addGenerator(draft);
+    setGeneratorEditor(null);
   }
 
   function toggleFavorite(id: string) {
@@ -245,7 +288,7 @@ export function TablesView() {
           <div key={g.theme ?? "none"} className="flex flex-col gap-3">
             <h3 className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
               {g.theme ? t.tables.themes[g.theme] : t.tables.editor.themeNone}
-              <span className="text-parchment-dim/50">{g.tables.length}</span>
+              <span className="text-parchment-faint">{g.tables.length}</span>
             </h3>
             <ul className="grid gap-3 2xl:grid-cols-2">{g.tables.map(renderRow)}</ul>
           </div>
@@ -336,7 +379,7 @@ export function TablesView() {
           <label className="relative block">
             <IconSearch
               size={16}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-dim/60"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-parchment-faint"
             />
             <input
               data-hotkey="write table"
@@ -345,7 +388,7 @@ export function TablesView() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.tables.searchPlaceholder}
               aria-label={t.tables.searchLabel}
-              className="w-full rounded-2xl border border-ink-border bg-ink-900/70 py-2.5 pl-10 pr-4 text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+              className="w-full rounded-2xl border border-ink-border bg-ink-900/70 py-2.5 pl-10 pr-4 text-parchment placeholder:text-parchment-faint focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
             />
           </label>
 
@@ -386,6 +429,66 @@ export function TablesView() {
                 >
                   <ul className="grid gap-3 2xl:grid-cols-2">{favoriteTables.map(renderRow)}</ul>
                 </TableSection>
+              )}
+
+              {/* Several tables in one roll. Like the player's tables: one
+                  unfold away, and a line when folded. */}
+              {!filtering && (
+                <FoldingSection
+                  title={t.tables.generatorsHeading}
+                  count={generators.length}
+                  countText={interpolate(
+                    generators.length === 1 ? t.tables.generatorCountOne : t.tables.generatorCount,
+                    { count: generators.length },
+                  )}
+                  open={isOpen("generators")}
+                  onToggle={() => toggleSection("generators")}
+                >
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="min-w-0 flex-1 text-sm text-parchment-dim">{t.tables.generatorsIntro}</p>
+                      <button
+                        type="button"
+                        onClick={() => setGeneratorEditor({})}
+                        className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
+                      >
+                        <IconPlus size={16} />
+                        {t.tables.generatorNew}
+                      </button>
+                    </div>
+                    {generators.length === 0 ? (
+                      <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
+                        {t.tables.generatorsEmpty}
+                      </p>
+                    ) : (
+                      <ul className="grid gap-3 2xl:grid-cols-2">
+                        {generators.map((generator) => (
+                          <GeneratorRow
+                            key={generator.id}
+                            generator={generator}
+                            tables={generatorTables(generator, all)}
+                            loading={generator.tableIds.some((id) => {
+                              const game = gameOfTable(id);
+                              return !!game && blocks.find((b) => b.id === game)?.status !== "ready";
+                            })}
+                            last={last?.sourceId === generatorSource(generator) ? last : null}
+                            rolling={rollingId === generatorSource(generator)}
+                            activeAdventure={activeAdventure}
+                            onRoll={() => handleGenerator(generator)}
+                            onEdit={() =>
+                              setGeneratorEditor({ id: generator.id, draft: { name: generator.name, tableIds: generator.tableIds } })
+                            }
+                            onDelete={() => {
+                              removeGenerator(generator.id);
+                              setToast({ kind: "generatorDeleted", generator });
+                            }}
+                            onSaveConsequence={addConsequence}
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </FoldingSection>
               )}
 
               {/* Always there (unless searching or filtering): creating or
@@ -464,12 +567,35 @@ export function TablesView() {
         </aside>
       </div>
 
-      {editor && (
-        <TableEditorDialog
-          initial={editor.draft}
-          editing={!!editor.id}
-          onSave={saveEditor}
-          onClose={() => setEditor(null)}
+      <Suspense fallback={null}>
+        {editor && (
+          <TableEditorDialog
+            initial={editor.draft}
+            editing={!!editor.id}
+            onSave={saveEditor}
+            onClose={() => setEditor(null)}
+          />
+        )}
+
+        {generatorEditor && (
+          <GeneratorEditorDialog
+            initial={generatorEditor.draft}
+            editing={!!generatorEditor.id}
+            onSave={saveGenerator}
+            onClose={() => setGeneratorEditor(null)}
+          />
+        )}
+      </Suspense>
+
+      {toast?.kind === "generatorDeleted" && (
+        <Toast
+          key={toast.generator.id}
+          Icon={IconTrash}
+          title={t.tables.generatorDeleted}
+          closeLabel={t.common.close}
+          action={{ label: t.common.undo, onClick: () => restoreGenerator(toast.generator) }}
+          duration={6000}
+          onDismiss={dismissToast}
         />
       )}
 
@@ -495,4 +621,9 @@ export function TablesView() {
       )}
     </div>
   );
+}
+
+/** The result panel's source for a generator (tables use their id). */
+function generatorSource(generator: Generator): string {
+  return `generator:${generator.id}`;
 }

@@ -55,7 +55,7 @@ export function Toast({
         type="button"
         onClick={onDismiss}
         aria-label={closeLabel}
-        className="-m-1 shrink-0 p-1 text-parchment-dim/60 transition hover:text-parchment"
+        className="-m-1 shrink-0 p-1 text-parchment-faint transition hover:text-parchment"
       >
         <IconClose size={14} />
       </button>

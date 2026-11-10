@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
+import { announce } from "../lib/announce";
 import type { Likelihood, OracleRoll } from "../lib/oracle";
-import { lonerTwistCounter, rollOracleWith } from "../lib/oracleEngines";
+import { lonerTwistCounterOf, rollOracleWith } from "../lib/oracleEngines";
 import { formatTableRoll, resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
 import type { HistoryEntry, TableRollEntry } from "../lib/history";
 import { getOracle } from "../lib/oracles";
@@ -77,7 +78,8 @@ export function usePlayActions() {
 
   const askOracle = useCallback(
     (question: string, likelihood: Likelihood, adventureId = activeAdventureId): OracleRoll => {
-      const roll = rollOracleWith(oracleId, question, likelihood, lonerTwistCounter(historyEntries));
+      // Loner's Twist Counter is each adventure's own (free rolls share one).
+      const roll = rollOracleWith(oracleId, question, likelihood, lonerTwistCounterOf(historyEntries, adventureId));
       if (roll.twist?.happened) {
         // Each table roll goes to the history too, like any other.
         const data = gameState("loner").data;
@@ -90,6 +92,7 @@ export function usePlayActions() {
         if (twistRolls.length) roll.twist.result = twistRolls.map((r) => r.resultText).join(" · ");
       }
       record(roll, adventureId);
+      announce(formatOracleResult(t, roll));
       if (adventureId) {
         if (roll.question) addJournalEntry(adventureId, "question", roll.question, roll.id);
         const diceText = `${getOracle(oracleId).name} — ${formatOracleDice(t, roll)} -> ${formatOracleResult(t, roll)}`;
@@ -104,6 +107,7 @@ export function usePlayActions() {
     (table: MeaningTable, adventureId = activeAdventureId, tables: MeaningTable[] = []): TableRollEntry => {
       const entry = buildTableRoll(table, tables);
       record(entry, adventureId);
+      announce(`${entry.tableName}: ${entry.resultText}`);
       if (adventureId) {
         const diceText = formatTableRoll(entry.tableName, table.dice, entry.total, entry.resultText);
         addJournalEntry(adventureId, "roll", diceText, entry.id);
@@ -114,14 +118,15 @@ export function usePlayActions() {
   );
 
   /**
-   * Quick inspiration: action + theme at once (the tables come from
-   * useMeaningTables, which loads them). Each roll goes to the
-   * history on its own (they're two tables), but the journal gets a
-   * single entry, linked to the first, so the consequence follows both.
+   * Several tables at once, one journal entry: quick inspiration
+   * (action + theme, the tables from useMeaningTables) and the player's
+   * generators. Each roll goes to the history on its own (they're
+   * different tables), but the journal gets a single `gen:` entry,
+   * linked to the first, so the consequence follows them all.
    */
-  const rollInspiration = useCallback(
-    (tables: MeaningTable[], adventureId = activeAdventureId): Inspiration => {
-      const rolls = tables.map((table) => buildTableRoll(table));
+  const rollCombined = useCallback(
+    (name: string, tables: MeaningTable[], adventureId = activeAdventureId, all: MeaningTable[] = []): Inspiration => {
+      const rolls = tables.map((table) => buildTableRoll(table, all));
       for (const roll of rolls) record(roll, adventureId);
       const inspiration: Inspiration = {
         id: rolls[0].id,
@@ -129,15 +134,22 @@ export function usePlayActions() {
         detail: rolls.map((r, i) => `${r.tableName} ${tables[i].dice}=${r.total}`).join(", "),
         text: rolls.map((r) => r.resultText).join(" · "),
       };
+      announce(`${name}: ${inspiration.text}`);
       if (adventureId) {
-        // Two tables at once: a generator, in Lonelog (`gen:`). No "—" in
-        // the detail: that's how oracle rolls are recognised (splitRollText).
-        const diceText = `gen: ${t.tables.inspirationName} (${inspiration.detail}) -> ${inspiration.text}`;
+        // A generator, in Lonelog (`gen:`). No "—" in the detail: that's
+        // how oracle rolls are recognised (splitRollText).
+        const diceText = `gen: ${name} (${inspiration.detail}) -> ${inspiration.text}`;
         addJournalEntry(adventureId, "roll", diceText, inspiration.id);
       }
       return inspiration;
     },
-    [activeAdventureId, record, addJournalEntry, buildTableRoll, t],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll],
+  );
+
+  const rollInspiration = useCallback(
+    (tables: MeaningTable[], adventureId = activeAdventureId) =>
+      rollCombined(t.tables.inspirationName, tables, adventureId),
+    [activeAdventureId, rollCombined, t],
   );
 
   const addConsequence = useCallback(
@@ -147,5 +159,5 @@ export function usePlayActions() {
     [activeAdventureId, addJournalEntry],
   );
 
-  return { askOracle, rollTable, rollInspiration, addConsequence };
+  return { askOracle, rollTable, rollInspiration, rollGenerator: rollCombined, addConsequence };
 }

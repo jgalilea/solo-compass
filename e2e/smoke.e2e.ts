@@ -133,6 +133,14 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   await dice.getByRole("button", { name: "Apuntar" }).click();
   await expect(page.locator("[id^=entry-]").getByText(/Ataque d20\+5/)).toBeVisible();
 
+  // A card from the deck, on the same tray.
+  if (await opener.isVisible()) await opener.click();
+  await dice.getByRole("button", { name: "Cartas" }).click();
+  await dice.getByRole("button", { name: "Sacar carta" }).click();
+  await expect(dice.getByText("Quedan 51 de 52")).toBeVisible();
+  await dice.getByRole("button", { name: "Apuntar" }).click();
+  await expect(page.locator("[id^=entry-]").getByText(/ de (picas|corazones|diamantes|tréboles)$/)).toBeVisible();
+
   // Half written, it waits for the way back.
   await composer.fill("A medio escribir");
   await page.getByRole("link", { name: "Tablas", exact: true }).click();

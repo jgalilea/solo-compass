@@ -321,3 +321,11 @@ export function IconExcerpt(props: IconProps) {
 export function IconGenerator(props: IconProps) {
   return <TablerIcon icon={Tabler.IconLayersSubtract} {...props} />;
 }
+
+export function IconCards(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconCards} {...props} />;
+}
+
+export function IconShuffle(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconArrowsShuffle} {...props} />;
+}

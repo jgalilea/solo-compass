@@ -53,7 +53,7 @@ export function ConsequenceComposer({
         onKeyDown={(e) => e.key === "Enter" && handleSave()}
         placeholder={placeholder}
         enterKeyHint="done"
-        className="min-w-0 flex-1 bg-transparent py-1 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent py-1 text-base text-parchment placeholder:text-parchment-faint focus:outline-none"
       />
       <button
         type="button"

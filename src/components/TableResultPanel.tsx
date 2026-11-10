@@ -40,11 +40,12 @@ export function ResultPanel({
           inline ? "border-ink-border bg-ink-900/60" : "border-gold/40 bg-ink-800/70 p-5",
         ].join(" ")}
       >
-        <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim">
-          <span className="truncate">
+        {/* A generator's detail is long: it wraps under the title. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-xs uppercase tracking-wide text-parchment-dim">
+          <span className="max-w-full truncate">
             {inline && last.total !== undefined ? interpolate(t.tables.resultLabel, { n: last.total }) : last.title}
           </span>
-          <span className="shrink-0">
+          <span className="min-w-0 break-words">
             {last.detail}
             {!inline && last.total !== undefined && ` → ${last.total}`}
           </span>

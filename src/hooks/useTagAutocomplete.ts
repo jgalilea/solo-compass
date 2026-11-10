@@ -106,9 +106,9 @@ export function useTagAutocomplete({
     onSelect: (e: { currentTarget: HTMLTextAreaElement }) => setCaret(e.currentTarget.selectionStart),
     onFocus: () => setFocused(true),
     onBlur: () => setFocused(false),
-    role: "combobox",
+    // A textarea can't be a combobox in ARIA; as a text box it still
+    // says it suggests a list and which suggestion is picked.
     "aria-autocomplete": "list" as const,
-    "aria-expanded": open,
     "aria-controls": open ? listId : undefined,
     "aria-activedescendant": options.length > 0 ? optionId(active) : undefined,
   };

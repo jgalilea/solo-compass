@@ -58,7 +58,7 @@ export function OracleHelp() {
       <OddsTable oracleId={oracle.id} />
 
       <div className="flex flex-col gap-2 border-t border-ink-border pt-4">
-        <p className="text-xs text-parchment-dim/80">
+        <p className="text-xs text-parchment-dim">
           {interpolate(help.credit, { name: oracle.name, author: oracle.author, license: oracle.license })}
         </p>
         <a

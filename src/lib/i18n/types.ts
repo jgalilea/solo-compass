@@ -103,6 +103,24 @@ export interface Dictionary {
     customTitle: string;
     favoritesHint: string;
     noFavorites: string;
+    toolLabel: string;
+    toolDice: string;
+    toolCards: string;
+    deckLabel: string;
+    deckPoker: string;
+    deckTarot: string;
+    jokers: string;
+    reversed: string;
+    unique: string;
+    uniqueOn: string;
+    uniqueOff: string;
+    draw: string;
+    left: string;
+    empty: string;
+    shuffle: string;
+    shuffled: string;
+    cardsHint: string;
+    cardsTrayHint: string;
   };
   guide: {
     title: string;
@@ -334,6 +352,7 @@ export interface Dictionary {
     doubleExplanation: string;
     /** Loner's counter in the journal: {count}. */
     doubleShort: string;
+    twistCounterHint: string;
     twistLabel: string;
     twistExplanation: string;
     rollTwist: string;
@@ -392,6 +411,9 @@ export interface Dictionary {
     creditNote: string;
     /** Number of tables in a folded block. */
     sectionCount: string;
+    sectionCountOne: string;
+    generatorCount: string;
+    generatorCountOne: string;
     /** Names of the table themes (filter chips, sub-headings in a block). */
     themes: Record<TableTheme, string>;
     themeFilterLabel: string;
@@ -418,6 +440,29 @@ export interface Dictionary {
     resultColumn: string;
     authorLabel: string;
     licenseLabel: string;
+    generatorsHeading: string;
+    generatorsIntro: string;
+    generatorNew: string;
+    generatorsEmpty: string;
+    generatorRoll: string;
+    generatorEdit: string;
+    generatorDelete: string;
+    generatorDeleted: string;
+    generatorMissing: string;
+    generatorNewTitle: string;
+    generatorEditTitle: string;
+    generatorNameLabel: string;
+    generatorNamePlaceholder: string;
+    generatorNameError: string;
+    generatorTablesLabel: string;
+    generatorTablesError: string;
+    generatorSearchLabel: string;
+    generatorSearchPlaceholder: string;
+    generatorAddTable: string;
+    generatorRemoveTable: string;
+    generatorMoveUp: string;
+    generatorMoveDown: string;
+    generatorMore: string;
     editor: {
       newTitle: string;
       editTitle: string;

@@ -14,6 +14,8 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
+import { showDraws } from "../lib/cards";
+import { Switch } from "./Switch";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/journalUi";
 import { loadDraft, saveDraft } from "../lib/drafts";
@@ -340,35 +342,19 @@ export function JournalComposer({
       ) : mode === "scene" ? (
         <div className="mb-2 px-1">
           {/* Optional, and says so: off until the player turns it on. */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={sceneCheck}
-            onClick={() => {
-              setSceneCheck(!sceneCheck);
-              saveSceneCheck(!sceneCheck);
+          <Switch
+            checked={sceneCheck}
+            onChange={(next) => {
+              setSceneCheck(next);
+              saveSceneCheck(next);
             }}
-            className="flex items-center gap-2 text-left text-xs text-parchment-dim transition hover:text-parchment"
           >
-            <span
-              className={[
-                "relative h-4 w-7 shrink-0 rounded-full border transition",
-                sceneCheck ? "border-gold bg-gold" : "border-ink-border bg-ink-900",
-              ].join(" ")}
-            >
-              <span
-                className={[
-                  "absolute top-1/2 size-3 -translate-y-1/2 rounded-full transition-all",
-                  sceneCheck ? "left-3 bg-ink-950" : "left-0.5 bg-parchment-dim",
-                ].join(" ")}
-              />
-            </span>
             <IconOracle size={14} className={sceneCheck ? "shrink-0 text-gold" : "shrink-0"} />
             <span>
               <span className={sceneCheck ? "font-medium text-parchment" : ""}>{t.journal.sceneCheckLabel}</span>{" "}
-              <span className="text-parchment-dim/70">({t.journal.sceneCheckOptional})</span>
+              <span className="text-parchment-faint">({t.journal.sceneCheckOptional})</span>
             </span>
-          </button>
+          </Switch>
           {sceneCheck && (
             <p className="mt-1.5 text-xs text-parchment-dim">
               {interpolate(t.journal.sceneCheckHint, { oracle: getOracle(oracleId).name })}
@@ -381,7 +367,7 @@ export function JournalComposer({
           {lastEntry ? (
             <>
               <span className="shrink-0">{t.journal.consequenceJoins}</span>
-              <span className="min-w-0 truncate italic text-parchment">«{lastEntry.text}»</span>
+              <span className="min-w-0 truncate italic text-parchment">«{showDraws(lastEntry.text)}»</span>
             </>
           ) : (
             <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
@@ -461,7 +447,7 @@ export function JournalComposer({
             placeholder={placeholder}
             aria-label={placeholder}
             enterKeyHint={sendsOnEnter ? "send" : "enter"}
-            className="max-h-40 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-1.5 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+            className="max-h-40 min-w-0 flex-1 resize-none self-center bg-transparent px-1 py-1.5 text-base text-parchment placeholder:text-parchment-faint focus:outline-none"
           />
           {isQuestion && (
             <button
@@ -684,7 +670,7 @@ const SPEAKER_CHIPS = 4;
 function ShortcutHint({ mode }: { mode: ComposerMode }) {
   const { t } = useLocaleContext();
   return (
-    <kbd className="mt-0.5 hidden shrink-0 font-sans text-[0.65rem] text-parchment-dim/60 any-pointer-fine:block">
+    <kbd className="mt-0.5 hidden shrink-0 font-sans text-[0.65rem] text-parchment-faint any-pointer-fine:block">
       {modeShortcut(mode, t.shortcuts.altKey, t.shortcuts.shiftKey)}
     </kbd>
   );
@@ -830,7 +816,7 @@ function SpeakerPicker({
             }}
             placeholder={t.journal.dialogueOtherName}
             aria-label={t.journal.dialogueOtherName}
-            className="h-7 w-40 shrink-0 rounded-full border border-gold bg-ink-900/70 px-3 text-base text-parchment placeholder:text-parchment-dim/50 focus:outline-none"
+            className="h-7 w-40 shrink-0 rounded-full border border-gold bg-ink-900/70 px-3 text-base text-parchment placeholder:text-parchment-faint focus:outline-none"
           />
         ) : (
           <button

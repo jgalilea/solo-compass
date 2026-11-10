@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { showDraws } from "../lib/cards";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
@@ -54,7 +55,7 @@ export function RecentRolls({
           <li key={entry.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
             {entry.kind === "oraculo" ? (
               <>
-                <IconOracle size={16} className="shrink-0 text-parchment-dim/70" />
+                <IconOracle size={16} className="shrink-0 text-parchment-faint" />
                 <span className="min-w-0 flex-1 truncate italic text-parchment/85">
                   {entry.question ? `“${entry.question}”` : t.history.kindOracle}
                 </span>
@@ -66,16 +67,16 @@ export function RecentRolls({
               </>
             ) : entry.kind === "dados" ? (
               <>
-                <IconDice size={16} className="shrink-0 text-parchment-dim/70" />
+                <IconDice size={16} className="shrink-0 text-parchment-faint" />
                 {/* What was rolled, then its result, like a table roll. */}
-                <span className="min-w-0 shrink truncate text-parchment-dim">{entry.text.split(" -> ")[0]}</span>
+                <span className="min-w-0 shrink truncate text-parchment-dim">{showDraws(entry.text.split(" -> ")[0])}</span>
                 <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">
                   {entry.text.includes(" -> ") ? entry.text.slice(entry.text.lastIndexOf(" -> ") + 4) : ""}
                 </span>
               </>
             ) : (
               <>
-                <IconTable size={16} className="shrink-0 text-parchment-dim/70" />
+                <IconTable size={16} className="shrink-0 text-parchment-faint" />
                 <span className="shrink-0 text-parchment-dim">{entry.tableName}</span>
                 <span className="min-w-0 flex-1 truncate text-right text-parchment/85">
                   {entry.resultText}

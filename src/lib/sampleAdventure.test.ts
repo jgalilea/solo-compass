@@ -8,6 +8,7 @@ import { splitRollText } from "./journalUi";
 import { buildCast, foeIsOut, threadStatus } from "./lonelogTags";
 import { noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
 import { rollFormula } from "./diceNotation";
+import { cardName, isCardDraw } from "./cards";
 
 const shapeOf = (l: SampleLine) =>
   "oracle" in l
@@ -58,6 +59,8 @@ describe("sample adventure", () => {
       expect(new Set(rolls)).toEqual(new Set(["d", "tbl", "gen"]));
       expect(entries.some((e) => e.text.includes("kh1"))).toBe(true);
       expect(entries.some((e) => e.kind === "roll" && /, \S+ 1d6\+1 ->/.test(e.text))).toBe(true);
+      // A card drawn, as the cards tool writes it.
+      expect(entries.some((e) => e.kind === "roll" && isCardDraw(e.text))).toBe(true);
       // Someone else's action and every special note.
       expect(entries.some((e) => e.kind === "action" && splitActor(e.text).actor)).toBe(true);
       const forms = entries.filter((e) => e.kind === "note").map((e) => noteForm(e.text).form);
@@ -68,6 +71,11 @@ describe("sample adventure", () => {
       const { entries } = await build(lang);
       for (const entry of entries) {
         if (entry.kind !== "roll" || splitRollSymbol(entry.text).symbol !== "d" || entry.text.includes(" — ")) continue;
+        if (isCardDraw(entry.text)) {
+          const [, card, name] = entry.text.match(/draw=(\S+) -> (.+)$/)!;
+          expect(name).toBe(cardName(card, lang));
+          continue;
+        }
         for (const roll of entry.text.split(/, (?=\p{L})/u)) {
           const [, label, formula] = roll.match(/^(\p{L}+) (\S+) ->/u)!;
           // Same formula, same faces: only the numbers can differ.

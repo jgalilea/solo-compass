@@ -211,7 +211,7 @@ export function CastItem({
             </ul>
           )}
 
-          <p className="text-[0.7rem] text-parchment-dim/70">
+          <p className="text-[0.7rem] text-parchment-faint">
             {count === 1 ? t.notebook.mentionCountOne : interpolate(t.notebook.mentionCount, { count })}
           </p>
           <ul className="flex max-h-48 flex-col gap-0.5 overflow-y-auto overscroll-contain">
@@ -230,7 +230,7 @@ export function CastItem({
                       {tagsToPlainText(entry.text)}
                     </span>
                     {/* Where it is, as in the journal search. */}
-                    <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-dim/60">
+                    <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-faint">
                       {[sessionOf.get(id)?.title ?? t.journal.prologueLabel, dayOf(id)].filter(Boolean).join(" · ")}
                     </span>
                   </button>
@@ -271,7 +271,7 @@ export function CastItem({
                   {t.notebook.renameButton}
                 </button>
               </div>
-              <p className="text-[0.7rem] text-parchment-dim/70">{t.notebook.renameHint}</p>
+              <p className="text-[0.7rem] text-parchment-faint">{t.notebook.renameHint}</p>
             </form>
           ) : changing ? (
             <form onSubmit={logChange} className="flex flex-col gap-1.5">
@@ -298,7 +298,7 @@ export function CastItem({
                   {t.notebook.logButton}
                 </button>
               </div>
-              <p className="text-[0.7rem] text-parchment-dim/70">
+              <p className="text-[0.7rem] text-parchment-faint">
                 {isQuantity ? t.notebook.quantityChangeHint : t.notebook.changeHint}
               </p>
             </form>
@@ -424,7 +424,7 @@ function DescriptionField({ name, text, onChange }: { name: string; text: string
       className={
         text.trim()
           ? "-mx-1.5 whitespace-pre-wrap rounded-md px-1.5 py-1 text-left text-sm text-parchment/90 transition hover:bg-ink-700/50"
-          : "flex items-center gap-1 self-start rounded-md py-0.5 text-xs text-parchment-dim/80 transition hover:text-gold"
+          : "flex items-center gap-1 self-start rounded-md py-0.5 text-xs text-parchment-dim transition hover:text-gold"
       }
     >
       {text.trim() ? (

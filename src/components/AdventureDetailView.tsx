@@ -622,7 +622,7 @@ export function AdventureDetailView() {
                 className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
               />
               {t.journal.previousSessionsHeading}
-              <span className="text-parchment-dim/50">{previousGroups.length}</span>
+              <span className="text-parchment-faint">{previousGroups.length}</span>
             </button>
             {previousExpanded && (
               <ul className="flex flex-col gap-2">

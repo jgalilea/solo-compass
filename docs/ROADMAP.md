@@ -9,6 +9,49 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Cartas, «¿Cuánto?» y contador por aventura (2026-11-10):
+  - Baraja en la herramienta de dados (interruptor «Dados | Cartas», la
+    misma bandeja): póker con comodines opcionales y tarot con
+    invertidas opcionales, en la notación del complemento de cartas de
+    Lonelog (v1.0.0, CC BY-SA). Sin repetir (por defecto) cada carta
+    sale una vez por aventura hasta «Barajar»; lo que queda se calcula
+    del historial. Pendiente si se pide: mazos propios (una lista de
+    cartas) y tiradas con posiciones (Pasado/Presente/Futuro); hoy la
+    descripción de la tirada hace ese papel.
+  - «Oráculo: ¿cuánto?» de One Page Solo Engine como tabla (bloque
+    propio en Tablas; marcada como favorita sale en la mesa de juego),
+    no como botón del oráculo, para dejarlo limpio.
+  - El contador de giros de Loner es de cada aventura (las tiradas
+    libres comparten uno) y se ve junto al nombre del oráculo
+    («dobles 1/3», `TwistCounter`).
+  - Tablas propias de lugares: Tipo de lugar, Estado del lugar, Qué
+    llama la atención y Problema del lugar (Cairn tiene «Asentamiento»,
+    pero sin tamaños ni puestos militares).
+  - Generadores propios: varias tablas elegidas (de cualquier juego o
+    propias), en orden, tiradas con un botón y apuntadas en una sola
+    entrada `gen:`, como «Inspírame». En Tablas (bloque plegable,
+    editor con buscador) y en la mesa de juego. Descartados a
+    propósito (2026-11-10): mazos de cartas propios y «sin repetir» en
+    las tablas (una baraja propia sería una tabla sin repetición).
+  - El paquete principal ronda los 692 kB (aviso a 700): los editores de
+    tablas y generadores ya se cargan al abrirlos. Lo siguiente que
+    pesa es el guion de la aventura de ejemplo, en los diccionarios de
+    los dos idiomas: sacarlo a su propio módulo si hace falta sitio.
+  - Las opciones de la baraja son interruptores (`Switch`, el mismo que
+    «Probar la escena»), no botones: se ve si están apagadas.
+- Revisión de accesibilidad (2026-11-10, axe-core en las cinco
+  pantallas, los 5 temas × 2 modos, móvil y escritorio): el texto
+  secundario atenuado con opacidad (`text-parchment-dim/50…70`) bajaba
+  de 4,5:1 en casi todos los temas (axe no lo ve sobre degradados);
+  ahora es un token por tema, `--color-parchment-faint`, calculado
+  para 4,5:1 sobre una tarjeta. Dorado del modo claro más oscuro en
+  fantasía, pulp y sci-fi (texto claro encima); rojo de OSR oscuro más
+  vivo. El resultado del oráculo y de las tablas se anuncia al lector
+  de pantalla (`announce.ts`, una región viva en `Layout`). La guía
+  rápida se desplaza con el teclado; la casilla del diario deja de ser
+  `combobox` (no vale en un textarea). Lo único que queda es el zoom
+  bloqueado, que es a propósito. Sin probar aún con TalkBack/VoiceOver
+  de verdad.
 - Segunda tanda del 2026-11-10: borrador de la casilla por aventura
   (`drafts.ts`); «Renombrar» en todo el diario (`renameInEntry`, con
   Deshacer); relojes llenos y cuentas atrás a cero señalados sin avisos
@@ -56,8 +99,8 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   (`oracleEngines.ts`); la ayuda muestra sus reglas y una tabla con las
   probabilidades exactas, calculadas recorriendo todas las tiradas.
   Descartados: Mythic y Juice (licencias NC) y MUNE (sin licencia
-  publicada). Pendiente si se pide: el «¿Cuánto?» de OPSE y el
-  contador de giros por aventura (hoy es uno para todas).
+  publicada). El «¿Cuánto?» de OPSE y el
+  contador de giros por aventura, hechos el 2026-11-10.
 - Lonelog 1.6.0 y sus complementos (2026-11-09): ver el punto 1.
 - Prueba de rendimiento y aviso de Safari (2026-11-09):
   - `npm run test:perf` (`e2e/volume.perf.ts`, fuera del despliegue):
@@ -615,8 +658,7 @@ quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/w
   respuesta se lee como transcurre / alterada / interrumpida. Sin
   reglas de One Page Solo Engine: vale con cualquier oráculo. El
   factor de caos de Mythic sigue fuera (licencia NC).
-- Baraja de cartas (póker/tarot, sacar sin reponer, por aventura) como
-  herramienta de la mesa de juego — aplazada el 2026-11-07. *The
+- Baraja de cartas — HECHO (2026-11-10), ver «Hecho recientemente». *The
   Oracle* (jamessral, cartas) sería un oráculo aparte (punto 5).
 - Tablas sin repetición (casilla en las tablas propias, lo que ha
   salido por aventura, "Barajar") — aplazada el 2026-11-07: no

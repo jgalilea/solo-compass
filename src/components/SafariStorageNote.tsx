@@ -25,7 +25,7 @@ export function SafariStorageNote() {
       <IconInstall size={18} className="mt-0.5 shrink-0 text-gold" />
       <div className="flex flex-col gap-1 text-sm text-parchment-dim">
         <p>{t.safariNote.text}</p>
-        <p className="text-xs text-parchment-dim/80">{t.safariNote.moveData}</p>
+        <p className="text-xs text-parchment-dim">{t.safariNote.moveData}</p>
       </div>
       <button
         type="button"
@@ -34,7 +34,7 @@ export function SafariStorageNote() {
           setVisible(false);
         }}
         aria-label={t.common.close}
-        className="absolute right-1.5 top-1.5 p-2 text-parchment-dim/60 transition hover:text-parchment"
+        className="absolute right-1.5 top-1.5 p-2 text-parchment-faint transition hover:text-parchment"
       >
         <IconClose size={15} />
       </button>

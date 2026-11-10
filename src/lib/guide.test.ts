@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DICTIONARIES, LOCALES } from "./i18n";
 import { closeGuide, isGuideOpen, openGuide, subscribeGuide } from "./guide";
+import { isCardDraw } from "./cards";
 import { parseMarkdownToEntries, type JournalEntry } from "./lonelog";
 import { noteForm, splitActor, splitRollSymbol } from "./lonelogLines";
 import { buildCast, foeIsOut, threadStatus } from "./lonelogTags";
@@ -28,7 +29,7 @@ for (const locale of LOCALES) {
   describe(`quick guide (${locale})`, () => {
     it("reads every notation example as it says", () => {
       const read = (code: string) => parseMarkdownToEntries(code, "a", 0)[0];
-      const [action, question, roll, consequence, session, scene, actor, dialogue, meta, , table] = g.notation.map((r) => r.code);
+      const [action, question, roll, consequence, session, scene, actor, dialogue, meta, , table, card] = g.notation.map((r) => r.code);
       expect(read(action).kind).toBe("action");
       expect(read(question).kind).toBe("question");
       expect(read(roll).kind).toBe("roll");
@@ -39,6 +40,8 @@ for (const locale of LOCALES) {
       expect(noteForm(read(dialogue).text).form).toBe("dialogue");
       expect(noteForm(read(meta).text).form).toBe("meta");
       expect(splitRollSymbol(read(table).text).symbol).toBe("tbl");
+      expect(read(card).kind).toBe("roll");
+      expect(isCardDraw(read(card).text)).toBe(true);
       // The narrative block and the fight, written out in full.
       expect(noteForm("\\---\nA letter\n---\\").form).toBe("excerpt");
       expect(["[COMBAT]", "Rd1 Strike", "[/COMBAT]"].map((t) => noteForm(t).form)).toEqual(["block", "round", "block"]);

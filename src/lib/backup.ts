@@ -24,12 +24,14 @@ import {
 import type { JournalEntry } from "./lonelog";
 import { isCustomTable, loadCustomTables, replaceCustomTables, type CustomTable } from "./customTables";
 import { loadSavedRolls, normalizeSavedRoll, replaceSavedRolls, type SavedRoll } from "./savedRolls";
+import { loadGenerators, normalizeGenerator, replaceGenerators, type Generator } from "./generators";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
 import { isOracleId, loadFavoriteOracleId, loadOracleId, saveFavoriteOracleId, saveOracleId } from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadFavoriteDice, saveFavoriteDice } from "./diceFavorites";
+import { loadCardSettings, mergeCardSettings, normalizeCardSettings, saveCardSettings, type CardSettings } from "./cardSettings";
 import { isBuiltinDie } from "./dice";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
@@ -45,7 +47,9 @@ import { announceChange } from "./sync";
 // backups merge as if nothing had been deleted there.
 // 5: savedRolls (the player's saved dice rolls). Older backups leave
 // this device's as they are.
-export const BACKUP_SCHEMA_VERSION = 5;
+// 6: generators (several of the player's tables rolled at once). The
+// same with older backups.
+export const BACKUP_SCHEMA_VERSION = 6;
 
 export interface BackupPayload {
   app: "solo-compass";
@@ -59,6 +63,7 @@ export interface BackupPayload {
   };
   customTables?: CustomTable[];
   savedRolls?: SavedRoll[];
+  generators?: Generator[];
   settings: {
     theme: string;
     mode: string;
@@ -70,18 +75,21 @@ export interface BackupPayload {
     favoriteTableIds: string[];
     /** Missing in backups from before it existed: left as it is. */
     favoriteDice?: string[];
+    /** The cards' settings and shuffles; missing in older backups. */
+    cards?: CardSettings;
   };
 }
 
 export class BackupError extends Error {}
 
 export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
-  const [history, adventures, entries, customTables, savedRolls, deleted] = await Promise.all([
+  const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
     loadHistory(t),
     loadAdventures(t),
     loadJournalEntries(t),
     loadCustomTables(t),
     loadSavedRolls(t),
+    loadGenerators(t),
     loadDeletions(),
   ]);
   return {
@@ -92,6 +100,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
     journal: { adventures, entries, deleted },
     customTables,
     savedRolls,
+    generators,
     settings: {
       theme: loadTheme(),
       mode: loadMode(),
@@ -101,6 +110,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
       activeAdventureId: loadActiveAdventureId(),
       favoriteTableIds: [...loadFavoriteTableIds()],
       favoriteDice: [...loadFavoriteDice()],
+      cards: loadCardSettings(),
     },
   };
 }
@@ -152,6 +162,9 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
   const incomingRolls = Array.isArray(parsed.savedRolls)
     ? parsed.savedRolls.map(normalizeSavedRoll).filter((x) => x !== null)
     : null;
+  const incomingGenerators = Array.isArray(parsed.generators)
+    ? parsed.generators.map(normalizeGenerator).filter((x) => x !== null)
+    : null;
   const incomingDeleted = recentDeletions(
     (Array.isArray(parsed.journal.deleted) ? parsed.journal.deleted : []).filter(
       (d): d is Deletion => !!d && typeof d.id === "string" && typeof d.at === "number",
@@ -159,22 +172,24 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
   );
 
   if (mode === "merge") {
-    const [history, adventures, entries, customTables, savedRolls, deleted] = await Promise.all([
+    const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
       loadHistory(t),
       loadAdventures(t),
       loadJournalEntries(t),
       loadCustomTables(t),
       loadSavedRolls(t),
+      loadGenerators(t),
       loadDeletions(),
     ]);
     const merged = mergeData(
-      { history, adventures, entries, customTables, savedRolls, deleted },
+      { history, adventures, entries, customTables, savedRolls, generators, deleted },
       {
         history: incomingHistory,
         adventures: incomingAdventures,
         entries: incomingEntries,
         customTables: incomingTables ?? [],
         savedRolls: incomingRolls ?? [],
+        generators: incomingGenerators ?? [],
         deleted: incomingDeleted,
       },
     );
@@ -184,6 +199,7 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
       replaceJournalEntries(t, merged.entries),
       replaceCustomTables(t, merged.customTables),
       replaceSavedRolls(t, merged.savedRolls),
+      replaceGenerators(t, merged.generators),
       replaceDeletions(merged.deleted),
     ]);
     announceRestore();
@@ -199,6 +215,7 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     incomingTables ? replaceCustomTables(t, incomingTables) : Promise.resolve(),
     // The same with saved rolls, from before they existed.
     incomingRolls ? replaceSavedRolls(t, incomingRolls) : Promise.resolve(),
+    incomingGenerators ? replaceGenerators(t, incomingGenerators) : Promise.resolve(),
   ]);
   announceRestore();
   // What's here now is exactly that backup: it counts as the latest.
@@ -220,6 +237,8 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
       saveFavoriteTableIds(new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")));
     }
     if (Array.isArray(s.favoriteDice)) saveFavoriteDice(new Set(s.favoriteDice.filter(isBuiltinDie)));
+    // A deck shuffled on either device stays shuffled.
+    if (s.cards) saveCardSettings(mergeCardSettings(loadCardSettings(), normalizeCardSettings(s.cards)));
   }
 }
 
@@ -229,6 +248,7 @@ function announceRestore(): void {
   announceChange("history");
   announceChange("customTables");
   announceChange("savedRolls");
+  announceChange("generators");
 }
 
 export function backupFilename(): string {

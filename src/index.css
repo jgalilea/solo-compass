@@ -76,6 +76,10 @@
 
   --color-parchment: #f4efe6;
   --color-parchment-dim: #cfc9bc;
+  /* Secondary text (hints, counts, dates): as faint as it can be and
+     still read at 4.5:1 on a card (ink-800). Never fade the dim one
+     with an opacity instead, it falls below that. */
+  --color-parchment-faint: #8e8b85;
 
   --color-gold: #d7b26d;
   --color-gold-soft: #ecd8a8;
@@ -149,6 +153,7 @@
 
   --color-parchment: #ece1c8;
   --color-parchment-dim: #b7a688;
+  --color-parchment-faint: #95866e;
 
   --color-gold: #dd9a35;
   --color-gold-soft: #eebf72;
@@ -174,6 +179,7 @@
 
   --color-parchment: #eef0f3;
   --color-parchment-dim: #9aa0aa;
+  --color-parchment-faint: #80858e;
 
   --color-gold: #6c8cff;
   --color-gold-soft: #9ab4ff;
@@ -201,6 +207,7 @@
 
   --color-parchment: #d7ecdf;
   --color-parchment-dim: #7a978a;
+  --color-parchment-faint: #6a8479;
 
   --color-gold: #39e75f;
   --color-gold-soft: #8ff9ab;
@@ -228,6 +235,7 @@
 
   --color-parchment: #f2f0eb;
   --color-parchment-dim: #8a8a86;
+  --color-parchment-faint: #80807d;
 
   /* No gold: the "accent" is near-white bone, matching the rest of
      the black-and-white palette. */
@@ -235,7 +243,7 @@
   --color-gold-soft: #ffffff;
 
   --color-yes: #f2f0eb;
-  --color-no: #c81e1e;
+  --color-no: #f24646;
   --color-contradiction: #5c4a6b;
 
   --color-die-white: #f2f0eb;
@@ -262,8 +270,9 @@
 
   --color-parchment: #2b2013;
   --color-parchment-dim: #6b5a3e;
+  --color-parchment-faint: #6f5e42;
 
-  --color-gold: #9c6f1f;
+  --color-gold: #8e651c;
   --color-gold-soft: #b8862f;
 
   --color-yes: #2f8a5f;
@@ -283,8 +292,9 @@
 
   --color-parchment: #241a10;
   --color-parchment-dim: #5c4a35;
+  --color-parchment-faint: #67553e;
 
-  --color-gold: #a8621f;
+  --color-gold: #96571c;
   --color-gold-soft: #c17a2f;
 
   --color-yes: #5c7a2e;
@@ -304,6 +314,7 @@
 
   --color-parchment: #14171c;
   --color-parchment-dim: #5b6572;
+  --color-parchment-faint: #5f6976;
 
   --color-gold: #3757e0;
   --color-gold-soft: #5470f0;
@@ -325,8 +336,9 @@
 
   --color-parchment: #0c1f17;
   --color-parchment-dim: #4a685c;
+  --color-parchment-faint: #506d62;
 
-  --color-gold: #0e8a56;
+  --color-gold: #0d7f4f;
   --color-gold-soft: #14a366;
 
   --color-yes: #0e8a56;
@@ -349,12 +361,13 @@
 
   --color-parchment: #0a0a0a;
   --color-parchment-dim: #55503f;
+  --color-parchment-faint: #635e4d;
 
   --color-gold: #1a1a1a;
   --color-gold-soft: #000000;
 
   --color-yes: #0a0a0a;
-  --color-no: #b81f1a;
+  --color-no: #af1d19;
   --color-contradiction: #4a3a58;
 }
 

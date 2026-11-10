@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import { showDraws } from "../lib/cards";
 import { Die } from "./Die";
 import { formatOracleResult } from "../lib/i18n/answerText";
 import { oracleDice } from "../lib/oracle";
@@ -149,7 +150,7 @@ export function HistoryEntryCard({
             : "border-ink-border bg-ink-800/50",
         ].join(" ")}
       >
-        <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-dim/70">
+        <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-faint">
           <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? t.history.kindDice : entry.tableName}</span>
           <div className="flex items-center gap-2.5">
             <span className="normal-case tracking-normal">
@@ -166,7 +167,7 @@ export function HistoryEntryCard({
                 "-m-1 p-1 transition",
                 entry.favorite
                   ? "text-gold"
-                  : "text-parchment-dim/50 hover:text-gold",
+                  : "text-parchment-faint hover:text-gold",
               ].join(" ")}
             >
               <IconStar size={15} filled={entry.favorite} />
@@ -175,7 +176,7 @@ export function HistoryEntryCard({
               type="button"
               onClick={() => onRequestDelete(entry.id)}
               aria-label={t.history.deleteEntry}
-              className="-m-1 p-1 text-parchment-dim/50 transition hover:text-no"
+              className="-m-1 p-1 text-parchment-faint transition hover:text-no"
             >
               <IconTrash size={15} />
             </button>
@@ -232,7 +233,7 @@ export function HistoryEntryCard({
             </div>
           </div>
         ) : entry.kind === "dados" ? (
-          <DiceRollText text={entry.text} />
+          <DiceRollText text={showDraws(entry.text)} />
         ) : (
           <div className="mt-2">
             <p className="text-sm text-parchment/90">{entry.resultText}</p>

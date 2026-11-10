@@ -128,7 +128,7 @@ export function HistoryView() {
           <p className="mt-1 text-sm text-parchment-dim">{t.history.subtitle}</p>
           {/* Gestures only exist on touch screens; with a mouse each roll
               already has its star and trash icons. */}
-          <p className="mt-1 hidden text-xs text-parchment-dim/70 pointer-coarse:block">
+          <p className="mt-1 hidden text-xs text-parchment-faint pointer-coarse:block">
             {t.history.swipeHint}
           </p>
         </div>

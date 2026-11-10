@@ -102,7 +102,7 @@ export function DiceHelp() {
                 </ul>
               </div>
 
-              <p className="mt-auto text-xs text-parchment-dim/80">
+              <p className="mt-auto text-xs text-parchment-dim">
                 <span className="font-medium text-parchment-dim">{help.usedInLabel}:</span> {usedIn}
               </p>
             </li>

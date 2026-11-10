@@ -55,8 +55,25 @@ export function DialogHeader({
 }
 
 /** The part of a dialog that scrolls. */
-export function DialogBody({ className = "flex flex-col gap-4", children }: { className?: string; children: ReactNode }) {
+/**
+ * The dialog's scrolling content. `focusable` when there's nothing to
+ * focus inside (only text): the keyboard can still scroll it.
+ */
+export function DialogBody({
+  className = "flex flex-col gap-4",
+  focusable = false,
+  children,
+}: {
+  className?: string;
+  focusable?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 ${className}`}>{children}</div>
+    <div
+      tabIndex={focusable ? 0 : undefined}
+      className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 ${className}`}
+    >
+      {children}
+    </div>
   );
 }

@@ -9,7 +9,7 @@
  * doesn't reload its own changes.
  */
 
-export type SyncTopic = "journal" | "history" | "customTables" | "savedRolls";
+export type SyncTopic = "journal" | "history" | "customTables" | "savedRolls" | "generators";
 
 let channel: BroadcastChannel | null | undefined;
 

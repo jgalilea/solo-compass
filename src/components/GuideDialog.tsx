@@ -22,7 +22,7 @@ export function GuideDialog() {
   return (
     <Modal onClose={closeGuide} label={g.title} size="lg">
       <DialogHeader title={g.title} Icon={IconHelp} onClose={closeGuide} />
-      <DialogBody className="flex flex-col gap-5">
+      <DialogBody focusable className="flex flex-col gap-5">
         <p className="text-sm text-parchment-dim">{g.intro}</p>
         {/* Two columns on desktop: writing and notation, then tags. */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">

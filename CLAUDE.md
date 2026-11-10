@@ -98,8 +98,9 @@ No backend; persistence is split by access pattern, not by feature:
 
 - **IndexedDB** (via `idb-keyval`), for anything that can grow unbounded:
   journal (`journal.ts`), oracle/table roll history (`history.ts`), the
-  player's own tables (`customTables.ts`) and their own dice
-  (`savedRolls.ts`: name, formula, favorite; schema 5 of the backup).
+  player's own tables (`customTables.ts`), their own dice
+  (`savedRolls.ts`: name, formula, favorite; schema 5 of the backup)
+  and their generators (`generators.ts`, schema 6).
   `localStorage` is ~5 MiB per origin and shared with every other app on the
   same `github.io` subdomain, so it's unsuitable for this.
   Each kind of record (adventures, journal entries, rolls, tables,
@@ -198,8 +199,9 @@ Everything else stays a note and is only *drawn* differently
 consequence never joins a scene or a block marker). The front matter
 carries the campaign header (`title`, `start_date`, `last_update`) and
 import names the adventure from it (`parseTitleFromMarkdown`). Not
-read: Partylog/Lorelog/Maplog/Wargaming (separate systems) and the
-Cards add-on (no deck in the app). This module does both directions:
+read: Partylog/Lorelog/Maplog/Wargaming (separate systems). The Cards
+add-on's draws (`d: draw=Qs -> …`) are rolls like any other (see the
+dice below). This module does both directions:
 
 - `exportAdventureToMarkdown` — produces a `.md` valid for any
   Lonelog-compatible tool, not just this app.
@@ -355,8 +357,9 @@ the books' numbers). Loner and OPSE offer three likelihoods
 (`oracleLevels`; the picker shows only those, `fitLikelihood` maps the
 rest to even). A roll keeps its `oracle` and every die (`dice`; old
 Recluse rolls only have `white`/`black`, read through `oracleDice`).
-Loner's Twist Counter is derived from the history
-(`lonerTwistCounter`), never stored apart; the third double rolls its
+Loner's Twist Counter is derived from the history, each adventure's
+rolls apart (`lonerTwistCounter`), never stored, and shown beside the oracle's
+name while Loner is picked (`TwistCounter`); the third double rolls its
 two twist tables, preloaded while Loner is selected. In the journal an
 oracle roll is "Name — dice -> answer" (`formatOracleDice`/
 `formatOracleResult`): the "—" is how `splitRollText` tells it from a
@@ -395,8 +398,9 @@ file plus its `TABLE_GAMES` entry.
   refers to them).
 - Third-party tables under an open licence (CC BY or CC BY-SA, never
   NC): Ironsworn, Delve, Starforged, Starsmith (Datasworn), Loner,
-  Knave, Cairn (2nd ed., from its GitHub source) and the Lazy GM's
-  Resource Document, with our own Spanish
+  Knave, Cairn (2nd ed., from its GitHub source), the Lazy GM's
+  Resource Document and One Page Solo Engine's "How much?" (its
+  yes/no oracle is one of the four), with our own Spanish
   translation (a translation of a BY-SA text is BY-SA too). Each table
   carries its `game` credit; `TABLE_CREDITS` (Settings → About, and the
   README) holds each source's attribution wording verbatim. Never add
@@ -431,7 +435,14 @@ line, optional leading ranges, list markers, Markdown tables; the .md
 export is read back by the same parser (tested). "Quick inspiration"
 (`rollInspiration` in `usePlayActions`, given the tables by
 `useMeaningTables().inspiration`) rolls Acción + Tema together: two
-history rolls, one journal entry.
+history rolls, one journal entry. The player's **generators**
+(`generators.ts`, state in the `Generators` context, their own
+IndexedDB collection and backup schema 6) do the same with any tables
+they pick, by id and in order (`rollGenerator`, a `gen:` entry); a
+table that's gone is skipped. Screens that show them load their
+tables' games (`generatorGames`): the Tables screen (a folding block,
+edited in `GeneratorEditorDialog`) and the game table (under quick
+inspiration).
 
 A table result can ask for more rolls (`resolveResult` in `tables.ts`,
 kept light on purpose): "Roll twice"/"Tira dos veces" (and three times,
@@ -475,6 +486,18 @@ button or formula (`withEdge`: `d20` → `2d20kh1`, anything else
 read a roll and each formula taken apart, with examples and the line
 each leaves; a test rolls every example and checks the exact line, and
 that the limits it states hold.
+
+A switch on the same tool turns the dice into cards (`CardControls`,
+`cards.ts`), on the same tray: a standard deck (jokers optional) or a
+tarot (reversals optional), written as Lonelog's Cards add-on
+(`draw=Qs -> Reina de picas`, `M16r` reversed; the name after "->" is
+ours, `cardName`), shown with suit symbols (`showDraws`) and read as a
+roll by the journal (a draw counts as a die in `splitRollSeries`).
+Each draw is a `"dados"` history roll that keeps its `card`; without
+repeats, what's left of an adventure's deck is derived from those
+since its last shuffle (`cardsDrawn`), nothing else stored but the
+shuffle times (`cardSettings.ts`, localStorage and the backup's
+settings, merged by the latest).
 
 ### Journal search and stats
 
@@ -544,7 +567,8 @@ widths.
 The pointer cursor on clickable elements and the keyboard focus ring
 (`:focus-visible`, gold outline) come from base rules in `index.css`
 (Tailwind v4 sets neither); text fields replace the ring with
-`focus:border-gold`. Every button and link still needs its own `hover:`
+`focus:border-gold`. An on/off option is a `Switch` (role switch, sliding knob), not a
+button that looks pressed. Every button and link still needs its own `hover:`
 state (on a selected item, the selection itself is enough). `Modal` moves
 focus into the panel, traps Tab and gives focus back on close;
 `useDismiss` adds arrow keys and Esc-returns-focus to dropdown menus.
@@ -590,6 +614,12 @@ anything smaller than `text-base`, menu items, answer chips, tool
 buttons or help headings: some display fonts are hard to read small
 and the app gets visually crowded. The HTML export follows the same
 rule.
+Secondary text (dates, counts, hints) is `text-parchment-faint`, a
+token per theme and mode set to read at 4.5:1 on a card; never fade
+`text-parchment-dim` with an opacity (`/50`, `/60`…) for text, it falls
+below that (only `disabled:` states may). A roll's result is announced
+to screen readers through `announce.ts` (called by `usePlayActions`,
+read by the one live region `Announcer` in `Layout`).
 `THEMES` in `theme.ts` must stay in sync with the color values actually
 defined in `index.css` (used for the theme-picker swatches). Because some
 themes (notably `osr`) map the "gold" accent to a near-white/near-monochrome

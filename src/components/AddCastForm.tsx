@@ -103,7 +103,7 @@ export function AddCastForm({
           <NumberField value={quantity} onChange={setQuantity} min={0} label={t.notebook.quantityLabel} />
         </div>
       )}
-      <p className="text-[0.7rem] text-parchment-dim/70">{hint}</p>
+      <p className="text-[0.7rem] text-parchment-faint">{hint}</p>
       <div className="flex justify-end gap-1.5">
         <button
           type="button"

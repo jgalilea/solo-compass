@@ -229,10 +229,19 @@ export function rollOracleWith(id: OracleId, question: string, likelihood: Likel
 }
 
 /**
- * Loner's Twist Counter so far, read from the history (newest first):
+ * Loner's Twist Counter so far, read from the history (newest first;
+ * usePlayActions passes one adventure's rolls, each has its own):
  * the counter left by the latest double rolled with Loner. Derived,
  * not stored, like everything else that comes from the log.
  */
+/** The same, for one adventure's rolls (none: the free rolls'). */
+export function lonerTwistCounterOf(
+  history: readonly { kind: string; oracle?: string; twist?: { counter: number }; adventureId?: string }[],
+  adventureId: string | null | undefined,
+): number {
+  return lonerTwistCounter(history.filter((h) => (h.adventureId ?? null) === (adventureId ?? null)));
+}
+
 export function lonerTwistCounter(history: readonly { kind: string; oracle?: string; twist?: { counter: number } }[]): number {
   return history.find((h) => h.kind === "oraculo" && h.oracle === "loner" && h.twist)?.twist?.counter ?? 0;
 }

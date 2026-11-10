@@ -77,7 +77,7 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings nearly 700 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn** and the **Lazy GM's Resource Document**. Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings nearly 700 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn**, the **Lazy GM's Resource Document** and the One Page Solo Engine's "How much?". Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
@@ -173,7 +173,7 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 ## Credits and license
 
 - **Recluse** oracle by Graven Utterance (Oliver N), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://gravenutterance.itch.io/recluse>
-- **One Page Solo Engine** v1.6 oracle by Karl Hendricks (Inflatable Studios), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://inflatablestudios.itch.io/one-page-solo-engine>. Loner's and Ironsworn's oracles are credited below with their tables.
+- **One Page Solo Engine** v1.6 oracle and its "How much?" table by Karl Hendricks (Inflatable Studios), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://inflatablestudios.itch.io/one-page-solo-engine>. Loner's and Ironsworn's oracles are credited below with their tables.
 - **Lonelog** notation by Roberto Bisceglie, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://lonelog.itch.io/lonelog>
 - **Tabler Icons**, MIT.
 - Solo Compass's own meaning tables are original and written for this app.
@@ -183,7 +183,7 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 - **Knave** by Ben Milton, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): <https://questingbeast.itch.io/knave>
 - **Cairn** (second edition) by Yochai Gal, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/): <https://cairnrpg.com>. English text from its [open source](https://github.com/yochaigal/cairn).
 - This work includes material taken from the **Lazy GM's Resource Document** by Michael E. Shea of SlyFlourish.com, available under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). It also includes material from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC, licensed under the same license.
-- English text of the Ironsworn family and Starsmith via [Datasworn](https://github.com/rsek/datasworn). The Spanish translations are our own (Ironsworn's with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0.
+- English text of the Ironsworn family and Starsmith via [Datasworn](https://github.com/rsek/datasworn). The Spanish translations are our own (Ironsworn's with [GatoMalefico's](https://github.com/jesberpen/ironsworn-es-es) as a reference); those of Loner, Starsmith, Cairn and the One Page Solo Engine are shared under CC BY-SA 4.0.
 
 Solo Compass is an independent, unofficial project: it isn't an official product of, nor affiliated with, endorsed or sponsored by, any of the authors, publishers or games credited above (including Tomkin Press and Ironsworn).
 
