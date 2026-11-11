@@ -196,7 +196,10 @@ Everything else stays a note and is only *drawn* differently
 (`lonelogLines.ts`: `@(Name)` actors, dialogue, `(note: …)` asides,
 `\---`…`---\` narrative blocks, the add-ons' `[COMBAT]`/
 `[DUNGEON STATUS]`/`[RESOURCES]` markers and `Rd1` rounds; a
-consequence never joins a scene or a block marker). The front matter
+consequence never joins a scene or a block marker). In the journal
+every open session's bar (`SESSION_BAR`) and the scene being read
+(`.scene-bar` in `index.css`) stay pinned at the top, so old entries
+always show where they belong. The front matter
 carries the campaign header (`title`, `start_date`, `last_update`) and
 import names the adventure from it (`parseTitleFromMarkdown`). Not
 read: Partylog/Lorelog/Maplog/Wargaming (separate systems). The Cards

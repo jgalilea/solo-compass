@@ -65,6 +65,10 @@
      bar and "changes size" when the scroll reaches the end. */
   --spacing-nav: 3.75rem;
 
+  /* Height of a session's bar in the journal, pinned at the top while
+     you read its entries; the scene you're in pins right below it. */
+  --spacing-session: 3.75rem;
+
   --color-ink-950: #0b0c10;
   --color-ink-900: #101218;
   --color-ink-800: #14161c;
@@ -444,6 +448,27 @@ body {
      viewport, which some browsers don't fully honour for these
      gestures. */
   touch-action: pan-y;
+}
+
+/* The journal's scene headings pin below their session's bar (at the
+   top when there's no session), and below the desktop header (h-14).
+   Every scene of a session pins at the same place: the next one covers
+   the last, so it's always the one you're reading. */
+.scene-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.session-entries .scene-bar {
+  top: var(--spacing-session);
+}
+@media (width >= 64rem) {
+  .scene-bar {
+    top: 3.5rem;
+  }
+  .session-entries .scene-bar {
+    top: calc(3.5rem + var(--spacing-session));
+  }
 }
 
 /* Tailwind v4 leaves buttons with the default cursor; here everything

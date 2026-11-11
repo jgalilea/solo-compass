@@ -26,8 +26,10 @@ export function DiceView() {
   const [logged, setLogged] = useState(0);
   const dismissLogged = useCallback(() => setLogged(0), []);
 
+  // On desktop it fits the screen (tool, latest rolls, my dice): the
+  // usual bottom margin alone made it scroll a few pixels.
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 lg:pb-4 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
       <header className="text-center">
         <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.dice.title}</h1>
         <p className="mt-2 text-sm text-parchment-dim">{t.dice.subtitle}</p>

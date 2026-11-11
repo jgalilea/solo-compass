@@ -526,7 +526,7 @@ export function DiceTool({
         >
           {!adventureId
             ? t.dice.saveToHistory
-            : rolls.length === 1
+            : rolls.length <= 1
               ? t.journal.diceLog
               : interpolate(t.journal.diceLogMany, { count: rolls.length })}
         </button>

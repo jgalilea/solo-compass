@@ -25,7 +25,7 @@ import { loadFoldedNotebookSections, toggleFoldedNotebookSection, type PlayToolB
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
 import { JournalSearchPanel } from "./JournalSearchPanel";
-import { EntryList, LineButtons, SessionDate, SessionGroupRow, type EntryActions } from "./journalShared";
+import { EntryList, LineButtons, SESSION_BAR, SESSION_RAIL, SessionDate, SessionGroupRow, type EntryActions } from "./journalShared";
 import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
@@ -593,15 +593,17 @@ export function AdventureDetailView() {
               filtered.groups.map((group, i) => (
                 <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
                   {group.sessionEntry && (
-                    <h3 className="flex items-center gap-2 rounded-xl border border-ink-border px-4 py-2">
-                      <IconSession size={16} className="shrink-0 text-gold" />
-                      <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
-                        {group.sessionEntry.text}
-                      </span>
-                      <SessionDate session={group.sessionEntry} />
-                    </h3>
+                    <div className={SESSION_BAR}>
+                      <h3 className="flex h-12 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
+                        <IconSession size={16} className="shrink-0 text-gold" />
+                        <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                          {group.sessionEntry.text}
+                        </span>
+                        <SessionDate session={group.sessionEntry} />
+                      </h3>
+                    </div>
                   )}
-                  <ul className={group.sessionEntry ? "flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3" : "flex flex-col gap-2"}>
+                  <ul className={group.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
                     <EntryList items={group.items} actions={entryActions} />
                   </ul>
                 </section>
@@ -685,16 +687,16 @@ export function AdventureDetailView() {
                     </button>
                   </div>
                 ) : (
-                  // Pinned at the top while scrolling: you always know which
-                  // session you're writing in.
+                  // Pinned at the top while scrolling, like every
+                  // session's bar: you always know which one you're in.
                   <div
                     data-entry
                     onClick={() =>
                       setSelectedEntryId((id) => (id === currentGroup.sessionEntry!.id ? null : currentGroup.sessionEntry!.id))
                     }
-                    className="group sticky top-0 z-20 -mx-4 bg-ink-950/90 px-4 py-1.5 backdrop-blur sm:mx-0 sm:px-0 lg:top-14"
+                    className={`group ${SESSION_BAR}`}
                   >
-                    <div className="relative flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4 py-2.5">
+                    <div className="relative flex h-12 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
                       <IconSession size={16} className="shrink-0 text-gold" />
                       <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}
@@ -720,7 +722,7 @@ export function AdventureDetailView() {
                   </div>
                 ))}
               {/* The same rail as an unfolded earlier session. */}
-              <ul className={currentGroup.sessionEntry ? "flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3" : "flex flex-col gap-2"}>
+              <ul className={currentGroup.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
                 <EntryList items={currentGroup.items} actions={entryActions} />
               </ul>
             </section>

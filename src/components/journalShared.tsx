@@ -12,6 +12,7 @@ import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, formatIsoDay, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { titleIfCut } from "../lib/truncation";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
 import {
   IconAction,
@@ -152,6 +153,16 @@ const ANSWER_CHIP: Record<Answer, string> = {
  */
 const BLOCK_PAGE = 80;
 
+/**
+ * A session's bar, pinned at the top while its entries scroll by (each
+ * session's within its own stretch, so it's always the one you're
+ * reading), its height fixed so the scene below it pins just under it.
+ */
+export const SESSION_BAR =
+  "sticky top-0 z-20 -mx-4 flex h-session items-center bg-ink-950 px-4 sm:mx-0 sm:px-0 lg:top-14";
+/** The rail down the left that marks a session's entries (and pins its scenes below its bar). */
+export const SESSION_RAIL = "session-entries flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3";
+
 /** A session's entries, grouping question → roll → consequences. */
 export function EntryList({ items, actions }: { items: JournalEntry[]; actions: EntryActions }) {
   const { t } = useLocaleContext();
@@ -183,8 +194,9 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
       )}
       {blocks.slice(start).map((block) =>
         block[0].kind === "scene" ? (
-          // A scene opens a stretch of the session: a heading, not a card.
-          <li key={block[0].id} className="mt-2 px-1 first:mt-0">
+          // A scene opens a stretch of the session: a heading, not a
+          // card, pinned while you read it (scene-bar in index.css).
+          <li key={block[0].id} className="scene-bar mt-2 bg-ink-950 px-1 py-1 first:mt-0">
             <EntryLine entry={block[0]} actions={actions} />
           </li>
         ) : block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
@@ -272,43 +284,46 @@ export function SessionGroupRow({
           </button>
         </div>
       ) : (
-        <div data-entry className="group relative flex items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-2.5 transition hover:border-gold/50">
-          <button
-            type="button"
-            onClick={() => {
-              onToggle();
-              actions.onSelect(expanded ? null : session.id);
-            }}
-            aria-expanded={expanded}
-            aria-label={toggleLabel}
-            className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
-          >
-            <IconChevronRight
-              size={16}
-              className={`shrink-0 text-gold transition-transform ${expanded ? "rotate-90" : ""}`}
+        // Pinned while it's open, like the current session's.
+        <div className={expanded ? SESSION_BAR : "flex"}>
+          <div data-entry className="group relative flex h-12 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
+            <button
+              type="button"
+              onClick={() => {
+                onToggle();
+                actions.onSelect(expanded ? null : session.id);
+              }}
+              aria-expanded={expanded}
+              aria-label={toggleLabel}
+              className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
+            >
+              <IconChevronRight
+                size={16}
+                className={`shrink-0 text-gold transition-transform ${expanded ? "rotate-90" : ""}`}
+              />
+              <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                {session.text}
+              </span>
+              <SessionDate session={session} />
+              <span className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
+            </button>
+            {/* Expanding it with a tap selects it: that way its
+                buttons are reachable on touch too. */}
+            <LineButtons
+              visible={actions.selectedId === session.id}
+              onEdit={() => {
+                setValue(session.text);
+                actions.onStartEdit(session.id);
+              }}
+              onDelete={() => actions.onDelete(session.id)}
+              {...orderProps(actions, session.id, true)}
             />
-            <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
-              {session.text}
-            </span>
-            <SessionDate session={session} />
-            <span className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
-          </button>
-          {/* Expanding it with a tap selects it: that way its
-              buttons are reachable on touch too. */}
-          <LineButtons
-            visible={actions.selectedId === session.id}
-            onEdit={() => {
-              setValue(session.text);
-              actions.onStartEdit(session.id);
-            }}
-            onDelete={() => actions.onDelete(session.id)}
-            {...orderProps(actions, session.id, true)}
-          />
+          </div>
         </div>
       )}
       {expanded && (
         // A rail down the left marks which entries belong to the session.
-        <ul className="flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3">
+        <ul className={SESSION_RAIL}>
           <EntryList items={group.items} actions={actions} />
         </ul>
       )}
@@ -390,7 +405,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
       data-entry
       onClick={() => actions.onSelect(selected ? null : entry.id)}
       className={[
-        "group relative -mx-2 -my-1 flex scroll-mt-24 scroll-mb-32 items-start gap-2.5 rounded-lg px-2 py-1 transition-colors duration-700",
+        "group relative -mx-2 -my-1 flex scroll-mt-28 scroll-mb-32 lg:scroll-mt-40 items-start gap-2.5 rounded-lg px-2 py-1 transition-colors duration-700",
         selected ? "bg-ink-700/40" : "",
         actions.highlightedId === entry.id ? "bg-gold/15 ring-1 ring-gold/60" : "",
       ].join(" ")}
@@ -531,15 +546,16 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
   const { t } = useLocaleContext();
   const { id, context, combat } = parseScene(text);
   return (
-    <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span className="rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
+    // One line: pinned, a longer scene would peek out from under the next.
+    <p className="flex min-w-0 items-baseline gap-x-2">
+      <span className="shrink-0 rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
       {context && (
-        <span className="font-display text-base italic text-parchment">
+        <span onMouseEnter={titleIfCut(context)} className="min-w-0 truncate font-display text-base italic text-parchment">
           <TaggedText text={context} onTagClick={onTagClick} />
         </span>
       )}
       {combat && (
-        <span className="inline-flex items-center gap-1 self-center text-xs font-medium uppercase tracking-wide text-no">
+        <span className="inline-flex shrink-0 items-center gap-1 self-center text-xs font-medium uppercase tracking-wide text-no">
           <IconCombat size={13} />
           {t.journal.sceneCombat}
         </span>
