@@ -465,17 +465,19 @@ export function DiceTool({
         )}
         </>
       )}
-      {/* The tray: every roll waits here until it's logged as one entry. */}
+      {/* The tray: every roll waits here until it's logged as one entry.
+          It and its buttons are always there, a row of chips high, so
+          rolling or clearing doesn't push what's below up and down. */}
       <div
         aria-live="polite"
         aria-label={t.journal.diceTrayLabel}
         className={[
-          "rounded-xl border p-2",
+          "flex min-h-12 items-center rounded-xl border p-2",
           rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
         ].join(" ")}
       >
         {rolls.length === 0 ? (
-          <p className="px-1 py-0.5 text-xs text-parchment-faint">
+          <p className="px-1 text-xs text-parchment-faint">
             {cards.tool === "cards"
               ? adventureId
                 ? t.dice.cardsHint
@@ -485,7 +487,7 @@ export function DiceTool({
                 : t.dice.trayHint}
           </p>
         ) : (
-          <ul className="flex flex-wrap gap-1.5">
+          <ul className="flex w-full flex-wrap gap-1.5">
             {tray.map((item, i) => (
               <li
                 key={i}
@@ -506,29 +508,29 @@ export function DiceTool({
           </ul>
         )}
       </div>
-      {rolls.length > 0 && (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => removeFromTray(tray)}
-            className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment"
-          >
-            {t.journal.diceClear}
-          </button>
-          {/* With no adventure there's no journal: they go to the history only. */}
-          <button
-            type="button"
-            onClick={log}
-            className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99]"
-          >
-            {!adventureId
-              ? t.dice.saveToHistory
-              : rolls.length === 1
-                ? t.journal.diceLog
-                : interpolate(t.journal.diceLogMany, { count: rolls.length })}
-          </button>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => removeFromTray(tray)}
+          disabled={rolls.length === 0}
+          className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment disabled:opacity-40 disabled:hover:text-parchment-dim"
+        >
+          {t.journal.diceClear}
+        </button>
+        {/* With no adventure there's no journal: they go to the history only. */}
+        <button
+          type="button"
+          onClick={log}
+          disabled={rolls.length === 0}
+          className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99] disabled:bg-ink-800 disabled:font-medium disabled:text-parchment-faint disabled:active:scale-100"
+        >
+          {!adventureId
+            ? t.dice.saveToHistory
+            : rolls.length === 1
+              ? t.journal.diceLog
+              : interpolate(t.journal.diceLogMany, { count: rolls.length })}
+        </button>
+      </div>
     </div>
   );
 }
