@@ -28,10 +28,13 @@ npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see
 Tests are Vitest unit tests next to the module they cover
 (`src/lib/*.test.ts`): oracle mechanics, Lonelog export/import, journal
 grouping and table data integrity. No component/DOM tests; instead
-one Playwright smoke test (`e2e/smoke.e2e.ts`, config in
-`playwright.config.ts`) plays the main path (oracle, new adventure,
-an entry, a table roll, reload) on a phone and a desktop viewport
-against `vite preview`, failing on any console error. The deploy
+Playwright tests (`e2e/*.e2e.ts`, config in `playwright.config.ts`) on a
+phone and a desktop viewport against `vite preview`, failing on any
+console error: `smoke.e2e.ts` plays the main path (oracle, new
+adventure, an entry, a table roll, reload; two tabs at once; own dice
+and cards) and `data.e2e.ts` what would hurt most to lose (an
+adventure out as Lonelog and back in, the full backup restored on an
+empty browser, a table of one's own, the language picked). The deploy
 workflow runs `npm test`, builds, then runs the smoke test, so a
 failure in either blocks the publish. Keep its selectors on visible
 text/roles in Spanish (the test runs with `locale: "es-ES"`).
@@ -50,6 +53,13 @@ worker), printing how much JavaScript came before it: run it after
 adding imports to anything the first screen loads.
 
 ## Deploy
+
+Pull requests (Dependabot's weekly ones too, `.github/dependabot.yml`:
+npm grouped by dev/prod and React apart, plus the workflow's actions)
+run lint, unit tests, the build and the e2e in
+`.github/workflows/test.yml`, without deploying. React stays on 19.2
+(`~19.2.x`) on purpose: 19.3 adds ~9 kB gzipped to the first visit for
+nothing the app uses.
 
 Push to `main` triggers `.github/workflows/deploy.yml`, which builds and
 publishes `dist/` to GitHub Pages via `actions/deploy-pages`. There is no
@@ -174,6 +184,19 @@ No backend; persistence is split by access pattern, not by feature:
   Settings shows the browser's install dialog, menu instructions where
   there's no prompt (Safari, Firefox), or "installed" (standalone mode,
   or a localStorage flag when seen from a browser tab).
+- **Privacy** (Settings → About, `PrivacyCard`): nothing leaves the
+  browser. The app makes no request outside its own origin (the only
+  `fetch` is its own fonts, for the HTML export); everything external
+  is a link the player opens. Keep it that way, or change the note.
+- **Error screen** (`AppErrorBoundary`): the "fumble" screen says the
+  journal is safe, reloads, copies an error report (`errorReport.ts`:
+  version, screen, browser, the error; never journal content) and
+  opens a GitHub issue with it (only `title` and `body`: other URL
+  parameters need repository rights and answer 404 without them).
+- **Link preview** (`index.html`): Open Graph tags with absolute URLs;
+  `public/og-image.png` is drawn by `scripts/og-image.mjs` from a real
+  screenshot (rerun it when the oracle screen changes) and kept out of
+  the service worker's precache.
 - **Backup reminder** (`backupReminder.ts`): last backup time in
   `localStorage`; a gold dot on the Settings button only when there are
   10+ journal entries newer than the last backup and it's 14+ days old,
@@ -709,7 +732,18 @@ adventure model; derive it the same way the existing views do.
 features, license research for new oracles/tables, known bugs and UI
 review findings. Update it when an item ships or priorities change.
 
-## Changelog
+## Versions and changelog
+
+Each changelog chapter is a version (`version`, semver: a chapter is a
+minor, one of small touches a patch; 1.0.0 is Chapter XVII), with a
+git tag (`v1.0.0`) on its last commit and a GitHub release whose notes
+are the chapter in both languages. The newest chapter's version is
+`package.json`'s (a test checks it), shown in Settings → About with the
+commit (`appVersion.ts`, injected by `define` in `vite.config.ts`). To
+release: add the chapter, bump `package.json`, commit, push, then tag
+that commit and create the release, its notes printed by
+`node scripts/release-notes.mts <version>` (`gh release create v1.2.0
+--notes "$(node scripts/release-notes.mts 1.2.0)"`).
 
 `src/lib/changelog.ts` is shown in-app (Settings → About → "Crónica de
 cambios"), loaded only when opened (it's a big part of the main bundle

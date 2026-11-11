@@ -248,6 +248,11 @@ export interface Dictionary {
     notOfficial: string;
     translationNote: string;
     creditBy: string;
+    /** "Versión {version}", under the app's description. */
+    version: string;
+    /** The privacy note: everything stays in the browser. */
+    privacyTitle: string;
+    privacyItems: string[];
     /** The open-source card: the code on GitHub. */
     sourceTitle: string;
     sourceDescription: string;
@@ -833,6 +838,12 @@ export interface Dictionary {
     boundaryTitle: string;
     boundaryDescription: string;
     reload: string;
+    /** Copies errorReport (version, screen, browser, the error), never the journal. */
+    copyDetails: string;
+    copied: string;
+    copyFailed: string;
+    reportHint: string;
+    reportOnGithub: string;
   };
   /** Code for Intl.DateTimeFormat (date/time formatting). */
   sample: {

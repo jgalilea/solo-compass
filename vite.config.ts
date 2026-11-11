@@ -1,3 +1,5 @@
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -102,9 +104,26 @@ function localeModulePreloadPlugin(): Plugin {
   };
 }
 
+/** package.json's version: the app's, shown in Settings → About and in the changelog. */
+const version: string = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
+
+/** The commit being built, to tell two builds of the same version apart ("" outside git). */
+function gitCommit(): string {
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    return "";
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base,
+  // Read through src/lib/appVersion.ts.
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __APP_COMMIT__: JSON.stringify(gitCommit()),
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -121,6 +140,8 @@ export default defineConfig({
       manifest,
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        // Only for link previews (index.html): players never need it offline.
+        globIgnores: ["og-image.png"],
       },
     }),
     englishManifestPlugin(),

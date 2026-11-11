@@ -11,6 +11,7 @@ import {
   IconDownload,
   IconExternalLink,
   IconGithub,
+  IconShieldLock,
   IconHelp,
   IconNote,
   IconQuestion,
@@ -53,6 +54,7 @@ import { InstallAppSettings } from "./InstallApp";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { GITHUB_URL, KOFI_URL } from "../lib/support";
+import { versionLabel } from "../lib/appVersion";
 import { canKeepScreenOn, isKeepScreenOn, setKeepScreenOn, subscribeKeepScreenOn } from "../lib/wakeLock";
 import { Switch } from "./Switch";
 
@@ -448,9 +450,14 @@ function AboutSettings() {
 
   return (
     <>
-      <p className="text-sm text-parchment-dim">{t.about.description}</p>
+      <p className="text-sm text-parchment-dim">
+        {t.about.description}{" "}
+        <span className="whitespace-nowrap text-parchment-faint">{interpolate(t.about.version, { version: versionLabel() })}</span>
+      </p>
 
       <ChangelogDialog />
+
+      <PrivacyCard />
 
       <SupportCard />
 
@@ -500,6 +507,24 @@ function AboutSettings() {
  * script on every visit (and here nothing leaves the device), doesn't
  * work offline and doesn't respect the themes.
  */
+/** Where the data lives: in this browser, and nowhere else. */
+function PrivacyCard() {
+  const { t } = useLocaleContext();
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="flex items-center gap-1.5 font-display text-base text-parchment">
+        <IconShieldLock size={18} className="shrink-0 text-gold" />
+        {t.about.privacyTitle}
+      </p>
+      <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-4 text-sm text-parchment-dim marker:text-gold">
+        {t.about.privacyItems.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function SourceCard() {
   const { t } = useLocaleContext();
   return (

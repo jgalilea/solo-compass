@@ -268,6 +268,14 @@ export const en: Dictionary = {
       "Solo Compass is an independent, unofficial project: it isn't an official product of, nor affiliated with, endorsed or sponsored by, any of the authors, publishers or games credited here (including Tomkin Press and Ironsworn).",
     translationNote: "The Spanish translations are by Solo Compass (Ironsworn's with GatoMalefico's as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0 too.",
     creditBy: "by {author}, licensed under",
+    version: "Version {version}",
+    privacyTitle: "Your journal is yours alone",
+    privacyItems: [
+      "Everything you write and roll (adventures, journal, notebook, tables, dice and settings) is kept in this browser, on your device. There's no server, no account and no cloud: none of it leaves here.",
+      "No ads, no tracking cookies and no analytics. The app doesn't know who you are or how much you play.",
+      "The app is downloaded from GitHub Pages, like any website, and from then on works offline. Something only leaves if you take it out: when you export or send a backup, share an adventure or open a link to another site (Ko-fi, GitHub, a game's page).",
+      "Which also means that if you clear the browser's data or uninstall the app, the journal goes with it: save a backup now and then.",
+    ],
     sourceTitle: "Open source",
     sourceDescription: "Solo Compass is free software (GPL-3.0): its code is on GitHub, for anyone to see.",
     sourceButton: "See the project on GitHub",
@@ -1053,10 +1061,16 @@ export const en: Dictionary = {
     suggestOtherName: "Another name (not added to the notebook)",
   },
   error: {
-    boundaryTitle: "Critical fumble! Something broke in the app",
+    boundaryTitle: "Critical fumble! The dice rolled off the table",
     boundaryDescription:
-      "An unexpected error occurred. You can reload the page; nothing you've saved will be lost.",
-    reload: "Reload",
+      "Something went wrong in the app, not in your game: your journal, notebook and rolls are safe on this device. Pick up the dice and roll again.",
+    reload: "Roll again (reload)",
+    copyDetails: "Copy the error scroll",
+    copied: "Copied. Paste it when you tell us what happened.",
+    copyFailed: "Couldn't copy it. You can select it by hand below.",
+    reportHint:
+      "If the fumble happens again, tell us. The scroll carries the app's version, the screen and the browser; nothing from your journal.",
+    reportOnGithub: "Report it on GitHub",
   },
   sample: {
     offer: "First time? Take a look at a sample adventure",

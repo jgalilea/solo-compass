@@ -11,87 +11,100 @@ import type { Locale } from "./i18n";
  */
 
 export interface ChangelogEntry {
-  /** ISO date (YYYY-MM-DD) of the release. */
+  /**
+   * The version this chapter is (semver; also a git tag, "v1.0.0", and
+   * a GitHub release). The newest must match package.json (a test
+   * checks it). Chapters are minor versions; a chapter of small
+   * touches, a patch.
+   */
+  version: string;
+  /** ISO date (YYYY-MM-DD) of the release: its tagged commit's day. */
   date: string;
   text: Record<Locale, { title: string; intro?: string; items: string[] }>;
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.0",
     date: "2026-11-11",
     text: {
       es: {
         title: "Capítulo XVII · La vela que no se apaga",
-        intro: "Mara aligera el equipaje para el camino y deja una vela encendida junto a los dados.",
+        intro: "Mara aligera el equipaje, deja una vela encendida junto a los dados y, por fin, firma su diario con un número: el primero de verdad.",
         items: [
           "Nuevas tablas de Ironsmith, de Eric Bright: los oráculos de Ironsworn ampliados (acción, tema, lugares, personajes, problemas del asentamiento, nombres) y tablas propias para la corrupción, misiones, juramentos de misterio, partidas de una sola sesión y la caza de monstruos. En inglés y en español, en su propio bloque.",
-          "Quien actúa o habla en el diario («@(Odile) …», «N (Odile): …») lleva ahora a su ficha del cuaderno al tocar su nombre, como las etiquetas. Y al escribir «@(» o «N (» aparece la lista de personajes para elegir.",
-          "En Ajustes → Acerca de, un enlace al código del proyecto en GitHub.",
-          "El diario exportado escribe la acción de otro personaje como dice Lonelog, «@(Odile)», sin espacio. Con varios personajes («@(Elara > Jonah)», «@(Elara+Jonah)»), cada nombre lleva a su ficha.",
+          "Quien actúa o habla en el diario («@(Odile) …», «N (Odile): …») lleva a su ficha del cuaderno al tocar su nombre, como las etiquetas; con varios personajes («@(Elara > Jonah)», «@(Elara+Jonah)»), cada nombre lleva a la suya. Y al escribir «@(» o «N (» aparece la lista de personajes para elegir.",
+          "Nuevo en Ajustes: «Mantener la pantalla encendida». Mientras juegas con la app a la vista, el móvil no se bloquea entre tirada y tirada (si tu navegador lo permite).",
           "La app abre antes la primera vez: solo descarga lo que necesita la pantalla que ves y el idioma que usas; lo demás llega en segundo plano, así que cambiar de pestaña sigue siendo inmediato.",
           "Los diarios muy largos van más ligeros: abrir una sesión con miles de entradas tarda la tercera parte, y al apuntar algo lejos de donde estabas la página salta a ello en vez de deslizarse un buen rato.",
-          "Nuevo en Ajustes: «Mantener la pantalla encendida». Mientras juegas con la app a la vista, el móvil no se bloquea entre tirada y tirada (si tu navegador lo permite).",
-          "Más fácil de leer en todos los temas: el dorado, el rojo y el morado de las respuestas tienen más contraste en el modo claro, y la «Contradicción» de OSR oscuro ya no se pierde en el negro.",
           "Con un lector de pantalla: cada entrada dice qué es (acción, consecuencia, tirada…), las sesiones y escenas son encabezados para saltar entre ellas, las etiquetas dicen si son un PNJ, un lugar o una sala, y los dados se anuncian al tirarlos.",
+          "Más fácil de leer en todos los temas: el dorado, el rojo y el morado de las respuestas tienen más contraste en el modo claro, y la «Contradicción» de OSR oscuro ya no se pierde en el negro.",
           "Si tu sistema pide reducir el movimiento, los dados ya no ruedan ni la página se desliza.",
+          "Si alguna vez la app pifia, la pantalla del error te recuerda que tu diario sigue a salvo, te deja volver a tirar y copiar el pergamino del error para contárnoslo.",
+          "En Ajustes → Acerca de: la versión de la app (esta es la 1.0.0, y cada capítulo de esta crónica lleva ya la suya), una nota que deja claro que todo se queda en tu navegador, y un enlace al código del proyecto en GitHub.",
+          "El diario exportado escribe la acción de otro personaje como dice Lonelog, «@(Odile)», sin espacio.",
           "En «Últimas tiradas», una pregunta larga junto a «Contradicción» ya se lee: ocupa dos líneas en vez de cortarse.",
+          "Al compartir el enlace de la app en un chat o una red social, aparece una tarjeta con el emblema y el oráculo en acción.",
         ],
       },
       en: {
         title: "Chapter XVII · The candle that stays lit",
-        intro: "Mara travels lighter and leaves a candle burning beside the dice.",
+        intro: "Mara travels lighter, leaves a candle burning beside the dice and, at last, signs her journal with a number: the first true one.",
         items: [
           "New tables from Ironsmith, by Eric Bright: Ironsworn's oracles expanded (action, theme, places, characters, settlement trouble, names) and tables of its own for corruption, quests, mystery vows, one-shots and monster hunting. In English and Spanish, in their own block.",
-          "Whoever acts or speaks in the journal (“@(Odile) …”, “N (Odile): …”) now opens their notebook entry when you tap their name, like tags do. And typing “@(” or “N (” brings up the list of characters to pick from.",
-          "In Settings → About, a link to the project's code on GitHub.",
-          "The exported journal writes another character's action the way Lonelog does, “@(Odile)”, with no space. With several characters (“@(Elara > Jonah)”, “@(Elara+Jonah)”), each name opens their notebook entry.",
+          "Whoever acts or speaks in the journal (“@(Odile) …”, “N (Odile): …”) opens their notebook entry when you tap their name, like tags do; with several characters (“@(Elara > Jonah)”, “@(Elara+Jonah)”), each name opens its own. And typing “@(” or “N (” brings up the list of characters to pick from.",
+          "New in Settings: “Keep the screen on”. While you play with the app in view, your phone won't lock between rolls (if your browser allows it).",
           "The app opens sooner the first time: it only downloads what the screen you're on and your language need; the rest arrives in the background, so switching tabs is still instant.",
           "Very long journals are lighter: opening a session with thousands of entries takes a third of the time, and logging something far from where you were jumps to it instead of sliding for a while.",
-          "New in Settings: “Keep the screen on”. While you play with the app in view, your phone won't lock between rolls (if your browser allows it).",
-          "Easier to read in every theme: the gold, red and purple of the answers have more contrast in light mode, and OSR's dark “Contradiction” no longer fades into the black.",
           "With a screen reader: every entry says what it is (action, consequence, roll…), sessions and scenes are headings to jump between, tags say whether they're an NPC, a place or a room, and dice are announced as you roll them.",
+          "Easier to read in every theme: the gold, red and purple of the answers have more contrast in light mode, and OSR's dark “Contradiction” no longer fades into the black.",
           "If your system asks for reduced motion, the dice no longer tumble and the page no longer slides.",
+          "If the app ever fumbles, the error screen reminds you your journal is safe, lets you roll again and copy the error scroll to tell us about it.",
+          "In Settings → About: the app's version (this is 1.0.0, and every chapter of this chronicle now carries its own), a note making clear everything stays in your browser, and a link to the project's code on GitHub.",
+          "The exported journal writes another character's action the way Lonelog does, “@(Odile)”, with no space.",
           "In “Recent rolls”, a long question beside “Contradiction” can be read now: it takes two lines instead of being cut short.",
+          "Share the app's link in a chat or on social media and a card shows up, with the emblem and the oracle at work.",
         ],
       },
     },
   },
   {
-    date: "2026-11-10",
+    version: "0.16.0",
+    date: "2026-11-11",
     text: {
       es: {
         title: "Capítulo XVI · La bolsa de dados y la baraja",
         intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre, lleva una baraja para los presagios y el diario a su ritmo.",
         items: [
           "Nueva pestaña «Dados»: los dados de serie, las fórmulas y tus propios dados, con un texto opcional que va delante en el diario (Atletismo 4dF+2, Ataque d20+5). Marca con la estrella tus dados favoritos, de serie o tuyos: son los que salen en la mesa de juego del diario. Una fórmula que escribas allí se guarda como dado con la estrella.",
-          "Las pestañas Tablas y Dados muestran sus últimas tiradas, como el oráculo las suyas, con el enlace al historial ya filtrado.",
-          "La bandeja de los dados y las cartas es una vista previa: lo que quitas o vacías no se guarda en ningún sitio, ni la carta sale del mazo. Solo «Apuntar» lo lleva al diario y al historial (sin aventura, «Guardar en el historial»).",
-          "Las tiradas de dados quedan en el historial, como las del oráculo y las tablas: con su resultado, para marcarlas como favoritas y filtrarlas. Y cada tirada del historial dice de qué aventura es, con un enlace a su diario, o si fue una tirada libre.",
-          "Si conoces Lonelog, escríbelo en la casilla: empezar con «@ », «=> », «N (Odile): », «PC: », «\\--- » o «=== » cambia el tipo de entrada solo.",
-          "Pregunta al oráculo desde la casilla: si lo que escribes acaba en «?», el botón del oráculo (o Ctrl+Intro) se la hace. Es opcional: enviarla normal la deja como texto.",
-          "En un diálogo con alguien nuevo, «Al cuaderno» lo apunta como PNJ.",
-          "Varios − o + seguidos en un reloj o en el inventario se juntan en una sola entrada; si se anulan, no queda ninguna.",
-          "«Ver sus entradas» en el cuaderno deja en el diario solo lo que trata de un personaje, un lugar o un hilo (sus diálogos y acciones también), hasta que quitas el filtro.",
-          "Con teclado, Alt+Mayús+1…7 elige el tipo de entrada. La pestaña Dados es la tecla 3 y el Diario pasa a la 4.",
-          "Para Fate: los dados Fudge con habilidad se leen mejor, (+ 0 + −) + 1.",
-          "Lo que dejas a medio escribir en una aventura te espera al volver, con su tipo de entrada.",
-          "«Renombrar» en el cuaderno cambia un nombre en todo el diario (etiquetas, diálogos y acciones), con «Deshacer».",
-          "Un reloj lleno o una cuenta atrás a cero lo dicen sin molestar: «completo» o «¡ya!» junto a su número, en el cuaderno y en el diario.",
-          "Copia en Lonelog una escena, una sesión o la aventura entera, con todo lo que contiene, para pegarla donde quieras.",
-          "El historial se filtra por aventura (o tiradas libres), y «Ver sus tiradas» en el menú de una aventura enseña solo su parte mecánica.",
-          "La probabilidad que eliges vale en todas partes: el oráculo, la mesa de juego y la pregunta escrita en la casilla.",
-          "Con muchos personajes, el cuaderno tiene un buscador.",
-          "Con teclado, Ctrl+Z recupera la entrada que acabas de borrar.",
-          "Al elegir un tipo de entrada, el cursor se queda en la casilla para escribir directamente; en el móvil, el selector ya no se escapa del dedo mientras escribes.",
           "Cartas en la mesa de juego: en los dados, cambia a «Cartas» y saca de una baraja de póker (con comodines si quieres) o de un tarot (con cartas invertidas). Sin repetir, cada carta sale una vez por aventura hasta que barajas; o deja que se repitan. Se apuntan como cualquier tirada, en la notación de cartas de Lonelog.",
-          "En el ordenador, el oráculo, los dados y las tablas de la mesa de juego se pliegan bajo su título: si no usas alguno, no ocupa sitio.",
-          "La bandeja de los dados y las cartas y sus botones están siempre a la vista: al tirar o vaciar, lo de debajo ya no salta.",
-          "En el diario, la sesión y la escena de lo que estás leyendo se quedan arriba al desplazarte, también en las sesiones anteriores: siempre sabes a qué pertenece cada entrada.",
-          "Nueva tabla de One Page Solo Engine, «Oráculo: ¿cuánto?», para preguntas de cantidad: ¿cuántos guardias?, ¿cómo de grave?",
-          "El contador de giros de Loner es ahora de cada aventura: los dobles de una partida ya no cuentan en otra. Y se ve, discreto, junto al nombre del oráculo.",
           "Generadores propios: junta varias tablas (de cualquier juego, o tuyas) en un solo botón que las tira todas y lo apunta en una sola entrada, como «Inspírame». Están en Tablas, en su propio bloque, y en la mesa de juego del diario.",
           "Cuatro tablas nuevas para los lugares: Tipo de lugar (de la aldea a la capital, templos, atalayas, campamentos, ruinas…), Estado del lugar, Qué llama la atención y Problema del lugar.",
+          "Nueva tabla de One Page Solo Engine, «Oráculo: ¿cuánto?», para preguntas de cantidad: ¿cuántos guardias?, ¿cómo de grave?",
+          "La bandeja de los dados y las cartas es una vista previa: lo que quitas o vacías no se guarda en ningún sitio, ni la carta sale del mazo. Solo «Apuntar» lo lleva al diario y al historial (sin aventura, «Guardar en el historial»).",
+          "Las tiradas de dados quedan en el historial, como las del oráculo y las tablas: con su resultado, para marcarlas como favoritas y filtrarlas. Y cada tirada del historial dice de qué aventura es, con un enlace a su diario, o si fue una tirada libre.",
+          "El historial se filtra por aventura (o tiradas libres), y «Ver sus tiradas» en el menú de una aventura enseña solo su parte mecánica.",
+          "Las pestañas Tablas y Dados muestran sus últimas tiradas, como el oráculo las suyas, con el enlace al historial ya filtrado.",
+          "«Ver sus entradas» en el cuaderno deja en el diario solo lo que trata de un personaje, un lugar o un hilo (sus diálogos y acciones también), hasta que quitas el filtro.",
+          "«Renombrar» en el cuaderno cambia un nombre en todo el diario (etiquetas, diálogos y acciones), con «Deshacer».",
+          "Copia en Lonelog una escena, una sesión o la aventura entera, con todo lo que contiene, para pegarla donde quieras.",
+          "Lo que dejas a medio escribir en una aventura te espera al volver, con su tipo de entrada.",
+          "Pregunta al oráculo desde la casilla: si lo que escribes acaba en «?», el botón del oráculo (o Ctrl+Intro) se la hace. Es opcional: enviarla normal la deja como texto.",
+          "Si conoces Lonelog, escríbelo en la casilla: empezar con «@ », «=> », «N (Odile): », «PC: », «\\--- » o «=== » cambia el tipo de entrada solo.",
+          "En un diálogo con alguien nuevo, «Al cuaderno» lo apunta como PNJ.",
+          "En el diario, la sesión y la escena de lo que estás leyendo se quedan arriba al desplazarte, también en las sesiones anteriores: siempre sabes a qué pertenece cada entrada.",
+          "Varios − o + seguidos en un reloj o en el inventario se juntan en una sola entrada; si se anulan, no queda ninguna.",
+          "Un reloj lleno o una cuenta atrás a cero lo dicen sin molestar: «completo» o «¡ya!» junto a su número, en el cuaderno y en el diario.",
+          "Con muchos personajes, el cuaderno tiene un buscador.",
+          "El contador de giros de Loner es ahora de cada aventura: los dobles de una partida ya no cuentan en otra. Y se ve, discreto, junto al nombre del oráculo.",
+          "La probabilidad que eliges vale en todas partes: el oráculo, la mesa de juego y la pregunta escrita en la casilla.",
+          "En el ordenador, el oráculo, los dados y las tablas de la mesa de juego se pliegan bajo su título: si no usas alguno, no ocupa sitio.",
+          "La bandeja de los dados y las cartas y sus botones están siempre a la vista: al tirar o vaciar, lo de debajo ya no salta.",
           "Más fácil de leer: las fechas, cuentas y pistas en gris se ven mejor en todos los temas, los botones dorados del modo claro tienen más contraste y el rojo de OSR oscuro se lee mejor. Con un lector de pantalla, la respuesta del oráculo y el resultado de una tabla se leen en voz alta.",
+          "Para Fate: los dados Fudge con habilidad se leen mejor, (+ 0 + −) + 1.",
+          "Con teclado, Alt+Mayús+1…7 elige el tipo de entrada. La pestaña Dados es la tecla 3 y el Diario pasa a la 4.",
+          "Con teclado, Ctrl+Z recupera la entrada que acabas de borrar.",
+          "Al elegir un tipo de entrada, el cursor se queda en la casilla para escribir directamente; en el móvil, el selector ya no se escapa del dedo mientras escribes.",
         ],
       },
       en: {
@@ -99,71 +112,72 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, a deck for omens beside them, and the journal keeps up with her.",
         items: [
           "A new “Dice” tab: built-in dice, formulas and dice of your own, with an optional text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Star your favorite dice, built-in or yours: they're the ones on the journal's game table. A formula you type there is saved as a die with the star.",
-          "The Tables and Dice tabs show their latest rolls, as the oracle shows its own, with the link to the history already filtered.",
-          "The dice and cards tray is a preview: what you remove or clear isn't kept anywhere, and a card goes back into the deck. Only “Log it” takes it to the journal and the history (with no adventure, “Save to history”).",
-          "Dice rolls stay in the history, like the oracle's and the tables': with their result, to star them and filter them. And every roll in the history says which adventure it's from, with a link to its journal, or that it was a free roll.",
-          "If you know Lonelog, type it in the box: starting with “@ ”, “=> ”, “N (Odile): ”, “PC: ”, “\\--- ” or “=== ” changes the entry type by itself.",
-          "Ask the oracle from the box: if what you type ends in “?”, the oracle's button (or Ctrl+Enter) asks it. It's optional: sending it as usual keeps it as text.",
-          "In a dialogue with someone new, “To the notebook” logs them as an NPC.",
-          "Several − or + in a row on a clock or the inventory join into one entry; if they cancel out, none is left.",
-          "“Show its entries” in the notebook leaves only what's about a character, a place or a thread in the journal (their dialogue and actions too), until you remove the filter.",
-          "With a keyboard, Alt+Shift+1…7 picks the entry type. The Dice tab is key 3 and the Journal moves to 4.",
-          "For Fate: Fudge dice with a skill read better, (+ 0 + −) + 1.",
-          "What you leave half written in an adventure waits for you when you come back, with its entry type.",
-          "“Rename” in the notebook changes a name throughout the journal (tags, dialogue and actions), with Undo.",
-          "A full clock or a countdown at zero says so without getting in the way: “full” or “now!” beside its number, in the notebook and the journal.",
-          "Copy a scene, a session or the whole adventure as Lonelog, with everything in it, to paste wherever you like.",
-          "The history filters by adventure (or free rolls), and “See its rolls” in an adventure's menu shows just its mechanics.",
-          "The likelihood you pick holds everywhere: the oracle, the game table and the question typed in the box.",
-          "With a large cast, the notebook has a search.",
-          "With a keyboard, Ctrl+Z brings back the entry you just deleted.",
-          "Picking an entry type leaves the cursor in the box to write straight away; on a phone, the selector no longer slips from under your finger while you type.",
           "Cards on the game table: in the dice, switch to “Cards” and draw from a deck of playing cards (with jokers if you like) or a tarot (with reversed cards). With no repeats, each card comes out once per adventure until you shuffle; or let them repeat. They're logged like any roll, in Lonelog's card notation.",
-          "On a computer, the game table's oracle, dice and tables fold under their heading: one you don't use takes no room.",
-          "The dice and cards tray and its buttons are always in view: rolling or clearing no longer makes what's below jump.",
-          "In the journal, the session and scene of what you're reading stay at the top as you scroll, earlier sessions too: you always know where each entry belongs.",
-          "A new One Page Solo Engine table, “Oracle: How much?”, for questions of amount: how many guards, how bad is it?",
-          "Loner's Twist Counter now belongs to each adventure: doubles in one game no longer count in another. And it shows, quietly, beside the oracle's name.",
           "Generators of your own: gather several tables (from any game, or yours) under one button that rolls them all and logs one entry, like “Inspire me”. They're on the Tables screen, in their own block, and on the journal's game table.",
           "Four new tables for places: Kind of place (from hamlet to capital, temples, watchtowers, camps, ruins…), State of the place, What stands out and Trouble in the place.",
+          "A new One Page Solo Engine table, “Oracle: How much?”, for questions of amount: how many guards, how bad is it?",
+          "The dice and cards tray is a preview: what you remove or clear isn't kept anywhere, and a card goes back into the deck. Only “Log it” takes it to the journal and the history (with no adventure, “Save to history”).",
+          "Dice rolls stay in the history, like the oracle's and the tables': with their result, to star them and filter them. And every roll in the history says which adventure it's from, with a link to its journal, or that it was a free roll.",
+          "The history filters by adventure (or free rolls), and “See its rolls” in an adventure's menu shows just its mechanics.",
+          "The Tables and Dice tabs show their latest rolls, as the oracle shows its own, with the link to the history already filtered.",
+          "“Show its entries” in the notebook leaves only what's about a character, a place or a thread in the journal (their dialogue and actions too), until you remove the filter.",
+          "“Rename” in the notebook changes a name throughout the journal (tags, dialogue and actions), with Undo.",
+          "Copy a scene, a session or the whole adventure as Lonelog, with everything in it, to paste wherever you like.",
+          "What you leave half written in an adventure waits for you when you come back, with its entry type.",
+          "Ask the oracle from the box: if what you type ends in “?”, the oracle's button (or Ctrl+Enter) asks it. It's optional: sending it as usual keeps it as text.",
+          "If you know Lonelog, type it in the box: starting with “@ ”, “=> ”, “N (Odile): ”, “PC: ”, “\\--- ” or “=== ” changes the entry type by itself.",
+          "In a dialogue with someone new, “To the notebook” logs them as an NPC.",
+          "In the journal, the session and scene of what you're reading stay at the top as you scroll, earlier sessions too: you always know where each entry belongs.",
+          "Several − or + in a row on a clock or the inventory join into one entry; if they cancel out, none is left.",
+          "A full clock or a countdown at zero says so without getting in the way: “full” or “now!” beside its number, in the notebook and the journal.",
+          "With a large cast, the notebook has a search.",
+          "Loner's Twist Counter now belongs to each adventure: doubles in one game no longer count in another. And it shows, quietly, beside the oracle's name.",
+          "The likelihood you pick holds everywhere: the oracle, the game table and the question typed in the box.",
+          "On a computer, the game table's oracle, dice and tables fold under their heading: one you don't use takes no room.",
+          "The dice and cards tray and its buttons are always in view: rolling or clearing no longer makes what's below jump.",
           "Easier to read: grey dates, counts and hints show better in every theme, gold buttons in light mode have more contrast and the red in dark OSR reads better. With a screen reader, the oracle's answer and a table's result are read aloud.",
+          "For Fate: Fudge dice with a skill read better, (+ 0 + −) + 1.",
+          "With a keyboard, Alt+Shift+1…7 picks the entry type. The Dice tab is key 3 and the Journal moves to 4.",
+          "With a keyboard, Ctrl+Z brings back the entry you just deleted.",
+          "Picking an entry type leaves the cursor in the box to write straight away; on a phone, the selector no longer slips from under your finger while you type.",
         ],
       },
     },
   },
   {
-    date: "2026-11-09",
+    version: "0.15.0",
+    date: "2026-11-10",
     text: {
       es: {
         title: "Capítulo XV · Cuatro voces en la niebla",
         intro: "Mara ya no consulta a un solo oráculo: en la encrucijada la esperan cuatro, cada uno con su manera de responder.",
         items: [
           "Tres oráculos nuevos, además de Recluse: Loner (dados de oportunidad y riesgo, con giros cuando salen dobles), el «Pregunta al oráculo» de Ironsworn (un d100) y One Page Solo Engine (dos d6, el más sencillo). Se cambian tocando el nombre del oráculo junto al título.",
-          "Marca un oráculo como favorito con la estrella del selector: la app se abrirá siempre con él, aunque cambies a otro un momento.",
-          "Las estadísticas de cada aventura traen un mapa del último año: una fila por mes y una casilla por día, más intensa cuanto más escribiste, con tu racha más larga de días seguidos.",
-          "Cada sesión muestra el día en que se jugó, en su cabecera. Va también en el .md (como «[Date]», igual que en Lonelog) y en la página HTML, y al importar un diario se lee la suya.",
-          "Con un menú desplegable abierto (el tipo de entrada, las opciones, las sesiones), la página de detrás ya no se desplaza.",
-          "Si quieres, el oráculo pone a prueba cada escena nueva: al crearla, activa «Probar la escena» y tu oráculo dirá si va como esperabas, cambia o se interrumpe. Es opcional y la app recuerda si lo usas.",
-          "El oráculo también se cambia desde el diario: el nombre del oráculo y su «?» están en la mesa de juego, en el panel del ordenador y en la hoja del móvil.",
-          "Todas las ventanas se abren igual de anchas en el ordenador, y lo aprovechan: los oráculos, en dos columnas; los resultados de una tabla, también.",
           "En Loner, el tercer doble trae un giro: se tiran solas sus tablas de giro y el resultado va al diario con la respuesta.",
           "La ayuda «?» de cada oráculo explica cómo responde y trae una tabla con la probabilidad exacta de cada respuesta (sí, no, «y además», «pero» y lo especial de cada uno) según lo probable que lo marques.",
+          "Marca un oráculo como favorito con la estrella del selector: la app se abrirá siempre con él, aunque cambies a otro un momento.",
+          "El oráculo también se cambia desde el diario: el nombre del oráculo y su «?» están en la mesa de juego, en el panel del ordenador y en la hoja del móvil.",
+          "Si quieres, el oráculo pone a prueba cada escena nueva: al crearla, activa «Probar la escena» y tu oráculo dirá si va como esperabas, cambia o se interrumpe. Es opcional y la app recuerda si lo usas.",
           "Escenas dentro de las sesiones: «Nueva escena» en el selector del diario las numera solas (S1, S2…) y aparecen en el índice de sesiones. Un diario importado también trae sus recuerdos (S5a), montajes (S7.1) y tramas paralelas (T2-S1).",
           "El diario entiende todo Lonelog: lo que hace otro personaje (@(Jonah) …), diálogos, comentarios fuera del juego entre paréntesis, textos de la historia entre \\--- y ---\\, tiradas en tablas (tbl:) y generadores (gen:) y respuestas sueltas (-> Sí).",
-          "Mazmorras, combates y recursos: las salas [R:4|despejada], los enemigos [F:Matón|PV 6], los objetos [Inv:Antorcha|3] y el dinero [Wealth:Oro 45] aparecen en el cuaderno con su estado. El inventario tiene −/+ para gastar o conseguir uno.",
-          "Los dados entienden todas las fórmulas de Lonelog: descartar (4d6dl1), explosiones acumuladas y penetrantes (d6!!, d6!p), repetir unos (d20ro), mínimos y máximos (4d6min2), críticos marcados (d20cs), multiplicar y paréntesis ((1d6+2)*3), grupos ({d8!!, d6!!}k1) y una descripción tras // («4d6dl1 // Fuerza»). La ayuda «?» las explica una a una.",
-          "La letra especial de cada tema queda para lo que hace de título (sesiones, escenas, tablas, el gran botón del oráculo): los menús, las respuestas del diario y los textos pequeños usan la letra de siempre, más fácil de leer.",
-          "Los números del cuaderno (segmentos de un reloj, cantidad de un objeto) se cambian con − y +, a juego con cada tema.",
-          "Los dados de la mesa de juego se juntan en una bandeja, tanto los botones como las fórmulas: puedes quitar una tirada con su × y nada va al diario hasta que pulsas «Apuntar».",
           "Nuevo tipo de entrada, «Diálogo»: eliges quién habla (tu personaje, un PNJ del cuaderno u otro cualquiera) y escribes solo sus palabras. Los nombrados hace poco están a un toque y «Otro…» busca entre todos los demás. Se apunta como en Lonelog, N (Odile): \"…\".",
           "Otro tipo de entrada, «Texto de la historia», para lo que se lee dentro del juego (una carta, una inscripción): lo escribes tal cual y se apunta aparte, entre \\--- y ---\\ como en Lonelog.",
-          "La casilla de fórmulas de dados tiene una × para borrarla de un toque, y en la columna de la aventura los nombres cortados se leen enteros al pasar el ratón.",
-          "Una guía rápida con todo a mano: cómo escribir en el diario, la notación Lonelog, las etiquetas del cuaderno y cómo cambiar su estado, y los atajos de teclado. Se abre con «?», desde Ajustes o desde el menú ⋯ de la aventura.",
-          "La columna de la aventura se pliega por bloques: sesiones, notas fijas, personajes, hilos e inventario. En el índice, solo la sesión en curso muestra sus escenas; las demás, al tocar su flecha.",
-          "Todo lo que pasa en una sesión lleva el día de esa sesión: en el cuaderno, en la búsqueda y en las estadísticas. Así un diario importado con sus fechas cuenta sus días de juego y aparece en el mapa del año.",
-          "La aventura de ejemplo crece a tres sesiones y enseña todo lo que sabe hacer el diario: escenas puestas a prueba, diálogos, inspiración rápida, tiradas con ventaja, un combate por rondas en el sótano del molino, salas, inventario, plata, un rastro, una cuenta atrás y descripciones en el cuaderno.",
+          "Mazmorras, combates y recursos: las salas [R:4|despejada], los enemigos [F:Matón|PV 6], los objetos [Inv:Antorcha|3] y el dinero [Wealth:Oro 45] aparecen en el cuaderno con su estado. El inventario tiene −/+ para gastar o conseguir uno.",
+          "Los dados entienden todas las fórmulas de Lonelog: descartar (4d6dl1), explosiones acumuladas y penetrantes (d6!!, d6!p), repetir unos (d20ro), mínimos y máximos (4d6min2), críticos marcados (d20cs), multiplicar y paréntesis ((1d6+2)*3), grupos ({d8!!, d6!!}k1) y una descripción tras // («4d6dl1 // Fuerza»). La ayuda «?» las explica una a una.",
           "Ventaja y desventaja sirven para cualquier tirada, no solo el d20: actívalas y el próximo dado o fórmula se tira dos veces y te quedas con la mayor o la menor.",
+          "Los dados de la mesa de juego se juntan en una bandeja, tanto los botones como las fórmulas: puedes quitar una tirada con su × y nada va al diario hasta que pulsas «Apuntar».",
           "Ojo, Mundo de Tinieblas: «3d10!>=8» ahora explota con 8 o más, como dice Lonelog. Para contar éxitos con 8 y repetir los 10, escribe «3d10>=8!».",
+          "Cada sesión muestra el día en que se jugó, en su cabecera. Va también en el .md (como «[Date]», igual que en Lonelog) y en la página HTML, y al importar un diario se lee la suya.",
+          "Todo lo que pasa en una sesión lleva el día de esa sesión: en el cuaderno, en la búsqueda y en las estadísticas. Así un diario importado con sus fechas cuenta sus días de juego y aparece en el mapa del año.",
+          "Las estadísticas de cada aventura traen un mapa del último año: una fila por mes y una casilla por día, más intensa cuanto más escribiste, con tu racha más larga de días seguidos.",
+          "Una guía rápida con todo a mano: cómo escribir en el diario, la notación Lonelog, las etiquetas del cuaderno y cómo cambiar su estado, y los atajos de teclado. Se abre con «?», desde Ajustes o desde el menú ⋯ de la aventura.",
+          "La aventura de ejemplo crece a tres sesiones y enseña todo lo que sabe hacer el diario: escenas puestas a prueba, diálogos, inspiración rápida, tiradas con ventaja, un combate por rondas en el sótano del molino, salas, inventario, plata, un rastro, una cuenta atrás y descripciones en el cuaderno.",
+          "La columna de la aventura se pliega por bloques: sesiones, notas fijas, personajes, hilos e inventario. En el índice, solo la sesión en curso muestra sus escenas; las demás, al tocar su flecha.",
+          "Los números del cuaderno (segmentos de un reloj, cantidad de un objeto) se cambian con − y +, a juego con cada tema.",
+          "La letra especial de cada tema queda para lo que hace de título (sesiones, escenas, tablas, el gran botón del oráculo): los menús, las respuestas del diario y los textos pequeños usan la letra de siempre, más fácil de leer.",
+          "Todas las ventanas se abren igual de anchas en el ordenador, y lo aprovechan: los oráculos, en dos columnas; los resultados de una tabla, también.",
+          "Con un menú desplegable abierto (el tipo de entrada, las opciones, las sesiones), la página de detrás ya no se desplaza.",
+          "La casilla de fórmulas de dados tiene una × para borrarla de un toque, y en la columna de la aventura los nombres cortados se leen enteros al pasar el ratón.",
         ],
       },
       en: {
@@ -171,36 +185,37 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara no longer asks a single oracle: four wait at the crossroads, each with its own way of answering.",
         items: [
           "Three new oracles besides Recluse: Loner (Chance and Risk dice, with twists on doubles), Ironsworn's “Ask the Oracle” (a d100) and the One Page Solo Engine (two d6, the simplest). Switch by tapping the oracle's name next to the title.",
-          "Mark an oracle as your favorite with the star in the switcher: the app will always open with it, even if you switch to another for a while.",
-          "Each adventure's statistics show a map of the last year: one row per month and one square per day, brighter the more you wrote, with your longest streak of days in a row.",
-          "Each session shows the day it was played, in its header. It also goes in the .md (as “[Date]”, as in Lonelog) and in the HTML page, and importing a journal reads its own.",
-          "With a dropdown menu open (the entry kind, the options, the sessions), the page behind no longer scrolls.",
-          "If you like, the oracle tests each new scene: when you create it, turn on “Test the scene” and your oracle says whether it goes as expected, changes or is interrupted. It's optional and the app remembers whether you use it.",
-          "The oracle can be switched from the journal too: its name and its “?” are on the game table, in the desktop panel and in the phone's sheet.",
-          "Every window opens just as wide on a computer, and makes use of it: the oracles side by side, a table's results in two columns.",
           "With Loner, the third double brings a twist: its twist tables are rolled for you and the result goes into the journal with the answer.",
           "Each oracle's “?” help explains how it answers and has a table with the exact chance of each answer (yes, no, “and”, “but” and each one's special result) at every likelihood.",
+          "Mark an oracle as your favorite with the star in the switcher: the app will always open with it, even if you switch to another for a while.",
+          "The oracle can be switched from the journal too: its name and its “?” are on the game table, in the desktop panel and in the phone's sheet.",
+          "If you like, the oracle tests each new scene: when you create it, turn on “Test the scene” and your oracle says whether it goes as expected, changes or is interrupted. It's optional and the app remembers whether you use it.",
           "Scenes within sessions: “New scene” in the journal's picker numbers them for you (S1, S2…) and they show in the session index. An imported journal brings its flashbacks (S5a), montages (S7.1) and parallel threads (T2-S1) too.",
           "The journal understands all of Lonelog: another character acting (@(Jonah) …), dialogue, out-of-game asides in brackets, in-world text between \\--- and ---\\, table (tbl:) and generator (gen:) rolls and bare answers (-> Yes).",
-          "Dungeons, fights and resources: rooms [R:4|cleared], foes [F:Thug|HP 6], items [Inv:Torch|3] and money [Wealth:Gold 45] show in the notebook with their state. The inventory has −/+ to use up or gain one.",
-          "The dice understand every Lonelog formula: dropping (4d6dl1), compounding and penetrating explosions (d6!!, d6!p), rerolling ones (d20ro), minimums and maximums (4d6min2), marked criticals (d20cs), multiplying and parentheses ((1d6+2)*3), groups ({d8!!, d6!!}k1) and a description after // (“4d6dl1 // Strength”). The “?” help explains them one by one.",
-          "Heads up, World of Darkness: “3d10!>=8” now explodes on 8 or more, as Lonelog says. To count successes on 8 and reroll tens, write “3d10>=8!”.",
-          "The game table's dice gather in a tray, buttons and formulas alike: remove a roll with its × and nothing goes to the journal until you press “Log”.",
           "A new entry type, “Dialogue”: pick who speaks (your character, an NPC from the notebook or anyone else) and type just their words. The ones named lately are one tap away and “Someone else…” searches all the rest. It's logged as in Lonelog, N (Odile): \"…\".",
           "Another entry type, “In-world text”, for what's read inside the game (a letter, an inscription): type it as written and it's logged set apart, between \\--- and ---\\ as in Lonelog.",
-          "The dice formula box has an × to clear it in one tap, and in the adventure's column cut-off names show in full when you hover over them.",
-          "A quick guide with everything at hand: how to write in the journal, the Lonelog notation, the notebook's tags and how to change their state, and the keyboard shortcuts. Open it with “?”, from Settings or from the adventure's ⋯ menu.",
-          "The adventure's column folds block by block: sessions, pinned notes, characters, threads and inventory. In the index, only the current session shows its scenes; the others, when you tap their arrow.",
-          "Everything that happens in a session carries that session's day: in the notebook, in search and in the statistics. So an imported journal with its dates counts its days of play and shows on the year's map.",
-          "The sample adventure grows to three sessions and shows everything the journal can do: tested scenes, dialogue, quick inspiration, rolls with advantage, a fight in rounds in the mill cellar, rooms, inventory, silver, a trail, a countdown and descriptions in the notebook.",
+          "Dungeons, fights and resources: rooms [R:4|cleared], foes [F:Thug|HP 6], items [Inv:Torch|3] and money [Wealth:Gold 45] show in the notebook with their state. The inventory has −/+ to use up or gain one.",
+          "The dice understand every Lonelog formula: dropping (4d6dl1), compounding and penetrating explosions (d6!!, d6!p), rerolling ones (d20ro), minimums and maximums (4d6min2), marked criticals (d20cs), multiplying and parentheses ((1d6+2)*3), groups ({d8!!, d6!!}k1) and a description after // (“4d6dl1 // Strength”). The “?” help explains them one by one.",
           "Advantage and disadvantage work for any roll, not just the d20: turn one on and the next die or formula is rolled twice, keeping the higher or the lower.",
+          "The game table's dice gather in a tray, buttons and formulas alike: remove a roll with its × and nothing goes to the journal until you press “Log”.",
+          "Heads up, World of Darkness: “3d10!>=8” now explodes on 8 or more, as Lonelog says. To count successes on 8 and reroll tens, write “3d10>=8!”.",
+          "Each session shows the day it was played, in its header. It also goes in the .md (as “[Date]”, as in Lonelog) and in the HTML page, and importing a journal reads its own.",
+          "Everything that happens in a session carries that session's day: in the notebook, in search and in the statistics. So an imported journal with its dates counts its days of play and shows on the year's map.",
+          "Each adventure's statistics show a map of the last year: one row per month and one square per day, brighter the more you wrote, with your longest streak of days in a row.",
+          "A quick guide with everything at hand: how to write in the journal, the Lonelog notation, the notebook's tags and how to change their state, and the keyboard shortcuts. Open it with “?”, from Settings or from the adventure's ⋯ menu.",
+          "The sample adventure grows to three sessions and shows everything the journal can do: tested scenes, dialogue, quick inspiration, rolls with advantage, a fight in rounds in the mill cellar, rooms, inventory, silver, a trail, a countdown and descriptions in the notebook.",
+          "The adventure's column folds block by block: sessions, pinned notes, characters, threads and inventory. In the index, only the current session shows its scenes; the others, when you tap their arrow.",
           "The notebook's numbers (a clock's segments, an item's quantity) change with − and +, matching each theme.",
           "Each theme's special lettering is kept for what works as a title (sessions, scenes, tables, the oracle's big button): menus, the journal's answers and small text use the everyday lettering, easier to read.",
+          "Every window opens just as wide on a computer, and makes use of it: the oracles side by side, a table's results in two columns.",
+          "With a dropdown menu open (the entry kind, the options, the sessions), the page behind no longer scrolls.",
+          "The dice formula box has an × to clear it in one tap, and in the adventure's column cut-off names show in full when you hover over them.",
         ],
       },
     },
   },
   {
+    version: "0.14.0",
     date: "2026-11-09",
     text: {
       es: {
@@ -240,6 +255,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.13.0",
     date: "2026-11-07",
     text: {
       es: {
@@ -271,6 +287,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.12.0",
     date: "2026-11-06",
     text: {
       es: {
@@ -306,6 +323,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.11.0",
     date: "2026-11-06",
     text: {
       es: {
@@ -335,6 +353,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.10.0",
     date: "2026-11-05",
     text: {
       es: {
@@ -360,6 +379,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.9.0",
     date: "2026-11-05",
     text: {
       es: {
@@ -383,6 +403,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.8.0",
     date: "2026-11-05",
     text: {
       es: {
@@ -412,6 +433,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.7.0",
     date: "2026-11-04",
     text: {
       es: {
@@ -445,7 +467,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
-    date: "2026-11-03",
+    version: "0.6.0",
+    date: "2026-11-04",
     text: {
       es: {
         title: "Capítulo VI · Más mesa, menos estorbo",
@@ -498,7 +521,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
-    date: "2026-10-22",
+    version: "0.5.0",
+    date: "2026-10-23",
     text: {
       es: {
         title: "Capítulo V · La mesa se agranda",
@@ -545,10 +569,12 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.4.1",
     date: "2026-09-26",
     text: {
       es: {
         title: "Interludio · Afilando las armas",
+        intro: "Entre aventura y aventura, la herrera repasa el filo de lo que ya teníamos.",
         items: [
           "La pestaña en la que estás se marca con una píldora, no solo con color: en los temas casi sin color también se distingue.",
           "El panel para escribir en el diario se asienta mejor sobre el menú inferior.",
@@ -556,6 +582,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Interlude · Sharpening the blades",
+        intro: "Between adventures, the smith goes over the edge of what we already had.",
         items: [
           "The tab you're on is marked with a pill, not just color: it stands out even in the nearly colorless themes.",
           "The journal's writing panel sits more snugly on top of the bottom menu.",
@@ -564,7 +591,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
-    date: "2026-09-07",
+    version: "0.4.0",
+    date: "2026-09-08",
     text: {
       es: {
         title: "Capítulo IV · El diario cobra vida",
@@ -593,10 +621,12 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.3.0",
     date: "2026-09-06",
     text: {
       es: {
         title: "Capítulo III · Tinta y pergamino",
+        intro: "Mara pidió pluma y pergamino: lo que pasa en el camino merece quedar escrito.",
         items: [
           "Nace el diario de aventuras, escrito en notación Lonelog.",
           "Las tiradas del oráculo y de las tablas se apuntan solas en tu aventura activa.",
@@ -606,6 +636,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter III · Ink and parchment",
+        intro: "Mara asked for quill and parchment: what happens on the road deserves to be written down.",
         items: [
           "The adventure journal is born, written in Lonelog notation.",
           "Oracle and table rolls are logged automatically in your active adventure.",
@@ -616,10 +647,12 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.2.0",
     date: "2026-09-03",
     text: {
       es: {
         title: "Capítulo II · Mapas y lenguas",
+        intro: "Un mercader trajo mapas de otras tierras, y en la posada aprendimos a hablar su lengua.",
         items: [
           "Las tablas muestran a qué juego pertenecen, todos sus resultados posibles, un buscador y tus favoritas.",
           "La app habla español e inglés, y elige sola según tu navegador.",
@@ -628,6 +661,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter II · Maps and tongues",
+        intro: "A merchant brought maps from other lands, and at the inn we learned to speak his tongue.",
         items: [
           "Tables show which game they belong to, every possible result, a search box and your favorites.",
           "The app speaks Spanish and English, and picks one based on your browser.",
@@ -637,6 +671,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
   },
   {
+    version: "0.1.0",
     date: "2026-09-01",
     text: {
       es: {

@@ -127,6 +127,14 @@ export function IconInfo(props: IconProps) {
 export function IconCoffee(props: IconProps) {
   return <TablerIcon icon={Tabler.IconCoffee} {...props} />;
 }
+// A natural 1: the error screen's fumble.
+export function IconFumble(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconDice1} {...props} />;
+}
+// The privacy note, in Settings → About.
+export function IconShieldLock(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconShieldLock} {...props} />;
+}
 // The project's code, in Settings → About.
 export function IconGithub(props: IconProps) {
   return <TablerIcon icon={Tabler.IconBrandGithub} {...props} />;

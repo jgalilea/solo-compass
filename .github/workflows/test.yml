@@ -1,0 +1,33 @@
+name: Tests
+
+# Every pull request (Dependabot's included) gets the same checks as a
+# deploy, without deploying: unit tests, the build and the smoke test.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # Same image and limits as deploy.yml (see there why it's pinned).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: timeout 180 npx playwright install --with-deps chromium || npx playwright install chromium
+      - run: npm run test:e2e
+        env:
+          CI: true

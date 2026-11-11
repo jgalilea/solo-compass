@@ -1,0 +1,30 @@
+# Weekly update PRs for npm packages and the deploy workflow's actions.
+# Each PR runs the tests (workflows/test.yml); before merging, also look
+# at the build's bundle sizes (React is kept apart: 19.3 adds ~9 kB to
+# what a first visit loads, for nothing the app uses).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+      dependencies:
+        dependency-type: production
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]

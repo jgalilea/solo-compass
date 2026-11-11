@@ -59,7 +59,7 @@ export function ChangelogDialog() {
               {(chapters ?? []).map((entry, i) => {
                 const text = entry.text[locale];
                 return (
-                  <li key={entry.date} className="relative border-l-2 border-ink-border pl-5">
+                  <li key={entry.version} className="relative border-l-2 border-ink-border pl-5">
                     <span
                       aria-hidden
                       className={[
@@ -68,9 +68,11 @@ export function ChangelogDialog() {
                       ].join(" ")}
                     />
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <time dateTime={entry.date} className="text-xs uppercase tracking-wide text-parchment-dim">
-                        {formatDate(t.dateLocale, entry.date)}
-                      </time>
+                      <span className="text-xs uppercase tracking-wide text-parchment-dim">
+                        <span className="font-medium text-gold">v{entry.version}</span>
+                        {" · "}
+                        <time dateTime={entry.date}>{formatDate(t.dateLocale, entry.date)}</time>
+                      </span>
                       {i === 0 && (
                         <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold">
                           {t.changelog.latestBadge}

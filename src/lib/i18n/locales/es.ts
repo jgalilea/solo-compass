@@ -268,6 +268,14 @@ export const es: Dictionary = {
       "Solo Compass es un proyecto independiente y no oficial: no es un producto oficial ni está afiliado, respaldado o patrocinado por ninguno de los autores, editoriales o juegos que se citan aquí (entre ellos, Tomkin Press e Ironsworn).",
     translationNote: "Las traducciones al español son de Solo Compass (las de Ironsworn, con la de GatoMalefico como referencia); las de Loner, Starsmith y Cairn se comparten también bajo CC BY-SA 4.0.",
     creditBy: "de {author}, bajo licencia",
+    version: "Versión {version}",
+    privacyTitle: "Tu diario es solo tuyo",
+    privacyItems: [
+      "Todo lo que escribes y tiras (aventuras, diario, cuaderno, tablas, dados y ajustes) se guarda en este navegador, en tu dispositivo. No hay servidor, ni cuenta, ni nube: nada de eso sale de aquí.",
+      "Sin anuncios, sin cookies de seguimiento y sin analíticas. La app no sabe quién eres ni cuánto juegas.",
+      "La app se descarga de GitHub Pages, como cualquier web, y a partir de ahí funciona sin conexión. Solo sale algo si tú lo sacas: al exportar o enviar una copia, al compartir una aventura o al abrir un enlace a otra web (Ko-fi, GitHub, la página de un juego).",
+      "Por eso mismo, si borras los datos del navegador o desinstalas la app, el diario se va con ellos: guarda una copia de vez en cuando.",
+    ],
     sourceTitle: "Código abierto",
     sourceDescription: "Solo Compass es software libre (GPL-3.0): su código está en GitHub, a la vista de todos.",
     sourceButton: "Ver el proyecto en GitHub",
@@ -1057,10 +1065,16 @@ export const es: Dictionary = {
     suggestOtherName: "Otro nombre (no se añade al cuaderno)",
   },
   error: {
-    boundaryTitle: "¡Pifia! Algo se ha roto en la app",
+    boundaryTitle: "¡Pifia! Los dados han caído de la mesa",
     boundaryDescription:
-      "Ha ocurrido un error inesperado. Puedes recargar la página; lo que tienes guardado no se pierde.",
-    reload: "Recargar",
+      "Algo ha fallado en la app, no en tu partida: tu diario, tu cuaderno y tus tiradas siguen a salvo en este dispositivo. Recoge los dados y vuelve a tirar.",
+    reload: "Volver a tirar (recargar)",
+    copyDetails: "Copiar el pergamino del error",
+    copied: "Copiado. Pégalo al contarnos qué pasó.",
+    copyFailed: "No se pudo copiar. Puedes seleccionarlo a mano aquí debajo.",
+    reportHint:
+      "Si la pifia se repite, cuéntanoslo. El pergamino lleva la versión de la app, la pantalla y el navegador; nada de tu diario.",
+    reportOnGithub: "Avisar en GitHub",
   },
   sample: {
     offer: "¿Primera vez? Echa un vistazo a una aventura de ejemplo",

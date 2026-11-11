@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { activityLevel, lastYearByMonth } from "../lib/journalStats";
@@ -16,7 +16,9 @@ const LEVEL_CLASS = ["bg-ink-700/70", "bg-gold/25", "bg-gold/50", "bg-gold/75", 
 export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<string, number>; longestStreak: number }) {
   const { t } = useLocaleContext();
   const s = t.journal.stats;
-  const months = lastYearByMonth(activity, new Date());
+  // Today, read once (not on every render): the map ends there.
+  const [today] = useState(() => new Date());
+  const months = lastYearByMonth(activity, today);
   const days = months.flatMap((m) => m.days);
   const max = Math.max(0, ...days.map((d) => d.count));
   const played = days.filter((d) => d.count > 0).length;
