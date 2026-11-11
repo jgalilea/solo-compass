@@ -18,16 +18,16 @@
   "dependencies": {
     "@tabler/icons-react": "^3.40.0",
     "idb-keyval": "^6.3.0",
-    "react": "~19.2.9",
-    "react-dom": "~19.2.9",
+    "react": "~19.3.1",
+    "react-dom": "~19.3.1",
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
     "@playwright/test": "1.65.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
-    "@types/react": "~19.2.0",
-    "@types/react-dom": "~19.2.0",
+    "@types/react": "~19.3.0",
+    "@types/react-dom": "~19.3.0",
     "@vitejs/plugin-react": "^6.1.0",
     "fake-indexeddb": "^6.2.8",
     "gh-pages": "^6.3.0",
