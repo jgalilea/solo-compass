@@ -127,6 +127,10 @@ export function IconInfo(props: IconProps) {
 export function IconCoffee(props: IconProps) {
   return <TablerIcon icon={Tabler.IconCoffee} {...props} />;
 }
+// The project's code, in Settings → About.
+export function IconGithub(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconBrandGithub} {...props} />;
+}
 export function IconExternalLink(props: IconProps) {
   return <TablerIcon icon={Tabler.IconExternalLink} {...props} />;
 }

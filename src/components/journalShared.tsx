@@ -1,9 +1,9 @@
-import { createElement, useRef, useState, type ComponentType } from "react";
+import { createElement, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { isCardDraw, showDraws } from "../lib/cards";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
-import { castKey, progressDone, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
+import { castKey, characterNamed, progressDone, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
 import { noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
@@ -345,6 +345,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     inputRef,
     cast: actions.cast ?? [],
     enabled: editing && entry.kind !== "roll",
+    actorContext: entry.kind === "action" ? "action" : entry.kind === "note" ? "note" : undefined,
   });
   const Icon = entryIcon(entry);
   const kindLabel = {
@@ -414,7 +415,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     >
       {icon}
       <div className="min-w-0 flex-1">
-        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} />
+        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} cast={actions.cast} />
       </div>
       <LineButtons
         visible={selected}
@@ -433,10 +434,13 @@ function EntryContent({
   entry,
   answer,
   onTagClick,
+  cast = [],
 }: {
   entry: JournalEntry;
   answer: Answer | undefined;
   onTagClick?: (key: string) => void;
+  /** To open who acts or speaks in the notebook, like a tag. */
+  cast?: CastMember[];
 }) {
   const { t } = useLocaleContext();
   if (entry.kind === "question") {
@@ -454,7 +458,13 @@ function EntryContent({
     if (actor) {
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
-          <span className="mr-1.5 rounded-md bg-ink-700/70 px-1.5 py-0.5 text-sm font-semibold text-gold">{actor}</span>
+          <CharacterName
+            member={characterNamed(cast, actor)}
+            onTagClick={onTagClick}
+            className="mr-1.5 rounded-md bg-ink-700/70 px-1.5 py-0.5 text-sm font-semibold text-gold"
+          >
+            {actor}
+          </CharacterName>
           <TaggedText text={text} onTagClick={onTagClick} />
         </p>
       );
@@ -463,7 +473,7 @@ function EntryContent({
 
   if (entry.kind === "note") {
     const form = noteForm(entry.text);
-    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} />;
+    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} cast={cast} />;
   }
 
   if (entry.kind === "roll" && entry.text.includes("\n")) {
@@ -471,7 +481,7 @@ function EntryContent({
     const [first, ...rest] = entry.text.split("\n");
     return (
       <div className="flex flex-col gap-1">
-        <EntryContent entry={{ ...entry, text: first }} answer={answer} onTagClick={onTagClick} />
+        <EntryContent entry={{ ...entry, text: first }} answer={answer} onTagClick={onTagClick} cast={cast} />
         <p className="whitespace-pre-wrap border-l border-ink-border pl-2.5 text-sm text-parchment/90">{rest.join("\n")}</p>
       </div>
     );
@@ -567,8 +577,55 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
   );
 }
 
+/** The player's character, when the notebook has exactly one ("PC:" is them). */
+function onlyPc(cast: CastMember[]): CastMember | undefined {
+  const pcs = cast.filter((m) => m.kind === "pc");
+  return pcs.length === 1 ? pcs[0] : undefined;
+}
+
+/**
+ * Who acts (`@(Odile)`) or speaks (`N (Odile):`): Lonelog's notation,
+ * not a tag, but when the name is a character in the notebook it opens
+ * them there, like a tag's chip. Anyone else is just their name.
+ */
+function CharacterName({
+  member,
+  onTagClick,
+  className,
+  children,
+}: {
+  member: CastMember | undefined;
+  onTagClick?: (key: string) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  const { t } = useLocaleContext();
+  if (!member || !onTagClick) return <span className={className}>{children}</span>;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onTagClick(castKey(member.kind, member.name));
+      }}
+      title={interpolate(t.notebook.tagChipLabel, { name: member.name })}
+      className={`${className ?? ""} underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:decoration-gold`}
+    >
+      {children}
+    </button>
+  );
+}
+
 /** A note that isn't plain prose: see noteForm. */
-function NoteContent({ form, onTagClick }: { form: Exclude<NoteForm, { form: "plain" }>; onTagClick?: (key: string) => void }) {
+function NoteContent({
+  form,
+  onTagClick,
+  cast,
+}: {
+  form: Exclude<NoteForm, { form: "plain" }>;
+  onTagClick?: (key: string) => void;
+  cast: CastMember[];
+}) {
   const { t } = useLocaleContext();
   switch (form.form) {
     case "excerpt":
@@ -580,7 +637,12 @@ function NoteContent({ form, onTagClick }: { form: Exclude<NoteForm, { form: "pl
     case "dialogue":
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
-          <span className="mr-1.5 font-semibold text-gold">{form.pc ? t.journal.dialoguePc : form.speaker}:</span>
+          <span className="mr-1.5 font-semibold text-gold">
+            <CharacterName member={form.pc ? onlyPc(cast) : characterNamed(cast, form.speaker)} onTagClick={onTagClick}>
+              {form.pc ? t.journal.dialoguePc : form.speaker}
+            </CharacterName>
+            :
+          </span>
           <TaggedText text={form.text} onTagClick={onTagClick} />
         </p>
       );

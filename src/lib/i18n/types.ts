@@ -248,6 +248,10 @@ export interface Dictionary {
     notOfficial: string;
     translationNote: string;
     creditBy: string;
+    /** The open-source card: the code on GitHub. */
+    sourceTitle: string;
+    sourceDescription: string;
+    sourceButton: string;
     legendTitle: string;
     legendAction: string;
     legendQuestion: string;
@@ -822,6 +826,8 @@ export interface Dictionary {
     suggestRecent: string;
     suggestAll: string;
     suggestNew: string;
+    /** Someone not in the notebook as who acts or speaks: only the name is written. */
+    suggestOtherName: string;
   };
   error: {
     boundaryTitle: string;

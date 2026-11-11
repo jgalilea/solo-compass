@@ -10,6 +10,7 @@ import {
   IconDice,
   IconDownload,
   IconExternalLink,
+  IconGithub,
   IconHelp,
   IconNote,
   IconQuestion,
@@ -51,7 +52,7 @@ import { StorageProtectionSettings } from "./StorageProtection";
 import { InstallAppSettings } from "./InstallApp";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
-import { KOFI_URL } from "../lib/support";
+import { GITHUB_URL, KOFI_URL } from "../lib/support";
 import { canKeepScreenOn, isKeepScreenOn, setKeepScreenOn, subscribeKeepScreenOn } from "../lib/wakeLock";
 import { Switch } from "./Switch";
 
@@ -453,6 +454,8 @@ function AboutSettings() {
 
       <SupportCard />
 
+      <SourceCard />
+
       <CreditList
         label={t.about.oracleUsedBy}
         credits={ORACLES.map((o) => ({ ...o, attribution: [o.attribution] }))}
@@ -497,6 +500,28 @@ function AboutSettings() {
  * script on every visit (and here nothing leaves the device), doesn't
  * work offline and doesn't respect the themes.
  */
+function SourceCard() {
+  const { t } = useLocaleContext();
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="flex items-center gap-1.5 font-display text-base text-parchment">
+        <IconGithub size={18} className="shrink-0 text-gold" />
+        {t.about.sourceTitle}
+      </p>
+      <p className="mt-1 text-sm text-parchment-dim">{t.about.sourceDescription}</p>
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-ink-border py-2 text-sm font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+      >
+        {t.about.sourceButton}
+        <IconExternalLink size={14} />
+      </a>
+    </div>
+  );
+}
+
 function SupportCard() {
   const { t } = useLocaleContext();
   return (

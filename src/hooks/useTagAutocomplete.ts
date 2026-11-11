@@ -1,5 +1,5 @@
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
-import { findTagQuery, tagOptionText, tagOptions, type CastMember, type TagOption } from "../lib/lonelogTags";
+import { findActorQuery, findTagQuery, tagOptionText, tagOptions, type CastMember, type TagOption, type TagQuery } from "../lib/lonelogTags";
 
 export interface TagSuggestionsState {
   open: boolean;
@@ -9,12 +9,16 @@ export interface TagSuggestionsState {
   optionId: (index: number) => string;
   pick: (option: TagOption) => void;
   setActive: (index: number) => void;
+  /** Picking who acts or speaks (findActorQuery), not a tag. */
+  actor: boolean;
 }
 
 /**
  * Lonelog tag suggestions for a text field: typing "[" lists the
  * adventure's characters and places (and offers a new one), so tags
- * can be written without knowing their syntax. Arrows to move, Enter
+ * can be written without knowing their syntax. With `actorContext`,
+ * the "(" that starts someone else's action or the "N (" that starts
+ * a dialogue line lists the characters too. Arrows to move, Enter
  * or Tab to pick, Esc to close the list. Used by the composer and by
  * the entry editor; the list itself is <TagSuggestions>.
  *
@@ -28,6 +32,7 @@ export function useTagAutocomplete({
   inputRef,
   cast,
   enabled = true,
+  actorContext,
 }: {
   text: string;
   setText: (text: string) => void;
@@ -35,6 +40,8 @@ export function useTagAutocomplete({
   cast: CastMember[];
   /** Off where tags don't belong (a session title). */
   enabled?: boolean;
+  /** What the field's text is: an action's ("(Odile) …") or a note's ("N (Odile): …"). */
+  actorContext?: "action" | "note";
 }) {
   const listId = useId();
   const [caret, setCaret] = useState(0);
@@ -54,7 +61,17 @@ export function useTagAutocomplete({
     inputRef.current?.setSelectionRange(position, position);
   }, [text, inputRef]);
 
-  const query = enabled ? findTagQuery(text.slice(0, caret)) : null;
+  // In an action, "N (" still starts a dialogue line (the composer
+  // switches to Dialogue on its own); in a note, a "(" alone is an aside.
+  const actorQueryAt = (beforeCaret: string): TagQuery | null =>
+    actorContext === "action"
+      ? (findActorQuery(beforeCaret, "action") ?? findActorQuery(beforeCaret, "note"))
+      : actorContext === "note"
+        ? findActorQuery(beforeCaret, "note")
+        : null;
+  const queryAt = (beforeCaret: string): TagQuery | null =>
+    enabled ? (actorQueryAt(beforeCaret) ?? findTagQuery(beforeCaret)) : null;
+  const query = queryAt(text.slice(0, caret));
   const open = focused && !!query && query.start !== dismissedAt;
   const options = open ? tagOptions(cast, query) : [];
   const active = Math.min(activeOption, Math.max(options.length - 1, 0));
@@ -63,7 +80,8 @@ export function useTagAutocomplete({
   function pick(option: TagOption) {
     if (!query) return;
     const after = text.slice(caret);
-    const inserted = tagOptionText(option) + (after.startsWith(" ") ? "" : " ");
+    const written = tagOptionText(option, query);
+    const inserted = written.endsWith(" ") ? written : written + (after.startsWith(" ") ? "" : " ");
     const position = query.start + inserted.length;
     setText(text.slice(0, query.start) + inserted + after);
     setCaret(position);
@@ -74,7 +92,7 @@ export function useTagAutocomplete({
   function onChange(el: HTMLTextAreaElement) {
     setCaret(el.selectionStart);
     setActiveOption(0);
-    if (!findTagQuery(el.value.slice(0, el.selectionStart))) setDismissedAt(null);
+    if (!queryAt(el.value.slice(0, el.selectionStart))) setDismissedAt(null);
   }
 
   /** Call first in the field's onKeyDown; true if it used the key. */
@@ -113,6 +131,15 @@ export function useTagAutocomplete({
     "aria-activedescendant": options.length > 0 ? optionId(active) : undefined,
   };
 
-  const suggestions: TagSuggestionsState = { open, options, active, listId, optionId, pick, setActive: setActiveOption };
+  const suggestions: TagSuggestionsState = {
+    open,
+    options,
+    active,
+    listId,
+    optionId,
+    pick,
+    setActive: setActiveOption,
+    actor: !!query?.actor,
+  };
   return { inputProps, onChange, onKeyDown, suggestions };
 }

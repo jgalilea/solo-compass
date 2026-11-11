@@ -762,6 +762,37 @@ Fuentes (2026-11-11): [carpeta de datos de la app](https://developers.google.com
 [OAuth en PWA de iOS (foro de Apple)](https://developer.apple.com/forums/thread/759487),
 [redirección en iOS standalone (Firebase)](https://github.com/firebase/firebase-js-sdk/issues/77).
 
+## 9b. Contacto: sugerencias y errores (analizado el 2026-11-11)
+
+Quien juega no suele tener cuenta de GitHub, y la app no tiene servidor.
+Opciones, de menos a más fricción para quien escribe:
+
+| Opción | Cuenta | Pública | Coste/mantenimiento | Notas |
+|---|---|---|---|---|
+| Formulario externo (Tally) | No | No (llega a tu correo) | Gratis: formularios y respuestas ilimitados, campos ocultos, archivos de hasta 10 MB | Empresa belga, datos en la UE (RGPD). Los campos ocultos se rellenan por URL: versión, navegador, idioma, instalada o no |
+| Correo (`mailto:`) | No | No | Nada | Expone una dirección (spam); el asunto y el cuerpo se prellenan con la versión. Falla si no hay app de correo configurada (frecuente en ordenadores) |
+| Issues de GitHub con formularios (`.github/ISSUE_TEMPLATE/*.yml`) | Sí | Sí | Nada | Lo mejor para seguir el trabajo: etiquetas, duplicados a la vista, enlace a commits. Los campos del formulario se prellenan por URL |
+| GitHub Discussions | Sí | Sí | Moderar | Para ideas y preguntas, separado de los errores |
+| Comunidad (itch.io, Discord) | Sí | Sí | Moderar a diario | Tiene sentido cuando haya comunidad; no como primer canal |
+
+**Recomendación:** un botón «Sugerir algo o avisar de un error» en
+Ajustes → Acerca de (y en el mensaje de error de la app, que hoy solo
+ofrece recargar) que abra un formulario de Tally en el idioma de la app,
+con la versión, el navegador y si está instalada ya rellenos y ocultos,
+y un enlace secundario «¿Tienes cuenta de GitHub? Ábrelo allí» a los
+formularios de issues (error / idea), prellenados igual. Lo que llegue
+por Tally se pasa a una issue a mano si hace falta. Sin datos del
+diario: el formulario lo dice y pide solo lo que la persona quiera
+contar (y una captura opcional).
+
+Falta para hacerlo: crear los dos formularios de Tally (es y en) con su
+cuenta, decidir si se usa una dirección de correo propia para recibir
+avisos, y exponer la versión de la app (hoy `package.json` dice 0.0.0:
+inyectar fecha de compilación y commit con `define` en
+`vite.config.ts`). Fuentes: [precios de Tally](https://tally.so/pricing),
+[campos ocultos de Tally](https://tally.so/help/hidden-fields),
+[prellenar issues por URL](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue#creating-an-issue-from-a-url-query).
+
 ## 10. Otras ideas (P3)
 
 - **Notas fijas por aventura — HECHO (2026-11-06)**, como una sola nota

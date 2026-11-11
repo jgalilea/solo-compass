@@ -25,6 +25,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara aligera el equipaje para el camino y deja una vela encendida junto a los dados.",
         items: [
           "Nuevas tablas de Ironsmith, de Eric Bright: los oráculos de Ironsworn ampliados (acción, tema, lugares, personajes, problemas del asentamiento, nombres) y tablas propias para la corrupción, misiones, juramentos de misterio, partidas de una sola sesión y la caza de monstruos. En inglés y en español, en su propio bloque.",
+          "Quien actúa o habla en el diario («@(Odile) …», «N (Odile): …») lleva ahora a su ficha del cuaderno al tocar su nombre, como las etiquetas. Y al escribir «@(» o «N (» aparece la lista de personajes para elegir.",
+          "En Ajustes → Acerca de, un enlace al código del proyecto en GitHub.",
           "La app abre antes la primera vez: solo descarga lo que necesita la pantalla que ves y el idioma que usas; lo demás llega en segundo plano, así que cambiar de pestaña sigue siendo inmediato.",
           "Los diarios muy largos van más ligeros: abrir una sesión con miles de entradas tarda la tercera parte, y al apuntar algo lejos de donde estabas la página salta a ello en vez de deslizarse un buen rato.",
           "Nuevo en Ajustes: «Mantener la pantalla encendida». Mientras juegas con la app a la vista, el móvil no se bloquea entre tirada y tirada (si tu navegador lo permite).",
@@ -39,6 +41,8 @@ export const CHANGELOG: ChangelogEntry[] = [
         intro: "Mara travels lighter and leaves a candle burning beside the dice.",
         items: [
           "New tables from Ironsmith, by Eric Bright: Ironsworn's oracles expanded (action, theme, places, characters, settlement trouble, names) and tables of its own for corruption, quests, mystery vows, one-shots and monster hunting. In English and Spanish, in their own block.",
+          "Whoever acts or speaks in the journal (“@(Odile) …”, “N (Odile): …”) now opens their notebook entry when you tap their name, like tags do. And typing “@(” or “N (” brings up the list of characters to pick from.",
+          "In Settings → About, a link to the project's code on GitHub.",
           "The app opens sooner the first time: it only downloads what the screen you're on and your language need; the rest arrives in the background, so switching tabs is still instant.",
           "Very long journals are lighter: opening a session with thousands of entries takes a third of the time, and logging something far from where you were jumps to it instead of sliding for a while.",
           "New in Settings: “Keep the screen on”. While you play with the app in view, your phone won't lock between rolls (if your browser allows it).",

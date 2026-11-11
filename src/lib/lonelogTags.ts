@@ -497,6 +497,12 @@ export interface TagQuery {
   kind?: CastKind;
   /** What's typed after it, to filter by. */
   text: string;
+  /**
+   * Not a tag but who does an action ("(Od" at the start of someone
+   * else's, `@(Odile) …`) or says a line ("N (Od", `N (Odile): "…"`):
+   * the same list, characters only, and picking one writes the name.
+   */
+  actor?: "action" | "dialogue";
 }
 
 // An unclosed "[" right before the caret, with an optional type.
@@ -519,11 +525,32 @@ export function findTagQuery(beforeCaret: string): TagQuery | null {
   return { start: match.index!, kind: match[2] ? KIND_OF_TYPED_PREFIX.get(match[2].toLowerCase()) : undefined, text };
 }
 
+/**
+ * The character being typed as who acts or speaks, at the start of an
+ * action's text ("(Od") or of a note ("N (Od"): Lonelog's own notation,
+ * which stays as it is (other tools read it), offered like a tag.
+ */
+export function findActorQuery(beforeCaret: string, context: "action" | "note"): TagQuery | null {
+  const match = beforeCaret.match(context === "action" ? /^\(([^()\n]{0,40})$/ : /^N \(([^()\n]{0,40})$/);
+  if (!match || /^\s/.test(match[1])) return null;
+  return { start: beforeCaret.length - match[1].length, text: match[1], actor: context === "action" ? "action" : "dialogue" };
+}
+
+/** Characters who can act or speak: NPCs and PCs. */
+const ACTOR_KINDS = new Set<CastKind>(["npc", "pc"]);
+
+/** The NPC or PC with this name, if the cast has one (who an action's or a line's name points to). */
+export function characterNamed(cast: CastMember[], name: string): CastMember | undefined {
+  const wanted = normalizeForSearch(name.trim());
+  return cast.find((m) => ACTOR_KINDS.has(m.kind) && normalizeForSearch(m.name) === wanted);
+}
+
 /** The cast members that fit what's typed, all of them, in alphabetical order. */
 export function suggestCast(cast: CastMember[], query: TagQuery): CastMember[] {
   const q = normalizeForSearch(query.text.trim());
   return cast
-    .filter((m) => (!query.kind || m.kind === query.kind) && normalizeForSearch(m.name).includes(q))
+    .filter((m) => (query.actor ? ACTOR_KINDS.has(m.kind) : !query.kind || m.kind === query.kind))
+    .filter((m) => normalizeForSearch(m.name).includes(q))
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
@@ -555,7 +582,8 @@ export function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
     ];
   }
   const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
-  const kinds = query.kind ? [query.kind] : NEW_KINDS;
+  // Someone not in the notebook just gets their name written.
+  const kinds = query.actor ? ["npc" as const] : query.kind ? [query.kind] : NEW_KINDS;
   return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
 }
 
@@ -567,7 +595,11 @@ const NEW_PROGRESS_SIZE = 6;
  * new tag (a new clock or track starts empty, a timer full, unless a
  * number was typed).
  */
-export function tagOptionText(option: TagOption): string {
+export function tagOptionText(option: TagOption, query?: Pick<TagQuery, "actor">): string {
+  if (query?.actor) {
+    const name = ("member" in option ? option.member.name : option.name).replace(/[()\n]/g, " ").replace(/\s+/g, " ").trim();
+    return query.actor === "dialogue" ? `${name}): ` : `${name}) `;
+  }
   if ("member" in option) return formatTag(option.member.kind, option.member.name, [], true);
   const { kind, name } = option;
   if (!PROGRESS_KINDS.has(kind) || readProgress(name).progress) return formatTag(kind, name);

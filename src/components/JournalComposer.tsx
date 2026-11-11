@@ -228,7 +228,17 @@ export function JournalComposer({
 
   const cast = useMemo(() => buildCast(entries.filter((e) => e.adventureId === adventureId)), [entries, adventureId]);
   // A session title is a single plain line: no tags there.
-  const tags = useTagAutocomplete({ text, setText, inputRef, cast, enabled: mode !== "session" });
+  const tags = useTagAutocomplete({
+    text,
+    setText,
+    inputRef,
+    cast,
+    enabled: mode !== "session",
+    // "@(" turns the box into an action starting "(": who does it; in any
+    // other type, "N (" is who says a line (and switches to Dialogue,
+    // which has its own picker for who speaks).
+    actorContext: mode === "action" ? "action" : mode === "session" || mode === "dialogue" ? undefined : "note",
+  });
 
   // A session title is optional (it falls back to the date), and so is
   // a scene's context (it's numbered anyway); anything else needs text,

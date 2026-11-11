@@ -6,6 +6,8 @@ import { foeIsOut,
   renameInEntry,
   buildCast,
   castKey,
+  characterNamed,
+  findActorQuery,
   findTagQuery,
   formatProgressTag,
   formatTag,
@@ -168,6 +170,40 @@ describe("findTagQuery", () => {
   });
 });
 
+describe("who acts or speaks", () => {
+  const cast = buildCast([entry("note", "[N:Odile] [L:Molino] [PC:Mara] [Thread:La caja|Open]", 1)]);
+
+  it("finds the name being typed at the start of an action or a dialogue line", () => {
+    expect(findActorQuery("(Od", "action")).toEqual({ start: 1, text: "Od", actor: "action" });
+    expect(findActorQuery("(", "action")).toEqual({ start: 1, text: "", actor: "action" });
+    expect(findActorQuery("N (Od", "note")).toEqual({ start: 3, text: "Od", actor: "dialogue" });
+    expect(findActorQuery("(Odile) busca", "action")).toBeNull();
+    expect(findActorQuery("Busco (Od", "action")).toBeNull();
+    expect(findActorQuery("(Od", "note")).toBeNull();
+    expect(findActorQuery("N (Odile): hola", "note")).toBeNull();
+  });
+
+  it("offers only characters, and anyone else by name", () => {
+    const names = (o: TagOption) => ("member" in o ? o.member.name : `other ${o.name}`);
+    expect(tagOptions(cast, findActorQuery("(", "action")!).map(names)).toEqual(["Mara", "Odile"]);
+    expect(tagOptions(cast, findActorQuery("(mo", "action")!).map(names)).toEqual(["other mo"]);
+  });
+
+  it("writes the name and closes the notation", () => {
+    const [odile] = tagOptions(cast, findActorQuery("(Od", "action")!);
+    expect(tagOptionText(odile, { actor: "action" })).toBe("Odile) ");
+    expect(tagOptionText(odile, { actor: "dialogue" })).toBe("Odile): ");
+    expect(tagOptionText({ kind: "npc", name: "El (viejo) Bram" }, { actor: "action" })).toBe("El viejo Bram) ");
+  });
+
+  it("finds the character a name points to, accents and case aside", () => {
+    expect(characterNamed(cast, "odile")?.kind).toBe("npc");
+    expect(characterNamed(cast, " Mara ")?.kind).toBe("pc");
+    expect(characterNamed(cast, "Molino")).toBeUndefined();
+    expect(characterNamed(cast, "Bram")).toBeUndefined();
+  });
+});
+
 describe("suggestCast", () => {
   const cast = buildCast([entry("note", "[N:Odile] [L:Molino] [N:Bram el molinero] [PC:Mara]", 1)]);
 
@@ -194,7 +230,7 @@ describe("tagOptions", () => {
   it("takes a prefix in any case and writes the notation's own", () => {
     const query = findTagQuery("Pienso en [clock:Huida")!;
     expect(query.kind).toBe("clock");
-    expect(tagOptions([], query).map(tagOptionText)).toEqual(["[Clock:Huida 0/6]"]);
+    expect(tagOptions([], query).map((o) => tagOptionText(o))).toEqual(["[Clock:Huida 0/6]"]);
     expect(findTagQuery("[#n:Od")?.kind).toBe("npc");
     expect(findTagQuery("[THREAD:La")?.kind).toBe("thread");
   });

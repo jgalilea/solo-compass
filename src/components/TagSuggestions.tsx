@@ -48,7 +48,9 @@ export function TagSuggestions({
           const progress = existing && option.member.progress ? progressText(option.member.progress) : "";
           const detail = existing
             ? [progress, ...option.member.tags].filter(Boolean).join(" · ") || kindLabel
-            : interpolate(t.notebook.suggestNew, { kind: kindLabel });
+            : state.actor
+              ? t.notebook.suggestOtherName
+              : interpolate(t.notebook.suggestNew, { kind: kindLabel });
           // The last few named go first, then everything in alphabetical order.
           const recent = isRecent(option);
           const heading =

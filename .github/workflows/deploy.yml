@@ -27,7 +27,10 @@ jobs:
       - run: npm test
       - run: npm run build
       # Smoke test in a real browser against the build (playwright.config.ts).
-      - run: npx playwright install --with-deps chromium
+      # The system packages come from Ubuntu's mirrors, which the runner
+      # sometimes can't reach; its image already has what Chromium needs,
+      # so the browser alone is enough then.
+      - run: npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run test:e2e
         env:
           CI: true

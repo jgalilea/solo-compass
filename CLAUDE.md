@@ -317,7 +317,13 @@ header below that.
   limit, in a scrolling list: the last three named first, then
   alphabetical) and offers a new one of any kind
   (`useTagAutocomplete` + `TagSuggestions`; the pure parts,
-  `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). The sample
+  `findTagQuery`/`tagOptions`, in `lonelogTags.ts`). Who acts and who
+  speaks stay Lonelog's own notation (`@(Odile) …`, `N (Odile): "…"`,
+  not tags, so other tools read them), but behave like one: "(" at the
+  start of an action and "N (" at the start of a note list the NPCs and
+  PCs (`findActorQuery`; picking writes the name and closes the
+  notation), and in the journal the name opens them in the notebook
+  when it's a character there (`characterNamed`; "PC:" is the only PC). The sample
   adventure uses tags and has pinned notes (`t.sample.notes`) and
 descriptions (`t.sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms
