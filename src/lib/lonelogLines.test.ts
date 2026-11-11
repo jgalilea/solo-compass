@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDialogue, formatExcerpt, formatScene, nextSceneId, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
+import { actorParts, formatDialogue, formatExcerpt, formatScene, nextSceneId, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
 
 describe("splitRollSymbol", () => {
   it("tells mechanics, tables, generators and bare results apart", () => {
@@ -45,6 +45,12 @@ describe("splitActor", () => {
     expect(splitActor("(Elara > Jonah) Boosts the climb").actor).toBe("Elara > Jonah");
     expect(splitActor("Pick the lock")).toEqual({ actor: null, text: "Pick the lock" });
   });
+
+  it("splits the spec's assist and joint actors into names", () => {
+    expect(actorParts("Jonah")).toEqual([{ name: "Jonah", text: "Jonah" }]);
+    expect(actorParts("Elara > Jonah")).toEqual([{ name: "Elara", text: "Elara" }, { text: " > " }, { name: "Jonah", text: "Jonah" }]);
+    expect(actorParts("Elara+Jonah").map((p) => p.name)).toEqual(["Elara", undefined, "Jonah"]);
+  });
 });
 
 describe("noteForm", () => {
@@ -69,6 +75,14 @@ describe("noteForm", () => {
     expect(noteForm("The rain keeps falling.")).toEqual({ form: "plain" });
     expect(noteForm("(a) and (b)")).toEqual({ form: "plain" });
     expect(noteForm("PCs gather around")).toEqual({ form: "plain" });
+  });
+
+  it("reads dialogue only as the spec writes it: \"N (Name): \" and \"PC: \"", () => {
+    expect(noteForm('N(Guard): "Hi"')).toEqual({ form: "plain" });
+    expect(noteForm('N: "Hi"')).toEqual({ form: "plain" });
+    expect(noteForm('N (Guard) : "Hi"')).toEqual({ form: "plain" });
+    expect(noteForm('PC (Mara): "Hi"')).toEqual({ form: "plain" });
+    expect(noteForm('PC:"Hi"')).toEqual({ form: "plain" });
   });
 });
 

@@ -88,6 +88,17 @@ export function splitActor(text: string): { actor: string | null; text: string }
   return m ? { actor: m[1].trim(), text: m[2] } : { actor: null, text };
 }
 
+/**
+ * The names in an actor: Lonelog writes "A > B" when A assists B and
+ * "A+B" for a joint action; each separator kept, to draw them as is.
+ */
+export function actorParts(actor: string): { name?: string; text: string }[] {
+  return actor
+    .split(/(\s*>\s*|\s*\+\s*)/)
+    .filter((part) => part !== "")
+    .map((part, i) => (i % 2 === 0 ? { name: part.trim(), text: part } : { text: part }));
+}
+
 export type NoteForm =
   | { form: "plain" }
   | { form: "excerpt"; text: string }
@@ -101,7 +112,8 @@ const BLOCK = /^\[(\/)?(COMBAT|DUNGEON STATUS|RESOURCES)\]$/i;
 // Analog: "--- COMBAT ---", "--- END COMBAT ---", "--- DUNGEON STATUS ---", "--- END STATUS ---".
 const ANALOG_BLOCK = /^---\s*(END\s+)?(COMBAT|DUNGEON STATUS|RESOURCES|STATUS)\s*---$/i;
 const ROUND = /^(Rd\d+)\b[ \t]*([\s\S]*)$/;
-const DIALOGUE = /^(N|PC)\s*(?:\(([^()\n]+)\))?\s*:\s+([\s\S]+)$/;
+// Only as the spec writes it: "N (Guard): …" and "PC: …".
+const DIALOGUE = /^(?:N \(([^()\n]+)\)|PC): ([\s\S]+)$/;
 // "(note: …)", "(reflection: …)", "(This happened before the campaign)".
 const META = /^\(([\s\S]+)\)$/;
 const META_LABEL = /^([\p{L} ]{2,20}):\s*([\s\S]+)$/u;
@@ -123,7 +135,10 @@ export function noteForm(text: string): NoteForm {
   const round = trimmed.match(ROUND);
   if (round) return { form: "round", round: round[1], text: round[2] };
   const dialogue = trimmed.match(DIALOGUE);
-  if (dialogue) return { form: "dialogue", speaker: dialogue[2]?.trim() ?? dialogue[1], pc: dialogue[1] === "PC", text: dialogue[3] };
+  if (dialogue) {
+    const name = dialogue[1]?.trim();
+    return { form: "dialogue", speaker: name ?? "PC", pc: name === undefined, text: dialogue[2] };
+  }
   const meta = trimmed.match(META);
   if (meta && balanced(meta[1])) {
     const labelled = meta[1].match(META_LABEL);

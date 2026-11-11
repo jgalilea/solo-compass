@@ -1,5 +1,5 @@
 import type { JournalEntry, JournalLineKind } from "./lonelog";
-import { noteForm, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
+import { actorParts, noteForm, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
 import type { CastMember } from "./lonelogTags";
 import { normalizeForSearch } from "./text";
 
@@ -261,7 +261,7 @@ export function filterGroups(
     if (member.kind !== "npc" && member.kind !== "pc") return false;
     if (e.kind === "action") {
       const actor = splitActor(e.text).actor;
-      return !!actor && normalizeForSearch(actor) === name;
+      return !!actor && actorParts(actor).some((part) => part.name !== undefined && normalizeForSearch(part.name) === name);
     }
     if (e.kind !== "note") return false;
     const form = noteForm(e.text);

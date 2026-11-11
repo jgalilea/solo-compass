@@ -323,7 +323,12 @@ header below that.
   start of an action and "N (" at the start of a note list the NPCs and
   PCs (`findActorQuery`; picking writes the name and closes the
   notation), and in the journal the name opens them in the notebook
-  when it's a character there (`characterNamed`; "PC:" is the only PC). The sample
+  when it's a character there (`characterNamed`; "PC:" is the only PC;
+  each name of the spec's `@(A > B)` assist and `@(A+B)` joint actors,
+  `actorParts`). Keep both strictly as the spec writes them: `@(Name)`
+  with no space, `N (Name): ` with one, and `PC: `; a dialogue line in
+  any other shape is just a note. (Actions are stored without their
+  symbol, so an action's text starting "(Name)" is that character's.) The sample
   adventure uses tags and has pinned notes (`t.sample.notes`) and
 descriptions (`t.sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms

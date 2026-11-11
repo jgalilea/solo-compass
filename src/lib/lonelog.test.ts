@@ -36,6 +36,15 @@ describe("formatLine", () => {
     expect(formatLine({ kind: "session", text: "Sesión 2" })).toBe("=== Sesión 2 ===");
     expect(formatLine({ kind: "note", text: "Prosa libre" })).toBe("Prosa libre");
   });
+
+  it("writes someone else's action with no space, as the spec does", () => {
+    expect(formatLine({ kind: "action", text: "(Jonah) Keeps watch" })).toBe("@(Jonah) Keeps watch");
+    expect(formatLine({ kind: "action", text: "(Elara > Jonah) Boosts the climb" })).toBe("@(Elara > Jonah) Boosts the climb");
+  });
+
+  it("reads it back as that character's action", () => {
+    expect(parseMarkdownToEntries("@(Jonah) Keeps watch", "a", 0).map((e) => [e.kind, e.text])).toEqual([["action", "(Jonah) Keeps watch"]]);
+  });
 });
 
 describe("exportAdventureToMarkdown", () => {

@@ -4,7 +4,7 @@ import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
 import { castKey, characterNamed, progressDone, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
-import { noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
+import { actorParts, noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
@@ -458,13 +458,18 @@ function EntryContent({
     if (actor) {
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
-          <CharacterName
-            member={characterNamed(cast, actor)}
-            onTagClick={onTagClick}
-            className="mr-1.5 rounded-md bg-ink-700/70 px-1.5 py-0.5 text-sm font-semibold text-gold"
-          >
-            {actor}
-          </CharacterName>
+          <span className="mr-1.5 rounded-md bg-ink-700/70 px-1.5 py-0.5 text-sm font-semibold text-gold">
+            {/* "Elara > Jonah" (assists) or "Elara+Jonah": each name on its own. */}
+            {actorParts(actor).map((part, i) =>
+              part.name === undefined ? (
+                part.text
+              ) : (
+                <CharacterName key={i} member={characterNamed(cast, part.name)} onTagClick={onTagClick}>
+                  {part.text}
+                </CharacterName>
+              ),
+            )}
+          </span>
           <TaggedText text={text} onTagClick={onTagClick} />
         </p>
       );

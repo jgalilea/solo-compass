@@ -71,6 +71,9 @@ const PREFIX: Record<Exclude<JournalLineKind, "note" | "session" | "scene">, str
  * escaped with "\\", which is also Markdown's standard escape and
  * doesn't show when rendered.
  */
+/** Someone else's action, "(Jonah) Keeps watch", written "@(Jonah) …". */
+const ACTOR = /^\([^()\n]+\)/;
+
 const NEEDS_ESCAPE = /^(@|\?|d:|tbl:|gen:|->|=>|===|#|>|\\)/;
 
 /** What opens an entry of its own, even on an indented line. */
@@ -115,7 +118,9 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
       ? NEEDS_ESCAPE.test(first) ? `\\${first}` : first
       : entry.kind === "roll" && OWN_ROLL_SYMBOL.test(first)
         ? first
-        : `${PREFIX[entry.kind]}${first}`;
+        : entry.kind === "action" && ACTOR.test(first)
+          ? `@${first}` // "@(Jonah) Keeps watch": no space (§ multiple actors)
+          : `${PREFIX[entry.kind]}${first}`;
   const continuation = (line: string) =>
     line.trim() ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}` : "";
   return [head, ...rest.map(continuation)].join("\n");
