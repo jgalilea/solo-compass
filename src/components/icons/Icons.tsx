@@ -14,8 +14,13 @@ type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number };
 
 // Slightly thinner stroke than the default (2): at 2 they looked too
 // heavy next to text at the app's small sizes.
+// Decorative unless given an aria-label (an entry's kind, say): then
+// screen readers read it as an image with that name.
 function TablerIcon({ icon: Icon, size = 20, strokeWidth = 1.75, ...rest }: IconProps & { icon: Tabler.Icon }) {
-  return <Icon size={size} stroke={strokeWidth} aria-hidden {...rest} />;
+  const labelled = rest["aria-label"] !== undefined;
+  return (
+    <Icon size={size} stroke={strokeWidth} aria-hidden={labelled ? undefined : true} role={labelled ? "img" : undefined} {...rest} />
+  );
 }
 
 /**

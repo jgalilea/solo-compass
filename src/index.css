@@ -163,8 +163,8 @@
   --color-gold-soft: #eebf72;
 
   --color-yes: #8bb04f;
-  --color-no: #c8402c;
-  --color-contradiction: #8f6aa8;
+  --color-no: #d4684f;
+  --color-contradiction: #987cb1;
 
   --color-die-white: #ece1c8;
 }
@@ -238,7 +238,7 @@
   --color-ink-glow: #141414;
 
   --color-parchment: #f2f0eb;
-  --color-parchment-dim: #8a8a86;
+  --color-parchment-dim: #8e8e8a;
   --color-parchment-faint: #80807d;
 
   /* No gold: the "accent" is near-white bone, matching the rest of
@@ -248,7 +248,7 @@
 
   --color-yes: #f2f0eb;
   --color-no: #f24646;
-  --color-contradiction: #5c4a6b;
+  --color-contradiction: #8079a7;
 
   --color-die-white: #f2f0eb;
 }
@@ -276,12 +276,12 @@
   --color-parchment-dim: #6b5a3e;
   --color-parchment-faint: #6f5e42;
 
-  --color-gold: #8e651c;
-  --color-gold-soft: #b8862f;
+  --color-gold: #74541c;
+  --color-gold-soft: #644818;
 
-  --color-yes: #2f8a5f;
-  --color-no: #b23a4a;
-  --color-contradiction: #7c4fb0;
+  --color-yes: #216e51;
+  --color-no: #ae3848;
+  --color-contradiction: #7a4dac;
 }
 
 :root[data-theme="pulp"][data-mode="light"] {
@@ -298,11 +298,11 @@
   --color-parchment-dim: #5c4a35;
   --color-parchment-faint: #67553e;
 
-  --color-gold: #96571c;
-  --color-gold-soft: #c17a2f;
+  --color-gold: #72451c;
+  --color-gold-soft: #623b18;
 
-  --color-yes: #5c7a2e;
-  --color-no: #a92e1f;
+  --color-yes: #4c6021;
+  --color-no: #a52c1f;
   --color-contradiction: #6b4a8a;
 }
 
@@ -320,12 +320,12 @@
   --color-parchment-dim: #5b6572;
   --color-parchment-faint: #5f6976;
 
-  --color-gold: #3757e0;
-  --color-gold-soft: #5470f0;
+  --color-gold: #2f4fe0;
+  --color-gold-soft: #2142da;
 
-  --color-yes: #1f9d5c;
-  --color-no: #e0384f;
-  --color-contradiction: #7a4fd6;
+  --color-yes: #1d794a;
+  --color-no: #cd1f2e;
+  --color-contradiction: #784dd6;
 }
 
 :root[data-theme="scifi"][data-mode="light"] {
@@ -342,12 +342,12 @@
   --color-parchment-dim: #4a685c;
   --color-parchment-faint: #506d62;
 
-  --color-gold: #0d7f4f;
-  --color-gold-soft: #14a366;
+  --color-gold: #0d6d46;
+  --color-gold-soft: #0b5b3a;
 
-  --color-yes: #0e8a56;
-  --color-no: #d6304a;
-  --color-contradiction: #9c6b0a;
+  --color-yes: #0e784d;
+  --color-no: #c7293c;
+  --color-contradiction: #905f0a;
 }
 
 /* OSR was already near-pure black and white in dark mode; in light it
@@ -502,6 +502,20 @@ body {
   [role^="menuitem"]:focus-visible,
   [role="option"]:focus-visible {
     outline-offset: -2px;
+  }
+}
+
+/* "Reduce motion" in the system: no dice tumbling, no sliding in, no
+   transitions; smooth scrolling done from code checks it too
+   (src/lib/scrolling.ts). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

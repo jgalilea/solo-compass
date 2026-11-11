@@ -13,7 +13,8 @@
  */
 
 import { createCollection, diffById } from "./collectionStore";
-import { DICTIONARIES, interpolate, LOCALES, type Dictionary } from "./i18n";
+import { interpolate, LOCALES, type Dictionary } from "./i18n";
+import { TABLE_THEME_NAMES } from "./i18n/tableThemeNames";
 import { makeId } from "./ids";
 import { normalizeForSearch } from "./text";
 import {
@@ -169,7 +170,7 @@ export function parseTheme(value: string | undefined): TableTheme | undefined {
   const wanted = normalizeForSearch(value.trim());
   return TABLE_THEMES.find(
     (theme) =>
-      theme === wanted || LOCALES.some((l) => normalizeForSearch(DICTIONARIES[l].tables.themes[theme]) === wanted),
+      theme === wanted || LOCALES.some((l) => normalizeForSearch(TABLE_THEME_NAMES[l][theme]) === wanted),
   );
 }
 

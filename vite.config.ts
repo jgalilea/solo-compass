@@ -64,6 +64,44 @@ function englishManifestPlugin(): Plugin {
   };
 }
 
+/**
+ * Each language's dictionary is its own chunk (src/lib/i18n/index.ts),
+ * which main.tsx waits for before the first render. Discovered only
+ * once the main bundle runs, it would cost a round trip of its own on
+ * a first visit: instead a small script in <head> picks the language
+ * the way loadLocale does and preloads that chunk next to the main one.
+ */
+function localeModulePreloadPlugin(): Plugin {
+  return {
+    name: "solo-compass:locale-modulepreload",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(_html, ctx) {
+        const files: Record<string, string> = {};
+        for (const chunk of Object.values(ctx.bundle ?? {})) {
+          const match = chunk.type === "chunk" && chunk.facadeModuleId?.match(/i18n\/locales\/(\w+)\.ts$/);
+          if (match) files[match[1]] = base + chunk.fileName;
+        }
+        if (!files.es || !files.en) throw new Error("Locale chunks not found for the modulepreload hint");
+        return [
+          {
+            tag: "script",
+            injectTo: "head-prepend",
+            children:
+              "try{var l=localStorage.getItem(\"solo-compass:locale\");" +
+              "if(l!==\"es\"&&l!==\"en\")l=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language])" +
+              ".some(function(x){return x&&x.toLowerCase().indexOf(\"es\")===0})?\"es\":\"en\";" +
+              "var p=document.createElement(\"link\");p.rel=\"modulepreload\";p.crossOrigin=\"\";" +
+              `p.href=l==="es"?${JSON.stringify(files.es)}:${JSON.stringify(files.en)};` +
+              "document.head.appendChild(p)}catch(e){}",
+          },
+        ];
+      },
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base,
@@ -86,11 +124,26 @@ export default defineConfig({
       },
     }),
     englishManifestPlugin(),
+    localeModulePreloadPlugin(),
   ],
   build: {
     // Each game's tables are their own chunk, loaded only when needed
     // (src/lib/tableGames.ts); the biggest, Starsmith, is ~650 kB. The
     // main bundle must stay well below this: keep an eye on its size.
     chunkSizeWarningLimit: 700,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          // What the first screen needs ($initial) in two chunks instead
+          // of a dozen crumbs shared with the lazy screens: the libraries
+          // (unchanged between versions, so an update doesn't download
+          // them again) and the app's own code.
+          groups: [
+            { name: "vendor", test: /node_modules[\\/]/, tags: ["$initial"], priority: 2 },
+            { name: "app", tags: ["$initial"], priority: 1 },
+          ],
+        },
+      },
+    },
   },
 });

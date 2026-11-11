@@ -22,22 +22,22 @@ export const THEMES: ThemeInfo[] = [
   {
     id: "fantasia",
     swatch: ["#0b0c10", "#d7b26d", "#f4efe6"],
-    swatchLight: ["#f7f1e4", "#8e651c", "#2b2013"],
+    swatchLight: ["#f7f1e4", "#74541c", "#2b2013"],
   },
   {
     id: "pulp",
     swatch: ["#15120f", "#dd9a35", "#ece1c8"],
-    swatchLight: ["#f2e6cc", "#96571c", "#241a10"],
+    swatchLight: ["#f2e6cc", "#72451c", "#241a10"],
   },
   {
     id: "moderno",
     swatch: ["#0a0b0d", "#6c8cff", "#eef0f3"],
-    swatchLight: ["#f7f8fa", "#3757e0", "#14171c"],
+    swatchLight: ["#f7f8fa", "#2f4fe0", "#14171c"],
   },
   {
     id: "scifi",
     swatch: ["#04070a", "#39e75f", "#d7ecdf"],
-    swatchLight: ["#eef8f4", "#0d7f4f", "#0c1f17"],
+    swatchLight: ["#eef8f4", "#0d6d46", "#0c1f17"],
   },
   {
     id: "osr",

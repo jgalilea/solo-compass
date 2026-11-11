@@ -21,7 +21,7 @@ npm run preview  # serve the production build
 npm run lint      # oxlint
 npm test          # vitest (unit tests de src/lib)
 npm run test:e2e  # playwright smoke test (builds, then plays the app on phone + desktop)
-npm run test:perf # synthetic volume test (years of play, slowed-down phone CPU); not in the deploy
+npm run test:perf # start-up on slow 4G + synthetic volume test (slowed-down phone CPU); not in the deploy
 npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see Deploy)
 ```
 
@@ -44,7 +44,10 @@ slower, printing each timing. It's why the roll history is paged
 are drawn from the end (`EntryList`, 80 blocks, "earlier entries"
 button; whatever is highlighted, edited, selected or written below is
 always drawn). Run it after changing how the journal or the history
-load or render.
+load or render. `e2e/startup.perf.ts`, in the same run, times the first
+paint of a first visit over slow 4G and of a repeat visit (service
+worker), printing how much JavaScript came before it: run it after
+adding imports to anything the first screen loads.
 
 ## Deploy
 
@@ -58,6 +61,17 @@ staging/preview step — a push to `main` goes live. `base` in
 ### Routing and providers (`src/App.tsx`)
 
 `HashRouter` (required for GitHub Pages — no server-side rewrite support).
+**Only the oracle (the start screen) is in the main bundle.** Every other
+screen, Settings' panel (`SettingsPanel`, its button is `SettingsDialog`),
+the quick guide and the oracle's help text (`OracleHelpContent`) are
+`preloadable` (`src/lib/preloadable.ts`): their own chunk, fetched by
+`preloadAll` (from `Layout`) once the first screen and its fonts are up,
+then rendered without suspending; a `<Suspense>` covers the rare case it
+isn't there yet. Never import those statically from the main bundle; a
+new screen or a big dialog should be `preloadable` too. `vite.config.ts`
+groups what the first screen needs into two chunks (`vendor`, `app`,
+via `codeSplitting` and the `$initial` tag) instead of a dozen crumbs.
+A chunk gone after a deploy (`vite:preloadError`) reloads once (`main.tsx`).
 Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/dados`,
 `/diario` (journal list), `/diario/:adventureId` (adventure detail),
 `/historial`. The nav has four tabs (Oráculo, Tablas, Dados, Diario;
@@ -68,7 +82,7 @@ highlights the Oráculo tab; the Tables and Dice screens have their own
 filtered, highlighting that tab and going back there. The history also
 filters by adventure (or free rolls), and an adventure's menu opens it
 that way (`?aventura=<id>`). Theme, mode, language, backup and credits all
-live in one header button (`SettingsDialog`). Which adventure rolls are
+live in one header button (`SettingsDialog`, opening `SettingsPanel`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
 (`ActiveAdventureChip`), the same on every screen.
 Context providers are nested in a fixed order in `App.tsx`; `LocaleProvider`
@@ -123,8 +137,12 @@ No backend; persistence is split by access pattern, not by feature:
   folded notebook lists and blocks (`notebookSections.ts`, also the
   session index), the composer's draft per adventure (`drafts.ts`:
   text, entry type and speaker, gone once sent), whether new scenes are tested, active-adventure
-  id (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
-  `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`).
+  id, keeping the screen on (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
+  `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`, `wakeLock.ts`).
+- **Keep the screen on** (`wakeLock.ts`): a Settings switch (only where
+  the browser has the Screen Wake Lock API), off by default and per
+  device (not in the backup). `Layout` holds the lock while it's on and
+  the app is in view, asking again when it comes back.
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
   browser (`navigator.storage.persist()`) not to evict its data. Never call
   it silently — Firefox shows its own permission prompt — always behind
@@ -158,7 +176,7 @@ No backend; persistence is split by access pattern, not by feature:
   10+ journal entries newer than the last backup and it's 14+ days old,
   snoozed 7 days once Settings is opened. Deliberately no toast or
   dialog.
-- **Full backup/restore** (`backup.ts`, wired into `SettingsDialog`): exports
+- **Full backup/restore** (`backup.ts`, wired into `SettingsPanel`): exports
   everything above into one `.json` (download, or "Send" through the
   share sheet, as `.txt` on Chromium), and restores it either by
   **merging** with this device's data (`backupMerge.ts`: union by id,
@@ -401,7 +419,7 @@ file plus its `TABLE_GAMES` entry.
   Their ids are listed in `SOLO_COMPASS_TABLE_IDS` (the sample script
   refers to them).
 - Third-party tables under an open licence (CC BY or CC BY-SA, never
-  NC): Ironsworn, Delve, Starforged, Starsmith (Datasworn), Loner,
+  NC): Ironsworn, Delve, Ironsmith, Starforged, Starsmith (Datasworn), Loner,
   Knave, Cairn (2nd ed., from its GitHub source), the Lazy GM's
   Resource Document and One Page Solo Engine's "How much?" (its
   yes/no oracle is one of the four), with our own Spanish
@@ -414,7 +432,7 @@ file plus its `TABLE_GAMES` entry.
   "Ironsworn: Action" (`tableRollName`), since names repeat across games.
   Personal names (given/family) are never translated. A table that is an
   exact copy of another game's is left out (the original game keeps it;
-  a test checks it); expanded versions (Starsmith's d300) stay. Within a
+  a test checks it); expanded versions (Ironsmith's and Starsmith's d300) stay. Within a
   game, identical tables the book gives for different contexts stay too.
 
 Every built-in table has a `theme` (`TABLE_THEMES` in `tables.ts`:
@@ -530,7 +548,9 @@ Sharing (`share.ts`, Web Share API) is only offered where
 Icons are Tabler Icons (`@tabler/icons-react`, MIT, outline, stroke 1.75), wrapped in
 `src/components/icons/Icons.tsx` with a `size` prop; pick the closest
 Tabler icon instead of drawing SVG or adding another icon set (only the
-compass logo is custom). Screens import only from `Icons.tsx`. The
+compass logo is custom). Screens import only from `Icons.tsx`. Icons
+are decorative (`aria-hidden`) unless given an `aria-label`, which makes
+them an image with that name (an entry's kind is read that way). The
 logo (`IconCompass`, a four-point compass rose) is the same drawing as
 `public/favicon.svg` and the PWA icons in `public/icons/`; change them
 together. Don't write symbols like "+"/"−" as text in UI controls: some
@@ -626,8 +646,17 @@ Secondary text (dates, counts, hints) is `text-parchment-faint`, a
 token per theme and mode set to read at 4.5:1 on a card; never fade
 `text-parchment-dim` with an opacity (`/50`, `/60`…) for text, it falls
 below that (only `disabled:` states may). A roll's result is announced
-to screen readers through `announce.ts` (called by `usePlayActions`,
-read by the one live region `Announcer` in `Layout`).
+to screen readers through `announce.ts` (called by `usePlayActions`
+and by the dice tray, read by the one live region `Announcer` in
+`Layout`). Journal structure is navigable by headings: adventure h1,
+sessions h2 (the fold button inside the heading, named by the session),
+scenes h3. Animations and smooth scrolling stop under "reduce motion"
+(`index.css`, and `smoothBehavior`/`scrollBehaviorFor` in
+`scrolling.ts` for scrolling from code: use them instead of
+`behavior: "smooth"`; a trip of more than two screens is a jump).
+Contrast was checked with axe in every theme and mode (2026-11-11):
+keep text tokens at 4.5:1 on `ink-800`, and in light mode `gold-soft`
+(hover) darker than `gold`, not lighter.
 `THEMES` in `theme.ts` must stay in sync with the color values actually
 defined in `index.css` (used for the theme-picker swatches). Because some
 themes (notably `osr`) map the "gold" accent to a near-white/near-monochrome
@@ -642,6 +671,15 @@ color alone.
 Default language follows the browser (`es` if it starts with "es", else
 `en`); a manual pick from the language switcher is saved to `localStorage`
 and takes priority. Add new UI strings to both locale files.
+Only the language in use is downloaded: each dictionary is its own
+chunk (`loadDictionary`), `main.tsx` waits for it before rendering, and
+`index.html` preloads it next to the main bundle (a small script
+injected by `localeModulePreloadPlugin` in `vite.config.ts`, which picks
+the language the way `loadLocale` does: keep both in step). Switching
+language loads the other one first. So nothing in the main bundle may
+import `locales/*` directly: tests get both through
+`i18n/allDictionaries.ts`, and the table themes' names (read in either
+language by `customTables.ts`) live in `i18n/tableThemeNames.ts`.
 
 ### Active vs. paused adventure
 

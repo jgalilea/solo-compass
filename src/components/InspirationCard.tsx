@@ -3,6 +3,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import type { Adventure } from "../lib/journal";
 import { IconDice, IconSparkles } from "./icons/Icons";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
+import { smoothBehavior } from "../lib/scrolling";
 
 export function InspirationCard({
   last,
@@ -20,7 +21,7 @@ export function InspirationCard({
   const { t } = useLocaleContext();
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (last) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (last) resultRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
   }, [last]);
 
   return (

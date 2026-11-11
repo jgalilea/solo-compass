@@ -1,22 +1,26 @@
-import { useEffect } from "react";
+import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { IconCoffee, IconCompass, IconDice, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { Announcer } from "./Announcer";
-import { GuideDialog } from "./GuideDialog";
-import { openGuide } from "../lib/guide";
+import { isGuideOpen, openGuide, subscribeGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { focusHotkeyTarget, isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
 import { KOFI_URL } from "../lib/support";
+import { preloadable, preloadAll } from "../lib/preloadable";
+import { watchKeepScreenOn } from "../lib/wakeLock";
+
+const GuideDialog = preloadable(() => import("./GuideDialog").then((m) => m.GuideDialog));
 
 export function Layout() {
   const { t } = useLocaleContext();
   const { activeAdventureId } = useJournalContext();
   const location = useLocation();
   const navigate = useNavigate();
+  const guideOpen = useSyncExternalStore(subscribeGuide, isGuideOpen);
 
   // Every screen starts at the top: without this, on phones the
   // previous screen's scroll was inherited (e.g. history opened halfway
@@ -83,6 +87,12 @@ export function Layout() {
     d: () => focusHotkeyTarget("dice"),
     "?": openGuide,
   });
+
+  // The other screens and the bigger dialogs, fetched once this one is up.
+  useEffect(() => preloadAll(), []);
+
+  // "Keep the screen on" (Settings), for as long as the app is open.
+  useEffect(() => watchKeepScreenOn(), []);
 
   // Esc in a text field drops focus, so shortcuts keep working without
   // reaching for the mouse (dialogs and menus already use Esc to close,
@@ -162,11 +172,19 @@ export function Layout() {
       </header>
 
       <UpdatePrompt />
-      <GuideDialog />
+      {guideOpen && (
+        <Suspense fallback={null}>
+          <GuideDialog />
+        </Suspense>
+      )}
       <Announcer />
 
       <main className="flex flex-1 flex-col">
-        <Outlet />
+        {/* Only seen if a screen's chunk isn't there yet (preloadAll
+            normally gets it first): an empty page for that moment. */}
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav className="sticky bottom-0 z-40 border-t lg:hidden border-ink-border bg-ink-950/90 backdrop-blur">

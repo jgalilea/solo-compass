@@ -1,4 +1,5 @@
 import type { Dictionary } from "../types";
+import { TABLE_THEME_NAMES } from "../tableThemeNames";
 
 export const es: Dictionary = {
   common: {
@@ -36,6 +37,8 @@ export const es: Dictionary = {
     languageHeading: "Idioma",
     aboutHeading: "Acerca de",
     triggerLabelBackupDue: "Ajustes · hace tiempo que no guardas una copia",
+    keepScreenOnLabel: "Mantener la pantalla encendida",
+    keepScreenOnHint: "Mientras la app está a la vista, la pantalla no se apaga sola (útil al jugar con dados de verdad). Gasta algo más de batería.",
   },
   dice: {
     title: "Dados",
@@ -624,22 +627,7 @@ export const es: Dictionary = {
     sectionCountOne: "1 tabla",
     generatorCount: "{count} generadores",
     generatorCountOne: "1 generador",
-    themes: {
-      inspiration: "Inspiración",
-      plot: "Trama y aventura",
-      characters: "Personajes",
-      names: "Nombres",
-      places: "Lugares",
-      settlements: "Asentamientos",
-      dungeons: "Mazmorras y ruinas",
-      creatures: "Criaturas",
-      factions: "Facciones",
-      danger: "Peligros y combate",
-      items: "Objetos y tesoros",
-      events: "Sucesos y clima",
-      space: "Espacio y naves",
-      planets: "Planetas",
-    },
+    themes: TABLE_THEME_NAMES.es,
     themeFilterLabel: "Filtrar por temática",
     allThemes: "Todas",
     loadError: "No se pudieron cargar estas tablas.",
@@ -790,7 +778,7 @@ export const es: Dictionary = {
     favoriteAdd: "Marcar aventura como favorita",
     favoriteRemove: "Quitar aventura de favoritas",
     dragHandle: "Arrastrar para reordenar",
-    toggleSession: "Mostrar u ocultar la sesión",
+    sessionEntryCount: "{count} entradas",
     showEarlierEntries: "Ver entradas anteriores ({count})",
     previousSessionsHeading: "Sesiones anteriores",
     togglePreviousSessions: "Mostrar u ocultar las sesiones anteriores",

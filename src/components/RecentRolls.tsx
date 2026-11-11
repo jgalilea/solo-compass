@@ -56,7 +56,9 @@ export function RecentRolls({
             {entry.kind === "oraculo" ? (
               <>
                 <IconOracle size={16} className="shrink-0 text-parchment-faint" />
-                <span className="min-w-0 flex-1 truncate italic text-parchment/85">
+                {/* Up to two lines: a long answer ("Contradicción") leaves
+                    a phone's row little room for one. */}
+                <span className="line-clamp-2 min-w-0 flex-1 break-words italic text-parchment/85">
                   {entry.question ? `“${entry.question}”` : t.history.kindOracle}
                 </span>
                 <span

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DICTIONARIES } from ".";
+import { DICTIONARIES } from "./allDictionaries";
 import { splitRollText } from "../journalUi";
 import type { OracleRoll } from "../oracle";
 import { formatOracleDice, formatOracleResult } from "./answerText";

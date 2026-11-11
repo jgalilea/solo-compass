@@ -15,6 +15,7 @@ import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
 import { EmptyState } from "./StateViews";
 import { IconOracle } from "./icons/Icons";
+import { smoothBehavior } from "../lib/scrolling";
 
 export function OracleView() {
   const { t } = useLocaleContext();
@@ -35,7 +36,7 @@ export function OracleView() {
   // already visible (desktop, where it's in the next column).
   useEffect(() => {
     if (animateKey > 0) {
-      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      resultRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
     }
   }, [animateKey]);
 

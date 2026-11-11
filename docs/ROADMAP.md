@@ -5,10 +5,47 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-09 (prueba de rendimiento con años de partidas, aviso de Safari).
+Última revisión: 2026-11-11 (rendimiento de arranque, accesibilidad, pantalla encendida, análisis de Google Drive).
 
 ## Hecho recientemente
 
+- Ironsmith (2026-11-11): 75 tablas de Eric Bright desde Datasworn,
+  traducidas (las filas que ya tenía Ironsworn conservan su
+  traducción). Ver el punto 5.
+- Rendimiento, accesibilidad y pantalla encendida (2026-11-11):
+  - Arranque: el JS que necesita la primera pantalla baja de 210 a
+    ~141 kB comprimidos (693 → ~432 kB sin comprimir). Cada pantalla
+    salvo el oráculo, Ajustes, la guía y la ayuda del oráculo van en
+    trozos aparte (`preloadable`), precargados cuando ya se ha pintado;
+    solo se descarga el idioma en uso (`loadDictionary`, precargado
+    desde `index.html`); librerías y app en dos trozos (las librerías
+    no cambian entre versiones). Primera visita en 4G lenta con la CPU
+    4x más lenta: de 1,58 a ~1,22 s hasta el primer pintado; la
+    repetida (service worker), ~0,12 s. `e2e/startup.perf.ts` lo mide.
+  - Diario grande: «se puede mover» recorría todas las entradas por
+    cada entrada pintada (2,4 millones de comparaciones con 5.000), y
+    tras apuntar una entrada la página se deslizaba más de 11.000 px
+    durante 1,3 s; ahora los trayectos de más de dos pantallas son un
+    salto. Abrir la sesión de 2.000 entradas: de 1,95 a 0,6 s.
+  - Descartado a propósito: cambiar React Router por un enrutador
+    propio (≈12 kB comprimidos, ~60 ms en la primera visita y nada en
+    las siguientes) no compensa el riesgo; tampoco sacar Lonelog del
+    arranque (`useJournal` lo usa al importar; ~4 kB).
+  - Accesibilidad (axe en todas las pantallas, 5 temas × claro/oscuro,
+    y el árbol que lee un lector de pantalla): contraste corregido en
+    los colores de texto de cada tema (el dorado y el rojo del modo
+    claro, la contradicción de OSR, el hover de los botones dorados en
+    claro, que ahora oscurece); los iconos con nombre (el tipo de cada
+    entrada) se leían como nada; sesiones (h2) y escenas (h3) son
+    encabezados; las sesiones anteriores se leían todas como «Mostrar
+    u ocultar la sesión»; las etiquetas dicen qué son («Sala 3»); los
+    dados de la bandeja se anuncian y se leen «d6: 4»; se respeta
+    «reducir movimiento». Queda el zoom bloqueado (decidido).
+  - «Mantener la pantalla encendida» en Ajustes (Screen Wake Lock,
+    solo donde el navegador lo tiene; del dispositivo, no va en la
+    copia).
+  - «Últimas tiradas»: la pregunta usa hasta dos líneas (con
+    «Contradicción» al lado se cortaba en una palabra en un móvil).
 - Cartas, «¿Cuánto?» y contador por aventura (2026-11-10):
   - Baraja en la herramienta de dados (interruptor «Dados | Cartas», la
     misma bandeja): póker con comodines opcionales y tarot con
@@ -336,9 +373,9 @@ condición y penetrante, repeticiones, únicos, críticos y orden. Como
 en la spec, `3d10!>=8` explota con 8+ (antes contaba éxitos); para la
 regla «10 otra vez» del Mundo de Tinieblas es `3d10>=8!`.
 
-**Pendiente:** juntar varios −/+ seguidos de un reloj en una sola
-entrada si en uso real ensucian el diario. Los «alias» no son de
-Lonelog (idea propia): descartados mientras nadie los pida.
+Los «alias» no son de Lonelog (idea propia): descartados mientras
+nadie los pida. (Juntar varios −/+ seguidos de un reloj: hecho con
+`combineSteps`.)
 
 Aplazado el 2026-11-04 (se retoma más adelante). Idea que quedó sobre
 la mesa: modelo mixto. Los cambios de estado salen de las entradas
@@ -463,6 +500,7 @@ atribuciones literales, en Ajustes → Acerca de y en el README.
 | Ironsworn | 30 | CC BY 4.0 | Datasworn (`ironsworn-classic`); el módulo de GatoMalefico (GPL-3.0) solo como vocabulario: su orden de filas no es el de la edición actual |
 | Ironsworn: Delve | 42 | CC BY 4.0 | Datasworn (`ironsworn-classic-delve`) |
 | Ironsworn: Starforged | 249 | CC BY 4.0 (Reference Guide; Datasworn las marca todas así) | Datasworn (`starforged`) |
+| Ironsmith (Eric Bright) | 75 (fuera «NPC Plot Knowledge: Type», idéntica a la de Starsmith; d300 ampliadas de Ironsworn y tablas propias de corrupción, misiones, misterios, partidas únicas y caza de monstruos) | CC BY 4.0 según Datasworn, BY-SA según la ficha de venta: traducción como CC BY-SA, igual que Starsmith | Datasworn (`@datasworn-community/ironsmith` 0.3.0). Nombres rápidos de asentamiento con el mismo reparto español que Ironsworn (sustantivo + complemento sin género), ampliado a 75 |
 | Starsmith (Eric Bright) | 194 (fuera 8 que repite con otro nombre y 1 idéntica a Starforged; sus versiones ampliadas d300 se quedan) | CC BY 4.0 según el autor; la ficha de Lulu dice CC BY-SA, así que nuestra traducción va como CC BY-SA | Datasworn (`starsmith`) |
 | Loner v2.3 (R. Bisceglie) | 19 | CC BY-SA 4.0 (traducción también BY-SA) | Edición Keeper (`farirpgs/keeper`) |
 | Knave 1.ª ed. (Ben Milton) | 11 (rasgos) | CC BY 4.0 (comprobado en el PDF) | PDF oficial |
@@ -474,9 +512,9 @@ se filtra por ella, se busca por ella y agrupa las tablas dentro de cada
 bloque.
 
 Pendientes posibles: los nombres del Lazy GM (listas de longitud
-irregular), las tablas de nombres de lugar de Cairn (adjetivo + nombre
-con fórmula: en español chocan con el género) e Ironsmith (CC BY según
-Datasworn, BY-SA según Lulu). Sundered Isles: solo
+irregular) y las tablas de nombres de lugar de Cairn (adjetivo + nombre
+con fórmula: en español chocan con el género). Ironsmith, hecho el
+2026-11-11. Sundered Isles: solo
 los movimientos son CC BY, sus tablas no.
 
 La estructura ya es un registro (`oracles.ts`); al añadir el segundo
@@ -544,11 +582,11 @@ ni errores de consola.
 
 **Pendiente:**
 
-- **P3 · Detalles**: "CONTRADICCIÓN" deja poco sitio a la pregunta en
-  "Últimas tiradas"; las preguntas largas en mayúsculas en la tarjeta
-  de resultado se leen mal. (Hechos o resueltos: el placeholder del
-  oráculo, más corto desde el 2026-11-06; el aviso "Activa una
-  aventura…", que ya no existe.)
+- Nada. Hechos o resueltos: «Contradicción» y la pregunta en «Últimas
+  tiradas» (2026-11-11: la pregunta usa dos líneas); la pregunta de la
+  tarjeta de resultado ya no va en mayúsculas; el placeholder del
+  oráculo, más corto desde el 2026-11-06; el aviso «Activa una
+  aventura…», que ya no existe.
 
 ## 7. Compatibilidad con Lonelog
 
@@ -584,9 +622,8 @@ formato digital).
   abierto (GPL)** en GitHub Pages. No cambiar de URL: el origen ata los
   datos de los usuarios (IndexedDB y localStorage) y solo se moverían
   con la copia de seguridad.
-- **Firma de IA en los commits.** Decidir si se quita del historial
-  (exige reescribirlo y forzar el push) y si los commits nuevos la
-  llevan.
+- **Firma de IA en los commits — DECIDIDO (2026-11-11): se queda**, en
+  el historial y en los commits nuevos.
 
 ## 9. Usar la app en varios dispositivos (investigado el 2026-11-06)
 
@@ -621,6 +658,109 @@ explícita, sin cambiar la promesa de "todo en tu dispositivo" para
 quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth),
 [soporte de showDirectoryPicker](https://caniuse.com/mdn-api_window_showdirectorypicker),
 [límites de desarrollo de Dropbox](https://www.dropboxforum.com/discussions/101000014/does-a-dropbox-app-have-a-limit-on-development-users/846671).
+
+**Pasar los datos por QR — descartado (2026-11-11).** Un diario no
+cabe en un QR (~1,5 kB útiles); haría falta una secuencia animada
+(20–40 s, cámara en el que recibe) o usar el QR solo para conectar los
+dos dispositivos por WebRTC (cámara en los dos, falla entre redes
+distintas sin servidor). «Enviar» en Ajustes ya cubre ese caso.
+
+### Paso 2: sincronización con Google Drive (análisis del 2026-11-11)
+
+**Qué haría.** Un interruptor «Sincronizar con Google Drive» en Ajustes,
+apagado por defecto. Al activarlo, Google pide permiso para el ámbito
+`drive.appdata` (una carpeta oculta de la app en el Drive del usuario:
+solo la ve esta app, no aparece en la interfaz de Drive, no se puede
+compartir; se borra si el usuario desconecta la app). Dentro, un único
+archivo: la copia de seguridad de siempre (`buildBackup`, el mismo
+esquema), comprimida con `CompressionStream("gzip")`.
+
+**Cómo sincroniza** (sin servidor propio y reutilizando lo hecho):
+
+1. Descargar el archivo de Drive (`files.get?alt=media`) si existe.
+2. Juntarlo con lo de este dispositivo con `backupMerge.ts` (unión por
+   id, gana la edición más reciente, los borrados registrados no
+   resucitan). La fusión es conmutativa: da igual qué dispositivo
+   sincronice primero.
+3. Guardar el resultado aquí (por colecciones, como ya hace el
+   restaurar «juntar», pero **sin recargar la página**: hace falta que
+   los contextos relean, igual que con `sync.ts` entre pestañas).
+4. Subirlo (`files.update`, multipart; reanudable si pasa de 5 MB).
+   Drive v3 no tiene escritura condicional por ETag: antes de subir se
+   relee la `version` del archivo y, si cambió entre medias, se repite
+   desde 1 (la ventana es de segundos y repetir es inocuo).
+
+Cuándo: al abrir la app y al volver a primer plano (si hay token), unos
+30 s después del último cambio, y con un botón «Sincronizar ahora».
+Los ajustes que son del dispositivo (tema, pantalla encendida…) no se
+tocan, como en el restaurar «juntar».
+
+**La pega principal: el permiso dura una hora.** Una app solo de
+navegador usa el «modelo de token» de Google Identity Services
+(`initTokenClient` → `requestAccessToken`): token de acceso de ~1 h y
+**sin token de refresco** (Google exige el secreto del cliente para
+darlo, y en una web estática no se puede guardar). Renovarlo abre una
+ventanita de Google y los navegadores solo la dejan abrir tras un toque
+del usuario. Consecuencia: sincroniza sola mientras dura la hora; luego
+el botón pasa a «Reconectar» y hace falta un toque (sin volver a dar
+permiso, solo la ventanita). Para partidas de una tarde basta;
+para «se sincroniza sola siempre» no.
+
+**iPhone/iPad instalada:** las ventanitas de OAuth en una PWA instalada
+en iOS fallan a menudo (se abren en otra vista y pierden el
+`window.opener`). Habría que usar el flujo por redirección (salir a
+Google y volver con el token en la URL) cuando `navigator.standalone`;
+choca con el `HashRouter` (el token llega en el `#`), así que hay que
+leerlo antes de montar el router. Probar en un iPhone real antes de
+comprometerse.
+
+**Lo que hay que montar en Google** (una vez, lo haces tú):
+
+- Proyecto en Google Cloud, API de Drive activada, ID de cliente OAuth
+  de tipo «Aplicación web» con el origen `https://<usuario>.github.io`.
+- Pantalla de consentimiento «Externa», en producción. Con un ámbito no
+  sensible basta la verificación básica (sin auditoría de seguridad),
+  pero pide página de inicio y **política de privacidad** en un dominio
+  autorizado y verificado (Search Console). Un `github.io` de proyecto
+  (`/solo-compass/`) se verifica con un archivo en la raíz del dominio,
+  es decir, en el repositorio `<usuario>.github.io`: hay que crearlo, o
+  usar un dominio propio. **Confirmar con la consola antes de empezar**:
+  es lo que más puede retrasar todo.
+- El ID de cliente es público (va en el código); no hay secreto.
+
+**Impacto en la app.**
+
+| Aspecto | Impacto |
+|---|---|
+| Código | Nuevo `driveSync.ts` (≈300 líneas: token, descargar, fusionar, subir), una sección en Ajustes y un estado «sincronizado hace…». La fusión, los borrados y el esquema de copia ya existen |
+| Rendimiento | Cero para quien no la active: su código va en un trozo aparte y el script de Google (≈90 kB) solo se carga al activarla |
+| Datos | Una copia de 11.000 entradas ocupa unos MB en JSON, bastante menos comprimida. Cada sincronización la sube entera: con mucho uso conviene subir solo si cambió algo (hash) |
+| Privacidad | Los datos van al Drive del usuario, nunca a un servidor nuestro. Cambia el texto de «todo en tu dispositivo» para quien la active, y obliga a publicar una política de privacidad |
+| Riesgo | Relojes de dos dispositivos muy desajustados deciden mal «la edición más reciente». Los borrados se olvidan al año: un dispositivo sin sincronizar más de un año podría devolver algo borrado |
+| Mantenimiento | Depender de Google Identity Services (han cambiado la librería de login dos veces en cinco años) y de su consola |
+
+**Alternativa a considerar: Dropbox.** Permite PKCE en el navegador
+**con token de refresco** («acceso offline»), así que sincronizaría
+sola sin el «Reconectar» de cada hora. A cambio: la app nace en modo
+desarrollo (hasta 50 usuarios) y pasar a producción pide revisión de
+Dropbox, y llega a menos gente que Google. Se podría ofrecer después
+con el mismo `backupMerge` (la parte de la nube es pequeña).
+
+**Esfuerzo estimado:** 3–5 días de trabajo con pruebas (fusión sin
+recargar, token y redirección en iOS, interfaz y errores: sin red,
+permiso retirado, cuota llena), más el trámite de Google, que no
+depende de nosotros.
+
+**Recomendación:** hacerlo, pero primero el trámite (dominio verificado
+y política de privacidad) y una prueba de concepto de 1 día en un
+iPhone instalado: si la redirección funciona, el resto es seguro. Si
+la hora de token molesta en uso real, añadir Dropbox como segunda
+opción.
+
+Fuentes (2026-11-11): [carpeta de datos de la app](https://developers.google.com/workspace/drive/api/guides/appdata),
+[modelo de token de GIS](https://developers.google.com/identity/oauth2/web/guides/use-token-model),
+[OAuth en PWA de iOS (foro de Apple)](https://developer.apple.com/forums/thread/759487),
+[redirección en iOS standalone (Firebase)](https://github.com/firebase/firebase-js-sdk/issues/77).
 
 ## 10. Otras ideas (P3)
 

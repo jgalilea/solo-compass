@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { isTypingTarget } from "../hooks/useHotkeys";
 import { useHistoryContext } from "../hooks/useHistoryContext";
+import { revealElement, scrollBehaviorFor, smoothBehavior } from "../lib/scrolling";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, sectionToLonelog, type JournalEntry } from "../lib/lonelog";
@@ -220,10 +221,11 @@ export function AdventureDetailView() {
       moveEntry(id, direction);
       revealRef.current = id;
     },
-    canMove: (id, direction) => {
-      const index = adventureEntries.findIndex((e) => e.id === id);
-      return direction === "up" ? index > 0 : index < adventureEntries.length - 1;
-    },
+    // Asked by every entry drawn: only the first and last can't move
+    // (no search through thousands of entries each time).
+    canMove: (id, direction) =>
+      adventureEntries.length > 0 &&
+      id !== (direction === "up" ? adventureEntries[0] : adventureEntries[adventureEntries.length - 1]).id,
     onInsertBelow: (id) => {
       const entry = adventureEntries.find((e) => e.id === id);
       setSelectedEntryId(null);
@@ -274,7 +276,7 @@ export function AdventureDetailView() {
     if (!id) return;
     pendingJumpRef.current = null;
     const el = document.getElementById(`entry-${id}`) ?? document.getElementById(`session-${id}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    revealElement(el, "center");
   }, [jumpTick]);
   useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
 
@@ -312,7 +314,7 @@ export function AdventureDetailView() {
     // its height changes (e.g. on desktop it has no tools).
     const visibleBottom = composerRef.current?.getBoundingClientRect().top ?? window.innerHeight;
     const delta = end.getBoundingClientRect().top - (visibleBottom - 12);
-    if (delta > 0) window.scrollBy({ top: delta, behavior: "smooth" });
+    if (delta > 0) window.scrollBy({ top: delta, behavior: scrollBehaviorFor(delta) });
   }, [adventureEntries.length]);
 
   // Runs again after unfolding, when the entry is finally on screen.
@@ -333,7 +335,7 @@ export function AdventureDetailView() {
     }
     revealRef.current = null;
     const el = document.getElementById(`entry-${id}`) ?? document.getElementById(`session-${id}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    revealElement(el, "nearest");
   }, [groups, previousExpanded, expandedSessions, insertionPoint]);
 
   if (status === "loading") {
@@ -446,7 +448,7 @@ export function AdventureDetailView() {
       });
       if (!group.sessionEntry) target = "previous";
     }
-    document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
   }
 
   const hasSessionIndex = groups.some((g) => g.sessionEntry || g.items.some((e) => e.kind === "scene"));
@@ -497,7 +499,7 @@ export function AdventureDetailView() {
         setNotebookOpen(false);
         setSearchOpen(false);
         setJournalFilter(key);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: smoothBehavior() });
       }}
       onLog={(text, step) => {
         // −/+ in a row on the same clock or quantity: one entry, not one
@@ -594,13 +596,13 @@ export function AdventureDetailView() {
                 <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
                   {group.sessionEntry && (
                     <div className={SESSION_BAR}>
-                      <h3 className="flex h-12 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
+                      <h2 className="flex h-12 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
                         <IconSession size={16} className="shrink-0 text-gold" />
                         <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                           {group.sessionEntry.text}
                         </span>
                         <SessionDate session={group.sessionEntry} />
-                      </h3>
+                      </h2>
                     </div>
                   )}
                   <ul className={group.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
@@ -645,7 +647,6 @@ export function AdventureDetailView() {
                           return next;
                         })
                       }
-                      toggleLabel={t.journal.toggleSession}
                       actions={entryActions}
                     />
                   ) : (
@@ -698,9 +699,9 @@ export function AdventureDetailView() {
                   >
                     <div className="relative flex h-12 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
                       <IconSession size={16} className="shrink-0 text-gold" />
-                      <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                      <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}
-                      </span>
+                      </h2>
                       <SessionDate session={currentGroup.sessionEntry} />
                       <LineButtons
                         visible={selectedEntryId === currentGroup.sessionEntry.id}
@@ -744,7 +745,7 @@ export function AdventureDetailView() {
             setInsertionPoint(null);
             setLinkedRollId(undefined);
             scrollPendingRef.current = false;
-            listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            revealElement(listEndRef.current, "end");
           }}
           onLogged={handleLogged}
           onRolled={handleRolled}

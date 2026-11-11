@@ -244,13 +244,11 @@ export function SessionGroupRow({
   group,
   expanded,
   onToggle,
-  toggleLabel,
   actions,
 }: {
   group: EntryGroup;
   expanded: boolean;
   onToggle: () => void;
-  toggleLabel: string;
   actions: EntryActions;
 }) {
   const { t } = useLocaleContext();
@@ -287,26 +285,30 @@ export function SessionGroupRow({
         // Pinned while it's open, like the current session's.
         <div className={expanded ? SESSION_BAR : "flex"}>
           <div data-entry className="group relative flex h-12 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
-            <button
-              type="button"
-              onClick={() => {
-                onToggle();
-                actions.onSelect(expanded ? null : session.id);
-              }}
-              aria-expanded={expanded}
-              aria-label={toggleLabel}
-              className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
-            >
-              <IconChevronRight
-                size={16}
-                className={`shrink-0 text-gold transition-transform ${expanded ? "rotate-90" : ""}`}
-              />
-              <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
-                {session.text}
-              </span>
-              <SessionDate session={session} />
-              <span className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
-            </button>
+            {/* A heading to jump between sessions with a screen reader;
+                the button inside folds it (its name is the session's). */}
+            <h2 className="flex min-w-0 flex-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onToggle();
+                  actions.onSelect(expanded ? null : session.id);
+                }}
+                aria-expanded={expanded}
+                className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
+              >
+                <IconChevronRight
+                  size={16}
+                  className={`shrink-0 text-gold transition-transform ${expanded ? "rotate-90" : ""}`}
+                />
+                <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                  {session.text}
+                </span>
+                <SessionDate session={session} />
+                <span aria-hidden className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
+                <span className="sr-only">{interpolate(t.journal.sessionEntryCount, { count: group.items.length })}</span>
+              </button>
+            </h2>
             {/* Expanding it with a tap selects it: that way its
                 buttons are reachable on touch too. */}
             <LineButtons
@@ -547,7 +549,8 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
   const { id, context, combat } = parseScene(text);
   return (
     // One line: pinned, a longer scene would peek out from under the next.
-    <p className="flex min-w-0 items-baseline gap-x-2">
+    // A heading inside its session's (h2), to jump between scenes.
+    <h3 className="flex min-w-0 items-baseline gap-x-2">
       <span className="shrink-0 rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
       {context && (
         <span onMouseEnter={titleIfCut(context)} className="min-w-0 truncate font-display text-base italic text-parchment">
@@ -560,7 +563,7 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
           {t.journal.sceneCombat}
         </span>
       )}
-    </p>
+    </h3>
   );
 }
 
@@ -619,6 +622,8 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
     const content = (
       <>
         <CastIcon kind={kind} size={13} className="shrink-0 self-center text-gold" />
+        {/* What the icon says, for screen readers: "Sala 3", "PNJ Odile". */}
+        <span className="sr-only">{t.notebook.kinds[kind]} </span>
         <span className="font-medium text-parchment">{name}</span>
         {progress && (
           <span className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}>

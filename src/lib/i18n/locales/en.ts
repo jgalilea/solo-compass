@@ -1,4 +1,5 @@
 import type { Dictionary } from "../types";
+import { TABLE_THEME_NAMES } from "../tableThemeNames";
 
 export const en: Dictionary = {
   common: {
@@ -36,6 +37,8 @@ export const en: Dictionary = {
     languageHeading: "Language",
     aboutHeading: "About",
     triggerLabelBackupDue: "Settings · it's been a while since your last backup",
+    keepScreenOnLabel: "Keep the screen on",
+    keepScreenOnHint: "While the app is in view, the screen won't turn off by itself (handy when playing with real dice). Uses a little more battery.",
   },
   dice: {
     title: "Dice",
@@ -624,22 +627,7 @@ export const en: Dictionary = {
     sectionCountOne: "1 table",
     generatorCount: "{count} generators",
     generatorCountOne: "1 generator",
-    themes: {
-      inspiration: "Inspiration",
-      plot: "Plot and adventure",
-      characters: "Characters",
-      names: "Names",
-      places: "Places",
-      settlements: "Settlements",
-      dungeons: "Dungeons and ruins",
-      creatures: "Creatures",
-      factions: "Factions",
-      danger: "Danger and combat",
-      items: "Items and treasure",
-      events: "Events and weather",
-      space: "Space and starships",
-      planets: "Planets",
-    },
+    themes: TABLE_THEME_NAMES.en,
     themeFilterLabel: "Filter by theme",
     allThemes: "All",
     loadError: "These tables couldn't be loaded.",
@@ -786,7 +774,7 @@ export const en: Dictionary = {
     favoriteAdd: "Mark adventure as favorite",
     favoriteRemove: "Remove adventure from favorites",
     dragHandle: "Drag to reorder",
-    toggleSession: "Show or hide the session",
+    sessionEntryCount: "{count} entries",
     showEarlierEntries: "Show earlier entries ({count})",
     previousSessionsHeading: "Previous sessions",
     togglePreviousSessions: "Show or hide previous sessions",

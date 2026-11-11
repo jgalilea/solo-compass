@@ -18,6 +18,39 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-11-11",
+    text: {
+      es: {
+        title: "Capítulo XVII · La vela que no se apaga",
+        intro: "Mara aligera el equipaje para el camino y deja una vela encendida junto a los dados.",
+        items: [
+          "Nuevas tablas de Ironsmith, de Eric Bright: los oráculos de Ironsworn ampliados (acción, tema, lugares, personajes, problemas del asentamiento, nombres) y tablas propias para la corrupción, misiones, juramentos de misterio, partidas de una sola sesión y la caza de monstruos. En inglés y en español, en su propio bloque.",
+          "La app abre antes la primera vez: solo descarga lo que necesita la pantalla que ves y el idioma que usas; lo demás llega en segundo plano, así que cambiar de pestaña sigue siendo inmediato.",
+          "Los diarios muy largos van más ligeros: abrir una sesión con miles de entradas tarda la tercera parte, y al apuntar algo lejos de donde estabas la página salta a ello en vez de deslizarse un buen rato.",
+          "Nuevo en Ajustes: «Mantener la pantalla encendida». Mientras juegas con la app a la vista, el móvil no se bloquea entre tirada y tirada (si tu navegador lo permite).",
+          "Más fácil de leer en todos los temas: el dorado, el rojo y el morado de las respuestas tienen más contraste en el modo claro, y la «Contradicción» de OSR oscuro ya no se pierde en el negro.",
+          "Con un lector de pantalla: cada entrada dice qué es (acción, consecuencia, tirada…), las sesiones y escenas son encabezados para saltar entre ellas, las etiquetas dicen si son un PNJ, un lugar o una sala, y los dados se anuncian al tirarlos.",
+          "Si tu sistema pide reducir el movimiento, los dados ya no ruedan ni la página se desliza.",
+          "En «Últimas tiradas», una pregunta larga junto a «Contradicción» ya se lee: ocupa dos líneas en vez de cortarse.",
+        ],
+      },
+      en: {
+        title: "Chapter XVII · The candle that stays lit",
+        intro: "Mara travels lighter and leaves a candle burning beside the dice.",
+        items: [
+          "New tables from Ironsmith, by Eric Bright: Ironsworn's oracles expanded (action, theme, places, characters, settlement trouble, names) and tables of its own for corruption, quests, mystery vows, one-shots and monster hunting. In English and Spanish, in their own block.",
+          "The app opens sooner the first time: it only downloads what the screen you're on and your language need; the rest arrives in the background, so switching tabs is still instant.",
+          "Very long journals are lighter: opening a session with thousands of entries takes a third of the time, and logging something far from where you were jumps to it instead of sliding for a while.",
+          "New in Settings: “Keep the screen on”. While you play with the app in view, your phone won't lock between rolls (if your browser allows it).",
+          "Easier to read in every theme: the gold, red and purple of the answers have more contrast in light mode, and OSR's dark “Contradiction” no longer fades into the black.",
+          "With a screen reader: every entry says what it is (action, consequence, roll…), sessions and scenes are headings to jump between, tags say whether they're an NPC, a place or a room, and dice are announced as you roll them.",
+          "If your system asks for reduced motion, the dice no longer tumble and the page no longer slides.",
+          "In “Recent rolls”, a long question beside “Contradiction” can be read now: it takes two lines instead of being cut short.",
+        ],
+      },
+    },
+  },
+  {
     date: "2026-11-10",
     text: {
       es: {

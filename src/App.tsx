@@ -1,10 +1,6 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { OracleView } from "./components/OracleView";
-import { TablesView } from "./components/TablesView";
-import { HistoryView } from "./components/HistoryView";
-import { JournalListView } from "./components/JournalListView";
-import { AdventureDetailView } from "./components/AdventureDetailView";
 import { HistoryProvider } from "./hooks/HistoryContext";
 import { ThemeProvider } from "./hooks/ThemeContext";
 import { ModeProvider } from "./hooks/ModeContext";
@@ -14,8 +10,19 @@ import { JournalProvider } from "./hooks/JournalContext";
 import { CustomTablesProvider } from "./hooks/CustomTablesContext";
 import { SavedRollsProvider } from "./hooks/SavedRollsContext";
 import { GeneratorsProvider } from "./hooks/GeneratorsContext";
-import { DiceView } from "./components/DiceView";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
+import { preloadable } from "./lib/preloadable";
+
+// The oracle is where the app opens (the manifest's start_url), so it
+// stays in the main bundle; every other screen is its own chunk,
+// fetched once the first screen is up (preloadAll, from Layout).
+const TablesView = preloadable(() => import("./components/TablesView").then((m) => m.TablesView));
+const DiceView = preloadable(() => import("./components/DiceView").then((m) => m.DiceView));
+const JournalListView = preloadable(() => import("./components/JournalListView").then((m) => m.JournalListView));
+const AdventureDetailView = preloadable(() =>
+  import("./components/AdventureDetailView").then((m) => m.AdventureDetailView),
+);
+const HistoryView = preloadable(() => import("./components/HistoryView").then((m) => m.HistoryView));
 
 function App() {
   // LocaleProvider goes outside the error boundary so that, if something

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { rollFormula, withEdge } from "./diceNotation";
-import { DICTIONARIES, LOCALES } from "./i18n";
+import { LOCALES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 
 /** A die roll that always lands on the given faces, in order (1-based). */
 function dice(...faces: number[]) {

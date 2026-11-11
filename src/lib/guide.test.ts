@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DICTIONARIES, LOCALES } from "./i18n";
+import { LOCALES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 import { closeGuide, isGuideOpen, openGuide, subscribeGuide } from "./guide";
 import { isCardDraw } from "./cards";
 import { parseMarkdownToEntries, type JournalEntry } from "./lonelog";

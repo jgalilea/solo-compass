@@ -1,11 +1,30 @@
-import { es } from "./locales/es";
-import { en } from "./locales/en";
 import { LOCALES, type Dictionary, type Locale } from "./types";
 
 export type { Dictionary, Locale } from "./types";
 export { LOCALES, interpolate } from "./types";
 
-export const DICTIONARIES: Record<Locale, Dictionary> = { es, en };
+/**
+ * Each language is its own chunk: only the one in use is downloaded
+ * (together they were a sixth of the main bundle). index.html preloads
+ * it alongside the main bundle (localeModulePreload in vite.config.ts),
+ * and main.tsx waits for it before the first render, so the context
+ * always has a dictionary at hand.
+ */
+const LOADERS: Record<Locale, () => Promise<Dictionary>> = {
+  es: () => import("./locales/es").then((m) => m.es),
+  en: () => import("./locales/en").then((m) => m.en),
+};
+
+const loaded: Partial<Record<Locale, Dictionary>> = {};
+
+export async function loadDictionary(locale: Locale): Promise<Dictionary> {
+  return (loaded[locale] ??= await LOADERS[locale]());
+}
+
+/** A dictionary already loaded by loadDictionary, if any. */
+export function loadedDictionary(locale: Locale): Dictionary | undefined {
+  return loaded[locale];
+}
 
 const STORAGE_KEY = "solo-compass:locale";
 export const DEFAULT_LOCALE: Locale = "en";

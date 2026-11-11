@@ -1,7 +1,7 @@
 import { Component, type ContextType, type ErrorInfo, type ReactNode } from "react";
 import { IconAlertCircle } from "./icons/Icons";
 import { LocaleContext } from "../hooks/localeContextInstance";
-import { DICTIONARIES, DEFAULT_LOCALE } from "../lib/i18n";
+import { loadedDictionary, loadLocale } from "../lib/i18n";
 
 interface Props {
   children: ReactNode;
@@ -28,9 +28,10 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       // If for whatever reason the boundary rendered outside
-      // LocaleProvider, fall back to a default dictionary instead of
-      // crashing while showing the app's own error.
-      const t = this.context?.t ?? DICTIONARIES[DEFAULT_LOCALE];
+      // LocaleProvider, fall back to the dictionary main.tsx loaded
+      // instead of crashing while showing the app's own error.
+      const t = this.context?.t ?? loadedDictionary(loadLocale());
+      if (!t) return null;
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
           <IconAlertCircle size={32} className="text-no" />

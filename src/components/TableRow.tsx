@@ -12,6 +12,7 @@ import {
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
+import { smoothBehavior } from "../lib/scrolling";
 
 export function TableRow({
   table,
@@ -40,7 +41,7 @@ export function TableRow({
 
   // On phones the result opens below the row: bring it into view.
   useEffect(() => {
-    if (last) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (last) resultRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
   }, [last]);
 
   return (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DICTIONARIES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 import type { SampleLine } from "./i18n/types";
 import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";

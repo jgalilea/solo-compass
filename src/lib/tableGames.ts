@@ -37,6 +37,7 @@ export type GameId =
   | "solo-compass"
   | "ironsworn"
   | "delve"
+  | "ironsmith"
   | "knave"
   | "loner"
   | "starforged"
@@ -130,6 +131,16 @@ const STARSMITH_GAME: GameRef = {
   tag: "Starsmith",
 };
 
+export const IRONSMITH_URL = "https://www.drivethrurpg.com/product/351813/Ironsmith";
+
+const IRONSMITH_GAME: GameRef = {
+  name: "Ironsmith",
+  url: IRONSMITH_URL,
+  author: "Eric Bright",
+  license: "CC BY 4.0",
+  tag: "Ironsmith",
+};
+
 export const LAZY_GM_URL = "https://slyflourish.com/lazy_gm_resource_document.html";
 
 const LAZY_GM_GAME: GameRef = {
@@ -192,6 +203,14 @@ export const TABLE_CREDITS: {
     licenseUrl: CC_BY,
     url: STARSMITH_URL,
     attribution: ["Starsmith: Expanded Oracles by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License."],
+  },
+  {
+    name: "Ironsmith",
+    author: "Eric Bright",
+    license: "CC BY 4.0",
+    licenseUrl: CC_BY,
+    url: IRONSMITH_URL,
+    attribution: ["Ironsmith by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License."],
   },
   {
     name: "Loner",
@@ -269,6 +288,15 @@ export const TABLE_GAMES: TableGame[] = [
     count: 42,
     owns: (id) => id.startsWith("delve-"),
     load: () => import("./tableData/delve").then((m) => m.TABLES),
+  },
+  {
+    id: "ironsmith",
+    title: () => IRONSMITH_GAME.name,
+    note: (t) => creditNote(t, IRONSMITH_GAME),
+    game: () => IRONSMITH_GAME,
+    count: 75,
+    owns: (id) => id.startsWith("ironsmith-"),
+    load: () => import("./tableData/ironsmith").then((m) => m.TABLES),
   },
   {
     id: "starforged",

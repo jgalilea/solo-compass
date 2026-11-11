@@ -6,6 +6,7 @@ import type { Adventure } from "../lib/journal";
 import type { MeaningTable } from "../lib/tables";
 import { IconDice, IconGenerator, IconPencil, IconTrash } from "./icons/Icons";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
+import { smoothBehavior } from "../lib/scrolling";
 
 /**
  * One of the player's generators on the Tables screen: its name, the
@@ -40,7 +41,7 @@ export function GeneratorRow({
   const { t } = useLocaleContext();
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (last) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (last) resultRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
   }, [last]);
   const missing = !loading && tables.length < generator.tableIds.length;
 

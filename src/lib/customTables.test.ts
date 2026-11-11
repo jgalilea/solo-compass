@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DICTIONARIES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 import {
   buildEntries,
   createCustomTable,

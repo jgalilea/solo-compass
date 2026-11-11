@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { restoreBackup } from "./backup";
 import { recentDeletions } from "./deletions";
 import { createDiceRollEntry, loadHistory, normalizeHistoryEntry } from "./history";
-import { DICTIONARIES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 import {
   loadAdventures,
   loadJournalEntries,

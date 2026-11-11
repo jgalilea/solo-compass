@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DICTIONARIES, LOCALES } from "./i18n";
+import { LOCALES } from "./i18n";
+import { DICTIONARIES } from "./i18n/allDictionaries";
 import {
   gameOfTable,
   gameState,
@@ -27,6 +28,11 @@ const NAMES_ONLY = new Set([
   "starsmith-character-name-family-name",
   "starsmith-additional-registry-number-model",
   "cairn-npc-name",
+  "ironsmith-ironlander-names",
+  "ironsmith-elf-names",
+  "ironsmith-giant-names",
+  "ironsmith-varou-names",
+  "ironsmith-troll-names",
 ]);
 
 const loaded = await Promise.all(TABLE_GAMES.map(async (game) => ({ game, data: await game.load() })));

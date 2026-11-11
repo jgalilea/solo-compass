@@ -76,6 +76,9 @@ export interface Dictionary {
     aboutHeading: string;
     /** Settings button title when it shows the backup-due dot. */
     triggerLabelBackupDue: string;
+    /** Switch for the Screen Wake Lock (only where the browser has it). */
+    keepScreenOnLabel: string;
+    keepScreenOnHint: string;
   };
   dice: {
     title: string;
@@ -563,7 +566,8 @@ export interface Dictionary {
     favoriteAdd: string;
     favoriteRemove: string;
     dragHandle: string;
-    toggleSession: string;
+    /** After a session's entry count, for screen readers ("12" alone says nothing). */
+    sessionEntryCount: string;
     showEarlierEntries: string;
     previousSessionsHeading: string;
     togglePreviousSessions: string;

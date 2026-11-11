@@ -17,6 +17,7 @@ import {
 } from "../lib/lonelogTags";
 import { INPUT_CLASS, formatIsoDay } from "../lib/journalUi";
 import { titleIfCut } from "../lib/truncation";
+import { smoothBehavior } from "../lib/scrolling";
 import { CastIcon } from "./CastIcon";
 import {
   IconChevronRight,
@@ -73,7 +74,7 @@ export function CastItem({
   const rootRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
-    if (focused) rootRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (focused) rootRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
   }, [focused, focusTick]);
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);

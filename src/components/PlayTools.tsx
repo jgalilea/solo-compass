@@ -16,6 +16,7 @@ import { useMeaningTables } from "../hooks/useMeaningTables";
 import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
+import { announce } from "../lib/announce";
 import { DiceHelp } from "./DiceHelp";
 import { rollFormula, withEdge, type Edge } from "../lib/diceNotation";
 import { isRollable, rollSaved, savedRollLabel } from "../lib/savedRolls";
@@ -258,6 +259,8 @@ export function DiceTool({
   function add(roll: string, card?: DiceRollEntry["card"]) {
     setTray((prev) => [...prev, { text: roll, card }]);
     setEdge(null);
+    // The tray changes silently: say what came up.
+    announce(spokenRoll(trayText(roll)));
   }
 
   function removeFromTray(items: TrayItem[]) {
@@ -493,11 +496,12 @@ export function DiceTool({
                 key={i}
                 className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
               >
-                <span className="break-all">{trayText(item.text)}</span>
+                <span aria-hidden className="break-all">{trayText(item.text)}</span>
+                <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
                 <button
                   type="button"
                   onClick={() => removeFromTray([item])}
-                  aria-label={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
+                  aria-label={interpolate(t.journal.diceRemove, { roll: spokenRoll(trayText(item.text)) })}
                   title={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
                   className="shrink-0 rounded-md p-0.5 text-parchment-dim transition hover:text-no"
                 >
@@ -544,6 +548,11 @@ interface TrayItem {
 /** A roll in the tray: a card as "Q♠ Reina de picas", dice as written. */
 function trayText(roll: string): string {
   return isCardDraw(roll) ? showDraws(roll).replace(" -> ", " ") : roll;
+}
+
+/** A roll for a screen reader: "d6: 4", not "d6 hyphen greater-than 4". */
+function spokenRoll(text: string): string {
+  return text.replaceAll(" -> ", ": ");
 }
 
 /** A built-in die's roll as the journal writes it ("d6 -> 4", "4dF -> +1 (+ 0 + −)"). */
