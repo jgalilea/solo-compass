@@ -16,7 +16,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is Ubuntu 26.04 since 2026-10-19, and its
+    # Ubuntu mirrors kept failing to resolve while installing the
+    # browser's system packages (each run waited ~10 minutes on them).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -28,9 +32,9 @@ jobs:
       - run: npm run build
       # Smoke test in a real browser against the build (playwright.config.ts).
       # The system packages come from Ubuntu's mirrors, which the runner
-      # sometimes can't reach; its image already has what Chromium needs,
-      # so the browser alone is enough then.
-      - run: npx playwright install --with-deps chromium || npx playwright install chromium
+      # sometimes can't reach: give them 3 minutes, then install the
+      # browser alone (the image already has what Chromium needs).
+      - run: timeout 180 npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run test:e2e
         env:
           CI: true
@@ -40,7 +44,8 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -53,7 +53,10 @@ adding imports to anything the first screen loads.
 
 Push to `main` triggers `.github/workflows/deploy.yml`, which builds and
 publishes `dist/` to GitHub Pages via `actions/deploy-pages`. There is no
-staging/preview step — a push to `main` goes live. `base` in
+staging/preview step — a push to `main` goes live. The jobs are pinned to
+`ubuntu-24.04` (on 26.04, `ubuntu-latest`, the browser's system packages
+kept failing to download) and capped in time; installing Playwright's
+system packages gets 3 minutes before falling back to the browser alone. `base` in
 `vite.config.ts` must match the GitHub Pages repo path (`/solo-compass/`).
 
 ## Architecture
