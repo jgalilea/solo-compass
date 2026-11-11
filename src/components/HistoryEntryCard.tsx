@@ -151,7 +151,7 @@ export function HistoryEntryCard({
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-faint">
-          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? t.history.kindDice : entry.tableName}</span>
+          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? (entry.card ? t.history.kindCards : t.history.kindDice) : entry.tableName}</span>
           <div className="flex items-center gap-2.5">
             <span className="normal-case tracking-normal">
               {formatTime(t.dateLocale, entry.timestamp)}

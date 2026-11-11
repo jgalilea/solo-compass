@@ -522,6 +522,7 @@ export interface Dictionary {
     emptyFilterTitle: string;
     kindOracle: string;
     kindDice: string;
+    kindCards: string;
     freeRoll: string;
     deletedAdventure: string;
     favoriteAdd: string;

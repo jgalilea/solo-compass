@@ -20,6 +20,8 @@ import { JournalComposer } from "./JournalComposer";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
+import { FoldingHeading } from "./FoldingHeading";
+import { loadFoldedNotebookSections, toggleFoldedNotebookSection, type PlayToolBlock } from "../lib/notebookSections";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
 import { JournalSearchPanel } from "./JournalSearchPanel";
@@ -755,13 +757,13 @@ export function AdventureDetailView() {
         aria-label={t.journal.playPanelLabel}
         className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain [scrollbar-gutter:stable] -ml-1.5 py-8 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
       >
-        <PanelSection Icon={IconOracle} title={t.journal.toolOracleTitle}>
+        <PanelSection id="oracleTool" Icon={IconOracle} title={t.journal.toolOracleTitle}>
           <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
-        <PanelSection Icon={IconDice} title={t.journal.toolDiceTitle}>
+        <PanelSection id="diceTool" Icon={IconDice} title={t.journal.toolDiceTitle}>
           <DiceTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
-        <PanelSection Icon={IconTable} title={t.journal.toolTableTitle}>
+        <PanelSection id="tableTool" Icon={IconTable} title={t.journal.toolTableTitle}>
           <TableTool adventureId={adventure.id} onRolled={handleRolled} />
         </PanelSection>
       </aside>
@@ -833,22 +835,34 @@ export function AdventureDetailView() {
 /** revealRef: the entry being written below, whatever its id is by then. */
 const INSERTION = "insertion";
 
+/**
+ * One tool of the desktop game table, folded away under its heading by
+ * whoever doesn't use it. Folded, it stays mounted (hidden), so the dice
+ * waiting in the tray aren't lost.
+ */
 function PanelSection({
+  id,
   Icon,
   title,
   children,
 }: {
+  id: PlayToolBlock;
   Icon: typeof IconOracle;
   title: string;
   children: ReactNode;
 }) {
+  const [folded, setFolded] = useState(() => loadFoldedNotebookSections().has(id));
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-        <Icon size={15} className="text-gold" />
-        {title}
-      </h2>
-      {children}
+      <FoldingHeading
+        Icon={Icon}
+        title={title}
+        folded={folded}
+        onToggle={() => setFolded(toggleFoldedNotebookSection(id).has(id))}
+      />
+      <div hidden={folded} className="flex flex-col gap-3">
+        {children}
+      </div>
     </section>
   );
 }

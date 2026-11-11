@@ -3,7 +3,7 @@ import { showDraws } from "../lib/cards";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
-import { IconChevronRight, IconDice, IconOracle, IconTable } from "./icons/Icons";
+import { IconCards, IconChevronRight, IconDice, IconOracle, IconTable } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -67,7 +67,11 @@ export function RecentRolls({
               </>
             ) : entry.kind === "dados" ? (
               <>
-                <IconDice size={16} className="shrink-0 text-parchment-faint" />
+                {entry.card ? (
+                  <IconCards size={16} className="shrink-0 text-parchment-faint" />
+                ) : (
+                  <IconDice size={16} className="shrink-0 text-parchment-faint" />
+                )}
                 {/* What was rolled, then its result, like a table roll. */}
                 <span className="min-w-0 shrink truncate text-parchment-dim">{showDraws(entry.text.split(" -> ")[0])}</span>
                 <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">

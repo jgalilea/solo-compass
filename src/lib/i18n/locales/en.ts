@@ -743,6 +743,7 @@ export const en: Dictionary = {
     emptyFilterTitle: "No results for this filter",
     kindOracle: "Oracle",
     kindDice: "Dice",
+    kindCards: "Cards",
     freeRoll: "Free roll, no adventure",
     deletedAdventure: "From a deleted adventure",
     favoriteAdd: "Mark as favorite",

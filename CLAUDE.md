@@ -232,7 +232,8 @@ The game table tools are the same components in two places: a bottom
 sheet with tabs opened from the one-row composer (`JournalComposer`,
 mobile and tablet; `Modal` with `sheet`, so it stays a bottom sheet on
 tablet too) and a fixed right-hand panel (desktop, where the composer
-has no tool buttons). The composer's text is an auto-growing textarea:
+has no tool buttons; each tool folds under its heading there, kept in
+`notebookSections.ts`, and stays mounted so the tray survives). The composer's text is an auto-growing textarea:
 Enter sends with a fine pointer (Shift+Enter = new line); on touch Enter
 is a new line and the send button sends. Its "Dialogue" mode picks who
 speaks (the PC, the cast's NPCs or any name) and logs a note in
