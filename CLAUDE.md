@@ -59,7 +59,9 @@ npm grouped by dev/prod and React apart, plus the workflow's actions)
 run lint, unit tests, the build and the e2e in
 `.github/workflows/test.yml`, without deploying. React stays on 19.2
 (`~19.2.x`) on purpose: 19.3 adds ~9 kB gzipped to the first visit for
-nothing the app uses.
+nothing the app uses. `@types/node` stays on the Node the workflows run
+(24). Dependabot ignores both (its `ignore` rules): change them there
+when moving on.
 
 Push to `main` triggers `.github/workflows/deploy.yml`, which builds and
 publishes `dist/` to GitHub Pages via `actions/deploy-pages`. There is no

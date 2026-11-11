@@ -10,6 +10,19 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    ignore:
+      # React stays on 19.2 (see above): only its patches.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # Node's types follow the Node the workflows run (24).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       react:
         patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
