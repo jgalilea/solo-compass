@@ -135,6 +135,10 @@ export function IconFumble(props: IconProps) {
 export function IconShieldLock(props: IconProps) {
   return <TablerIcon icon={Tabler.IconShieldLock} {...props} />;
 }
+// The feedback form (ideas and bugs), in Settings → About.
+export function IconFeedback(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMessageReport} {...props} />;
+}
 // The project's code, in Settings → About.
 export function IconGithub(props: IconProps) {
   return <TablerIcon icon={Tabler.IconBrandGithub} {...props} />;

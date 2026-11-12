@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.1",
+    date: "2026-11-12",
+    text: {
+      es: {
+        title: "Interludio · Un buzón en la posada",
+        intro: "En la puerta de la posada cuelga ahora un buzón: quien pase puede dejar una nota.",
+        items: [
+          "Nuevo en Ajustes → Acerca de: «Ideas y errores», un formulario corto para contar qué falla, qué echas en falta o qué se te ha ocurrido. Se abre en tu idioma y solo lleva la versión de la app y tu navegador, nada de tu diario.",
+        ],
+      },
+      en: {
+        title: "Interlude · A letterbox at the inn",
+        intro: "A letterbox now hangs by the inn's door: anyone passing by can leave a note.",
+        items: [
+          "New in Settings → About: “Ideas and bugs”, a short form to tell what's broken, what's missing or what you've thought of. It opens in your language and only carries the app's version and your browser, nothing from your journal.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.0",
     date: "2026-11-11",
     text: {

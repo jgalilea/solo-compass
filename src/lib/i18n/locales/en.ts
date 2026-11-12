@@ -273,9 +273,13 @@ export const en: Dictionary = {
     privacyItems: [
       "Everything you write and roll (adventures, journal, notebook, tables, dice and settings) is kept in this browser, on your device. There's no server, no account and no cloud: none of it leaves here.",
       "No ads, no tracking cookies and no analytics. The app doesn't know who you are or how much you play.",
-      "The app is downloaded from GitHub Pages, like any website, and from then on works offline. Something only leaves if you take it out: when you export or send a backup, share an adventure or open a link to another site (Ko-fi, GitHub, a game's page).",
+      "The app is downloaded from GitHub Pages, like any website, and from then on works offline. Something only leaves if you take it out: when you export or send a backup, share an adventure or open a link to another site (Ko-fi, GitHub, the ideas and bugs form, a game's page).",
       "Which also means that if you clear the browser's data or uninstall the app, the journal goes with it: save a backup now and then.",
     ],
+    feedbackTitle: "Ideas and bugs",
+    feedbackDescription:
+      "Something not working, something missing, or an idea? Tell me in a short form. It only carries the app's version and your browser, nothing from your journal.",
+    feedbackButton: "Open the form",
     sourceTitle: "Open source",
     sourceDescription: "Solo Compass is free software (GPL-3.0): its code is on GitHub, for anyone to see.",
     sourceButton: "See the project on GitHub",

@@ -253,6 +253,10 @@ export interface Dictionary {
     /** The privacy note: everything stays in the browser. */
     privacyTitle: string;
     privacyItems: string[];
+    /** The feedback card: ideas and bugs, through a form. */
+    feedbackTitle: string;
+    feedbackDescription: string;
+    feedbackButton: string;
     /** The open-source card: the code on GitHub. */
     sourceTitle: string;
     sourceDescription: string;

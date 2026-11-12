@@ -273,9 +273,13 @@ export const es: Dictionary = {
     privacyItems: [
       "Todo lo que escribes y tiras (aventuras, diario, cuaderno, tablas, dados y ajustes) se guarda en este navegador, en tu dispositivo. No hay servidor, ni cuenta, ni nube: nada de eso sale de aquí.",
       "Sin anuncios, sin cookies de seguimiento y sin analíticas. La app no sabe quién eres ni cuánto juegas.",
-      "La app se descarga de GitHub Pages, como cualquier web, y a partir de ahí funciona sin conexión. Solo sale algo si tú lo sacas: al exportar o enviar una copia, al compartir una aventura o al abrir un enlace a otra web (Ko-fi, GitHub, la página de un juego).",
+      "La app se descarga de GitHub Pages, como cualquier web, y a partir de ahí funciona sin conexión. Solo sale algo si tú lo sacas: al exportar o enviar una copia, al compartir una aventura o al abrir un enlace a otra web (Ko-fi, GitHub, el formulario de ideas y errores, la página de un juego).",
       "Por eso mismo, si borras los datos del navegador o desinstalas la app, el diario se va con ellos: guarda una copia de vez en cuando.",
     ],
+    feedbackTitle: "Ideas y errores",
+    feedbackDescription:
+      "¿Algo no funciona, echas algo en falta o se te ha ocurrido una idea? Cuéntamelo en un formulario corto. Solo lleva la versión de la app y tu navegador, nada de tu diario.",
+    feedbackButton: "Abrir el formulario",
     sourceTitle: "Código abierto",
     sourceDescription: "Solo Compass es software libre (GPL-3.0): su código está en GitHub, a la vista de todos.",
     sourceButton: "Ver el proyecto en GitHub",

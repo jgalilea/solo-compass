@@ -190,6 +190,13 @@ No backend; persistence is split by access pattern, not by feature:
   browser. The app makes no request outside its own origin (the only
   `fetch` is its own fonts, for the HTML export); everything external
   is a link the player opens. Keep it that way, or change the note.
+- **Ideas and bugs** (Settings → About, `FeedbackCard`): a link to a
+  Tally form, one per language (`FEEDBACK_FORMS` in `support.ts`),
+  opened in a new tab (an embedded form would load Tally inside the
+  app, against the privacy note, and can't follow the themes).
+  `feedbackUrl` fills its hidden fields `version` and `browser`, and
+  the form says that's all it receives: don't add more without changing
+  both.
 - **Error screen** (`AppErrorBoundary`): the "fumble" screen says the
   journal is safe, reloads, copies an error report (`errorReport.ts`:
   version, screen, browser, the error; never journal content) and

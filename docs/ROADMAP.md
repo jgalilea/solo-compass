@@ -764,6 +764,13 @@ Fuentes (2026-11-11): [carpeta de datos de la app](https://developers.google.com
 
 ## 9b. Contacto: sugerencias y errores (analizado el 2026-11-11)
 
+**HECHO (2026-11-12), en parte:** tarjeta «Ideas y errores» en Ajustes →
+Acerca de, que abre el formulario de Tally del idioma de la app
+(es `2jaJxb`, en `M1NJQM`) en una pestaña nueva con `version` y
+`browser` en la URL. Pendiente: crear esos dos campos ocultos en los
+formularios (si no, Tally ignora los parámetros); el botón en la
+pantalla de error (sigue con GitHub) y el enlace secundario a issues.
+
 Quien juega no suele tener cuenta de GitHub, y la app no tiene servidor.
 Opciones, de menos a más fricción para quien escribe:
 

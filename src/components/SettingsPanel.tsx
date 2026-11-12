@@ -10,6 +10,7 @@ import {
   IconDice,
   IconDownload,
   IconExternalLink,
+  IconFeedback,
   IconGithub,
   IconShieldLock,
   IconHelp,
@@ -53,7 +54,7 @@ import { StorageProtectionSettings } from "./StorageProtection";
 import { InstallAppSettings } from "./InstallApp";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
-import { GITHUB_URL, KOFI_URL } from "../lib/support";
+import { GITHUB_URL, KOFI_URL, feedbackUrl } from "../lib/support";
 import { versionLabel } from "../lib/appVersion";
 import { canKeepScreenOn, isKeepScreenOn, setKeepScreenOn, subscribeKeepScreenOn } from "../lib/wakeLock";
 import { Switch } from "./Switch";
@@ -459,6 +460,8 @@ function AboutSettings() {
 
       <PrivacyCard />
 
+      <FeedbackCard />
+
       <SupportCard />
 
       <SourceCard />
@@ -521,6 +524,29 @@ function PrivacyCard() {
           <li key={item}>{item}</li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/** Ideas and bugs, through the form in the player's language. */
+function FeedbackCard() {
+  const { t, locale } = useLocaleContext();
+  return (
+    <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+      <p className="flex items-center gap-1.5 font-display text-base text-parchment">
+        <IconFeedback size={18} className="shrink-0 text-gold" />
+        {t.about.feedbackTitle}
+      </p>
+      <p className="mt-1 text-sm text-parchment-dim">{t.about.feedbackDescription}</p>
+      <a
+        href={feedbackUrl(locale, versionLabel(), navigator.userAgent)}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-ink-border py-2 text-sm font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+      >
+        {t.about.feedbackButton}
+        <IconExternalLink size={14} />
+      </a>
     </div>
   );
 }
