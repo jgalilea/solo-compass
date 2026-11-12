@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useCloseOnBack } from "../hooks/useCloseOnBack";
 import { lockPageScroll, unlockPageScroll } from "../lib/scrollLock";
 
 // Stack of open dialogs, so Esc only closes the top one (e.g. the
@@ -67,6 +68,8 @@ export function Modal({
   // backdrop: so it doesn't close when selecting panel text and
   // releasing outside.
   const pressedOnBackdrop = useRef(false);
+  // Back (the phone's gesture) closes it, not the screen behind.
+  useCloseOnBack(true, onClose);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

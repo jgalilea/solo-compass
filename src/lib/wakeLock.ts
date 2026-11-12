@@ -1,7 +1,7 @@
 /**
  * Keeping the screen on while playing (Screen Wake Lock API): with
  * physical dice on the table, the phone used to lock between entries.
- * A per-device setting, off until turned on in Settings. Only while the
+ * A per-device setting, on until turned off in Settings. Only while the
  * app is in view: the browser drops the lock when it's hidden, and it's
  * asked for again on coming back.
  */
@@ -14,11 +14,12 @@ export function canKeepScreenOn(): boolean {
 }
 
 function load(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return true;
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === "on";
+    // Only "off" is stored (an older "on" reads as on too).
+    return window.localStorage.getItem(STORAGE_KEY) !== "off";
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -33,8 +34,8 @@ export function setKeepScreenOn(on: boolean): void {
   if (enabled === on) return;
   enabled = on;
   try {
-    if (on) window.localStorage.setItem(STORAGE_KEY, "on");
-    else window.localStorage.removeItem(STORAGE_KEY);
+    if (on) window.localStorage.removeItem(STORAGE_KEY);
+    else window.localStorage.setItem(STORAGE_KEY, "off");
   } catch {
     // Not saved: it stays on (or off) until the app is closed.
   }

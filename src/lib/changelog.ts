@@ -25,6 +25,30 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.2",
+    date: "2026-11-12",
+    text: {
+      es: {
+        title: "Interludio · Marcha atrás",
+        intro: "Mara aprende a desandar sus pasos sin perder el sitio, y a borrar lo escrito sin miedo.",
+        items: [
+          "En el móvil, ir atrás (el gesto o el botón) con una ventana o un menú abierto lo cierra y te deja donde estabas, en vez de cambiar la pantalla de detrás.",
+          "Al editar una entrada o el título de una sesión aparece «Deshacer» un momento, por si te arrepientes: vuelve el texto que tenía. En el ordenador, también con Ctrl+Z.",
+          "«Mantener la pantalla encendida» viene activado: mientras juegas con la app a la vista, el móvil no se bloquea entre tirada y tirada. Se puede apagar en Ajustes.",
+        ],
+      },
+      en: {
+        title: "Interlude · Retracing steps",
+        intro: "Mara learns to retrace her steps without losing her place, and to rub out what she wrote without fear.",
+        items: [
+          "On phones, going back (the gesture or the button) with a window or a menu open closes it and leaves you where you were, instead of changing the screen behind it.",
+          "Editing an entry or a session's title shows “Undo” for a moment, in case you change your mind: the text it had comes back. On a computer, Ctrl+Z works too.",
+          "“Keep the screen on” now comes switched on: while you play with the app in view, the phone doesn't lock between rolls. It can be turned off in Settings.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.1",
     date: "2026-11-12",
     text: {

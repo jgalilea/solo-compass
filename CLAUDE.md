@@ -155,7 +155,7 @@ No backend; persistence is split by access pattern, not by feature:
   id, keeping the screen on (`activeAdventure.ts`, `theme.ts`, `mode.ts`, `tableFavorites.ts`,
   `tableSections.ts`, `notebookSections.ts`, `sceneCheck.ts`, `wakeLock.ts`).
 - **Keep the screen on** (`wakeLock.ts`): a Settings switch (only where
-  the browser has the Screen Wake Lock API), off by default and per
+  the browser has the Screen Wake Lock API), on by default and per
   device (not in the backup). `Layout` holds the lock while it's on and
   the app is in view, asking again when it comes back.
 - **Persistent storage** (`storagePersistence.ts`): the app asks the
@@ -303,8 +303,8 @@ belongs to the browser). The likelihood picked is shared by the Oracle
 screen, the game table and that question (`OracleContext`, not saved).
 A session or a scene (their "⋯") and the whole adventure (its menu)
 copy to the clipboard as Lonelog with all they hold
-(`sectionToLonelog`). Ctrl/Cmd+Z brings back the entry just deleted
-while its toast is there. The composer's entry type and the roll a consequence links
+(`sectionToLonelog`). Deleting or editing an entry shows an "Undo"
+toast; Ctrl/Cmd+Z does the same while it's there. The composer's entry type and the roll a consequence links
 to live in `AdventureDetailView`, because both places change them (after
 any roll the composer switches to "Consecuencia").
 
@@ -603,7 +603,10 @@ together. Don't write symbols like "+"/"−" as text in UI controls: some
 theme display fonts draw "+" as a cross — use the icon. Number
 fields use `NumberField` (−/+ icons; the browser's spinners are hidden
 in `index.css`, they don't follow the themes). Every
-dialog uses `Modal` (portal to `<body>`, closes on Esc and backdrop click):
+dialog uses `Modal` (portal to `<body>`, closes on Esc, backdrop click
+and going back: each open dialog, and each open menu (`useDismiss`),
+is a history entry, `useCloseOnBack` and `modalHistory.ts`, taken off
+a moment after it closes any other way):
 the sticky desktop header would otherwise clip or cover dialogs rendered
 inside it (`backdrop-filter`/z-index stacking). `Modal` owns the panel
 frame and its width: every dialog is `size="lg"` (the same width on
@@ -663,8 +666,8 @@ list) and, where the tool is folded away (composer sheet),
 `data-hotkey-open="…"` on the button that opens it. When adding a shortcut,
 add it to `ShortcutsLegend` too; new notation or tags go in the guide.
 
-Deleting a journal entry or a history roll is immediate with a "Deshacer"
-toast (`Toast` with `action`); `ConfirmDialog` is only for big,
+Deleting a journal entry or a history roll, and editing an entry, is
+immediate with a "Deshacer" toast (`Toast` with `action`); `ConfirmDialog` is only for big,
 irreversible actions (deleting an adventure, clearing history, restoring
 a backup).
 

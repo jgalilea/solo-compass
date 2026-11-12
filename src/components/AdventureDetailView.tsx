@@ -7,7 +7,7 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { revealElement, scrollBehaviorFor, smoothBehavior } from "../lib/scrolling";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { exportAdventureToMarkdown, sectionToLonelog, type JournalEntry } from "../lib/lonelog";
+import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
 import { buildCast, castKey, combineSteps, renameInEntry } from "../lib/lonelogTags";
 import { exportAdventureToHtml } from "../lib/htmlExport";
@@ -46,6 +46,7 @@ import {
   IconJournal,
   IconNotebook,
   IconOracle,
+  IconPencil,
   IconSession,
   IconTable,
   IconTrash,
@@ -138,7 +139,7 @@ export function AdventureDetailView() {
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
-  const [deletedEntry, setDeletedEntry] = useState<JournalEntry | null>(null);
+  const [undoable, setUndoable] = useState<Undoable | null>(null);
   const [statsOpen, setStatsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,30 +169,41 @@ export function AdventureDetailView() {
   }, [historyEntries]);
 
   // Deleting doesn't ask for confirmation: it's undone from the toast
-  // (the latest deletion; a new one replaces the previous).
+  // (the latest deletion or edit; a new one replaces the previous).
   const deleteEntryWithUndo = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
       removeEntry(id);
       setSelectedEntryId(null);
-      if (entry) setDeletedEntry(entry);
+      if (entry) setUndoable({ key: `deleted-${entry.id}`, kind: "deleted", undo: () => restoreEntry(entry) });
     },
-    [entries, removeEntry, setSelectedEntryId],
+    [entries, removeEntry, restoreEntry, setSelectedEntryId],
   );
-  const dismissUndo = useCallback(() => setDeletedEntry(null), []);
+  // Editing too: the text it had comes back. A shorter toast, since
+  // editing is common and nothing is gone.
+  const editEntryWithUndo = useCallback(
+    (id: string, text: string) => {
+      const entry = entries.find((e) => e.id === id);
+      if (!entry || entry.text === text) return;
+      editEntry(id, text);
+      setUndoable({ key: `edited-${id}-${Date.now()}`, kind: "edited", undo: () => editEntry(id, entry.text) });
+    },
+    [entries, editEntry],
+  );
+  const dismissUndo = useCallback(() => setUndoable(null), []);
   // Ctrl/Cmd+Z: the toast's "Undo", while it's there (a text field keeps
   // its own undo).
   useEffect(() => {
-    if (!deletedEntry) return;
+    if (!undoable) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key.toLowerCase() !== "z" || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || isTypingTarget(e.target)) return;
       e.preventDefault();
-      restoreEntry(deletedEntry!);
-      setDeletedEntry(null);
+      undoable!.undo();
+      setUndoable(null);
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [deletedEntry, restoreEntry]);
+  }, [undoable]);
   // Any other short notice (renamed, copied), maybe with an action.
   const [notice, setNotice] = useState<{ key: number; title: string; action?: { label: string; onClick: () => void } } | null>(null);
   const dismissNotice = useCallback(() => setNotice(null), []);
@@ -204,7 +216,7 @@ export function AdventureDetailView() {
 
   const entryActions: EntryActions = {
     onDelete: deleteEntryWithUndo,
-    onEdit: editEntry,
+    onEdit: editEntryWithUndo,
     editingId: editingEntryId,
     onStartEdit: (id) => {
       setSelectedEntryId(null);
@@ -366,7 +378,7 @@ export function AdventureDetailView() {
 
   function commitSessionTitleEdit() {
     if (currentGroup?.sessionEntry && sessionTitleEditValue.trim()) {
-      editEntry(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
+      editEntryWithUndo(currentGroup.sessionEntry.id, sessionTitleEditValue.trim());
     }
     setEditingEntryId(null);
   }
@@ -801,14 +813,14 @@ export function AdventureDetailView() {
         />
       )}
 
-      {deletedEntry ? (
+      {undoable ? (
         <Toast
-          key={deletedEntry.id}
-          Icon={IconTrash}
-          title={t.journal.entryDeleted}
+          key={undoable.key}
+          Icon={undoable.kind === "deleted" ? IconTrash : IconPencil}
+          title={undoable.kind === "deleted" ? t.journal.entryDeleted : t.journal.entryEdited}
           closeLabel={t.common.close}
-          action={{ label: t.common.undo, onClick: () => restoreEntry(deletedEntry) }}
-          duration={6000}
+          action={{ label: t.common.undo, onClick: undoable.undo }}
+          duration={undoable.kind === "deleted" ? 6000 : 4000}
           onDismiss={dismissUndo}
         />
       ) : notice ? (
@@ -833,6 +845,13 @@ export function AdventureDetailView() {
       )}
     </div>
   );
+}
+
+/** The last deletion or edit, while its "Undo" toast is up. */
+interface Undoable {
+  key: string;
+  kind: "deleted" | "edited";
+  undo: () => void;
 }
 
 /** revealRef: the entry being written below, whatever its id is by then. */

@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from "react";
 import { lockPageScroll, unlockPageScroll } from "../lib/scrollLock";
+import { useCloseOnBack } from "./useCloseOnBack";
 
 /**
  * Closes a dropdown on a click outside `rootRef`, on Esc or when
@@ -9,9 +10,11 @@ import { lockPageScroll, unlockPageScroll } from "../lib/scrollLock";
  *
  * With the keyboard: the arrows (and Home/End) move through the menu's
  * options, and Esc returns focus to the button that opened it (the one
- * with `aria-haspopup`) so it isn't left lost on the page.
+ * with `aria-haspopup`) so it isn't left lost on the page. Going back
+ * (the phone's gesture) closes it too, not the screen behind.
  */
 export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>, onClose: () => void) {
+  useCloseOnBack(open, onClose);
   useEffect(() => {
     if (!open) return;
     const root = rootRef.current;

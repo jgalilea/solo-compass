@@ -677,6 +677,7 @@ export interface Dictionary {
     diceFormulaClear: string;
     diceFormulaError: string;
     entryDeleted: string;
+    entryEdited: string;
     sessionsHeading: string;
     showScenes: string;
     hideScenes: string;

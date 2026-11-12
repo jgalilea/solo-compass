@@ -111,6 +111,8 @@ test("rolls a table of one's own and keeps the language picked", async ({ page }
   await page.getByRole("radio", { name: "English" }).click();
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   await page.keyboard.press("Escape");
+  // Closing takes its history entry off a moment later: let it go first.
+  await page.waitForFunction("!history.state?.modalDepth");
   await page.reload();
   await expect(page.getByRole("link", { name: "Oracle", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Botín del faro" })).toBeVisible();

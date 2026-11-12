@@ -9,6 +9,16 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Gesto de atrás y deshacer al editar (2026-11-12): en el móvil, ir
+  atrás con un diálogo o un menú abierto lo cierra en vez de cambiar
+  la pantalla de detrás (cada uno es una entrada del historial,
+  `useCloseOnBack`). Editar una entrada o el título de una sesión
+  ofrece «Deshacer» (y Ctrl+Z), con un aviso más corto que el de
+  borrar (4 s frente a 6). Descartado a propósito: vibrar al tirar
+  (no se quiere ese tipo de estímulo en la app).
+  «Mantener la pantalla encendida» pasa a venir encendido de serie
+  (se guarda solo «off»; quien ya lo había encendido sigue igual).
+
 - Ironsmith (2026-11-11): 75 tablas de Eric Bright desde Datasworn,
   traducidas (las filas que ya tenía Ironsworn conservan su
   traducción). Ver el punto 5.
@@ -767,8 +777,8 @@ Fuentes (2026-11-11): [carpeta de datos de la app](https://developers.google.com
 **HECHO (2026-11-12), en parte:** tarjeta «Ideas y errores» en Ajustes →
 Acerca de, que abre el formulario de Tally del idioma de la app
 (es `2jaJxb`, en `M1NJQM`) en una pestaña nueva con `version` y
-`browser` en la URL. Pendiente: crear esos dos campos ocultos en los
-formularios (si no, Tally ignora los parámetros); el botón en la
+`browser` en la URL, recogidos por dos campos ocultos en cada
+formulario (creados el 2026-11-12). Pendiente: el botón en la
 pantalla de error (sigue con GitHub) y el enlace secundario a issues.
 
 Quien juega no suele tener cuenta de GitHub, y la app no tiene servidor.

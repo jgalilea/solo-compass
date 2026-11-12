@@ -159,3 +159,55 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
 
   expect(errors).toEqual([]);
 });
+
+test("going back closes the open dialog, not the screen behind it", async ({ page }) => {
+  await page.goto("./");
+  await page.getByRole("link", { name: "Tablas", exact: true }).click();
+  await page.getByRole("link", { name: "Diario", exact: true }).click();
+  await expect(page).toHaveURL(/#\/diario$/);
+
+  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page).toHaveURL(/#\/diario$/);
+
+  // Closed any other way, it leaves nothing behind: back is the previous screen.
+  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
+  // Its entry goes a moment after closing (no finger is that quick).
+  await page.waitForFunction("!history.state?.modalDepth");
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/tablas$/);
+});
+
+test("going back closes an open menu, and an edit can be undone", async ({ page }) => {
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: "Nueva aventura" }).click();
+  await page.getByPlaceholder("Nombre de la aventura").fill("El faro");
+  await page.getByRole("button", { name: "Crear" }).click();
+  await page.getByText("El faro", { exact: true }).first().click();
+  await expect(page).toHaveURL(/#\/diario\/.+/);
+  const url = page.url();
+
+  await page.getByRole("button", { name: "Más opciones" }).click();
+  await expect(page.getByRole("menu")).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("menu")).toBeHidden();
+  expect(page.url()).toBe(url);
+
+  // Editing an entry: "Undo" brings back the text it had.
+  const composer = page.locator("[data-composer] textarea");
+  await composer.fill("La linterna está apagada.");
+  await page.getByRole("button", { name: "Añadir al diario" }).click();
+  const entry = page.locator("[id^=entry-]").filter({ hasText: "La linterna está apagada." });
+  await entry.click();
+  await entry.getByRole("button", { name: "Editar entrada" }).click();
+  await page.locator("textarea:focus").fill("La linterna está encendida.");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await expect(page.locator("[id^=entry-]").getByText("La linterna está encendida.")).toBeVisible();
+  await page.getByRole("status").getByRole("button", { name: "Deshacer" }).click();
+  await expect(page.locator("[id^=entry-]").getByText("La linterna está apagada.")).toBeVisible();
+});

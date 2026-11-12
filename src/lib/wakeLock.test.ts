@@ -62,17 +62,23 @@ describe("keeping the screen on", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("is off until turned on, and remembered on this device", async () => {
+  it("is on until turned off, and remembered on this device", async () => {
     const wakeLock = await import("./wakeLock");
-    expect(wakeLock.isKeepScreenOn()).toBe(false);
-    wakeLock.setKeepScreenOn(true);
-    expect(browser.store.get("solo-compass:keep-screen-on")).toBe("on");
+    expect(wakeLock.isKeepScreenOn()).toBe(true);
+    wakeLock.setKeepScreenOn(false);
+    expect(browser.store.get("solo-compass:keep-screen-on")).toBe("off");
     vi.resetModules();
+    expect((await import("./wakeLock")).isKeepScreenOn()).toBe(false);
+  });
+
+  it("stays on for whoever had turned it on before it was the default", async () => {
+    browser.store.set("solo-compass:keep-screen-on", "on");
     expect((await import("./wakeLock")).isKeepScreenOn()).toBe(true);
   });
 
   it("holds a lock only while it's on", async () => {
     const wakeLock = await import("./wakeLock");
+    wakeLock.setKeepScreenOn(false);
     const stop = wakeLock.watchKeepScreenOn();
     await settle();
     expect(browser.active()).toBe(0);
