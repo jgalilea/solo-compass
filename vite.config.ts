@@ -20,6 +20,7 @@ const base = "/solo-compass/";
  */
 const SHORTCUT_ROUTES = { oraculo: "", tablas: "tablas", dados: "dados", diario: "diario" };
 
+// @ts-expect-error TEMP: unused while testing (see manifest below)
 function shortcuts(names: Record<keyof typeof SHORTCUT_ROUTES, string>): ManifestOptions["shortcuts"] {
   return Object.entries(names).map(([icon, name]) => ({
     name,
@@ -34,6 +35,7 @@ function shortcuts(names: Record<keyof typeof SHORTCUT_ROUTES, string>): Manifes
 // Lets a browser tab ask whether the app is installed
 // (navigator.getInstalledRelatedApps, src/lib/install.ts): it's the
 // manifest the app was installed with, in either language.
+// @ts-expect-error TEMP: unused while testing (see manifest below)
 const relatedApplications: ManifestOptions["related_applications"] = [
   "manifest.webmanifest",
   "manifest.en.webmanifest",
@@ -69,8 +71,10 @@ const manifest: Partial<ManifestOptions> = {
       purpose: "maskable",
     },
   ],
-  shortcuts: shortcuts({ oraculo: "Oráculo", tablas: "Tablas", dados: "Dados", diario: "Diario" }),
-  related_applications: relatedApplications,
+  // TEMP: left out to find out whether they stop Chrome on Android from
+  // installing the app (WebAPK minting fails silently).
+  // shortcuts: shortcuts({ oraculo: "Oráculo", tablas: "Tablas", dados: "Dados", diario: "Diario" }),
+  // related_applications: relatedApplications,
 };
 
 const englishManifest: Partial<ManifestOptions> = {
@@ -78,7 +82,7 @@ const englishManifest: Partial<ManifestOptions> = {
   description:
     "A yes/no oracle, 750+ tables, dice, cards and a Lonelog journal for solo role-playing. No account, works offline, everything stays on your device.",
   lang: "en",
-  shortcuts: shortcuts({ oraculo: "Oracle", tablas: "Tables", dados: "Dice", diario: "Journal" }),
+  // shortcuts: shortcuts({ oraculo: "Oracle", tablas: "Tables", dados: "Dice", diario: "Journal" }),
 };
 
 /** Writes the English manifest next to the one vite-plugin-pwa builds. */
