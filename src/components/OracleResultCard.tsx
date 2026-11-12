@@ -6,15 +6,27 @@ import { interpolate } from "../lib/i18n";
 
 const ANSWER_STYLE: Record<
   OracleRoll["answer"],
-  { className: string; sizeClass: string }
+  { className: string; sizeClass: string; cardClass: string; glowClass: string }
 > = {
-  si: { className: "text-yes", sizeClass: "text-5xl" },
-  no: { className: "text-no", sizeClass: "text-5xl" },
+  si: {
+    className: "text-yes",
+    sizeClass: "text-5xl",
+    cardClass: "border-yes/40 shadow-yes/10",
+    glowClass: "from-yes/10",
+  },
+  no: {
+    className: "text-no",
+    sizeClass: "text-5xl",
+    cardClass: "border-no/40 shadow-no/10",
+    glowClass: "from-no/10",
+  },
   contradiccion: {
     className: "text-contradiction",
     // Long word: uppercase (Cinzel/Playfair/mono) at text-5xl overflows
     // the card's width on phones, so it goes smaller.
     sizeClass: "text-3xl sm:text-4xl",
+    cardClass: "border-contradiction/40 shadow-contradiction/10",
+    glowClass: "from-contradiction/10",
   },
 };
 
@@ -36,7 +48,15 @@ export function OracleResultCard({
   const target = oracleTarget(oracle, roll.likelihood);
 
   return (
-    <div className="animate-fade-up rounded-3xl border border-ink-border bg-ink-800/70 p-6 shadow-xl shadow-black/20">
+    <div
+      className={`relative isolate animate-fade-up overflow-hidden rounded-3xl border bg-ink-800/70 p-6 shadow-xl ${style.cardClass}`}
+    >
+      {/* The answer's colour washes the card from the top: the verdict
+          is felt before it's read (the word below still says it). */}
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-linear-to-b to-transparent ${style.glowClass}`}
+      />
       {roll.question && (
         <p className="mb-5 text-center text-lg italic text-parchment/90">
           “{roll.question}”

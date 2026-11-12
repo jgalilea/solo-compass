@@ -537,7 +537,7 @@ export function AdventureDetailView() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[13rem_minmax(0,1fr)_21rem] 2xl:max-w-[110rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem] 2xl:gap-12">
+    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:max-w-[110rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem] 2xl:gap-12">
       {/* Wide desktop: sessions and notebook in their own column. Padded on
           both sides: it scrolls, so a selected item's ring would be clipped. */}
       <aside className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-8 overflow-y-auto overscroll-contain [scrollbar-gutter:stable] px-1 py-8 xl:flex">

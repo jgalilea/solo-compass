@@ -89,7 +89,7 @@ export function AdventureHeader({
   }
 
   return (
-    <div className="relative flex items-center gap-2">
+    <div className="relative flex flex-wrap items-center gap-x-2 gap-y-2.5 sm:flex-nowrap">
       <Link
         to="/diario"
         aria-label={t.journal.backToList}
@@ -116,25 +116,23 @@ export function AdventureHeader({
         </div>
       ) : (
         <>
-          {/* A long name wraps (up to three lines on phones, two above)
-              rather than being cut by the buttons beside it. */}
-          <h1 className="line-clamp-3 min-w-0 font-display text-lg leading-snug break-words text-parchment sm:line-clamp-2 sm:text-2xl sm:leading-tight lg:text-3xl">
+          {/* On phones the name has its own row, below the buttons: beside
+              them it was squeezed into three short lines. A long one
+              wraps (two lines) rather than being cut. */}
+          <h1 className="order-last line-clamp-2 w-full min-w-0 font-display text-xl leading-snug break-words text-parchment sm:order-none sm:w-auto sm:text-2xl sm:leading-tight lg:text-3xl">
             {adventure.favorite && <IconStar size={16} filled className="mr-1.5 inline align-baseline text-gold" />}
             {adventure.name}
           </h1>
-          {/* On phones both are just their mark, to leave the name room:
-              the gold dot (active) or the play icon (set active). */}
+          {/* The gold dot (active) or the play icon (set active). */}
           {isActive ? (
             <span
               role="img"
               aria-label={t.journal.activeLabel}
               title={interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 p-2 text-xs font-medium text-gold sm:px-2.5 sm:py-1"
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium text-gold"
             >
               <span className="size-1.5 rounded-full bg-gold" />
-              <span aria-hidden className="hidden sm:inline">
-                {t.journal.activeLabel}
-              </span>
+              <span aria-hidden>{t.journal.activeLabel}</span>
             </span>
           ) : (
             <button
@@ -142,10 +140,11 @@ export function AdventureHeader({
               onClick={() => setActiveAdventureId(adventure.id)}
               aria-label={t.journal.setActive}
               title={t.journal.activateHint}
-              className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border p-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold sm:px-2.5 sm:py-1"
+              className="flex shrink-0 items-center gap-1 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold"
             >
               <IconPlay size={13} />
-              <span className="hidden sm:inline">{t.journal.setActive}</span>
+              {/* Archived too: on a phone the row has no room for both. */}
+              <span className={isArchived ? "hidden sm:inline" : undefined}>{t.journal.setActive}</span>
             </button>
           )}
           {isArchived && (

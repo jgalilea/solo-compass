@@ -120,7 +120,7 @@ export function Modal({
     <div
       className={[
         // overscroll-contain: a scroll that reaches the end of the panel stops there.
-        "fixed inset-0 z-50 flex justify-center overscroll-contain bg-black/60",
+        "animate-scrim-in fixed inset-0 z-50 flex justify-center overscroll-contain bg-black/60",
         centered ? "items-center px-4" : sheet ? "items-end" : "items-end sm:items-center sm:px-4",
       ].join(" ")}
       role="dialog"
@@ -143,12 +143,12 @@ export function Modal({
         ref={panelRef}
         tabIndex={-1}
         className={[
-          "flex max-h-[88dvh] w-full flex-col overflow-hidden border border-ink-border bg-ink-800 shadow-2xl outline-none",
+          "animate-dialog-in flex max-h-[88dvh] w-full flex-col overflow-hidden border border-ink-border bg-ink-800 shadow-2xl outline-none",
           SIZES[size],
           centered
             ? "rounded-3xl"
             : sheet
-              ? "animate-fade-up rounded-t-3xl border-b-0 pb-[env(safe-area-inset-bottom)]"
+              ? "rounded-t-3xl border-b-0 pb-[env(safe-area-inset-bottom)]"
               : "rounded-t-3xl max-sm:pb-[env(safe-area-inset-bottom)] sm:rounded-3xl",
           className,
         ].join(" ")}

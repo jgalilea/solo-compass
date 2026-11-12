@@ -37,6 +37,48 @@ const PIP_LAYOUTS: Record<number, [number, number][]> = {
 
 export type DieColor = "blanco" | "negro";
 
+const SIZES = { lg: 72, md: 56, sm: 40 };
+
+function DieFace({ color }: { color: DieColor }) {
+  const isWhite = color === "blanco";
+  return (
+    <rect
+      x="4"
+      y="4"
+      width="92"
+      height="92"
+      rx="18"
+      fill={isWhite ? "var(--color-die-white)" : "var(--color-die-black)"}
+      // The black die's edge is light enough to stand out on a dark card.
+      stroke={isWhite ? "#c9c2b2" : "#636878"}
+      strokeWidth={isWhite ? 2 : 2.5}
+    />
+  );
+}
+
+/** A die yet to be thrown: the outline of its face, barely filled (decorative). */
+export function BlankDie({ color, size = "md" }: { color: DieColor; size?: keyof typeof SIZES }) {
+  const isWhite = color === "blanco";
+  return (
+    // The outline in the theme's own faint text colour: it shows on a
+    // light card as well as on a dark one.
+    <svg viewBox="0 0 100 100" width={SIZES[size]} height={SIZES[size]} aria-hidden className="text-parchment-faint">
+      <rect
+        x="4"
+        y="4"
+        width="92"
+        height="92"
+        rx="18"
+        fill={isWhite ? "var(--color-die-white)" : "var(--color-die-black)"}
+        fillOpacity={isWhite ? 0.22 : 0.6}
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeDasharray="7 6"
+      />
+    </svg>
+  );
+}
+
 export function Die({
   value,
   color,
@@ -47,7 +89,7 @@ export function Die({
 }: {
   value: number;
   color: DieColor;
-  size?: "sm" | "md" | "lg";
+  size?: keyof typeof SIZES;
   animate?: boolean;
   faded?: boolean;
   /** What the die is called, if not its colour (an oracle's "chance" die). */
@@ -57,7 +99,7 @@ export function Die({
   // Pips for a d6; any other value (a d100) is written as a number.
   const pips = PIP_LAYOUTS[value] ?? [];
   const numeral = !PIP_LAYOUTS[value];
-  const dims = size === "lg" ? 72 : size === "md" ? 56 : 40;
+  const dims = SIZES[size];
 
   const isWhite = color === "blanco";
 
@@ -77,16 +119,7 @@ export function Die({
         "drop-shadow-md",
       ].join(" ")}
     >
-      <rect
-        x="4"
-        y="4"
-        width="92"
-        height="92"
-        rx="18"
-        fill={isWhite ? "var(--color-die-white)" : "var(--color-die-black)"}
-        stroke={isWhite ? "#c9c2b2" : "#3a3d4a"}
-        strokeWidth="2"
-      />
+      <DieFace color={color} />
       {numeral && (
         <text
           x="50"

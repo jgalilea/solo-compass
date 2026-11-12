@@ -110,9 +110,9 @@ export function HistoryView() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-      <header className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1">
+      <header className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-1">
             <Link
               to={fromAdventure ? `/diario/${fromAdventure}` : origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
               aria-label={backLabel}
@@ -125,23 +125,25 @@ export function HistoryView() {
               {t.history.title}
             </h1>
           </div>
-          <p className="mt-1 text-sm text-parchment-dim">{t.history.subtitle}</p>
-          {/* Gestures only exist on touch screens; with a mouse each roll
-              already has its star and trash icons. */}
-          <p className="mt-1 hidden text-xs text-parchment-faint pointer-coarse:block">
-            {t.history.swipeHint}
-          </p>
+          {entries.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setConfirmingClear(true)}
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
+            >
+              <IconTrash size={14} />
+              {t.history.clearAll}
+            </button>
+          )}
         </div>
-        {entries.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setConfirmingClear(true)}
-            className="mt-1.5 flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
-          >
-            <IconTrash size={14} />
-            {t.history.clearAll}
-          </button>
-        )}
+        {/* Below the title's row, across the whole width: beside the
+            button they wrapped into a narrow column on phones. */}
+        <p className="text-sm text-parchment-dim">{t.history.subtitle}</p>
+        {/* Gestures only exist on touch screens; with a mouse each roll
+            already has its star and trash icons. */}
+        <p className="hidden text-xs text-parchment-faint pointer-coarse:block">
+          {t.history.swipeHint}
+        </p>
       </header>
 
       {status === "ready" && entries.length > 0 && (

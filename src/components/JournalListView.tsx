@@ -68,6 +68,12 @@ export function JournalListView() {
   const orderRef = useRef(order);
 
   const byId = useMemo(() => new Map(adventures.map((c) => [c.id, c])), [adventures]);
+  // How much each adventure holds, for the line under its name.
+  const entryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of entries) counts.set(e.adventureId, (counts.get(e.adventureId) ?? 0) + 1);
+    return counts;
+  }, [entries]);
 
   const query = normalizeForSearch(search.trim());
   function matchesQuery(c: Adventure): boolean {
@@ -285,6 +291,7 @@ export function JournalListView() {
                   <AdventureRow
                     key={adventure.id}
                     adventure={adventure}
+                    entryCount={entryCounts.get(adventure.id) ?? 0}
                     isActive={adventure.id === activeAdventureId}
                     isDragging={draggingId === adventure.id}
                     rowRef={(el) => {
@@ -424,6 +431,7 @@ function StatusBadge({
 
 function AdventureRow({
   adventure,
+  entryCount,
   isActive,
   isDragging,
   rowRef,
@@ -432,6 +440,7 @@ function AdventureRow({
   t,
 }: {
   adventure: Adventure;
+  entryCount: number;
   isActive: boolean;
   isDragging: boolean;
   rowRef: (el: HTMLLIElement | null) => void;
@@ -476,10 +485,19 @@ function AdventureRow({
       </button>
       <Link
         to={`/diario/${adventure.id}`}
-        className="flex min-w-0 flex-1 items-center gap-2 px-1 py-2.5"
+        className="flex min-w-0 flex-1 items-center gap-2 px-1 py-1.5"
       >
-        <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
-          {adventure.name}
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          {/* Two lines on phones: one cut most names beside the badge. */}
+          <span className="line-clamp-2 break-words text-base font-medium leading-snug text-parchment sm:line-clamp-1">
+            {adventure.name}
+          </span>
+          {/* How much it holds and when it was last touched. */}
+          <span className="truncate text-xs text-parchment-faint">
+            {entryCount > 0 &&
+              `${entryCount === 1 ? t.journal.searchMatchCountOne : interpolate(t.journal.searchMatchCount, { count: entryCount })} · `}
+            {new Date(adventure.updatedAt).toLocaleDateString(t.dateLocale, { day: "numeric", month: "short", year: "numeric" })}
+          </span>
         </span>
         <StatusBadge isPaused={!isActive} t={t} />
         {isActive && (

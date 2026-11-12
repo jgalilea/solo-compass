@@ -13,8 +13,7 @@ import { OracleSwitcher } from "./OracleSwitcher";
 import { TwistCounter } from "./TwistCounter";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
-import { EmptyState } from "./StateViews";
-import { IconOracle } from "./icons/Icons";
+import { OracleWaiting } from "./OracleWaiting";
 import { smoothBehavior } from "../lib/scrolling";
 
 export function OracleView() {
@@ -103,12 +102,7 @@ export function OracleView() {
             )}
           </div>
         ) : (
-          <EmptyState
-            icon={<IconOracle size={28} />}
-            title={t.oracle.emptyTitle}
-            description={t.oracle.emptyDescription}
-            compact
-          />
+          <OracleWaiting oracleId={oracleId} likelihood={level} />
         )}
 
         <RecentRolls exclude={lastRoll ? [lastRoll.id] : []} />

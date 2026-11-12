@@ -25,6 +25,34 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.5",
+    date: "2026-11-12",
+    text: {
+      es: {
+        title: "Interludio · Sacar brillo",
+        intro: "Mara saca brillo a la brújula antes de volver al camino.",
+        items: [
+          "La carta del oráculo se tiñe con el color de su respuesta: se nota antes de leerla.",
+          "Antes de preguntar, el oráculo enseña los dados que va a tirar, según el oráculo y la probabilidad elegidos.",
+          "En el diario, las etiquetas largas (una sala con su estado y sus salidas) siguen el renglón en vez de partirlo con un bloque.",
+          "En el móvil, el título de la aventura tiene su propia línea bajo los botones, y la lista de aventuras enseña el nombre entero, con sus entradas y la fecha del último cambio.",
+          "Retoques: las ventanas se abren con un movimiento suave, el dado negro se distingue mejor sobre fondo oscuro, el título de una escena ya no pierde su última letra, la cabecera del historial respira y, en pantallas anchas, el índice y el cuaderno tienen más sitio.",
+        ],
+      },
+      en: {
+        title: "Interlude · A good polish",
+        intro: "Mara polishes the compass before taking the road again.",
+        items: [
+          "The oracle's card takes the colour of its answer: you feel it before you read it.",
+          "Before you ask, the oracle shows the dice it's about to throw, for the oracle and the likelihood picked.",
+          "In the journal, long tags (a room with its status and exits) follow the line instead of breaking it with a block.",
+          "On a phone, the adventure's title has its own line below the buttons, and the list of adventures shows the whole name, with its entries and the date of the last change.",
+          "Touch-ups: dialogs open with a gentle movement, the black die stands out better on a dark background, a scene's title no longer loses its last letter, the history's heading has room to breathe and, on wide screens, the index and the notebook have more room.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.4",
     date: "2026-11-12",
     text: {

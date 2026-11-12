@@ -102,6 +102,9 @@
 
   --animate-die-roll: die-roll 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-fade-up: fade-up 0.35s ease-out;
+  /* A dialog coming up, and the scrim behind it dimming the page. */
+  --animate-dialog-in: dialog-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-scrim-in: scrim-in 0.2s ease-out;
 
   @keyframes die-roll {
     0% {
@@ -126,6 +129,21 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+  }
+
+  /* Only the colour: fading the scrim's opacity would fade the panel
+     inside it a second time. */
+  @keyframes scrim-in {
+    from {
+      background-color: transparent;
     }
   }
 }

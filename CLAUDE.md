@@ -419,7 +419,9 @@ neighbours (`journalOrder.ts`), nudging later ones when there's no room.
 Oracle answers are colored using the linked history entry, falling back to
 parsing the roll text (`splitRollText`) for imported journals. Character
 and place tags render as chips (`TaggedText`); tapping one opens it in
-the notebook.
+the notebook. A short chip never breaks; one past `LONG_TAG` characters
+(a room with its exits) wraps with the line, which is why a chip is a
+`span` with `role="button"` and not a `<button>` (it can't break).
 
 ### Oracles (`src/lib/oracles.ts`, `oracleEngines.ts`)
 
@@ -432,7 +434,9 @@ author's favourite; mechanic in `oracle.ts`), **Loner**, **Ironsworn**'s
 each one's credit and verbatim attribution (all listed in Settings →
 About); `oracleEngines.ts` their mechanics, as engines that declare the
 dice for a likelihood and how to read the kept ones. Rolling throws
-those dice (`rollOracleWith`, called by `usePlayActions`); the help's
+those dice (`rollOracleWith`, called by `usePlayActions`); before the
+first roll the Oracle screen draws them blank (`OracleWaiting`, from
+`oracleDicePlan`), and the result card takes its answer's colour; the help's
 odds table (`OracleHelp`) comes from `oracleOdds`, which goes through
 every possible throw, so the percentages always match (tested against
 the books' numbers). Loner and OPSE offer three likelihoods

@@ -128,6 +128,11 @@ export function fitLikelihood(id: OracleId, likelihood: Likelihood): Likelihood 
   return ENGINES[id].levels.includes(likelihood) ? likelihood : "equilibrado";
 }
 
+/** The dice an oracle throws for a likelihood, before throwing them: one group per role. */
+export function oracleDicePlan(id: OracleId, likelihood: Likelihood): { role: OracleDiceGroup["role"]; count: number }[] {
+  return ENGINES[id].dice(likelihood);
+}
+
 /** The threshold an oracle states for a likelihood ("51+"), if it has one. */
 export function oracleTarget(id: OracleId, likelihood: Likelihood): number | undefined {
   if (id === "ironsworn") return IRONSWORN_YES_FROM[likelihood];

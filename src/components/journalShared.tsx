@@ -596,12 +596,14 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
   const { t } = useLocaleContext();
   const { id, context, combat } = parseScene(text);
   return (
-    // One line: pinned, a longer scene would peek out from under the next.
+    // One line: pinned, a longer scene would peek out from under the next
+    // (its right padding is room for the italic's last letter, which leans
+    // past its box and was clipped).
     // A heading inside its session's (h2), to jump between scenes.
     <h3 className="flex min-w-0 items-baseline gap-x-2">
       <span className="shrink-0 rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
       {context && (
-        <span onMouseEnter={titleIfCut(context)} className="min-w-0 truncate font-display text-base italic text-parchment">
+        <span onMouseEnter={titleIfCut(context)} className="min-w-0 truncate pr-1.5 font-display text-base italic text-parchment">
           <TaggedText text={context} onTagClick={onTagClick} />
         </span>
       )}
@@ -707,6 +709,9 @@ function NoteContent({
   }
 }
 
+/** Characters (name and traits) past which a tag's chip wraps across lines. */
+const LONG_TAG = 36;
+
 /**
  * Text with its Lonelog character/place tags drawn as chips (the name,
  * and its traits smaller) instead of the raw "[N:Jonah|friendly]".
@@ -719,36 +724,58 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
   return parts.map((part, i) => {
     if (!part.tag) return part.text;
     const { kind, name, details, progress } = part.tag;
+    // The icon never parts from the name's first word at a line's end.
+    const firstWord = name.split(" ", 1)[0];
     const content = (
       <>
-        <CastIcon kind={kind} size={13} className="shrink-0 self-center text-gold" />
-        {/* What the icon says, for screen readers: "Sala 3", "PNJ Odile". */}
-        <span className="sr-only">{t.notebook.kinds[kind]} </span>
-        <span className="font-medium text-parchment">{name}</span>
+        <span className="whitespace-nowrap font-medium text-parchment">
+          <CastIcon kind={kind} size={13} className="mr-1 inline align-[-0.1em] text-gold" />
+          {/* What the icon says, for screen readers: "Sala 3", "PNJ Odile". */}
+          <span className="sr-only">{t.notebook.kinds[kind]} </span>
+          {firstWord}
+        </span>
+        <span className="font-medium text-parchment">{name.slice(firstWord.length)}</span>
         {progress && (
           <span className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}>
+            {" "}
             {progressText(progress)}
             {progressDone(kind, progress) && ` · ${kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
           </span>
         )}
-        {details.length > 0 && <span className="text-[0.85em] text-parchment-dim">{details.join(" · ")}</span>}
+        {details.length > 0 && <span className="text-[0.85em] text-parchment-dim"> {details.join(" · ")}</span>}
       </>
     );
-    const chipClass =
-      "mx-0.5 inline-flex max-w-full flex-wrap items-baseline gap-x-1 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 align-baseline font-sans normal-case not-italic leading-snug";
+    // A short tag is one piece, moved whole to the next line if it
+    // doesn't fit. A long one (a room with its exits, wider than a
+    // phone's line) wraps like the text around it, each line's piece
+    // with its own frame: as one piece it left the sentence in bits.
+    const long = name.length + details.join(" · ").length > LONG_TAG;
+    const chipClass = [
+      "mx-0.5 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 font-sans normal-case not-italic",
+      long ? "box-decoration-clone" : "inline-block max-w-full align-baseline leading-snug",
+    ].join(" ");
+    const open = () => onTagClick?.(castKey(kind, name));
     return onTagClick ? (
-      <button
+      // Not a <button>: a button can't break across lines (the long ones do).
+      <span
         key={i}
-        type="button"
+        role="button"
+        tabIndex={0}
         onClick={(e) => {
           e.stopPropagation();
-          onTagClick(castKey(kind, name));
+          open();
+        }}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          e.stopPropagation();
+          open();
         }}
         title={interpolate(t.notebook.tagChipLabel, { name })}
-        className={`${chipClass} text-left transition hover:border-gold/60 hover:bg-gold/15`}
+        className={`${chipClass} transition hover:border-gold/60 hover:bg-gold/15`}
       >
         {content}
-      </button>
+      </span>
     ) : (
       <span key={i} className={chipClass}>
         {content}

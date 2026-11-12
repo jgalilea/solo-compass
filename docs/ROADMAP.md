@@ -5,10 +5,28 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-12 (accesos directos del icono, comprobar si sigue instalada; pendiente de probar en Android).
+Última revisión: 2026-11-12 (repaso de diseño, 1.0.5, sin publicar; accesos directos del icono, pendiente de probar en Android).
 
 ## Hecho recientemente
 
+- Repaso de diseño (2026-11-12, 1.0.5; capturas de los 5 temas en
+  móvil, tablet y escritorio antes y después):
+  - La carta del oráculo se tiñe con su respuesta (borde y un lavado
+    desde arriba) y, antes de la primera tirada, enseña en blanco los
+    dados que va a tirar (`OracleWaiting`, `oracleDicePlan`). El dado
+    negro tiene el borde más claro.
+  - Las etiquetas largas del diario (más de `LONG_TAG` caracteres)
+    siguen el renglón; las cortas siguen siendo una pieza. El título de
+    una escena en cursiva ya no pierde la última letra.
+  - Móvil: el título de la aventura va en su propia línea bajo los
+    botones; la lista de aventuras enseña el nombre en dos líneas con
+    entradas y fecha; la cabecera del historial ya no se estrecha junto
+    a «Borrar todo».
+  - Los diálogos entran con un movimiento corto (`dialog-in`,
+    `scrim-in`); en `xl` el índice gana ancho (15rem) y el panel de
+    juego cede un poco (20rem).
+  - Descartado: un degradado en los bordes de los filtros por temática
+    (la fila ya sangra de lado a lado, que es su pista).
 - Accesos directos e instalación (2026-11-12, 1.0.4):
   - `shortcuts` en los dos manifests: Oráculo, Tablas, Dados y Diario
     al dejar pulsado el icono (iconos de `scripts/shortcut-icons.mjs`).
