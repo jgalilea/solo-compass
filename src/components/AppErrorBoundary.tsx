@@ -1,9 +1,11 @@
 import { Component, type ContextType, type ErrorInfo, type ReactNode } from "react";
-import { IconCopy, IconExternalLink, IconFumble } from "./icons/Icons";
+import { IconCopy, IconExternalLink, IconFeedback, IconFumble } from "./icons/Icons";
 import { LocaleContext } from "../hooks/localeContextInstance";
 import { loadedDictionary, loadLocale } from "../lib/i18n";
 import { errorIssueUrl, errorReport } from "../lib/errorReport";
 import { copyText } from "../lib/share";
+import { feedbackUrl } from "../lib/support";
+import { versionLabel } from "../lib/appVersion";
 
 interface Props {
   children: ReactNode;
@@ -37,6 +39,7 @@ export class AppErrorBoundary extends Component<Props, State> {
 
   render() {
     const { error, report, copied } = this.state;
+    const locale = this.context?.locale ?? loadLocale();
     if (error) {
       // If for whatever reason the boundary rendered outside
       // LocaleProvider, fall back to the dictionary main.tsx loaded
@@ -68,15 +71,24 @@ export class AppErrorBoundary extends Component<Props, State> {
                 {t.error.copyDetails}
               </button>
               <a
-                href={errorIssueUrl(error, report)}
+                href={feedbackUrl(locale, versionLabel(), navigator.userAgent)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1.5 rounded-xl border border-ink-border px-3 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
               >
-                {t.error.reportOnGithub}
+                <IconFeedback size={16} />
+                {t.error.reportForm}
                 <IconExternalLink size={14} />
               </a>
             </div>
+            <a
+              href={errorIssueUrl(error, report)}
+              target="_blank"
+              rel="noreferrer"
+              className="self-start text-xs text-parchment-faint underline underline-offset-2 transition hover:text-gold"
+            >
+              {t.error.reportOnGithub}
+            </a>
             {copied && (
               <p role="status" className="text-xs text-parchment-faint">
                 {copied === "yes" ? t.error.copied : t.error.copyFailed}

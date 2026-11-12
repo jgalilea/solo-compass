@@ -1,0 +1,41 @@
+name: Bug · Error
+description: Something doesn't work as it should. · Algo no funciona como debería.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please don't paste anything from your journal you'd rather keep private: issues are public.
+        Gracias por tomarte el tiempo. No pegues nada de tu diario que prefieras guardar: las issues son públicas.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? · ¿Qué pasó?
+      description: What you did, what you expected and what you saw instead. · Qué hiciste, qué esperabas y qué viste.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to repeat it · Pasos para repetirlo
+      placeholder: |
+        1. Open an adventure… · Abre una aventura…
+        2. …
+  - type: textarea
+    id: report
+    attributes:
+      label: Error scroll · Pergamino del error
+      description: If the fumble screen appeared, paste what "Copy the error scroll" copied. · Si salió la pantalla de pifia, pega lo que copió «Copiar el pergamino del error».
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: App version · Versión de la app
+      description: Settings → About. · Ajustes → Acerca de.
+      placeholder: 1.0.3
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser · Dispositivo y navegador
+      description: And whether the app is installed. · Y si la app está instalada.
+      placeholder: iPhone 13, Safari, installed · instalada

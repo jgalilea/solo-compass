@@ -18,7 +18,7 @@ const manifest: Partial<ManifestOptions> = {
   name: "Solo Compass",
   short_name: "Solo Compass",
   description:
-    "Oráculo Recluse y tablas de significado para guiar partidas de rol en solitario.",
+    "Oráculo de sí o no, más de 750 tablas, dados, cartas y un diario en Lonelog para jugar rol en solitario. Sin cuenta, sin conexión y todo en tu dispositivo.",
   start_url: base,
   scope: base,
   display: "standalone",
@@ -47,7 +47,8 @@ const manifest: Partial<ManifestOptions> = {
 
 const englishManifest: Partial<ManifestOptions> = {
   ...manifest,
-  description: "Recluse oracle and meaning tables to guide solo role-playing games.",
+  description:
+    "A yes/no oracle, 750+ tables, dice, cards and a Lonelog journal for solo role-playing. No account, works offline, everything stays on your device.",
   lang: "en",
 };
 
@@ -141,7 +142,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         // Only for link previews (index.html): players never need it offline.
-        globIgnores: ["og-image.png"],
+        globIgnores: ["og-image.png", "404.html"],
       },
     }),
     englishManifestPlugin(),

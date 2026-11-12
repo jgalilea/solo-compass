@@ -131,6 +131,10 @@ export function IconCoffee(props: IconProps) {
 export function IconFumble(props: IconProps) {
   return <TablerIcon icon={Tabler.IconDice1} {...props} />;
 }
+// Off the map: the page for an address that isn't a screen.
+export function IconLost(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconMapQuestion} {...props} />;
+}
 // The privacy note, in Settings → About.
 export function IconShieldLock(props: IconProps) {
   return <TablerIcon icon={Tabler.IconShieldLock} {...props} />;

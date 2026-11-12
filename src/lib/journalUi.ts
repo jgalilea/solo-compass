@@ -157,6 +157,45 @@ export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
   return blocks;
 }
 
+/**
+ * Blocks drawn at first, and added each time "earlier" or "later
+ * entries" is pressed: a session can hold thousands of entries (an
+ * imported journal with no session markers), and drawing them all made
+ * every new entry take seconds on a phone (e2e/volume.perf.ts).
+ */
+export const BLOCK_PAGE = 80;
+/** Blocks drawn on each side of an entry jumped to far back. */
+const BLOCK_CONTEXT = 20;
+
+/**
+ * Which of a session's blocks are drawn: the `shown` blocks before
+ * `end` (an index; null is the end of the session, the usual view).
+ */
+export interface BlockWindow {
+  shown: number;
+  end: number | null;
+}
+
+/**
+ * The window moved, if it has to, so every target block (a search jump,
+ * the entry edited, selected or written below) is drawn. Close to the
+ * end it draws from the target to the end, as it always has; far back
+ * (a search jump to the start of a 2,000-entry session) only a stretch
+ * around it, with "later entries" below, instead of everything after it.
+ * Returns the same window when nothing has to change.
+ */
+export function fitBlockWindow(count: number, window: BlockWindow, targets: number[]): BlockWindow {
+  if (targets.length === 0) return window;
+  const end = Math.min(window.end ?? count, count);
+  const start = Math.max(0, end - window.shown);
+  const first = Math.min(...targets);
+  const last = Math.max(...targets);
+  if (first >= start && last < end) return window;
+  if (count - first <= 2 * BLOCK_PAGE) return { shown: Math.max(window.shown, count - first), end: null };
+  const newEnd = Math.min(count, last + 1 + BLOCK_CONTEXT);
+  return { shown: newEnd - first + BLOCK_CONTEXT, end: newEnd >= count ? null : newEnd };
+}
+
 // Oracle answer words in any of the app's languages, to recognise
 // the answer in rolls with no link to the history (e.g. imported,
 // or if the history was cleared).

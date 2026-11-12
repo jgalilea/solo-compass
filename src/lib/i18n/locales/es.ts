@@ -795,6 +795,7 @@ export const es: Dictionary = {
     dragHandle: "Arrastrar para reordenar",
     sessionEntryCount: "{count} entradas",
     showEarlierEntries: "Ver entradas anteriores ({count})",
+    showLaterEntries: "Ver entradas posteriores ({count})",
     previousSessionsHeading: "Sesiones anteriores",
     togglePreviousSessions: "Mostrar u ocultar las sesiones anteriores",
     diceRollerLabel: "Dados rápidos",
@@ -1078,8 +1079,15 @@ export const es: Dictionary = {
     copied: "Copiado. Pégalo al contarnos qué pasó.",
     copyFailed: "No se pudo copiar. Puedes seleccionarlo a mano aquí debajo.",
     reportHint:
-      "Si la pifia se repite, cuéntanoslo. El pergamino lleva la versión de la app, la pantalla y el navegador; nada de tu diario.",
-    reportOnGithub: "Avisar en GitHub",
+      "Si la pifia se repite, cuéntanoslo: copia el pergamino del error y pégalo en el formulario. Lleva la versión de la app, la pantalla y el navegador; nada de tu diario.",
+    reportForm: "Contarlo en el formulario",
+    reportOnGithub: "¿Tienes cuenta de GitHub? Ábrelo allí",
+    notFoundTitle: "Te has salido del mapa",
+    notFoundDescription:
+      "Aquí el cartógrafo solo dibujó dragones: esta página no existe. Tu diario y tus tiradas siguen a salvo, y la brújula te devuelve al camino.",
+    notFoundHome: "Volver al oráculo",
+    notFoundReport:
+      "Si llegaste aquí desde un enlace de la app, el error es nuestro: cuéntanoslo en un formulario corto. Solo lleva la versión de la app y tu navegador.",
   },
   sample: {
     offer: "¿Primera vez? Echa un vistazo a una aventura de ejemplo",

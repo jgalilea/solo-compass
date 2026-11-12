@@ -23,6 +23,7 @@ const AdventureDetailView = preloadable(() =>
   import("./components/AdventureDetailView").then((m) => m.AdventureDetailView),
 );
 const HistoryView = preloadable(() => import("./components/HistoryView").then((m) => m.HistoryView));
+const NotFoundView = preloadable(() => import("./components/NotFoundView").then((m) => m.NotFoundView));
 
 function App() {
   // LocaleProvider goes outside the error boundary so that, if something
@@ -48,6 +49,7 @@ function App() {
                               <Route path="diario" element={<JournalListView />} />
                               <Route path="diario/:adventureId" element={<AdventureDetailView />} />
                               <Route path="historial" element={<HistoryView />} />
+                              <Route path="*" element={<NotFoundView />} />
                             </Route>
                           </Routes>
                         </HashRouter>

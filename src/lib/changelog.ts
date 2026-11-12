@@ -25,6 +25,30 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.3",
+    date: "2026-11-12",
+    text: {
+      es: {
+        title: "Interludio · Más allá del mapa",
+        intro: "Mara descubre que los bordes del mapa también tienen camino de vuelta.",
+        items: [
+          "Buscar una entrada muy antigua en una sesión enorme ya no hace esperar: se abre al instante con lo que la rodea, y «Ver entradas posteriores» sigue leyendo desde ahí. Al escribir, vuelves al final.",
+          "Una dirección que no lleva a ninguna pantalla muestra «Te has salido del mapa», con un camino de vuelta al oráculo y el formulario para contarnos si fue un enlace de la app.",
+          "Si la app pifia, la pantalla de error ofrece ahora el formulario corto para contarlo, sin cuenta de GitHub (que sigue ahí para quien la tenga).",
+        ],
+      },
+      en: {
+        title: "Interlude · Beyond the map",
+        intro: "Mara finds that even the edges of the map have a way back.",
+        items: [
+          "Searching for a very old entry in a huge session no longer makes you wait: it opens at once with what surrounds it, and “Show later entries” keeps reading from there. Writing takes you back to the end.",
+          "An address that leads to no screen shows “You've wandered off the map”, with a way back to the oracle and the form to tell us if a link in the app took you there.",
+          "If the app fumbles, the error screen now offers the short form to tell us, no GitHub account needed (it's still there for whoever has one).",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.2",
     date: "2026-11-12",
     text: {

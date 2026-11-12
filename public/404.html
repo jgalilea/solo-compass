@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Solo Compass</title>
+<script>
+  // GitHub Pages serves this for any path it doesn't have. The app's
+  // screens live after the "#" (HashRouter), so the path goes there:
+  // a screen's name without "#" opens it, anything else gets the app's
+  // own "off the map" page. "/solo-compass" is vite.config.ts's base.
+  location.replace("/solo-compass/#" + (location.pathname.replace(/^\/solo-compass/, "") || "/") + location.search);
+</script>

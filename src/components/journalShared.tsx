@@ -10,7 +10,7 @@ import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
 import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
-import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup, buildEntryBlocks, formatIsoDay, splitRollSeries, splitRollText } from "../lib/journalUi";
+import { BLOCK_PAGE, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type BlockWindow, type EntryGroup, buildEntryBlocks, fitBlockWindow, formatIsoDay, splitRollSeries, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { titleIfCut } from "../lib/truncation";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
@@ -146,14 +146,6 @@ const ANSWER_CHIP: Record<Answer, string> = {
 };
 
 /**
- * Blocks drawn at first, and added each time "earlier entries" is
- * pressed: a session can hold thousands of entries (an imported journal
- * with no session markers), and drawing them all made every new entry
- * take seconds on a phone (e2e/volume.perf.ts).
- */
-const BLOCK_PAGE = 80;
-
-/**
  * A session's bar, pinned at the top while its entries scroll by (each
  * session's within its own stretch, so it's always the one you're
  * reading), its height fixed so the scene below it pins just under it.
@@ -167,16 +159,42 @@ export const SESSION_RAIL = "session-entries flex flex-col gap-2 border-l-2 bord
 export function EntryList({ items, actions }: { items: JournalEntry[]; actions: EntryActions }) {
   const { t } = useLocaleContext();
   const blocks = buildEntryBlocks(items);
-  const [shown, setShown] = useState(BLOCK_PAGE);
+  // The window is kept by the id of the first block after it, so it
+  // stays put while entries are added or removed elsewhere.
+  const [view, setView] = useState<{ shown: number; endId: string | null }>({ shown: BLOCK_PAGE, endId: null });
+  const endIndex = view.endId ? blocks.findIndex((block) => block.some((e) => e.id === view.endId)) : -1;
+  const current: BlockWindow = { shown: view.shown, end: endIndex >= 0 ? endIndex : null };
+  const toView = (w: BlockWindow) => ({ shown: w.shown, endId: w.end === null ? null : blocks[w.end][0].id });
+
+  // A new entry at the end of the session (the composer's) takes the
+  // view back there, so what was just written is on screen, even while
+  // the entry jumped to is still highlighted (it no longer pulls the
+  // view back to it).
+  const lastId = blocks.at(-1)?.[0].id ?? null;
+  const [seenLastId, setSeenLastId] = useState(lastId);
+  const [leftHighlight, setLeftHighlight] = useState<string | null>(null);
+  if (lastId !== seenLastId) {
+    setSeenLastId(lastId);
+    if (current.end !== null) {
+      setView({ shown: BLOCK_PAGE, endId: null });
+      setLeftHighlight(actions.highlightedId ?? null);
+    }
+  }
+  if (leftHighlight && actions.highlightedId !== leftHighlight) setLeftHighlight(null);
+
   // What the screen is pointing at (a search jump, the entry being
-  // edited, selected or written below) is always drawn, with
-  // everything after it.
-  const targets = [actions.highlightedId, actions.editingId, actions.selectedId, actions.anchorId];
-  const firstTarget = blocks.findIndex((block) => block.some((e) => targets.includes(e.id)));
-  const needed = firstTarget >= 0 ? blocks.length - firstTarget : 0;
-  if (needed > shown) setShown(needed);
-  const start = Math.max(0, blocks.length - Math.max(shown, needed));
-  const hiddenEntries = blocks.slice(0, start).reduce((n, block) => n + block.length, 0);
+  // edited, selected or written below) is always drawn.
+  const highlighted = actions.highlightedId === leftHighlight ? null : actions.highlightedId;
+  const targetIds = [highlighted, actions.editingId, actions.selectedId, actions.anchorId];
+  const targets = blocks.flatMap((block, i) => (block.some((e) => targetIds.includes(e.id)) ? [i] : []));
+  const fitted = fitBlockWindow(blocks.length, current, targets);
+  if (fitted !== current) setView(toView(fitted));
+
+  const end = fitted.end ?? blocks.length;
+  const start = Math.max(0, end - fitted.shown);
+  const countEntries = (list: JournalEntry[][]) => list.reduce((n, block) => n + block.length, 0);
+  const hiddenEntries = countEntries(blocks.slice(0, start));
+  const laterEntries = countEntries(blocks.slice(end));
 
   return (
     <>
@@ -184,7 +202,7 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
         <li className="flex justify-center">
           <button
             type="button"
-            onClick={() => setShown((n) => n + BLOCK_PAGE)}
+            onClick={() => setView({ ...toView(fitted), shown: fitted.shown + BLOCK_PAGE })}
             className="flex items-center gap-1.5 rounded-xl border border-ink-border px-4 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
           >
             <IconArrowUp size={16} />
@@ -192,7 +210,7 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
           </button>
         </li>
       )}
-      {blocks.slice(start).map((block) =>
+      {blocks.slice(start, end).map((block) =>
         block[0].kind === "scene" ? (
           // A scene opens a stretch of the session: a heading, not a
           // card, pinned while you read it (scene-bar in index.css).
@@ -216,6 +234,21 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
             ))}
           </li>
         ),
+      )}
+      {laterEntries > 0 && (
+        <li className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => {
+              const next = end + BLOCK_PAGE;
+              setView(toView({ shown: next - start, end: next >= blocks.length ? null : next }));
+            }}
+            className="flex items-center gap-1.5 rounded-xl border border-ink-border px-4 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          >
+            <IconArrowDown size={16} />
+            {interpolate(t.journal.showLaterEntries, { count: laterEntries })}
+          </button>
+        </li>
       )}
     </>
   );

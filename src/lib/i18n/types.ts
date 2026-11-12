@@ -582,6 +582,7 @@ export interface Dictionary {
     /** After a session's entry count, for screen readers ("12" alone says nothing). */
     sessionEntryCount: string;
     showEarlierEntries: string;
+    showLaterEntries: string;
     previousSessionsHeading: string;
     togglePreviousSessions: string;
     diceRollerLabel: string;
@@ -848,7 +849,15 @@ export interface Dictionary {
     copied: string;
     copyFailed: string;
     reportHint: string;
+    /** The ideas-and-bugs form (Tally): the report's main way. */
+    reportForm: string;
+    /** The secondary way, for whoever has a GitHub account. */
     reportOnGithub: string;
+    /** The page for an address that isn't one of the app's screens. */
+    notFoundTitle: string;
+    notFoundDescription: string;
+    notFoundHome: string;
+    notFoundReport: string;
   };
   /** Code for Intl.DateTimeFormat (date/time formatting). */
   sample: {

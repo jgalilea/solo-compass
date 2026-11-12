@@ -46,7 +46,9 @@ slower, printing each timing. It's why the roll history is paged
 (`HistoryView`, 60 at a time as you scroll) and a session's entries
 are drawn from the end (`EntryList`, 80 blocks, "earlier entries"
 button; whatever is highlighted, edited, selected or written below is
-always drawn). Run it after changing how the journal or the history
+always drawn: near the end with everything after it, far back as a
+stretch around it with "later entries" below, `fitBlockWindow`; a new
+entry at the end brings the view back there). Run it after changing how the journal or the history
 load or render. `e2e/startup.perf.ts`, in the same run, times the first
 paint of a first visit over slow 4G and of a repeat visit (service
 worker), printing how much JavaScript came before it: run it after
@@ -89,7 +91,9 @@ via `codeSplitting` and the `$initial` tag) instead of a dozen crumbs.
 A chunk gone after a deploy (`vite:preloadError`) reloads once (`main.tsx`).
 Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/dados`,
 `/diario` (journal list), `/diario/:adventureId` (adventure detail),
-`/historial`. The nav has four tabs (Oráculo, Tablas, Dados, Diario;
+`/historial`, and `*` (`NotFoundView`: "off the map", back to the
+oracle and the feedback form; `public/404.html` sends GitHub Pages'
+unknown paths there, or to the screen the path names). The nav has four tabs (Oráculo, Tablas, Dados, Diario;
 keys 1–4): `/historial` is
 reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
 highlights the Oráculo tab; the Tables and Dice screens have their own
@@ -199,9 +203,12 @@ No backend; persistence is split by access pattern, not by feature:
   both.
 - **Error screen** (`AppErrorBoundary`): the "fumble" screen says the
   journal is safe, reloads, copies an error report (`errorReport.ts`:
-  version, screen, browser, the error; never journal content) and
-  opens a GitHub issue with it (only `title` and `body`: other URL
-  parameters need repository rights and answer 404 without them).
+  version, screen, browser, the error; never journal content) to paste
+  into the feedback form (its main way), and, as a quiet secondary
+  link, opens a GitHub issue with it (only `title` and `body`: other URL
+  parameters need repository rights and answer 404 without them; so
+  `.github/ISSUE_TEMPLATE/config.yml` keeps blank issues on, beside
+  the bilingual bug and idea forms).
 - **Link preview** (`index.html`): Open Graph tags with absolute URLs;
   `public/og-image.png` is drawn by `scripts/og-image.mjs` from a real
   screenshot (rerun it when the oracle screen changes) and kept out of

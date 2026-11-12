@@ -200,12 +200,23 @@ test("stays usable with years of play on a modest phone", async ({ page }) => {
     await page.locator("[data-composer] textarea").pressSequentially("La puerta del sótano cruje al abrirse.", { delay: 0 });
   }, 1500);
 
-  // Its first entry is far above what's drawn: the search still gets there.
+  // Its first entry is far above what's drawn: the search still gets
+  // there, drawing a stretch around it rather than all 2,000 below.
   await page.locator("[data-composer] textarea").fill("");
   await page.getByRole("button", { name: "Buscar en el diario" }).click();
   await page.getByRole("textbox", { name: "Buscar en el diario" }).fill("primera página");
-  await page.getByRole("textbox", { name: "Buscar en el diario" }).press("Enter");
-  await expect(page.locator("#entry-unsplit-e0")).toBeInViewport({ timeout: 10_000 });
+  await timed("Jump from the search to that session's first entry", async () => {
+    await page.getByRole("textbox", { name: "Buscar en el diario" }).press("Enter");
+    await expect(page.locator("#entry-unsplit-e0")).toBeInViewport({ timeout: 10_000 });
+  }, 1500);
+  await expect(page.getByRole("button", { name: /Ver entradas posteriores/ })).toBeVisible();
+
+  // Writing from there goes back to the end, where the entry lands.
+  await timed("Write an entry after jumping back", async () => {
+    await page.locator("[data-composer] textarea").fill("De vuelta al final.");
+    await page.getByRole("button", { name: "Añadir al diario" }).click();
+    await expect(page.locator("[id^=entry-]").getByText("De vuelta al final.")).toBeInViewport({ timeout: 30_000 });
+  }, 1500);
 
   await page.goto("./#/");
   await timed("Ask the oracle (10,000 rolls behind)", async () => {

@@ -211,3 +211,11 @@ test("going back closes an open menu, and an edit can be undone", async ({ page 
   await page.getByRole("status").getByRole("button", { name: "Deshacer" }).click();
   await expect(page.locator("[id^=entry-]").getByText("La linterna está apagada.")).toBeVisible();
 });
+
+test("an address that isn't a screen leads back to the oracle", async ({ page }) => {
+  await page.goto("./#/mapa-perdido");
+  await expect(page.getByRole("heading", { name: "Te has salido del mapa" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Contarlo en el formulario" })).toHaveAttribute("href", /tally\.so.*version=/);
+  await page.getByRole("link", { name: "Volver al oráculo" }).click();
+  await expect(page.getByLabel("Pregunta para el oráculo")).toBeVisible();
+});

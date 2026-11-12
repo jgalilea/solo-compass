@@ -791,6 +791,7 @@ export const en: Dictionary = {
     dragHandle: "Drag to reorder",
     sessionEntryCount: "{count} entries",
     showEarlierEntries: "Show earlier entries ({count})",
+    showLaterEntries: "Show later entries ({count})",
     previousSessionsHeading: "Previous sessions",
     togglePreviousSessions: "Show or hide previous sessions",
     diceRollerLabel: "Quick dice",
@@ -1074,8 +1075,15 @@ export const en: Dictionary = {
     copied: "Copied. Paste it when you tell us what happened.",
     copyFailed: "Couldn't copy it. You can select it by hand below.",
     reportHint:
-      "If the fumble happens again, tell us. The scroll carries the app's version, the screen and the browser; nothing from your journal.",
-    reportOnGithub: "Report it on GitHub",
+      "If the fumble happens again, tell us: copy the error scroll and paste it into the form. It carries the app's version, the screen and the browser; nothing from your journal.",
+    reportForm: "Tell us in the form",
+    reportOnGithub: "Have a GitHub account? Open it there",
+    notFoundTitle: "You've wandered off the map",
+    notFoundDescription:
+      "Here the cartographer drew only dragons: this page doesn't exist. Your journal and your rolls are safe, and the compass will put you back on the road.",
+    notFoundHome: "Back to the oracle",
+    notFoundReport:
+      "If a link in the app brought you here, the mistake is ours: tell us in a short form. It only carries the app's version and your browser.",
   },
   sample: {
     offer: "First time? Take a look at a sample adventure",

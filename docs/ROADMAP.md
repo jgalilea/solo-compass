@@ -5,9 +5,25 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-11 (rendimiento de arranque, accesibilidad, pantalla encendida, análisis de Google Drive).
+Última revisión: 2026-11-12 (página 404, formulario en la pifia, salto a entradas antiguas, plantillas de issues).
 
 ## Hecho recientemente
+
+- Fuera del mapa y saltos lejanos (2026-11-12, 1.0.3):
+  - Saltar desde la búsqueda a una entrada muy antigua de una sesión
+    enorme pinta solo un tramo alrededor (20 bloques a cada lado,
+    `fitBlockWindow`) con «Ver entradas posteriores» debajo, en vez de
+    todo hasta el final. Con 2.000 entradas, ~150 ms en el móvil lento.
+    Escribir en la casilla devuelve la vista al final.
+  - Página 404 propia («Te has salido del mapa», `NotFoundView`) para
+    cualquier ruta desconocida, con vuelta al oráculo y el formulario
+    de Tally; `public/404.html` manda a ella (o a la pantalla, si el
+    camino es una) lo que GitHub Pages no encuentra.
+  - La pantalla de pifia ofrece el formulario de Tally; GitHub queda
+    como enlace secundario. Plantillas de issues en GitHub (error e
+    idea, bilingües) y enlaces a los formularios en `config.yml`.
+  - Descripción nueva en el manifest, `index.html` y el repositorio
+    (cuatro oráculos, tablas, dados, cartas y diario).
 
 - Gesto de atrás y deshacer al editar (2026-11-12): en el móvil, ir
   atrás con un diálogo o un menú abierto lo cierra en vez de cambiar
@@ -158,8 +174,8 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     una sesión de 2.000 entradas (diario importado sin sesiones) tardaba
     4,7 s en cada entrada nueva (ahora pinta los últimos 80 bloques con
     «Ver entradas anteriores»; ~0,4 s). Lo demás va por debajo de 0,5 s.
-    Pendiente si molesta: saltar desde la búsqueda a una entrada muy
-    antigua de una sesión enorme pinta todo desde ella hasta el final.
+    Saltar desde la búsqueda a una entrada muy antigua de una sesión
+    enorme pintaba todo desde ella hasta el final: hecho el 2026-11-12.
   - Aviso en el diario solo en Safari de iPhone/iPad sin instalar (y
     sin almacenamiento persistente): Safari borra los datos de una web
     tras 7 días de uso sin visitarla. Dice también que la app instalada
@@ -774,12 +790,13 @@ Fuentes (2026-11-11): [carpeta de datos de la app](https://developers.google.com
 
 ## 9b. Contacto: sugerencias y errores (analizado el 2026-11-11)
 
-**HECHO (2026-11-12), en parte:** tarjeta «Ideas y errores» en Ajustes →
+**HECHO (2026-11-12):** tarjeta «Ideas y errores» en Ajustes →
 Acerca de, que abre el formulario de Tally del idioma de la app
 (es `2jaJxb`, en `M1NJQM`) en una pestaña nueva con `version` y
 `browser` en la URL, recogidos por dos campos ocultos en cada
-formulario (creados el 2026-11-12). Pendiente: el botón en la
-pantalla de error (sigue con GitHub) y el enlace secundario a issues.
+formulario (creados el 2026-11-12). La pantalla de pifia y la página
+404 llevan al mismo formulario; GitHub queda como enlace secundario en
+la pifia, con plantillas de issues (error e idea).
 
 Quien juega no suele tener cuenta de GitHub, y la app no tiene servidor.
 Opciones, de menos a más fricción para quien escribe:
@@ -804,9 +821,9 @@ contar (y una captura opcional).
 
 Falta para hacerlo: crear los dos formularios de Tally (es y en) con su
 cuenta, decidir si se usa una dirección de correo propia para recibir
-avisos, y exponer la versión de la app (hoy `package.json` dice 0.0.0:
-inyectar fecha de compilación y commit con `define` en
-`vite.config.ts`). Fuentes: [precios de Tally](https://tally.so/pricing),
+avisos, y exponer la versión de la app (hecho: versión semver en
+`package.json` y commit inyectados con `define` en `vite.config.ts`,
+`appVersion.ts`). Fuentes: [precios de Tally](https://tally.so/pricing),
 [campos ocultos de Tally](https://tally.so/help/hidden-fields),
 [prellenar issues por URL](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue#creating-an-issue-from-a-url-query).
 

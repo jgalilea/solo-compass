@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEntryBlocks, composerShortcut, filterGroups, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
+import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
 import { buildCast } from "./lonelogTags";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
@@ -66,6 +66,35 @@ describe("buildEntryBlocks", () => {
 
   it("a consequence with nothing before it stands alone", () => {
     expect(kinds(buildEntryBlocks([entry("consequence")]))).toEqual([["consequence"]]);
+  });
+});
+
+describe("fitBlockWindow", () => {
+  const tail = { shown: BLOCK_PAGE, end: null };
+
+  it("leaves the window alone when every target is drawn", () => {
+    expect(fitBlockWindow(2000, tail, [])).toBe(tail);
+    expect(fitBlockWindow(2000, tail, [1990])).toBe(tail);
+  });
+
+  it("draws from a target near the end to the end, as before", () => {
+    expect(fitBlockWindow(2000, tail, [1900])).toEqual({ shown: 100, end: null });
+  });
+
+  it("draws only a stretch around a target far back", () => {
+    expect(fitBlockWindow(2000, tail, [0])).toEqual({ shown: 41, end: 21 });
+    expect(fitBlockWindow(2000, tail, [1000])).toEqual({ shown: 41, end: 1021 });
+  });
+
+  it("covers every target, and reaches the end when the last one is close to it", () => {
+    expect(fitBlockWindow(2000, tail, [500, 520])).toEqual({ shown: 61, end: 541 });
+    expect(fitBlockWindow(2000, tail, [10, 1995])).toEqual({ shown: 2010, end: null });
+  });
+
+  it("keeps a window far back while its targets are inside it", () => {
+    const window = { shown: 41, end: 1021 };
+    expect(fitBlockWindow(2000, window, [1000])).toBe(window);
+    expect(fitBlockWindow(2000, window, [1500])).toEqual({ shown: 41, end: 1521 });
   });
 });
 

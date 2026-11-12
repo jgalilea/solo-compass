@@ -1,0 +1,10 @@
+# Blank issues stay on: the app's fumble screen opens one with its error
+# report as the body (errorIssueUrl in src/lib/errorReport.ts).
+blank_issues_enabled: true
+contact_links:
+  - name: No GitHub account? · ¿Sin cuenta de GitHub?
+    url: https://tally.so/r/2jaJxb
+    about: The same in a short form (Spanish), no account needed. · Lo mismo en un formulario corto, sin cuenta.
+  - name: Short form in English
+    url: https://tally.so/r/M1NJQM
+    about: Ideas and bugs, no account needed.

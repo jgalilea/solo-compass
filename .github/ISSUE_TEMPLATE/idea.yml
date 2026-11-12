@@ -1,0 +1,21 @@
+name: Idea
+description: Something you miss, or a way to make the app better. · Algo que echas en falta o una forma de mejorar la app.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea · La idea
+      description: What you'd like the app to do. · Qué te gustaría que hiciera la app.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: When would you use it? · ¿Cuándo lo usarías?
+      description: The moment in your game where you missed it. · El momento de tu partida en que lo echaste en falta.
+  - type: input
+    id: game
+    attributes:
+      label: Game or system · Juego o sistema
+      description: If it's for a particular one (Ironsworn, Mythic, OSR…). · Si es para uno en concreto.
