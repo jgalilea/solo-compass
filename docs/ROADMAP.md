@@ -5,9 +5,34 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-12 (página 404, formulario en la pifia, salto a entradas antiguas, plantillas de issues).
+Última revisión: 2026-11-12 (accesos directos del icono, comprobar si sigue instalada; pendiente de probar en Android).
 
 ## Hecho recientemente
+
+- Accesos directos e instalación (2026-11-12, 1.0.4):
+  - `shortcuts` en los dos manifests: Oráculo, Tablas, Dados y Diario
+    al dejar pulsado el icono (iconos de `scripts/shortcut-icons.mjs`).
+  - «Instalada» ya no se queda para siempre: `install.ts` pregunta a
+    `getInstalledRelatedApps` (con `related_applications`) al cargar y
+    al volver a la pestaña; donde no se puede saber (Brave, la mayoría
+    de ordenadores) la tarjeta explica cómo reinstalar.
+  - **Pendiente (P1): probarlo en Android con la app instalada desde
+    Chrome.** No se ha podido: en el Pixel 10a del autor Chrome muestra
+    su diálogo «Instalar aplicación», pero no instala nada y no avisa
+    de ningún error (`chrome://webapks` vacío, nada en el cajón ni en
+    Ajustes → Aplicaciones). Pasa igual con squoosh.app, y sin los
+    accesos directos ni `related_applications` también, así que no es
+    cosa de la app. Ya descartado: Chrome, Play Store y Servicios de
+    Google Play al día, cuenta iniciada, perfil personal, caché borrada.
+    Queda: Play Protect (Ajustes → Seguridad y privacidad → Seguridad de
+    las apps), Protección avanzada de Android 16, Chrome Beta, «Desinstalar
+    actualizaciones» de Chrome, restablecer preferencias de aplicaciones
+    y, sobre todo, `adb logcat | grep -iE "webapk|PackageInstaller|Finsky.*install"`
+    mientras se pulsa «Instalar». Brave sí «instala», pero solo como
+    marcador en la pantalla de inicio: sin accesos directos ni forma de
+    saber si se ha quitado. Con Chrome funcionando, comprobar: los cuatro
+    accesos directos (nombres en el idioma de la app) y que Ajustes deje
+    de decir «Instalada» tras desinstalarla y volver a la pestaña.
 
 - Fuera del mapa y saltos lejanos (2026-11-12, 1.0.3):
   - Saltar desde la búsqueda a una entrada muy antigua de una sesión
