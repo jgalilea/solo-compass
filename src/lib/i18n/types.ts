@@ -179,6 +179,8 @@ export interface Dictionary {
     statusStandalone: string;
     statusInstalled: string;
     openIt: string;
+    /** Some browsers don't notice the app was removed from the home screen. */
+    removed: string;
     statusNotInstalled: string;
     benefit: string;
     button: string;

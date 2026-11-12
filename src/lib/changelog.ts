@@ -25,6 +25,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.4",
+    date: "2026-11-12",
+    text: {
+      es: {
+        title: "Interludio · Atajos",
+        intro: "Mara marca en su mapa los caminos más cortos.",
+        items: [
+          "Con la app instalada, deja pulsado su icono para ir directo al oráculo, las tablas, los dados o el diario.",
+          "Si quitas la app de la pantalla de inicio, los ajustes ya no insisten en que sigue instalada allí donde el navegador puede saberlo; donde no, te dicen cómo volver a instalarla.",
+        ],
+      },
+      en: {
+        title: "Interlude · Shortcuts",
+        intro: "Mara marks the shortest paths on her map.",
+        items: [
+          "With the app installed, long-press its icon to go straight to the oracle, the tables, the dice or the journal.",
+          "If you remove the app from your home screen, Settings no longer insists it's still installed wherever the browser can tell; where it can't, it tells you how to install it again.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.3",
     date: "2026-11-12",
     text: {

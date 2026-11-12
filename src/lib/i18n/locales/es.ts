@@ -182,6 +182,8 @@ export const es: Dictionary = {
     statusStandalone: "Instalada: estás usando Solo Compass como app.",
     statusInstalled: "Instalada en este dispositivo.",
     openIt: "Ábrela desde tu pantalla de inicio o tu lista de aplicaciones para jugar en su propia ventana.",
+    removed:
+      "¿La has quitado? Algunos navegadores no se enteran: para volver a instalarla, búscalo en su menú («Instalar app» o «Añadir a pantalla de inicio»).",
     statusNotInstalled: "Sin instalar: la estás usando desde el navegador.",
     benefit:
       "Instálala para abrirla desde tu pantalla de inicio, en su propia ventana y también sin conexión. Además, los navegadores cuidan más los datos de las apps instaladas.",

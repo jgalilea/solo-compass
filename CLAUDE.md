@@ -183,13 +183,20 @@ No backend; persistence is split by access pattern, not by feature:
 - **Manifest**: one per language (`vite.config.ts` emits
   `manifest.en.webmanifest` next to the Spanish one, same `id`);
   `LocaleProvider` points `<link rel="manifest">` at the current one.
+  Its `shortcuts` (long press on the installed icon: the four tabs) use icons drawn by `scripts/shortcut-icons.mjs` from the tabs'
+  Tabler icons; only installs that are real apps show them (Chrome's
+  on Android, desktop), not a browser's home-screen bookmark (Brave).
   The viewport blocks pinch zoom on purpose (native-app feel): keep
   text fields at 16px+ so iOS doesn't zoom into them.
 - **Install** (`install.ts`, card in `InstallApp.tsx`): imported early
   from `main.tsx` to catch `beforeinstallprompt` (fires once at load);
   Settings shows the browser's install dialog, menu instructions where
   there's no prompt (Safari, Firefox), or "installed" (standalone mode,
-  or a localStorage flag when seen from a browser tab).
+  or a localStorage flag when seen from a browser tab). The flag is
+  checked with `getInstalledRelatedApps` (the manifests'
+  `related_applications`) on load and on coming back into view; only
+  Android's "no" clears it. Where nothing can tell (Brave, most
+  desktops) the card says how to reinstall if it was removed.
 - **Privacy** (Settings → About, `PrivacyCard`): nothing leaves the
   browser. The app makes no request outside its own origin (the only
   `fetch` is its own fonts, for the HTML export); everything external

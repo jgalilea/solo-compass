@@ -11,10 +11,15 @@
  * to do it from the browser's own menu instead.
  *
  * "Installed" is certain when the app runs in its own window
- * (display-mode standalone). From a normal browser tab it can't be
- * asked, so it's remembered in localStorage once the app has been
- * installed or opened installed; if the browser later offers to
- * install it again, it was uninstalled and the flag is cleared.
+ * (display-mode standalone). From a normal browser tab it's remembered
+ * in localStorage once the app has been installed or opened installed,
+ * and checked where the browser can answer: Chrome on Android tells
+ * whether it's on the home screen (getInstalledRelatedApps, with the
+ * manifests' `related_applications`), asked on load and whenever the
+ * tab comes back into view, since uninstalling happens outside it. If
+ * the browser offers to install it again, it was uninstalled too.
+ * Elsewhere (Brave's home-screen shortcuts, most desktops) removing it
+ * can go unnoticed: the card says so instead of insisting.
  */
 
 export type InstallState =
@@ -88,6 +93,29 @@ export function isIosSafari(): boolean {
   return isIos() && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(navigator.userAgent);
 }
 
+type RelatedAppsNavigator = Navigator & { getInstalledRelatedApps?: () => Promise<unknown[]> };
+
+/**
+ * Asks the browser whether the app is installed. Only Android's answer
+ * counts when it's "no": on desktop the API exists but lists web apps
+ * only on Windows, and the flag is all there is.
+ */
+async function checkInstalled(): Promise<void> {
+  const nav = navigator as RelatedAppsNavigator;
+  if (!nav.getInstalledRelatedApps || isStandalone()) return;
+  try {
+    const apps = await nav.getInstalledRelatedApps();
+    const installed = apps.length > 0;
+    if (installed === installedFlag) return;
+    if (installed || /Android/.test(navigator.userAgent)) {
+      saveInstalledFlag(installed);
+      notify();
+    }
+  } catch {
+    // Not answered: the flag stays as it was.
+  }
+}
+
 if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (e) => {
     // No preventDefault: the browser keeps offering its own install
@@ -103,6 +131,10 @@ if (typeof window !== "undefined") {
     notify();
   });
   if (isStandalone() && !installedFlag) saveInstalledFlag(true);
+  void checkInstalled();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void checkInstalled();
+  });
 }
 
 export function getInstallState(): InstallState {

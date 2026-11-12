@@ -36,7 +36,12 @@ export function InstallAppSettings() {
                 ? t.install.statusInstalled
                 : t.install.statusNotInstalled}
           </p>
-          {state === "installed" && <p className="mt-0.5 text-sm text-parchment-dim">{t.install.openIt}</p>}
+          {state === "installed" && (
+            <>
+              <p className="mt-0.5 text-sm text-parchment-dim">{t.install.openIt}</p>
+              <p className="mt-1.5 text-sm text-parchment-faint">{t.install.removed}</p>
+            </>
+          )}
           {!installed && <p className="mt-0.5 text-sm text-parchment-dim">{t.install.benefit}</p>}
         </div>
       </div>

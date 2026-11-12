@@ -13,6 +13,32 @@ const base = "/solo-compass/";
 // LocaleProvider points <link rel="manifest"> at the one matching the
 // language picked, so installing shows it in that language. Same `id`,
 // so both are the same installed app.
+
+/**
+ * The home-screen shortcuts (long press on the icon): the four tabs, in
+ * the nav's order. Icons drawn by scripts/shortcut-icons.mjs.
+ */
+const SHORTCUT_ROUTES = { oraculo: "", tablas: "tablas", dados: "dados", diario: "diario" };
+
+function shortcuts(names: Record<keyof typeof SHORTCUT_ROUTES, string>): ManifestOptions["shortcuts"] {
+  return Object.entries(names).map(([icon, name]) => ({
+    name,
+    url: `${base}#/${SHORTCUT_ROUTES[icon as keyof typeof SHORTCUT_ROUTES]}`,
+    icons: [
+      { src: `icons/shortcuts/${icon}.png`, sizes: "192x192", type: "image/png" },
+      { src: `icons/shortcuts/${icon}-maskable.png`, sizes: "192x192", type: "image/png", purpose: "maskable" },
+    ],
+  }));
+}
+
+// Lets a browser tab ask whether the app is installed
+// (navigator.getInstalledRelatedApps, src/lib/install.ts): it's the
+// manifest the app was installed with, in either language.
+const relatedApplications: ManifestOptions["related_applications"] = [
+  "manifest.webmanifest",
+  "manifest.en.webmanifest",
+].map((file) => ({ platform: "webapp", url: `https://jgalilea.github.io${base}${file}` }));
+
 const manifest: Partial<ManifestOptions> = {
   id: base,
   name: "Solo Compass",
@@ -43,6 +69,8 @@ const manifest: Partial<ManifestOptions> = {
       purpose: "maskable",
     },
   ],
+  shortcuts: shortcuts({ oraculo: "Oráculo", tablas: "Tablas", dados: "Dados", diario: "Diario" }),
+  related_applications: relatedApplications,
 };
 
 const englishManifest: Partial<ManifestOptions> = {
@@ -50,6 +78,7 @@ const englishManifest: Partial<ManifestOptions> = {
   description:
     "A yes/no oracle, 750+ tables, dice, cards and a Lonelog journal for solo role-playing. No account, works offline, everything stays on your device.",
   lang: "en",
+  shortcuts: shortcuts({ oraculo: "Oracle", tablas: "Tables", dados: "Dice", diario: "Journal" }),
 };
 
 /** Writes the English manifest next to the one vite-plugin-pwa builds. */
