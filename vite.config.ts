@@ -173,6 +173,18 @@ export default defineConfig({
         // Only for link previews (index.html): players never need it offline.
         globIgnores: ["og-image.png", "404.html"],
       },
+      // The manifest always comes from the network: Chrome reads it through
+      // the service worker to build and update the installed app (WebAPK),
+      // and with "prompt" an old worker would keep handing it a stale one
+      // (its shortcuts never showed up on Android). The plugin adds it to
+      // the precache itself, so it's taken out here.
+      integration: {
+        beforeBuildServiceWorker(options) {
+          options.workbox.additionalManifestEntries = options.workbox.additionalManifestEntries?.filter(
+            (entry) => typeof entry === "string" || !entry.url.endsWith(".webmanifest"),
+          );
+        },
+      },
     }),
     englishManifestPlugin(),
     localeModulePreloadPlugin(),

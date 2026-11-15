@@ -5,7 +5,7 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-12 (repaso de diseño, 1.0.5, sin publicar; accesos directos del icono, pendiente de probar en Android).
+Última revisión: 2026-11-12 (repaso de diseño, 1.0.5, sin publicar; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
@@ -34,21 +34,17 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     `getInstalledRelatedApps` (con `related_applications`) al cargar y
     al volver a la pestaña; donde no se puede saber (Brave, la mayoría
     de ordenadores) la tarjeta explica cómo reinstalar.
-  - **Pendiente (P1): probarlo en Android con la app instalada desde
-    Chrome.** No se ha podido: en el Pixel 10a del autor Chrome muestra
-    su diálogo «Instalar aplicación», pero no instala nada y no avisa
-    de ningún error (`chrome://webapks` vacío, nada en el cajón ni en
-    Ajustes → Aplicaciones). Pasa igual con squoosh.app, y sin los
-    accesos directos ni `related_applications` también, así que no es
-    cosa de la app. Ya descartado: Chrome, Play Store y Servicios de
-    Google Play al día, cuenta iniciada, perfil personal, caché borrada.
-    Queda: Play Protect (Ajustes → Seguridad y privacidad → Seguridad de
-    las apps), Protección avanzada de Android 16, Chrome Beta, «Desinstalar
-    actualizaciones» de Chrome, restablecer preferencias de aplicaciones
-    y, sobre todo, `adb logcat | grep -iE "webapk|PackageInstaller|Finsky.*install"`
-    mientras se pulsa «Instalar». Brave sí «instala», pero solo como
-    marcador en la pantalla de inicio: sin accesos directos ni forma de
-    saber si se ha quitado. Con Chrome funcionando, comprobar: los cuatro
+  - Instalar desde Chrome en Android ya funciona (2026-11-15). El
+    fallo era del móvil del autor, no de la app: Chrome tarda en
+    generar la WebAPK y no da señales mientras, así que cada «Instalar»
+    repetido acabó en una copia más (salieron cuatro). Brave sigue
+    «instalando» solo un marcador en la pantalla de inicio.
+    Instalada, no salían los accesos directos: el service worker
+    precacheaba el manifiesto y, con «prompt», uno antiguo (el de la
+    prueba sin accesos) se lo seguía dando a Chrome al generar y
+    actualizar la WebAPK. Ahora el manifiesto no va en la precache
+    (`integration.beforeBuildServiceWorker` en `vite.config.ts`).
+    **Pendiente (P1): comprobar con la app instalada** los cuatro
     accesos directos (nombres en el idioma de la app) y que Ajustes deje
     de decir «Instalada» tras desinstalarla y volver a la pestaña.
 
