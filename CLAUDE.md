@@ -286,7 +286,9 @@ dice below). This module does both directions:
 There's also a read-only **HTML export** (`htmlExport.ts`, theme read
 by `htmlExportTheme.ts`): one self-contained page in the theme on
 screen (colours as editable CSS variables at the top, display font
-embedded), with the notebook beside the journal. Lonelog stays the
+embedded), with the notebook beside the journal and the rolls' dice and
+cards drawn (`drawRolls.tsx` renders the screen's `RollDrawing` as inline
+SVG, so dice and cards carry their own colours, not classes). Lonelog stays the
 interchange format.
 
 ### Rolling from several screens (`src/hooks/usePlayActions.ts`)
@@ -575,14 +577,25 @@ read a roll and each formula taken apart, with examples and the line
 each leaves; a test rolls every example and checks the exact line, and
 that the limits it states hold.
 
+Rolls are drawn (`Die`: a silhouette per die in `SHAPES`, any die with
+none is the d6's square with its number; `sides: 0` is a Fudge die):
+never stored, the dice (`rolledDice.ts`: sides, value, how each counted)
+are read back from the roll's text (`readRolledDice`, which walks the
+formula along the detail; a test rolls every kind), so old, imported and
+sample rolls are drawn too: tray, latest rolls (the first five),
+history and journal (`RollDrawing`, beside the text and no taller than
+its line; also the cards, from `readCards`, and, from `readOracleDice`,
+an oracle's dice). Past `MAX_DRAWN_DICE` or when the
+text doesn't say, only the text shows. What's stored and exported is
+always the text, exactly as Lonelog writes it.
+
 A switch on the same tool turns the dice into cards (`CardControls`,
 `cards.ts`), on the same tray: a standard deck (jokers optional) or a
 tarot (reversals optional, or the Major Arcana alone), written as Lonelog's Cards add-on
 (`draw=Qs -> Reina de picas`, `M16r` reversed; the name after "->" is
 ours, `cardName`), shown with suit symbols (`showDraws`; drawn as a card in
 the tray, the history and, `small`, the latest rolls: `PlayingCard`
-from `cardLook`, the
-journal stays text) and read as a
+from `cardLook`) and read as a
 roll by the journal (a draw counts as a die in `splitRollSeries`).
 Each draw is a `"dados"` history roll that keeps its `card`; without
 repeats, what's left of an adventure's deck is derived from those

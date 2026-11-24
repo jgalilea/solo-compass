@@ -5,7 +5,7 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-12 (repaso de diseño, 1.0.5, sin publicar; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-24 (dados y cartas dibujados, 1.0.6; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
@@ -15,12 +15,16 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   el blanco del dado), el número romano de los arcanos mayores y la
   invertida girada. El tarot lleva el valor una sola vez, arriba: repetido
   en las esquinas no se vería que está invertida. Interruptor «Solo
-  mayores». El diario y el .md siguen en texto Lonelog
-  (`draw=Qs -> …`). **Siguiente (P2): dados con forma propia** (d4
-  triángulo, d8 rombo, d10 cometa, d12 pentágono, d20 hexágono, d% dos
-  d10): primero en el oráculo (la d100 de Ironsworn hoy es un cuadrado
-  con cifra), luego en la bandeja con `rollFormula` devolviendo los
-  dados además de la línea; más de ~12 dados o grupos `{…}`, en texto.
+  mayores». El .md sigue en texto Lonelog
+  (`draw=Qs -> …`).
+- Dados dibujados (2026-11-24, 1.0.6): cada dado con su forma (`Die`,
+  `SHAPES`: d4, d6, d8, d10/14/16, d12, d20, d24, d30 y d100, una bola;
+  los demás, el cuadrado del d6 con la cifra) en el oráculo, la bandeja,
+  las últimas tiradas, el historial y el diario (también cartas y
+  oráculo). No se guardan: se leen del texto Lonelog (`readRolledDice`,
+  `readOracleDice`), así que las tiradas antiguas, las importadas y las
+  de la historia de ejemplo salen igual. Más de 12, en texto. También en
+  la exportación HTML (SVG incrustado).
 - Repaso de diseño (2026-11-12, 1.0.5; capturas de los 5 temas en
   móvil, tablet y escritorio antes y después):
   - La carta del oráculo se tiñe con su respuesta (borde y un lavado

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardFace, cardIdentity, cardLook, cardName, cardPurpose, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
+import { cardFace, cardIdentity, cardLook, cardName, cardPurpose, deckCards, drawCard, formatCardDraw, isCardDraw, readCards, showDraws } from "./cards";
 import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
 import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
 import { splitRollSeries, splitRollText } from "./journalUi";
@@ -94,6 +94,17 @@ describe("a draw in the journal", () => {
         expect(cardLook(card, "es")).not.toBeNull();
         expect(cardLook(`${card}r`, "en")?.kind ?? "poker").toMatch(deck === "tarot" ? /major|minor/ : /poker/);
       }
+    }
+  });
+
+  it("is read back from the text, in every form of the add-on", () => {
+    expect(readCards("Omen draw=Qs")).toEqual(["Qs"]);
+    expect(readCards("draw=M16r // The Tower reversed")).toEqual(["M16r"]);
+    expect(readCards("draw=Qh vs red")).toEqual(["Qh"]);
+    expect(readCards("draw=Jkr")).toEqual(["Jkr"]);
+    expect(readCards("Past=4d, Present=Kh, Future=5Swr")).toEqual(["4d", "Kh", "5Swr"]);
+    for (const text of ["Loot d100=42", "Theme d66=25", "4d6dl1", "draw=The Abyss", "3d6>=4", "Recluse — blanco 3 / negro 5"]) {
+      expect(readCards(text), text).toBeNull();
     }
   });
 

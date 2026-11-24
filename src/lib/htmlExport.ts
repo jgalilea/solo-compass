@@ -55,6 +55,9 @@ export const EXPORT_COLOR_TOKENS = [
   "--color-yes",
   "--color-no",
   "--color-contradiction",
+  "--color-die-white",
+  "--color-die-black",
+  "--color-card-red",
 ] as const;
 
 const KIND_SYMBOL: Record<Exclude<JournalEntry["kind"], "session" | "scene">, string> = {
@@ -87,19 +90,27 @@ function taggedHtml(text: string): string {
     .replace(/\n/g, "<br>");
 }
 
-function rollHtml(entry: JournalEntry, answer: Answer | undefined): string {
+/** A roll's dice or cards as HTML ("" for none), by its detail and result (RollDrawing). */
+type DrawRoll = (detail: string, result: string | null) => string;
+
+function rollHtml(entry: JournalEntry, answer: Answer | undefined, drawRoll: DrawRoll): string {
+  const drawn = (detail: string, result: string | null) => {
+    const html = drawRoll(detail, result);
+    return html && `<span class="drawn">${html}</span>`;
+  };
   const series = splitRollSeries(entry.text);
   if (series) {
     const dice = series.rolls
-      .map((r) => `<span class="die"><small>${escapeHtml(r.label ? `${r.label} · ${r.die}` : r.die)}</small>${escapeHtml(r.result)}</span>`)
+      .map((r) => `<span class="die"><small>${escapeHtml(r.label ? `${r.label} · ${r.die}` : r.die)}</small><span class="drawn-row">${drawn(r.die, r.result)}${escapeHtml(r.result)}</span></span>`)
       .join("");
     return `${series.label ? `<p class="detail">${escapeHtml(series.label)}</p>` : ""}<p class="dice">${dice}</p>`;
   }
   const { detail, result, answer: parsed } = splitRollText(entry.text);
-  if (result === null) return `<p>${escapeHtml(entry.text)}</p>`;
+  const drawing = drawn(detail, result);
+  if (result === null) return `<p>${drawing}${escapeHtml(entry.text)}</p>`;
   const known = answer ?? parsed;
   return `<p class="detail">${escapeHtml(detail)}</p>${
-    known ? `<p><span class="answer ${known}">${escapeHtml(result)}</span></p>` : `<p class="result">${escapeHtml(result)}</p>`
+    known ? `<p class="drawn-row">${drawing}<span class="answer ${known}">${escapeHtml(result)}</span></p>` : `<p class="result drawn-row">${drawing}<span>${escapeHtml(result)}</span></p>`
   }`;
 }
 
@@ -121,12 +132,12 @@ function noteHtml(text: string): string {
   }
 }
 
-function entryHtml(entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined): string {
+function entryHtml(entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined, drawRoll: DrawRoll): string {
   const kind = entry.kind === "session" || entry.kind === "scene" ? "note" : entry.kind;
   const symbol = KIND_SYMBOL[kind];
   const body =
     kind === "roll"
-      ? rollHtml(entry, answerFor(entry.linkedRollId))
+      ? rollHtml(entry, answerFor(entry.linkedRollId), drawRoll)
       : kind === "note"
         ? noteHtml(entry.text)
         : kind === "action"
@@ -181,6 +192,7 @@ export function exportAdventureToHtml({
   descriptions = {},
   theme,
   answerFor = () => undefined,
+  drawRoll = () => "",
   exportedAt = new Date(),
 }: {
   t: Dictionary;
@@ -190,6 +202,8 @@ export function exportAdventureToHtml({
   descriptions?: Record<string, CastDescription>;
   theme: ExportTheme;
   answerFor?: (rollId?: string) => Answer | undefined;
+  /** Draws a roll's dice or cards (needs the DOM: drawRolls.tsx); without it, only the text. */
+  drawRoll?: DrawRoll;
   exportedAt?: Date;
 }): string {
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
@@ -206,7 +220,7 @@ export function exportAdventureToHtml({
         .map((block) =>
           block[0].kind === "scene"
             ? sceneHtml(block[0])
-            : `<section class="card">${block.map((e) => entryHtml(e, answerFor)).join("")}</section>`,
+            : `<section class="card">${block.map((e) => entryHtml(e, answerFor, drawRoll)).join("")}</section>`,
         )
         .join("");
       const session = group.sessionEntry;
@@ -278,6 +292,9 @@ blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid col
 .dice { display: flex; flex-wrap: wrap; gap: .4rem; }
 .die { display: inline-flex; flex-direction: column; align-items: center; min-width: 2.75rem; border: 1px solid var(--color-ink-border); border-radius: .5rem; padding: .15rem .5rem; font-weight: 600; }
 .die small { font-size: .65rem; font-weight: 400; color: var(--color-parchment-dim); }
+.drawn-row { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; }
+.drawn, .drawn span { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
+.drawn svg { flex: none; filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / .4)); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 .tag { border: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent); background: color-mix(in srgb, var(--color-gold) 8%, transparent); border-radius: .4rem; padding: 0 .35rem; font-style: normal; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .tag small { color: var(--color-parchment-dim); }
 aside { display: grid; gap: 1rem; }

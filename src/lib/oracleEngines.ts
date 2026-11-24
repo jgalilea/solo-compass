@@ -129,7 +129,7 @@ export function fitLikelihood(id: OracleId, likelihood: Likelihood): Likelihood 
 }
 
 /** The dice an oracle throws for a likelihood, before throwing them: one group per role. */
-export function oracleDicePlan(id: OracleId, likelihood: Likelihood): { role: OracleDiceGroup["role"]; count: number }[] {
+export function oracleDicePlan(id: OracleId, likelihood: Likelihood): { role: OracleDiceGroup["role"]; sides: number; count: number }[] {
   return ENGINES[id].dice(likelihood);
 }
 

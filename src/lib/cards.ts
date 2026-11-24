@@ -166,7 +166,7 @@ function romanNumeral(n: number): string {
 }
 
 export function cardLook(id: string, locale: Locale): CardLook | null {
-  if (id === "RJkr" || id === "BJkr") return { kind: "joker", red: id === "RJkr" };
+  if (id === "RJkr" || id === "BJkr" || id === "Jkr") return { kind: "joker", red: id === "RJkr" };
   const poker = id.match(POKER_ID);
   if (poker) return { kind: "poker", rank: poker[1], suit: poker[2] as "h" | "d" | "c" | "s" };
   const major = id.match(MAJOR_ID);
@@ -204,6 +204,16 @@ export function showDraws(text: string): string {
 export function cardPurpose(text: string): string {
   const arrow = text.lastIndexOf(" -> ");
   return text.slice(0, Math.max(arrow, 0)).replace(/\bdraw=\S+$/, "").trim();
+}
+
+/**
+ * The cards in a roll's text, to draw them: "draw=Qs", the add-on's
+ * spreads ("Past=4d, Present=Kh") and "draw=M16r // The Tower". Null if
+ * there are none.
+ */
+export function readCards(text: string): string[] | null {
+  const ids = [...text.matchAll(/=([A-Za-z0-9]+)(?![\w+-])/g)].map((m) => m[1]).filter((id) => cardLook(id, "en"));
+  return ids.length > 0 ? ids : null;
 }
 
 /** Whether a roll's text is only cards drawn ("draw=Qs -> …, draw=3h -> …", with a description or not). */

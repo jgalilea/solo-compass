@@ -34,6 +34,8 @@
  * A single die with nothing else is just "d20 -> 14", like the buttons.
  */
 
+import { canDrawDice, type RolledDie } from "./rolledDice";
+
 /** Dice per term (the spec's limit). */
 export const MAX_DICE = 999;
 /** Rerolls a single die may chain (exploding, rerolling), as in the spec. */
@@ -88,7 +90,7 @@ type Node =
   | { kind: "neg"; inner: Node }
   | { kind: "paren"; inner: Node }
   | { kind: "bin"; op: "+" | "-" | "*" | "/" | "%" | "^"; left: Node; right: Node }
-  | ({ kind: "dice"; fudge: boolean; compound: boolean; dice: Die[]; shown: Die[] } & Pool)
+  | ({ kind: "dice"; fudge: boolean; sides: number; drops: boolean; compound: boolean; dice: Die[]; shown: Die[] } & Pool)
   | ({
       kind: "group";
       subs: Node[];
@@ -150,6 +152,23 @@ function diceIn(node: Node): Die[] {
       return node.dice;
     case "group":
       return node.subs.flatMap(diceIn);
+  }
+}
+
+/** Every pool of dice inside a node. */
+function poolsIn(node: Node): Extract<Node, { kind: "dice" }>[] {
+  switch (node.kind) {
+    case "num":
+      return [];
+    case "neg":
+    case "paren":
+      return poolsIn(node.inner);
+    case "bin":
+      return [...poolsIn(node.left), ...poolsIn(node.right)];
+    case "dice":
+      return [node];
+    case "group":
+      return node.subs.flatMap(poolsIn);
   }
 }
 
@@ -297,6 +316,7 @@ class Parser {
     if (subs.length === 1) {
       // A group of one keeps or drops single dice, across all of it.
       applyKeepDrop(diceIn(subs[0]).filter((d) => !d.dropped), total, keepDrop, (d) => (d.dropped = true));
+      if (keepDrop.length) poolsIn(subs[0]).forEach((pool) => (pool.drops = true));
     } else {
       applyKeepDrop(node.order, (i) => value(subs[i]), keepDrop, (i) => (node.out[i] = true));
     }
@@ -486,7 +506,7 @@ class Parser {
     if (order) shown = [...dice].sort((a, b) => (order === "asc" ? 1 : -1) * (total(a) - total(b)));
     shown = [...shown.filter((d) => !d.dropped), ...shown.filter((d) => d.dropped)];
 
-    return { kind: "dice", fudge: !!fudge, compound: !!explode?.compound, dice, shown, target, failure };
+    return { kind: "dice", fudge: !!fudge, sides, drops: keepDrop.length > 0, compound: !!explode?.compound, dice, shown, target, failure };
   }
 }
 
@@ -570,6 +590,169 @@ function hasFudge(node: Node): boolean {
       return node.fudge;
     case "group":
       return node.subs.some(hasFudge);
+  }
+}
+
+/**
+ * Reads a roll's detail back, walking its formula: which numbers are
+ * dice, of how many faces, and how each counted. Throws if it doesn't
+ * match.
+ */
+class DetailReader {
+  i = 0;
+  readonly dice: RolledDie[] = [];
+  private readonly s: string;
+
+  constructor(s: string) {
+    this.s = s;
+  }
+
+  private eat(text: string): boolean {
+    if (!this.s.startsWith(text, this.i)) return false;
+    this.i += text.length;
+    return true;
+  }
+
+  private need(text: string) {
+    if (!this.eat(text)) fail();
+  }
+
+  /** `alone`: a single die, unless in brackets (Fudge dice or a pool inside arithmetic). */
+  read(node: Node, alone = false, miss = false): void {
+    switch (node.kind) {
+      case "num":
+        return this.need(formatNumber(node.value));
+      case "neg":
+        this.need("−");
+        return this.read(node.inner, alone);
+      case "paren":
+        this.need("(");
+        this.read(node.inner);
+        return this.need(")");
+      case "bin":
+        this.side(node.left, node.op);
+        this.need(` ${SHOWN_OP[node.op]} `);
+        return this.side(node.right, node.op);
+      case "group":
+        this.need("{");
+        node.order.forEach((i, n) => {
+          if (n > 0) this.need(", ");
+          this.part(node.subs[i], !!node.failure);
+        });
+        return this.need("}");
+      case "dice":
+        return this.pool(node, alone, miss);
+    }
+  }
+
+  private side(child: Node, op: keyof typeof PRECEDENCE) {
+    // In brackets as `detail` writes them.
+    const loose = child.kind === "bin" ? PRECEDENCE[child.op] < PRECEDENCE[op] : child.kind === "dice" && this.s[this.i] === "(";
+    if (loose) this.need("(");
+    this.read(child, !loose && child.kind === "dice" && (PRECEDENCE[op] > 1 || child.fudge || !!child.target));
+    if (loose) this.need(")");
+  }
+
+  /** A group's part: "6+5", "4✓", or "(2+3)✗". */
+  private part(node: Node, miss: boolean) {
+    const at = this.i;
+    const before = this.dice.length;
+    try {
+      this.read(node, false, miss);
+    } catch (e) {
+      if (!(e instanceof Unreadable)) throw e;
+      this.i = at;
+      this.dice.length = before;
+      this.need("(");
+      this.read(node);
+      this.need(")");
+    }
+    const hit = this.eat("✓");
+    if (!hit && !this.eat("✗")) return;
+    const dice = this.dice.slice(before);
+    if (hit || miss) {
+      // A part's success is the die's when it's just one.
+      if (dice.length === 1) dice[0].mark = hit ? "hit" : "miss";
+    } else for (const die of dice) die.mark = "out";
+  }
+
+  private pool(node: Extract<Node, { kind: "dice" }>, alone: boolean, miss: boolean) {
+    const spaced = node.fudge || !!node.target;
+    this.die(node, false, miss);
+    // All of them dropped: there's no comma.
+    let dropped = node.drops && !node.failure && this.dice.at(-1)!.mark === "out";
+    while (!alone) {
+      const at = this.i;
+      const count = this.dice.length;
+      const toDropped: boolean = !dropped && node.drops && this.eat(", ");
+      if (!toDropped && !this.eat(dropped || spaced ? " " : "+")) break;
+      try {
+        this.die(node, dropped || toDropped, miss);
+        // After the comma they're all dropped; otherwise it's the group's next part.
+        if ((dropped || toDropped) && this.s[this.i - 1] !== "✗") fail();
+        dropped ||= toDropped;
+      } catch (e) {
+        if (!(e instanceof Unreadable)) throw e;
+        this.i = at;
+        this.dice.length = count;
+        break;
+      }
+    }
+  }
+
+  private die(node: Extract<Node, { kind: "dice" }>, dropped: boolean, miss: boolean) {
+    const face = node.fudge ? "[+−0]" : String.raw`-?\d+`;
+    const m = this.s
+      .slice(this.i)
+      .match(new RegExp(`^((?:${face}→)*)(${face})[↑↓]?!*([✓✗]?)([▲▼]?)(✗?)`));
+    if (!m) fail();
+    this.i += m[0].length;
+    const number = (text: string) => (node.fudge ? { "+": 1, "−": -1, "0": 0 }[text]! : Number(text));
+    const add = (text: string, mark?: RolledDie["mark"]) => {
+      this.dice.push({ sides: node.sides, value: number(text), ...(mark ? { mark } : {}) });
+    };
+    for (const value of m[1].split("→").slice(0, -1)) add(value, "out");
+    const crossed = m[3] === "✗" || m[5] === "✗";
+    const failed = crossed && !dropped && (!!node.failure || miss);
+    add(
+      m[2],
+      crossed && !failed ? "out" : m[4] === "▲" ? "high" : m[4] === "▼" ? "low" : m[3] === "✓" ? "hit" : failed ? "miss" : undefined,
+    );
+  }
+}
+
+/**
+ * The dice of a roll as it's written ("Attack 4d6dl1 -> 14 (6+5+3, 2✗)"),
+ * to draw them. Null if it isn't one, or they're too many.
+ */
+export function readRolledDice(text: string): RolledDie[] | null {
+  const arrow = text.lastIndexOf(" -> ");
+  if (arrow < 0) return null;
+  const formula = text.slice(0, arrow).split(/\s+/).at(-1)!.toLowerCase();
+  // Faces that were themselves rolled aren't written anywhere.
+  if (!/d[\d%f(]/.test(formula) || /d\([^)]*d/.test(formula)) return null;
+  const m = text.slice(arrow + 4).match(/^([+-]?[\d.]+)(?: \((.+)\))?$/);
+  if (!m) return null;
+  try {
+    // Only the formula's shape matters: any dice will do.
+    let seed = 0;
+    const node = new Parser(formula, () => (seed = (seed + 0.618) % 1)).parse();
+    let dice: RolledDie[];
+    if (m[2]) {
+      const reader = new DetailReader(m[2]);
+      reader.read(node);
+      if (reader.i !== m[2].length) return null;
+      dice = reader.dice;
+      // A sorted group doesn't say which part is which.
+      if (/\}[^{}]*s/.test(formula) && new Set(dice.map((d) => d.sides)).size > 1) return null;
+    } else {
+      if (node.kind !== "dice" || !/^1?d(\d+|%)/.test(formula)) return null;
+      dice = [{ sides: node.sides, value: Number(m[1]) }];
+    }
+    return canDrawDice(dice) ? dice : null;
+  } catch (e) {
+    if (e instanceof Unreadable) return null;
+    throw e;
   }
 }
 

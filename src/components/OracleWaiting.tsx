@@ -24,7 +24,7 @@ export function OracleWaiting({ oracleId, likelihood }: { oracleId: OracleId; li
             <div className="flex flex-col items-center gap-1.5">
               <div className="flex gap-2">
                 {Array.from({ length: group.count }, (_, n) => (
-                  <BlankDie key={n} color={ROLE_COLOR[group.role]} size={singleDie ? "lg" : "md"} />
+                  <BlankDie key={n} sides={group.sides} color={ROLE_COLOR[group.role]} size={singleDie ? "lg" : "md"} />
                 ))}
               </div>
               {oracleId !== "recluse" && <span className="text-xs text-parchment-faint">{t.oracleDice[group.role]}</span>}

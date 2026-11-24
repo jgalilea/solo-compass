@@ -14,7 +14,7 @@ import {
   IconSuitWands,
 } from "./icons/Icons";
 
-const SUIT_ICONS: Record<string, ComponentType<{ size?: number }>> = {
+const SUIT_ICONS: Record<string, ComponentType<{ size?: number; x?: number; y?: number }>> = {
   h: IconSuitHearts,
   d: IconSuitDiamonds,
   c: IconSuitClubs,
@@ -48,50 +48,48 @@ export function PlayingCard({ id, animate = false, small = false }: { id: string
   const tarot = look.kind === "major" || look.kind === "minor";
   const reversed = tarot && look.reversed;
 
-  if (small) {
-    return (
-      <span
-        aria-hidden
-        className={[
-          "flex h-8 w-[1.375rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded border border-black/20 bg-die-white",
-          isRed(look) ? "text-card-red" : "text-die-black",
-          reversed ? "rotate-180" : "",
-        ].join(" ")}
-      >
-        {value && (
-          <span className={`font-bold leading-none ${look.kind === "major" ? "text-[0.5rem]" : "text-[0.625rem]"}`}>{value}</span>
-        )}
-        <Suit size={value ? 13 : 16} />
-      </span>
-    );
-  }
+  const [width, height] = small ? [22, 32] : [36, 52];
+  const text = { textAnchor: "middle", dominantBaseline: "central", fontWeight: 700, fill: "currentColor" } as const;
+  const icon = small ? (value ? 13 : 16) : look.kind === "poker" ? 18 : 20;
 
   return (
-    <span
+    // An SVG with its own colours, so the HTML export has the same drawing.
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
       aria-hidden
-      className={[
-        "relative flex h-[3.25rem] w-9 shrink-0 items-center justify-center rounded-md border border-black/20 bg-die-white shadow-sm",
-        isRed(look) ? "text-card-red" : "text-die-black",
-        reversed ? "rotate-180" : "",
-        animate ? "animate-fade-up" : "",
-      ].join(" ")}
+      style={{ color: isRed(look) ? "var(--color-card-red)" : "var(--color-die-black)" }}
+      className={`shrink-0 select-none ${small ? "" : "drop-shadow-sm"} ${animate ? "animate-fade-up" : ""}`}
     >
-      {value && (
-        <>
-          <span
-            className={[
-              "absolute top-1 text-[0.625rem] font-bold leading-none",
-              tarot ? "inset-x-0 text-center" : "left-1",
-            ].join(" ")}
-          >
+      <g transform={reversed ? `rotate(180 ${width / 2} ${height / 2})` : undefined}>
+        <rect
+          x="0.5"
+          y="0.5"
+          width={width - 1}
+          height={height - 1}
+          rx={small ? 3.5 : 5.5}
+          fill="var(--color-die-white)"
+          stroke="#000"
+          strokeOpacity="0.2"
+        />
+        {value && small && (
+          <text {...text} x={11} y={9} fontSize={look.kind === "major" ? 8 : 10}>
             {value}
-          </span>
-          {!tarot && (
-            <span className="absolute bottom-1 right-1 rotate-180 text-[0.625rem] font-bold leading-none">{value}</span>
-          )}
-        </>
-      )}
-      <Suit size={look.kind === "poker" ? 18 : 20} />
-    </span>
+          </text>
+        )}
+        {value && !small && (
+          <text {...text} x={tarot ? 18 : value.length > 1 ? 9.5 : 7.5} y={9} fontSize={10}>
+            {value}
+          </text>
+        )}
+        {value && !small && !tarot && (
+          <text {...text} x={value.length > 1 ? 9.5 : 7.5} y={9} fontSize={10} transform="rotate(180 18 26)">
+            {value}
+          </text>
+        )}
+        <Suit size={icon} x={(width - icon) / 2} y={small && value ? 15.5 : (height - icon) / 2} />
+      </g>
+    </svg>
   );
 }

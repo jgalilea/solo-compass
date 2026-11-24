@@ -1,5 +1,6 @@
 import { createElement, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { isCardDraw, showDraws } from "../lib/cards";
+import { RollDrawing } from "./RollDrawing";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
@@ -317,7 +318,7 @@ export function SessionGroupRow({
       ) : (
         // Pinned while it's open, like the current session's.
         <div className={expanded ? SESSION_BAR : "flex"}>
-          <div data-entry className="group relative flex h-12 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
+          <div data-entry className="group relative flex h-12 min-w-0 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
             {/* A heading to jump between sessions with a screen reader;
                 the button inside folds it (its name is the session's). */}
             <h2 className="flex min-w-0 flex-1">
@@ -543,7 +544,12 @@ function EntryContent({
                   {roll.label && `${roll.label} · `}
                   {showDraws(roll.die)}
                 </span>
-                <RollResult result={roll.result} />
+                <span className="flex items-center gap-2">
+                  <RollDrawing detail={roll.die} result={roll.result} />
+                  <span className="flex flex-col items-center">
+                    <RollResult result={roll.result} />
+                  </span>
+                </span>
               </li>
             ))}
           </ul>
@@ -557,9 +563,12 @@ function EntryContent({
     const kind = symbol === "tbl" || symbol === "gen" ? t.journal.rollSymbol[symbol] : null;
     if (result === null) {
       return (
-        <p className="whitespace-pre-wrap text-base text-parchment/90">
-          {kind && <span className="text-xs text-parchment-dim">{kind} · </span>}
-          {showDraws(detail)}
+        <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base text-parchment/90">
+          <RollDrawing detail={detail} result={null} />
+          <span className="min-w-0 whitespace-pre-wrap">
+            {kind && <span className="text-xs text-parchment-dim">{kind} · </span>}
+            {showDraws(detail)}
+          </span>
         </p>
       );
     }
@@ -567,13 +576,19 @@ function EntryContent({
       <div className="flex flex-col gap-1">
         {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, showDraws(detail)].filter(Boolean).join(" · ")}</p>}
         {knownAnswer ? (
-          <span
-            className={`w-fit rounded-full border px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
-          >
-            {result}
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <RollDrawing detail={detail} result={result} />
+            <span
+              className={`w-fit rounded-full border px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
+            >
+              {result}
+            </span>
           </span>
         ) : (
-          <p className="whitespace-pre-wrap text-base font-medium text-parchment">{result}</p>
+          <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base font-medium text-parchment">
+            <RollDrawing detail={detail} result={result} />
+            <span className="min-w-0 whitespace-pre-wrap">{result}</span>
+          </p>
         )}
       </div>
     );

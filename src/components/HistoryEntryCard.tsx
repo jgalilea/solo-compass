@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { cardPurpose, showDraws } from "../lib/cards";
 import { Die } from "./Die";
+import { readRolledDice } from "../lib/diceNotation";
+import { RolledDice } from "./RolledDice";
 import { PlayingCard } from "./PlayingCard";
 import { formatOracleResult } from "../lib/i18n/answerText";
 import { oracleDice } from "../lib/oracle";
@@ -118,6 +120,8 @@ export function HistoryEntryCard({
   const revealFavorite = dragX > 4;
   const revealDelete = dragX < -4;
 
+  const rolledDice = entry.kind === "dados" && !entry.card ? readRolledDice(entry.text) : null;
+
   return (
     <div className="relative overflow-hidden rounded-2xl">
       {(revealFavorite || revealDelete) && (
@@ -211,6 +215,7 @@ export function HistoryEntryCard({
                   group.rolls.map((v, i) => (
                     <Die
                       key={`${group.role}${i}`}
+                      sides={group.sides}
                       value={v}
                       color={ROLE_COLOR[group.role]}
                       name={t.oracleDice[group.role]}
@@ -240,7 +245,10 @@ export function HistoryEntryCard({
               <CardDrawText text={entry.text} />
             </div>
           ) : (
-            <DiceRollText text={showDraws(entry.text)} />
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+              {rolledDice && <RolledDice dice={rolledDice} />}
+              <DiceRollText text={showDraws(entry.text)} />
+            </div>
           )
         ) : (
           <div className="mt-2">
@@ -258,7 +266,6 @@ export function HistoryEntryCard({
   );
 }
 
-/** "Attack d20+5 -> 19 (14 + 5)": what was rolled small, the result below. */
 /** A card drawn, beside its drawing: its name, under what it was for ("Omen"), if anything. */
 function CardDrawText({ text }: { text: string }) {
   const arrow = text.lastIndexOf(" -> ");
@@ -271,12 +278,13 @@ function CardDrawText({ text }: { text: string }) {
   );
 }
 
+/** "Attack d20+5 -> 19 (14 + 5)": what was rolled small, the result below. */
 function DiceRollText({ text }: { text: string }) {
   const arrow = text.lastIndexOf(" -> ");
-  if (arrow < 0) return <p className="mt-2 text-sm text-parchment/90">{text}</p>;
+  if (arrow < 0) return <p className="min-w-0 break-words text-sm text-parchment/90">{text}</p>;
   return (
-    <div className="mt-2">
-      <p className="text-xs text-parchment-dim">{text.slice(0, arrow)}</p>
+    <div className="min-w-0">
+      <p className="break-words text-xs text-parchment-dim">{text.slice(0, arrow)}</p>
       <p className="mt-0.5 break-words text-sm font-medium text-parchment">{text.slice(arrow + 4)}</p>
     </div>
   );

@@ -29,21 +29,25 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-11-24",
     text: {
       es: {
-        title: "Interludio · Cartas sobre la mesa",
-        intro: "Mara deja de leer nombres y vuelve a mirar las cartas.",
+        title: "Interludio · Dados y cartas sobre la mesa",
+        intro: "Mara deja de leer nombres y vuelve a mirar lo que cae en la mesa.",
         items: [
-          "Las cartas que sacas se ven como cartas, en la bandeja, en las últimas tiradas y en el historial: su número, su palo y, en el tarot, los arcanos mayores con su número romano y las invertidas boca abajo. En el diario se siguen apuntando igual.",
+          "Cada dado tiene ya su forma: el triángulo del d4, el rombo del d8, el d20 con sus caras… En el oráculo, en los dados, en el historial y en el diario, también en las tiradas que ya tenías. Los descartados se apagan y los éxitos, fallos y críticos llevan su marca.",
+          "Las cartas que sacas se ven como cartas, en la bandeja, en las últimas tiradas, en el historial y en el diario: su número, su palo y, en el tarot, los arcanos mayores con su número romano y las invertidas boca abajo.",
           "El tarot puede jugarse solo con los arcanos mayores.",
-          "La flecha de los desplegables ya no se pega al borde.",
+          "La página web de una aventura lleva también sus dados y sus cartas dibujados.",
+          "Retoques: la flecha de los desplegables ya no se pega al borde y, en el móvil, la barra de una sesión anterior ya no se sale por la derecha.",
         ],
       },
       en: {
-        title: "Interlude · Cards on the table",
-        intro: "Mara stops reading names and looks at the cards again.",
+        title: "Interlude · Dice and cards on the table",
+        intro: "Mara stops reading names and looks again at what falls on the table.",
         items: [
-          "The cards you draw look like cards, in the tray, in the latest rolls and in the history: their rank, their suit and, in the tarot, the Major Arcana with their roman numeral and reversed cards upside down. The journal writes them down just as before.",
+          "Each die now has its own shape: the d4's triangle, the d8's diamond, the d20 with its faces… In the oracle, the dice, the history and the journal, the rolls you already had included. Dropped dice fade, and successes, failures and criticals carry their mark.",
+          "The cards you draw look like cards, in the tray, in the latest rolls, in the history and in the journal: their rank, their suit and, in the tarot, the Major Arcana with their roman numeral and reversed cards upside down.",
           "The tarot can be played with the Major Arcana alone.",
-          "The arrow of the drop-down lists no longer sticks to the edge.",
+          "An adventure's web page has its dice and cards drawn too.",
+          "Touch-ups: the arrow of the drop-down lists no longer sticks to the edge and, on a phone, an earlier session's bar no longer runs off the right.",
         ],
       },
     },

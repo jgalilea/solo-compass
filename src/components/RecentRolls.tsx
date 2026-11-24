@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
-import { cardPurpose, showDraws } from "../lib/cards";
+import { cardPurpose } from "../lib/cards";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
+import { readRolledDice } from "../lib/diceNotation";
+import { rolledTotal, rolledWhat } from "../lib/rolledDice";
+import { RolledDice } from "./RolledDice";
 import { PlayingCard } from "./PlayingCard";
 import { IconChevronRight, IconDice, IconOracle, IconTable } from "./icons/Icons";
 
@@ -69,24 +72,18 @@ export function RecentRolls({
                 </span>
               </>
             ) : entry.kind === "dados" ? (
-              <>
-                {entry.card ? (
-                  // Taller than the line, without making the row taller;
-                  // the text keeps in step with the rows with an icon.
+              entry.card ? (
+                <>
+                  {/* Taller than the line, without making the row taller;
+                      the text keeps in step with the rows with an icon. */}
                   <span className="-mx-[3px] -my-1.5 flex shrink-0">
                     <PlayingCard id={entry.card.id} small />
                   </span>
-                ) : (
-                  <IconDice size={16} className="shrink-0 text-parchment-faint" />
-                )}
-                {/* What was rolled, then its result, like a table roll. */}
-                <span className="min-w-0 shrink truncate text-parchment-dim">
-                  {entry.card ? cardPurpose(entry.text) : showDraws(entry.text.split(" -> ")[0])}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">
-                  {entry.text.includes(" -> ") ? entry.text.slice(entry.text.lastIndexOf(" -> ") + 4) : ""}
-                </span>
-              </>
+                  <OwnRoll what={cardPurpose(entry.text)} result={entry.text.slice(entry.text.lastIndexOf(" -> ") + 4)} />
+                </>
+              ) : (
+                <DiceRow text={entry.text} />
+              )
             ) : (
               <>
                 <IconTable size={16} className="shrink-0 text-parchment-faint" />
@@ -100,5 +97,37 @@ export function RecentRolls({
         ))}
       </ul>
     </section>
+  );
+}
+
+/** What was rolled, then its result, like a table roll. */
+function OwnRoll({ what, result }: { what: string; result: string }) {
+  return (
+    <>
+      <span className="min-w-0 shrink truncate text-parchment-dim">{what}</span>
+      <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">{result}</span>
+    </>
+  );
+}
+
+/** The player's dice: drawn (the first ones) with their total or, if they can't be, as written. */
+function DiceRow({ text }: { text: string }) {
+  const dice = readRolledDice(text);
+  if (dice) {
+    return (
+      <>
+        <span className="-mx-1.5 -my-1 flex shrink-0">
+          <RolledDice dice={dice} size="xs" />
+        </span>
+        <OwnRoll what={rolledWhat(text)} result={rolledTotal(text)} />
+      </>
+    );
+  }
+  const arrow = text.lastIndexOf(" -> ");
+  return (
+    <>
+      <IconDice size={16} className="shrink-0 text-parchment-faint" />
+      <OwnRoll what={text.split(" -> ")[0]} result={arrow < 0 ? "" : text.slice(arrow + 4)} />
+    </>
   );
 }

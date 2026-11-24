@@ -10,6 +10,7 @@ import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
 import { buildCast, castKey, combineSteps, renameInEntry } from "../lib/lonelogTags";
+import { withRollDrawings } from "./drawRolls";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
 import { copyText, shareTextFile } from "../lib/share";
@@ -73,7 +74,8 @@ export function AdventureDetailView() {
   const { adventureId = "" } = useParams<{ adventureId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLocaleContext();
+  const localeContext = useLocaleContext();
+  const { t } = localeContext;
   const {
     status,
     adventures,
@@ -392,15 +394,19 @@ export function AdventureDetailView() {
 
   // A page to read or share, in the theme on screen (htmlExport.ts).
   async function handleExportHtml() {
-    const html = exportAdventureToHtml({
-      t,
-      name: adventure!.name,
-      entries: adventureEntries,
-      notes: adventure!.notes,
-      descriptions: adventure!.descriptions,
-      theme: await readExportTheme(),
-      answerFor: entryActions.answerFor,
-    });
+    const theme = await readExportTheme();
+    const html = withRollDrawings(localeContext, (drawRoll) =>
+      exportAdventureToHtml({
+        t,
+        name: adventure!.name,
+        entries: adventureEntries,
+        notes: adventure!.notes,
+        descriptions: adventure!.descriptions,
+        theme,
+        answerFor: entryActions.answerFor,
+        drawRoll,
+      }),
+    );
     const filename = `${sanitizeFilename(adventure!.name)}.html`;
     downloadTextFile(filename, html, "text/html");
     setExportedFilename(filename);
@@ -608,7 +614,7 @@ export function AdventureDetailView() {
                 <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
                   {group.sessionEntry && (
                     <div className={SESSION_BAR}>
-                      <h2 className="flex h-12 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
+                      <h2 className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
                         <IconSession size={16} className="shrink-0 text-gold" />
                         <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                           {group.sessionEntry.text}
@@ -709,7 +715,7 @@ export function AdventureDetailView() {
                     }
                     className={`group ${SESSION_BAR}`}
                   >
-                    <div className="relative flex h-12 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
+                    <div className="relative flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
                       <IconSession size={16} className="shrink-0 text-gold" />
                       <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}

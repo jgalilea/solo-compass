@@ -137,6 +137,7 @@ function DiceGroup({
       {group.rolls.map((v, i) => (
         <Die
           key={i}
+          sides={group.sides}
           value={v}
           color={ROLE_COLOR[group.role]}
           name={t.oracleDice[group.role]}

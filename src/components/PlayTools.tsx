@@ -6,6 +6,8 @@ import { loadCardSettings, saveCardSettings, type CardSettings } from "../lib/ca
 import { isCardDraw, showDraws } from "../lib/cards";
 import { CardControls } from "./CardControls";
 import { PlayingCard } from "./PlayingCard";
+import { rolledTotal, rolledWhat, type RolledDie } from "../lib/rolledDice";
+import { RolledDice } from "./RolledDice";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
@@ -19,9 +21,9 @@ import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { announce } from "../lib/announce";
 import { DiceHelp } from "./DiceHelp";
-import { rollFormula, withEdge, type Edge } from "../lib/diceNotation";
+import { readRolledDice, rollFormula, withEdge, type Edge } from "../lib/diceNotation";
 import { isRollable, rollSaved, savedRollLabel } from "../lib/savedRolls";
-import { BUILTIN_DICE, formatDieRoll, formatFudgeRoll, rollDie, rollFudgeSet, type BuiltinDie } from "../lib/dice";
+import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
 import { loadFavoriteDice } from "../lib/diceFavorites";
 import { Link } from "react-router-dom";
 import { useSavedRollsContext } from "../hooks/useSavedRollsContext";
@@ -258,7 +260,7 @@ export function DiceTool({
   // and history) or, with no adventure, saved to the history. A card in
   // it is out of the deck meanwhile; taken off, it's back.
   function add(roll: string, card?: DiceRollEntry["card"]) {
-    setTray((prev) => [...prev, { text: roll, card }]);
+    setTray((prev) => [...prev, { text: roll, card, dice: card ? null : readRolledDice(roll) }]);
     setEdge(null);
     // The tray changes silently: say what came up.
     announce(spokenRoll(trayText(roll)));
@@ -470,15 +472,15 @@ export function DiceTool({
         </>
       )}
       {/* The tray: every roll waits here until it's logged as one entry.
-          It and its buttons are always there, a row of chips high, so
+          It and its buttons are always there, a row high, so
           rolling or clearing doesn't push what's below up and down. */}
       <div
         aria-live="polite"
         aria-label={t.journal.diceTrayLabel}
         className={[
-          // A row of cards is taller than a row of chips.
+          // As high as a row of cards, or of dice.
           "flex items-center rounded-xl border p-2",
-          cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-12",
+          cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-24",
           rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
         ].join(" ")}
       >
@@ -503,6 +505,22 @@ export function DiceTool({
                 >
                   <PlayingCard id={item.card.id} animate />
                   <span aria-hidden className="min-h-[2lh]">{cardDrawName(item.text)}</span>
+                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                  <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                </li>
+              ) : item.dice ? (
+                // Dice, with what was rolled below and, unless a lone die says it, the total.
+                <li
+                  key={i}
+                  className="relative flex min-w-[5.5rem] max-w-full flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-6 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment-dim"
+                >
+                  <RolledDice dice={item.dice} animate />
+                  <span aria-hidden title={item.text} className="max-w-full break-words">
+                    {rolledWhat(item.text)}
+                    {item.text.endsWith(")") && (
+                      <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">{rolledTotal(item.text)}</span>
+                    )}
+                  </span>
                   <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
                   <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
                 </li>
@@ -551,6 +569,8 @@ export function DiceTool({
 interface TrayItem {
   text: string;
   card?: DiceRollEntry["card"];
+  /** To draw; none for a card, or too many. */
+  dice: RolledDie[] | null;
 }
 
 /** A roll in the tray: a card as "Q♠ Reina de picas", dice as written. */
@@ -593,8 +613,5 @@ function spokenRoll(text: string): string {
 
 /** A built-in die's roll as the journal writes it ("d6 -> 4", "4dF -> +1 (+ 0 + −)"). */
 function rollBuiltin(die: BuiltinDie, edge?: Edge): string {
-  if (edge) return rollFormula(withEdge(die, edge))!;
-  if (die === "4dF") return formatFudgeRoll(rollFudgeSet());
-  const sides = die === "d%" ? 100 : Number(die.slice(1));
-  return formatDieRoll(sides, rollDie(sides));
+  return rollFormula(edge ? withEdge(die, edge) : die)!;
 }
