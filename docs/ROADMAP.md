@@ -9,6 +9,9 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- «Últimas tiradas» (2026-11-24, 1.1.3): las del oráculo con sus dados, las de
+  tablas con el número, y la recién hecha entra al momento. Si se pide:
+  dibujar el dado de las tablas (habría que guardar sus caras).
 - «Últimas tiradas» del oráculo, solo las suyas (2026-11-24, 1.1.2), como en
   Tablas y Dados; el enlace de las tres es «Ver historial» y lo abre
   filtrado.

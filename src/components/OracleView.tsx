@@ -105,7 +105,7 @@ export function OracleView() {
           <OracleWaiting oracleId={oracleId} likelihood={level} />
         )}
 
-        <RecentRolls kind="oraculo" exclude={lastRoll ? [lastRoll.id] : []} />
+        <RecentRolls kind="oraculo" />
       </div>
     </div>
   );

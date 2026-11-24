@@ -112,8 +112,6 @@ export function TablesView() {
   const dismissToast = useCallback(() => setToast(null), []);
 
   const activeAdventure = adventures.find((c) => c.id === activeAdventureId) ?? null;
-  // The latest result is shown large: "Recent rolls" doesn't repeat it.
-  const shownRollIds = last ? (last.rollIds ?? [last.rollId]) : [];
 
   // Short pause so it feels like "rolling".
   function withRollPause(id: string, roll: () => LastResult) {
@@ -406,7 +404,7 @@ export function TablesView() {
 
           {/* Phone and tablet: the latest table rolls before the list (on
               desktop they're under the result, in the right column). */}
-          {!filtering && <RecentRolls kind="tabla" limit={3} exclude={shownRollIds} className="lg:hidden" />}
+          {!filtering && <RecentRolls kind="tabla" limit={3} className="lg:hidden" />}
 
           {nothingFound ? (
             <EmptyState
@@ -563,7 +561,7 @@ export function TablesView() {
             <EmptyState icon={<IconTable size={24} />} title={t.tables.resultPanelEmpty} compact />
           )}
           {/* As on the Oracle screen: the latest table rolls, and the full history. */}
-          <RecentRolls kind="tabla" limit={5} exclude={shownRollIds} className="mt-3" />
+          <RecentRolls kind="tabla" limit={5} className="mt-3" />
         </aside>
       </div>
 

@@ -5,9 +5,12 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
 import { readRolledDice } from "../lib/diceNotation";
 import { rolledTotal, rolledWhat } from "../lib/rolledDice";
+import { Die } from "./Die";
 import { RolledDice } from "./RolledDice";
+import { oracleDice } from "../lib/oracle";
+import { ROLE_COLOR } from "../lib/oracleEngines";
 import { PlayingCard } from "./PlayingCard";
-import { IconChevronRight, IconDice, IconOracle, IconTable } from "./icons/Icons";
+import { IconChevronRight, IconDice, IconTable } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -23,20 +26,17 @@ const ANSWER_COLOR: Record<string, string> = {
  */
 export function RecentRolls({
   limit = 3,
-  exclude = [],
   kind,
   className = "",
 }: {
   limit?: number;
-  /** Rolls already shown large (the latest result), not repeated here. */
-  exclude?: string[];
   kind: "oraculo" | "tabla" | "dados";
   className?: string;
 }) {
   const { status, entries } = useHistoryContext();
   const { t } = useLocaleContext();
 
-  const recent = entries.filter((e) => !exclude.includes(e.id) && e.kind === kind).slice(0, limit);
+  const recent = entries.filter((e) => e.kind === kind).slice(0, limit);
   if (status !== "ready" || recent.length === 0) return null;
 
   return (
@@ -58,11 +58,25 @@ export function RecentRolls({
           <li key={entry.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
             {entry.kind === "oraculo" ? (
               <>
-                <IconOracle size={16} className="shrink-0 text-parchment-faint" />
+                <span className="-mx-1.5 -my-1 flex shrink-0 gap-1">
+                  {oracleDice(entry).flatMap((group) =>
+                    group.rolls.map((value, i) => (
+                      <Die
+                        key={`${group.role}${i}`}
+                        sides={group.sides}
+                        value={value}
+                        color={ROLE_COLOR[group.role]}
+                        name={t.oracleDice[group.role]}
+                        size="xs"
+                        faded={group.rolls.length > 1 && value !== group.kept}
+                      />
+                    )),
+                  )}
+                </span>
                 {/* Up to two lines: a long answer ("Contradicción") leaves
                     a phone's row little room for one. */}
                 <span className="line-clamp-2 min-w-0 flex-1 break-words italic text-parchment/85">
-                  {entry.question ? `“${entry.question}”` : t.history.kindOracle}
+                  {entry.question && `“${entry.question}”`}
                 </span>
                 <span
                   className={`shrink-0 font-semibold ${ANSWER_COLOR[entry.answer]}`}
@@ -86,7 +100,9 @@ export function RecentRolls({
             ) : (
               <>
                 <IconTable size={16} className="shrink-0 text-parchment-faint" />
-                <span className="shrink-0 text-parchment-dim">{entry.tableName}</span>
+                <span className="min-w-0 text-parchment-dim">
+                  {entry.tableName} <span className="whitespace-nowrap tabular-nums text-parchment-faint">· {entry.total}</span>
+                </span>
                 <span className="min-w-0 flex-1 truncate text-right text-parchment/85">
                   {entry.resultText}
                 </span>

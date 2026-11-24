@@ -25,6 +25,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.1.3",
+    date: "2026-11-24",
+    text: {
+      es: {
+        title: "Interludio · Tinta fresca",
+        intro: "Mara apunta cada tirada antes de que los dados dejen de rodar.",
+        items: [
+          "Las últimas tiradas del oráculo enseñan sus dados junto a la respuesta, y las de las tablas, el número que salió.",
+          "Lo que acabas de tirar en el oráculo o en las tablas entra en la lista al momento.",
+        ],
+      },
+      en: {
+        title: "Interlude · Fresh ink",
+        intro: "Mara writes each roll down before the dice stop rolling.",
+        items: [
+          "The oracle's latest rolls show their dice beside the answer, and the tables', the number rolled.",
+          "What you've just rolled on the oracle or the tables joins the list at once.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.1.2",
     date: "2026-11-24",
     text: {
