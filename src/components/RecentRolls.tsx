@@ -16,11 +16,10 @@ const ANSWER_COLOR: Record<string, string> = {
 };
 
 /**
- * The latest rolls (with or without an active adventure) with access to
- * the full history. It replaces the bar's "History" tab: the log stays
- * one tap away without taking a slot in the main navigation. On the
- * Tables and Dice screens, only their own rolls (`kind`), and the
- * history opens filtered to them.
+ * A screen's latest rolls (with or without an active adventure): the
+ * oracle's, the tables' or the dice and cards, with access to the
+ * history filtered to them. It replaces the bar's "History" tab: the
+ * log stays one tap away without taking a slot in the main navigation.
  */
 export function RecentRolls({
   limit = 3,
@@ -31,13 +30,13 @@ export function RecentRolls({
   limit?: number;
   /** Rolls already shown large (the latest result), not repeated here. */
   exclude?: string[];
-  kind?: "tabla" | "dados";
+  kind: "oraculo" | "tabla" | "dados";
   className?: string;
 }) {
   const { status, entries } = useHistoryContext();
   const { t } = useLocaleContext();
 
-  const recent = entries.filter((e) => !exclude.includes(e.id) && (!kind || e.kind === kind)).slice(0, limit);
+  const recent = entries.filter((e) => !exclude.includes(e.id) && e.kind === kind).slice(0, limit);
   if (status !== "ready" || recent.length === 0) return null;
 
   return (
@@ -47,7 +46,7 @@ export function RecentRolls({
           {t.oracle.recentHeading}
         </h2>
         <Link
-          to={kind ? `/historial?tipo=${kind}` : "/historial"}
+          to={`/historial?tipo=${kind}`}
           className="-m-2 flex items-center gap-1 p-2 text-sm text-parchment-dim transition hover:text-gold"
         >
           {t.oracle.viewAllHistory}

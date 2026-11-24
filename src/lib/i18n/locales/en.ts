@@ -579,7 +579,7 @@ export const en: Dictionary = {
     consequenceSavedNoAdventure: "Logged in the journal",
     enterHint: "Press Enter to roll",
     recentHeading: "Recent rolls",
-    viewAllHistory: "See full history",
+    viewAllHistory: "View history",
   },
   likelihood: {
     "muy-improbable": "Very unlikely",

@@ -9,6 +9,9 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- «Últimas tiradas» del oráculo, solo las suyas (2026-11-24, 1.1.2), como en
+  Tablas y Dados; el enlace de las tres es «Ver historial» y lo abre
+  filtrado.
 - Cada tirada en su recuadro (2026-11-24, 1.1.1): en el diario y en la
   exportación HTML, una o varias, dados y cartas (`splitOwnRolls`); el
   total grande y las cuentas debajo, también en el historial. Oráculo,

@@ -28,10 +28,10 @@ export function HistoryView() {
   const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
     useHistoryContext();
   const { t } = useLocaleContext();
-  // Coming from the Tables or Dice screen: their rolls only, and back there.
+  // Coming from the Oracle, Tables or Dice screen: their rolls only, and back there.
   const [searchParams] = useSearchParams();
   const from = searchParams.get("tipo");
-  const origin = from === "tabla" ? "tabla" : from === "dados" ? "dados" : null;
+  const origin = from === "oraculo" || from === "tabla" || from === "dados" ? from : null;
   const [filter, setFilter] = useState<Filter>(origin ?? "todo");
   const { adventures, entries: journalEntries } = useJournalContext();
   const adventureNames = useMemo(() => new Map(adventures.map((a) => [a.id, a.name])), [adventures]);

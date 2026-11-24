@@ -579,7 +579,7 @@ export const es: Dictionary = {
     consequenceSavedNoAdventure: "Apuntado en el diario",
     enterHint: "Pulsa Enter para lanzar",
     recentHeading: "Últimas tiradas",
-    viewAllHistory: "Ver todo el historial",
+    viewAllHistory: "Ver historial",
   },
   likelihood: {
     "muy-improbable": "Muy improbable",

@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.1.2",
+    date: "2026-11-24",
+    text: {
+      es: {
+        title: "Interludio · Cada voz con su eco",
+        intro: "Mara separa las notas: lo que dijo el oráculo, con el oráculo.",
+        items: [
+          "Las últimas tiradas del oráculo son ya solo las suyas, como en las tablas y los dados, y «Ver historial» abre el historial por ellas. Con «Todo» lo ves entero.",
+        ],
+      },
+      en: {
+        title: "Interlude · Each voice, its echo",
+        intro: "Mara sorts her notes: what the oracle said, with the oracle.",
+        items: [
+          "The oracle's latest rolls are now only its own, as in the tables and the dice, and “View history” opens the history on them. Its “All” filter shows everything.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.1.1",
     date: "2026-11-24",
     text: {

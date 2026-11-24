@@ -156,7 +156,7 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   // The Dice tab's latest rolls, and the history filtered to them, with the adventure.
   await page.getByRole("link", { name: "Dados", exact: true }).click();
   await expect(page.getByText(/Ataque d20\+5/).first()).toBeVisible();
-  await page.getByRole("link", { name: "Ver todo el historial" }).click();
+  await page.getByRole("link", { name: "Ver historial" }).click();
   await expect(page.getByRole("link", { name: "La torre" }).first()).toBeVisible();
 
   expect(errors).toEqual([]);

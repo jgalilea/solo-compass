@@ -95,10 +95,10 @@ Routes are flat under one `Layout`: `/` (oracle), `/tablas`, `/dados`,
 oracle and the feedback form; `public/404.html` sends GitHub Pages'
 unknown paths there, or to the screen the path names). The nav has four tabs (Oráculo, Tablas, Dados, Diario;
 keys 1–4): `/historial` is
-reached from "Últimas tiradas" (`RecentRolls`) on the oracle screen and
-highlights the Oráculo tab; the Tables and Dice screens have their own
-(`kind`: only their rolls), which open `/historial?tipo=tabla|dados`,
-filtered, highlighting that tab and going back there. The history also
+reached from "Últimas tiradas" (`RecentRolls`) on the Oracle, Tables and
+Dice screens, each with only its own rolls (`kind`), which open
+`/historial?tipo=oraculo|tabla|dados`, filtered, highlighting that tab
+and going back there; unfiltered (H) it belongs to the Oráculo tab. The history also
 filters by adventure (or free rolls), and an adventure's menu opens it
 that way (`?aventura=<id>`). Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`, opening `SettingsPanel`). Which adventure rolls are
