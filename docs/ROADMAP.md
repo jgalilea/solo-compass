@@ -5,11 +5,11 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-24 (dados y cartas dibujados, 1.0.6; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-24 (dados y cartas dibujados, 1.1.0; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
-- Cartas dibujadas (2026-11-24, 1.0.6): en la bandeja de dados, en las
+- Cartas dibujadas (2026-11-24, 1.1.0): en la bandeja de dados, en las
   últimas tiradas (pequeña) y en el historial cada carta sale como una carta (`PlayingCard`, `cardLook`):
   esquina y palo (iconos Tabler; rojo propio, `--color-card-red`, sobre
   el blanco del dado), el número romano de los arcanos mayores y la
@@ -17,7 +17,7 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   en las esquinas no se vería que está invertida. Interruptor «Solo
   mayores». El .md sigue en texto Lonelog
   (`draw=Qs -> …`).
-- Dados dibujados (2026-11-24, 1.0.6): cada dado con su forma (`Die`,
+- Dados dibujados (2026-11-24, 1.1.0): cada dado con su forma (`Die`,
   `SHAPES`: d4, d6, d8, d10/14/16, d12, d20, d24, d30 y d100, una bola;
   los demás, el cuadrado del d6 con la cifra) en el oráculo, la bandeja,
   las últimas tiradas, el historial y el diario (también cartas y

@@ -25,11 +25,11 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "1.0.6",
+    version: "1.1.0",
     date: "2026-11-24",
     text: {
       es: {
-        title: "Interludio · Dados y cartas sobre la mesa",
+        title: "Capítulo XVIII · Dados y cartas sobre la mesa",
         intro: "Mara deja de leer nombres y vuelve a mirar lo que cae en la mesa.",
         items: [
           "Cada dado tiene ya su forma: el triángulo del d4, el rombo del d8, el d20 con sus caras… En el oráculo, en los dados, en el historial y en el diario, también en las tiradas que ya tenías. Los descartados se apagan y los éxitos, fallos y críticos llevan su marca.",
@@ -40,7 +40,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         ],
       },
       en: {
-        title: "Interlude · Dice and cards on the table",
+        title: "Chapter XVIII · Dice and cards on the table",
         intro: "Mara stops reading names and looks again at what falls on the table.",
         items: [
           "Each die now has its own shape: the d4's triangle, the d8's diamond, the d20 with its faces… In the oracle, the dice, the history and the journal, the rolls you already had included. Dropped dice fade, and successes, failures and criticals carry their mark.",
