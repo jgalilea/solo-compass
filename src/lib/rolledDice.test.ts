@@ -59,7 +59,8 @@ describe("the dice of a roll, read from its text", () => {
       for (let n = 0; n < 200; n++) {
         const text = rollFormula(formula)!;
         const dice = readRolledDice(text);
-        if (text.length < 40) expect(dice, text).not.toBeNull();
+        const thrown = text.slice(text.indexOf("(")).match(/\d+/g)?.length ?? 1;
+        if (thrown <= MAX_DRAWN_DICE) expect(dice, text).not.toBeNull();
       }
     }
   });

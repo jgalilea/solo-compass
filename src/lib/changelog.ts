@@ -25,6 +25,30 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.1.1",
+    date: "2026-11-24",
+    text: {
+      es: {
+        title: "Interludio · Cada tirada en su sitio",
+        intro: "Mara ordena la mesa: cada tirada, en su recuadro.",
+        items: [
+          "En el diario, todas las tiradas de dados y cartas van en su recuadro, también cuando es una sola: arriba lo que tiras, en grande el resultado y, debajo, cómo sale. Igual en la página web de la aventura.",
+          "En el historial, el resultado también se lee de un vistazo, con las cuentas en pequeño.",
+          "Una tirada con muchos dados ya no se sale de la pantalla del móvil.",
+        ],
+      },
+      en: {
+        title: "Interlude · Every roll in its place",
+        intro: "Mara tidies the table: every roll in its own box.",
+        items: [
+          "In the journal, every roll of dice and cards has its own box, a lone one too: what you roll above, the result large and, below, how it adds up. The adventure's web page does the same.",
+          "In the history, the result reads at a glance too, with the sums small.",
+          "A roll with many dice no longer runs off a phone's screen.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.1.0",
     date: "2026-11-24",
     text: {

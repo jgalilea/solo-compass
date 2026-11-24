@@ -252,6 +252,35 @@ const ROLL_SEGMENT = new RegExp(
   "g",
 );
 
+export interface OwnRolls {
+  label: string;
+  rolls: { label: string; die: string; result: string }[];
+}
+
+/**
+ * The rolls of the generic roller in an entry, one or several, to draw
+ * each in its box. A lone one only if its result is the app's own kind
+ * (a total, with or without its dice, or a card): one with prose
+ * ("d20 -> Success, barely") is shown as a normal roll.
+ */
+export function splitOwnRolls(text: string): OwnRolls | null {
+  const series = splitRollSeries(text);
+  if (series) return series;
+  // A table or a generator.
+  if (splitRollSymbol(text).symbol !== "d") return null;
+  const m = text.match(new RegExp(String.raw`^(?:(.*?)\s+)?(${DIE})\s*->\s*(.+)$`));
+  if (!m) return null;
+  const [, label = "", die, result] = m;
+  if (!die.startsWith("draw=") && !/^[+-]?\d+(?:\.\d+)?(?:\s+\(.+\))?$/.test(result.trim())) return null;
+  return { label: label.trim(), rolls: [{ label: "", die, result: result.trim() }] };
+}
+
+/** "8 (7 + 1)": the total, and how it was reached if it says. */
+export function splitRollTotal(result: string): { total: string; faces: string | null } {
+  const m = result.match(/^(\S+)\s+\((.+)\)$/);
+  return { total: m ? m[1] : result, faces: m ? m[2] : null };
+}
+
 /**
  * Recognises several chained rolls in a single entry ("d10 -> 9,
  * d10 -> 5", or with spaces instead of commas as they used to be
@@ -260,14 +289,12 @@ const ROLL_SEGMENT = new RegExp(
  * that doesn't fit, so that entry is shown as a normal roll
  * (splitRollText).
  */
-export function splitRollSeries(
-  text: string,
-): { label: string; rolls: { label: string; die: string; result: string }[] } | null {
+export function splitRollSeries(text: string): OwnRolls | null {
   const first = text.search(OWN_ROLL);
   if (first < 0) return null;
   const label = text.slice(0, first).trim().replace(/,$/, "");
   const rest = text.slice(first).trim();
-  const rolls: { label: string; die: string; result: string }[] = [];
+  const rolls: OwnRolls["rolls"] = [];
   for (const m of rest.matchAll(ROLL_SEGMENT)) {
     rolls.push({ label: m[1]?.trim() ?? "", die: m[2], result: m[3].trim() });
   }

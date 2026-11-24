@@ -131,7 +131,9 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   const dice = page.locator('[data-hotkey="dice"]').filter({ visible: true });
   await dice.getByRole("button", { name: "Ataque", exact: true }).click();
   await dice.getByRole("button", { name: "Apuntar" }).click();
-  await expect(page.locator("[id^=entry-]").getByText(/Ataque d20\+5/)).toBeVisible();
+  // Its text, and what was rolled on the box of its result.
+  const attack = page.locator("[id^=entry-]").filter({ hasText: "Ataque" });
+  await expect(attack.getByText("d20+5", { exact: true })).toBeVisible();
 
   // A card from the deck, on the same tray.
   if (await opener.isVisible()) await opener.click();

@@ -1,6 +1,7 @@
 import { createElement, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { isCardDraw, showDraws } from "../lib/cards";
 import { RollDrawing } from "./RollDrawing";
+import { RollResult } from "./RollResult";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
@@ -11,7 +12,7 @@ import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
 import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
-import { BLOCK_PAGE, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type BlockWindow, type EntryGroup, buildEntryBlocks, fitBlockWindow, formatIsoDay, splitRollSeries, splitRollText } from "../lib/journalUi";
+import { BLOCK_PAGE, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type BlockWindow, type EntryGroup, buildEntryBlocks, fitBlockWindow, formatIsoDay, splitOwnRolls, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { titleIfCut } from "../lib/truncation";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
@@ -527,9 +528,9 @@ function EntryContent({
   }
 
   if (entry.kind === "roll") {
-    // Several dice in one entry: each result with its die, not just the
-    // last one highlighted and the rest mixed into the detail.
-    const series = splitRollSeries(entry.text);
+    // The player's dice and cards, one or several: each in its box, what
+    // was rolled above, its result large and how it adds up below.
+    const series = splitOwnRolls(entry.text);
     if (series) {
       return (
         <div className="flex flex-col gap-1.5">
@@ -538,15 +539,15 @@ function EntryContent({
             {series.rolls.map((roll, i) => (
               <li
                 key={i}
-                className="flex min-w-11 flex-col items-center rounded-lg border border-ink-border px-2 py-1"
+                className="flex min-w-11 max-w-full flex-col items-center rounded-lg border border-ink-border px-2 py-1 text-center"
               >
                 <span className="text-[0.65rem] leading-tight text-parchment-dim">
                   {roll.label && `${roll.label} · `}
                   {showDraws(roll.die)}
                 </span>
-                <span className="flex items-center gap-2">
+                <span className="flex min-h-9 max-w-full flex-1 flex-wrap py-0.5 items-center justify-center gap-x-2 gap-y-1">
                   <RollDrawing detail={roll.die} result={roll.result} />
-                  <span className="flex flex-col items-center">
+                  <span className="flex min-w-0 flex-col items-center">
                     <RollResult result={roll.result} />
                   </span>
                 </span>
@@ -565,7 +566,7 @@ function EntryContent({
       return (
         <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base text-parchment/90">
           <RollDrawing detail={detail} result={null} />
-          <span className="min-w-0 whitespace-pre-wrap">
+          <span className="min-w-0 whitespace-pre-wrap break-words">
             {kind && <span className="text-xs text-parchment-dim">{kind} · </span>}
             {showDraws(detail)}
           </span>
@@ -587,7 +588,7 @@ function EntryContent({
         ) : (
           <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base font-medium text-parchment">
             <RollDrawing detail={detail} result={result} />
-            <span className="min-w-0 whitespace-pre-wrap">{result}</span>
+            <span className="min-w-0 whitespace-pre-wrap break-words">{result}</span>
           </p>
         )}
       </div>
@@ -797,17 +798,6 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
       </span>
     );
   });
-}
-
-/** "+1 (+ 0 − +)" for 4dF: the total large and the faces small below. */
-function RollResult({ result }: { result: string }) {
-  const faces = result.match(/^(\S+)\s+\((.+)\)$/);
-  return (
-    <>
-      <span className="text-base font-medium leading-tight text-parchment">{faces ? faces[1] : result}</span>
-      {faces && <span className="text-[0.65rem] leading-tight text-parchment-dim">{faces[2]}</span>}
-    </>
-  );
 }
 
 interface LineButtonsProps {

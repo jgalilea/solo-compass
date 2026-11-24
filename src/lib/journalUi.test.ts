@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
+import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollSeries, splitRollText, splitOwnRolls } from "./journalUi";
 import { buildCast } from "./lonelogTags";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
@@ -249,5 +249,30 @@ describe("filterGroups", () => {
     // The question names her; its roll and consequence come along.
     expect(groups[0].items.map((e) => e.kind)).toEqual(["question", "roll", "consequence", "note", "action"]);
     expect(count).toBe(3);
+  });
+});
+
+describe("splitOwnRolls", () => {
+  it("boxes a lone roll like several", () => {
+    expect(splitOwnRolls("Regatear d20+1 -> 8 (7 + 1)")).toEqual({
+      label: "Regatear",
+      rolls: [{ label: "", die: "d20+1", result: "8 (7 + 1)" }],
+    });
+    expect(splitOwnRolls("d20 -> 14")?.rolls).toEqual([{ label: "", die: "d20", result: "14" }]);
+    expect(splitOwnRolls("4dF -> -1 (− 0 0 0)")?.rolls[0].die).toBe("4dF");
+    expect(splitOwnRolls("Dark omen draw=M16r -> The Tower, reversed")).toEqual({
+      label: "Dark omen",
+      rolls: [{ label: "", die: "draw=M16r", result: "The Tower, reversed" }],
+    });
+    expect(splitOwnRolls("Attack d20 -> 15, Damage 1d6+1 -> 5 (4 + 1)")?.rolls).toHaveLength(2);
+  });
+
+  it("leaves oracles, tables and prose as they are", () => {
+    for (const text of [
+      "Recluse — white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7", "tbl: draw=Qs -> Dark omen",
+      "gen: Inspiration (Action d66=26, Theme d66=43) -> Hide", "d20+5=17 vs DC 15 -> Success", "d20 -> Success, barely", "d20", "-> Yes",
+    ]) {
+      expect(splitOwnRolls(text), text).toBeNull();
+    }
   });
 });

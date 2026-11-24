@@ -583,7 +583,9 @@ never stored, the dice (`rolledDice.ts`: sides, value, how each counted)
 are read back from the roll's text (`readRolledDice`, which walks the
 formula along the detail; a test rolls every kind), so old, imported and
 sample rolls are drawn too: tray, latest rolls (the first five),
-history and journal (`RollDrawing`, beside the text and no taller than
+history and journal (each roll, one or several, in its own box:
+`splitOwnRolls`, what was rolled above, the total large, how it adds up
+small below; `RollDrawing`, beside the text and no taller than
 its line; also the cards, from `readCards`, and, from `readOracleDice`,
 an oracle's dice). Past `MAX_DRAWN_DICE` or when the
 text doesn't say, only the text shows. What's stored and exported is

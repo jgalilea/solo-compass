@@ -5,10 +5,14 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-24 (dados y cartas dibujados, 1.1.0; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-24 (dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Cada tirada en su recuadro (2026-11-24, 1.1.1): en el diario y en la
+  exportación HTML, una o varias, dados y cartas (`splitOwnRolls`); el
+  total grande y las cuentas debajo, también en el historial. Oráculo,
+  tablas y tiradas importadas con prosa siguen como estaban.
 - Cartas dibujadas (2026-11-24, 1.1.0): en la bandeja de dados, en las
   últimas tiradas (pequeña) y en el historial cada carta sale como una carta (`PlayingCard`, `cardLook`):
   esquina y palo (iconos Tabler; rojo propio, `--color-card-red`, sobre

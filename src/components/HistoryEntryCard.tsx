@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent } from "rea
 import { cardPurpose, showDraws } from "../lib/cards";
 import { Die } from "./Die";
 import { readRolledDice } from "../lib/diceNotation";
+import { RollResult } from "./RollResult";
 import { RolledDice } from "./RolledDice";
 import { PlayingCard } from "./PlayingCard";
 import { formatOracleResult } from "../lib/i18n/answerText";
@@ -285,7 +286,9 @@ function DiceRollText({ text }: { text: string }) {
   return (
     <div className="min-w-0">
       <p className="break-words text-xs text-parchment-dim">{text.slice(0, arrow)}</p>
-      <p className="mt-0.5 break-words text-sm font-medium text-parchment">{text.slice(arrow + 4)}</p>
+      <p className="mt-0.5 flex flex-col">
+        <RollResult result={text.slice(arrow + 4)} />
+      </p>
     </div>
   );
 }

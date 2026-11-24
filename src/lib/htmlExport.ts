@@ -17,7 +17,7 @@
 import { interpolate, type Dictionary } from "./i18n";
 import { sessionDate, type JournalEntry } from "./lonelog";
 import type { CastDescription } from "./journal";
-import { buildEntryBlocks, groupBySession, splitRollSeries, splitRollText } from "./journalUi";
+import { buildEntryBlocks, groupBySession, splitOwnRolls, splitRollText, splitRollTotal } from "./journalUi";
 import {
   buildCast,
   PROGRESS_KINDS,
@@ -98,10 +98,13 @@ function rollHtml(entry: JournalEntry, answer: Answer | undefined, drawRoll: Dra
     const html = drawRoll(detail, result);
     return html && `<span class="drawn">${html}</span>`;
   };
-  const series = splitRollSeries(entry.text);
+  const series = splitOwnRolls(entry.text);
   if (series) {
     const dice = series.rolls
-      .map((r) => `<span class="die"><small>${escapeHtml(r.label ? `${r.label} · ${r.die}` : r.die)}</small><span class="drawn-row">${drawn(r.die, r.result)}${escapeHtml(r.result)}</span></span>`)
+      .map((r) => {
+        const { total, faces } = splitRollTotal(r.result);
+        return `<span class="die"><small>${escapeHtml(r.label ? `${r.label} · ${r.die}` : r.die)}</small><span class="drawn-row">${drawn(r.die, r.result)}<span class="total">${escapeHtml(total)}${faces ? `<small>${escapeHtml(faces)}</small>` : ""}</span></span></span>`;
+      })
       .join("");
     return `${series.label ? `<p class="detail">${escapeHtml(series.label)}</p>` : ""}<p class="dice">${dice}</p>`;
   }
@@ -290,11 +293,13 @@ blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid col
 .answer.no { color: var(--color-no); background: color-mix(in srgb, var(--color-no) 10%, transparent); }
 .answer.contradiccion { color: var(--color-contradiction); background: color-mix(in srgb, var(--color-contradiction) 10%, transparent); }
 .dice { display: flex; flex-wrap: wrap; gap: .4rem; }
-.die { display: inline-flex; flex-direction: column; align-items: center; min-width: 2.75rem; border: 1px solid var(--color-ink-border); border-radius: .5rem; padding: .15rem .5rem; font-weight: 600; }
+.die { display: inline-flex; flex-direction: column; align-items: center; min-width: 2.75rem; max-width: 100%; border: 1px solid var(--color-ink-border); border-radius: .5rem; padding: .15rem .5rem; font-weight: 600; }
 .die small { font-size: .65rem; font-weight: 400; color: var(--color-parchment-dim); }
 .drawn-row { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; }
 .drawn, .drawn span { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
 .drawn svg { flex: none; filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / .4)); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.die .drawn-row { justify-content: center; }
+.total { display: flex; flex-direction: column; align-items: center; min-width: 0; line-height: 1.3; overflow-wrap: anywhere; }
 .tag { border: 1px solid color-mix(in srgb, var(--color-gold) 35%, transparent); background: color-mix(in srgb, var(--color-gold) 8%, transparent); border-radius: .4rem; padding: 0 .35rem; font-style: normal; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .tag small { color: var(--color-parchment-dim); }
 aside { display: grid; gap: 1rem; }
