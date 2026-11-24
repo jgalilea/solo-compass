@@ -478,7 +478,7 @@ export function DiceTool({
         className={[
           // A row of cards is taller than a row of chips.
           "flex items-center rounded-xl border p-2",
-          cards.tool === "cards" ? "min-h-[7rem]" : "min-h-12",
+          cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-12",
           rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
         ].join(" ")}
       >

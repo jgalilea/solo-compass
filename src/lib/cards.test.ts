@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { cardFace, cardIdentity, cardLook, cardName, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
+import { cardFace, cardIdentity, cardLook, cardName, cardPurpose, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
 import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
 import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
 import { splitRollSeries, splitRollText } from "./journalUi";
 import { exportAdventureToMarkdown, parseMarkdownToEntries } from "./lonelog";
 import { es } from "./i18n/locales/es";
 
-const plain = { jokers: false, reversed: false };
+const plain = { jokers: false, reversed: false, majorOnly: false };
 
 describe("decks", () => {
   it("has the add-on's cards: 52 (+2 jokers) and a 78-card tarot", () => {
@@ -17,9 +17,18 @@ describe("decks", () => {
     expect(tarot).toEqual(expect.arrayContaining(["M0", "M21", "KnCu", "PgSw", "10Pe", "AWa"]));
   });
 
+  it("can be only the Major Arcana, in the tarot", () => {
+    const majors = deckCards("tarot", { ...plain, majorOnly: true });
+    expect(majors).toHaveLength(22);
+    expect(majors.every((card) => /^M\d+$/.test(card))).toBe(true);
+    expect(deckCards("poker", { ...plain, majorOnly: true })).toHaveLength(52);
+    // Minor cards already drawn don't count against them.
+    expect(drawCard("tarot", { ...plain, majorOnly: true }, ["7Wa", ...majors.slice(1)])).toBe("M0");
+  });
+
   it("names every card in both languages", () => {
     for (const deck of ["poker", "tarot"] as const) {
-      for (const card of deckCards(deck, { jokers: true, reversed: false })) {
+      for (const card of deckCards(deck, { ...plain, jokers: true })) {
         expect(cardName(card, "es")).toBeTruthy();
         expect(cardName(card, "en")).toBeTruthy();
       }
@@ -66,6 +75,8 @@ describe("a draw in the journal", () => {
     expect(isCardDraw("Presagio draw=4d -> Cuatro de diamantes, draw=Ks -> Rey de picas")).toBe(true);
     expect(isCardDraw("draw=Qs -> Reina de picas, d6 -> 4")).toBe(false);
     expect(isCardDraw("d6 -> 4")).toBe(false);
+    expect(cardPurpose("Dark omen draw=M16r -> The Tower, reversed")).toBe("Dark omen");
+    expect(cardPurpose("draw=Qs -> Queen of Spades")).toBe("");
   });
 
   it("is drawn with its corner and suit, court letters in the player's language", () => {
@@ -79,7 +90,7 @@ describe("a draw in the journal", () => {
     expect(cardLook("7Pe", "en")).toMatchObject({ rank: "7", suit: "Pe" });
     expect(cardLook("Zz", "es")).toBeNull();
     for (const deck of ["poker", "tarot"] as const) {
-      for (const card of deckCards(deck, { jokers: true, reversed: false })) {
+      for (const card of deckCards(deck, { ...plain, jokers: true })) {
         expect(cardLook(card, "es")).not.toBeNull();
         expect(cardLook(`${card}r`, "en")?.kind ?? "poker").toMatch(deck === "tarot" ? /major|minor/ : /poker/);
       }

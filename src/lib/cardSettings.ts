@@ -14,6 +14,7 @@ export interface CardSettings {
   deck: DeckId;
   jokers: boolean;
   reversed: boolean;
+  majorOnly: boolean;
   /** Each card once per adventure (free draws share one deck) until shuffled. */
   unique: boolean;
   /** Last shuffle by `shuffleKey`, in ms. */
@@ -27,6 +28,7 @@ export const DEFAULT_CARD_SETTINGS: CardSettings = {
   deck: "poker",
   jokers: false,
   reversed: true,
+  majorOnly: false,
   unique: true,
   shuffles: {},
 };
@@ -50,6 +52,7 @@ export function normalizeCardSettings(value: unknown): CardSettings {
     deck: isDeckId(v.deck) ? v.deck : DEFAULT_CARD_SETTINGS.deck,
     jokers: typeof v.jokers === "boolean" ? v.jokers : DEFAULT_CARD_SETTINGS.jokers,
     reversed: typeof v.reversed === "boolean" ? v.reversed : DEFAULT_CARD_SETTINGS.reversed,
+    majorOnly: typeof v.majorOnly === "boolean" ? v.majorOnly : DEFAULT_CARD_SETTINGS.majorOnly,
     unique: typeof v.unique === "boolean" ? v.unique : DEFAULT_CARD_SETTINGS.unique,
     shuffles,
   };

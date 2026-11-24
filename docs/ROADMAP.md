@@ -9,11 +9,13 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
-- Cartas dibujadas (2026-11-24, 1.0.6): en la bandeja de dados y en el
-  historial cada carta sale como una carta (`PlayingCard`, `cardLook`):
+- Cartas dibujadas (2026-11-24, 1.0.6): en la bandeja de dados, en las
+  últimas tiradas (pequeña) y en el historial cada carta sale como una carta (`PlayingCard`, `cardLook`):
   esquina y palo (iconos Tabler; rojo propio, `--color-card-red`, sobre
   el blanco del dado), el número romano de los arcanos mayores y la
-  invertida girada. El diario y el .md siguen en texto Lonelog
+  invertida girada. El tarot lleva el valor una sola vez, arriba: repetido
+  en las esquinas no se vería que está invertida. Interruptor «Solo
+  mayores». El diario y el .md siguen en texto Lonelog
   (`draw=Qs -> …`). **Siguiente (P2): dados con forma propia** (d4
   triángulo, d8 rombo, d10 cometa, d12 pentágono, d20 hexágono, d% dos
   d10): primero en el oráculo (la d100 de Ironsworn hoy es un cuadrado

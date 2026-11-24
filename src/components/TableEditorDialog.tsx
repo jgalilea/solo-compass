@@ -13,6 +13,7 @@ import {
 import { interpolate } from "../lib/i18n";
 import { TABLE_THEMES, type TableTheme } from "../lib/tables";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
+import { Select } from "./Select";
 import { IconAlertCircle, IconCheck, IconChevronRight } from "./icons/Icons";
 import { DialogBody, DialogFooter, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -103,7 +104,7 @@ export function TableEditorDialog({
               onChange={(ev) => setName(ev.target.value)}
               placeholder={e.namePlaceholder}
               aria-invalid={tried && nameMissing}
-              className={`${INPUT_CLASS} flex-none py-2.5`}
+              className={`${INPUT_CLASS} py-2.5 pr-10`}
             />
             {tried && nameMissing && <span className="text-xs text-no">{e.errorName}</span>}
           </label>
@@ -114,16 +115,16 @@ export function TableEditorDialog({
               value={description}
               onChange={(ev) => setDescription(ev.target.value)}
               placeholder={e.descriptionPlaceholder}
-              className={`${INPUT_CLASS} flex-none py-2.5`}
+              className={`${INPUT_CLASS} py-2.5 pr-10`}
             />
           </label>
 
           <label className="flex flex-col gap-1.5">
             <span className={LABEL_CLASS}>{e.diceLabel}</span>
-            <select
+            <Select
               value={choice}
               onChange={(ev) => setChoice(ev.target.value as DiceChoice)}
-              className={`${INPUT_CLASS} flex-none py-2.5`}
+              className={`${INPUT_CLASS} py-2.5 pr-10`}
             >
               <option value="auto">{autoLabel}</option>
               {EDITOR_DICE.map((d) => (
@@ -131,15 +132,15 @@ export function TableEditorDialog({
                   {d}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="flex flex-col gap-1.5">
             <span className={LABEL_CLASS}>{e.themeLabel}</span>
-            <select
+            <Select
               value={theme}
               onChange={(ev) => setTheme(ev.target.value as TableTheme | "")}
-              className={`${INPUT_CLASS} flex-none py-2.5`}
+              className={`${INPUT_CLASS} py-2.5 pr-10`}
             >
               <option value="">{e.themeNone}</option>
               {TABLE_THEMES.map((id) => (
@@ -147,7 +148,7 @@ export function TableEditorDialog({
                   {t.tables.themes[id]}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="flex flex-col gap-1.5">

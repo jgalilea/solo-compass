@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { Select } from "./Select";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
@@ -168,13 +169,14 @@ export function HistoryView() {
           <label className="flex min-w-0 items-center gap-2 text-sm text-parchment-dim">
             <IconJournal size={16} className="shrink-0 text-gold" />
             <span className="sr-only">{t.history.adventureFilterLabel}</span>
-            <select
+            <Select
               value={adventureFilter}
               onChange={(e) => {
                 setAdventureFilter(e.target.value);
                 setShown(PAGE_SIZE);
               }}
-              className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-900/70 px-3 py-2 text-base text-parchment focus:border-gold focus:outline-none md:w-64 md:flex-none md:text-sm"
+              wrapperClassName="flex-1 md:w-64 md:flex-none"
+              className="rounded-xl border border-ink-border bg-ink-900/70 py-2 pl-3 pr-9 text-base text-parchment focus:border-gold focus:outline-none md:text-sm"
             >
               <option value={ALL}>{t.history.adventureAll}</option>
               <option value={FREE}>{t.history.adventureFree}</option>
@@ -183,7 +185,7 @@ export function HistoryView() {
                   {a.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         </div>
       )}

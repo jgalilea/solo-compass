@@ -31,21 +31,40 @@ function isRed(look: CardLook): boolean {
 }
 
 /**
- * A drawn card, as it lies on the table: its corner twice (top left,
- * and upside down bottom right) and its suit in the middle; a reversed
- * tarot card lies upside down. On the white die's colour in every
+ * A drawn card, as it lies on the table: its suit in the middle and its
+ * value in two corners (standard deck, the same either way up) or once
+ * at the top (tarot: a reversed card lies upside down, and it has to
+ * show). On the white die's colour in every
  * theme, like the oracle's dice. Decorative: the card's name goes
- * beside it. Nothing for an id that isn't a card.
+ * beside it. Nothing for an id that isn't a card. `small` (a one-line
+ * row, RecentRolls): the value once, over the suit.
  */
-export function PlayingCard({ id, animate = false }: { id: string; animate?: boolean }) {
+export function PlayingCard({ id, animate = false, small = false }: { id: string; animate?: boolean; small?: boolean }) {
   const { locale } = useLocaleContext();
   const look = cardLook(id, locale);
   if (!look) return null;
   const Suit = look.kind === "joker" ? IconJoker : look.kind === "major" ? IconMajorArcana : SUIT_ICONS[look.suit];
-  const corner = look.kind === "joker" ? "" : look.kind === "major" ? look.numeral : look.rank;
-  const reversed = (look.kind === "major" || look.kind === "minor") && look.reversed;
-  // A Major Arcana's numeral is its name: centred at the top, not a corner.
-  const centred = look.kind === "major";
+  const value = look.kind === "joker" ? "" : look.kind === "major" ? look.numeral : look.rank;
+  const tarot = look.kind === "major" || look.kind === "minor";
+  const reversed = tarot && look.reversed;
+
+  if (small) {
+    return (
+      <span
+        aria-hidden
+        className={[
+          "flex h-8 w-[1.375rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded border border-black/20 bg-die-white",
+          isRed(look) ? "text-card-red" : "text-die-black",
+          reversed ? "rotate-180" : "",
+        ].join(" ")}
+      >
+        {value && (
+          <span className={`font-bold leading-none ${look.kind === "major" ? "text-[0.5rem]" : "text-[0.625rem]"}`}>{value}</span>
+        )}
+        <Suit size={value ? 13 : 16} />
+      </span>
+    );
+  }
 
   return (
     <span
@@ -57,22 +76,22 @@ export function PlayingCard({ id, animate = false }: { id: string; animate?: boo
         animate ? "animate-fade-up" : "",
       ].join(" ")}
     >
-      {corner && (
+      {value && (
         <>
           <span
             className={[
               "absolute top-1 text-[0.625rem] font-bold leading-none",
-              centred ? "inset-x-0 text-center" : "left-1",
+              tarot ? "inset-x-0 text-center" : "left-1",
             ].join(" ")}
           >
-            {corner}
+            {value}
           </span>
-          {!centred && (
-            <span className="absolute bottom-1 right-1 rotate-180 text-[0.625rem] font-bold leading-none">{corner}</span>
+          {!tarot && (
+            <span className="absolute bottom-1 right-1 rotate-180 text-[0.625rem] font-bold leading-none">{value}</span>
           )}
         </>
       )}
-      <Suit size={look.kind === "joker" || centred ? 20 : 18} />
+      <Suit size={look.kind === "poker" ? 18 : 20} />
     </span>
   );
 }

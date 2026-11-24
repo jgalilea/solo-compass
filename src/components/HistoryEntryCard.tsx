@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
-import { showDraws } from "../lib/cards";
+import { cardPurpose, showDraws } from "../lib/cards";
 import { Die } from "./Die";
 import { PlayingCard } from "./PlayingCard";
 import { formatOracleResult } from "../lib/i18n/answerText";
@@ -262,7 +262,7 @@ export function HistoryEntryCard({
 /** A card drawn, beside its drawing: its name, under what it was for ("Omen"), if anything. */
 function CardDrawText({ text }: { text: string }) {
   const arrow = text.lastIndexOf(" -> ");
-  const purpose = text.slice(0, Math.max(arrow, 0)).replace(/\bdraw=\S+/, "").trim();
+  const purpose = cardPurpose(text);
   return (
     <div className="min-w-0">
       {purpose && <p className="text-xs text-parchment-dim">{purpose}</p>}

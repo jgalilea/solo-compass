@@ -577,10 +577,11 @@ that the limits it states hold.
 
 A switch on the same tool turns the dice into cards (`CardControls`,
 `cards.ts`), on the same tray: a standard deck (jokers optional) or a
-tarot (reversals optional), written as Lonelog's Cards add-on
+tarot (reversals optional, or the Major Arcana alone), written as Lonelog's Cards add-on
 (`draw=Qs -> Reina de picas`, `M16r` reversed; the name after "->" is
 ours, `cardName`), shown with suit symbols (`showDraws`; drawn as a card in
-the tray and the history, `PlayingCard` from `cardLook`, the
+the tray, the history and, `small`, the latest rolls: `PlayingCard`
+from `cardLook`, the
 journal stays text) and read as a
 roll by the journal (a draw counts as a die in `splitRollSeries`).
 Each draw is a `"dados"` history roll that keeps its `card`; without
@@ -622,7 +623,8 @@ logo (`IconCompass`, a four-point compass rose) is the same drawing as
 together. Don't write symbols like "+"/"−" as text in UI controls: some
 theme display fonts draw "+" as a cross — use the icon. Number
 fields use `NumberField` (−/+ icons; the browser's spinners are hidden
-in `index.css`, they don't follow the themes). Every
+in `index.css`, they don't follow the themes), and lists to pick from
+`Select` (a native select with our arrow). Every
 dialog uses `Modal` (portal to `<body>`, closes on Esc, backdrop click
 and going back: each open dialog, and each open menu (`useDismiss`),
 is a history entry, `useCloseOnBack` and `modalHistory.ts`, taken off

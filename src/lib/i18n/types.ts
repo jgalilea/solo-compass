@@ -115,6 +115,7 @@ export interface Dictionary {
     deckTarot: string;
     jokers: string;
     reversed: string;
+    majorOnly: string;
     unique: string;
     uniqueOn: string;
     uniqueOff: string;

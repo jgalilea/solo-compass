@@ -75,6 +75,7 @@ export const en: Dictionary = {
     deckTarot: "Tarot",
     jokers: "Jokers",
     reversed: "Reversed",
+    majorOnly: "Major Arcana only",
     unique: "No repeats",
     uniqueOn: "Each card comes out once in this adventure, until you shuffle.",
     uniqueOff: "Each card goes back in the deck: it can come out again.",

@@ -75,6 +75,7 @@ export const es: Dictionary = {
     deckTarot: "Tarot",
     jokers: "Comodines",
     reversed: "Invertidas",
+    majorOnly: "Solo mayores",
     unique: "Sin repetir",
     uniqueOn: "Cada carta sale una vez en esta aventura, hasta que barajes.",
     uniqueOff: "Cada carta vuelve al mazo: puede repetirse.",

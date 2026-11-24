@@ -27,6 +27,8 @@ export interface DeckOptions {
   jokers: boolean;
   /** Tarot: a card can come out reversed (half the time). */
   reversed: boolean;
+  /** Tarot: only the 22 Major Arcana. */
+  majorOnly: boolean;
 }
 
 const POKER_RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"] as const;
@@ -41,6 +43,7 @@ export function deckCards(deck: DeckId, options: DeckOptions): string[] {
     return options.jokers ? [...cards, "RJkr", "BJkr"] : cards;
   }
   const major = Array.from({ length: 22 }, (_, i) => `M${i}`);
+  if (options.majorOnly) return major;
   return [...major, ...TAROT_SUITS.flatMap((suit) => TAROT_RANKS.map((rank) => `${rank}${suit}`))];
 }
 
@@ -132,7 +135,7 @@ export function cardName(id: string, locale: Locale): string | null {
 }
 
 /**
- * What a card shows when it's drawn (PlayingCard): its corner (rank,
+ * What a card shows when it's drawn (PlayingCard): its value (rank,
  * a court card's letter in the player's language, a Major Arcana's
  * roman numeral) and its suit. Null if it isn't a card.
  */
@@ -195,6 +198,12 @@ export function formatCardDraw(id: string, locale: Locale): string {
 /** "draw=Qs" anywhere in a roll's text, shown with its face ("Q♠"). */
 export function showDraws(text: string): string {
   return text.replace(/\bdraw=([A-Za-z0-9]+)/g, (_, id: string) => cardFace(id));
+}
+
+/** What a draw was for, before it ("Omen draw=Qs -> …"); empty if nothing. */
+export function cardPurpose(text: string): string {
+  const arrow = text.lastIndexOf(" -> ");
+  return text.slice(0, Math.max(arrow, 0)).replace(/\bdraw=\S+$/, "").trim();
 }
 
 /** Whether a roll's text is only cards drawn ("draw=Qs -> …, draw=3h -> …", with a description or not). */

@@ -32,14 +32,18 @@ export const CHANGELOG: ChangelogEntry[] = [
         title: "Interludio · Cartas sobre la mesa",
         intro: "Mara deja de leer nombres y vuelve a mirar las cartas.",
         items: [
-          "Las cartas que sacas se ven como cartas, en la bandeja y en el historial: su número, su palo y, en el tarot, los arcanos mayores con su número romano y las invertidas boca abajo. En el diario se siguen apuntando igual.",
+          "Las cartas que sacas se ven como cartas, en la bandeja, en las últimas tiradas y en el historial: su número, su palo y, en el tarot, los arcanos mayores con su número romano y las invertidas boca abajo. En el diario se siguen apuntando igual.",
+          "El tarot puede jugarse solo con los arcanos mayores.",
+          "La flecha de los desplegables ya no se pega al borde.",
         ],
       },
       en: {
         title: "Interlude · Cards on the table",
         intro: "Mara stops reading names and looks at the cards again.",
         items: [
-          "The cards you draw look like cards, in the tray and in the history: their rank, their suit and, in the tarot, the Major Arcana with their roman numeral and reversed cards upside down. The journal writes them down just as before.",
+          "The cards you draw look like cards, in the tray, in the latest rolls and in the history: their rank, their suit and, in the tarot, the Major Arcana with their roman numeral and reversed cards upside down. The journal writes them down just as before.",
+          "The tarot can be played with the Major Arcana alone.",
+          "The arrow of the drop-down lists no longer sticks to the edge.",
         ],
       },
     },
