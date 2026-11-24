@@ -99,6 +99,10 @@
      theme or mode. */
   --color-die-white: #f4efe6;
   --color-die-black: #20222b;
+  /* A drawn card's red suits (hearts, diamonds, the red joker). The card
+     is the white die's colour in every theme and mode, so one red that
+     reads on it (4.5:1 and up) is enough. */
+  --color-card-red: #b3262f;
 
   --animate-die-roll: die-roll 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   --animate-fade-up: fade-up 0.35s ease-out;

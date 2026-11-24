@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { showDraws } from "../lib/cards";
 import { Die } from "./Die";
+import { PlayingCard } from "./PlayingCard";
 import { formatOracleResult } from "../lib/i18n/answerText";
 import { oracleDice } from "../lib/oracle";
 import { ROLE_COLOR } from "../lib/oracleEngines";
@@ -233,7 +234,14 @@ export function HistoryEntryCard({
             </div>
           </div>
         ) : entry.kind === "dados" ? (
-          <DiceRollText text={showDraws(entry.text)} />
+          entry.card ? (
+            <div className="mt-2 flex items-center gap-3">
+              <PlayingCard id={entry.card.id} />
+              <CardDrawText text={entry.text} />
+            </div>
+          ) : (
+            <DiceRollText text={showDraws(entry.text)} />
+          )
         ) : (
           <div className="mt-2">
             <p className="text-sm text-parchment/90">{entry.resultText}</p>
@@ -251,6 +259,18 @@ export function HistoryEntryCard({
 }
 
 /** "Attack d20+5 -> 19 (14 + 5)": what was rolled small, the result below. */
+/** A card drawn, beside its drawing: its name, under what it was for ("Omen"), if anything. */
+function CardDrawText({ text }: { text: string }) {
+  const arrow = text.lastIndexOf(" -> ");
+  const purpose = text.slice(0, Math.max(arrow, 0)).replace(/\bdraw=\S+/, "").trim();
+  return (
+    <div className="min-w-0">
+      {purpose && <p className="text-xs text-parchment-dim">{purpose}</p>}
+      <p className="break-words text-sm font-medium text-parchment">{text.slice(arrow + 4)}</p>
+    </div>
+  );
+}
+
 function DiceRollText({ text }: { text: string }) {
   const arrow = text.lastIndexOf(" -> ");
   if (arrow < 0) return <p className="mt-2 text-sm text-parchment/90">{text}</p>;

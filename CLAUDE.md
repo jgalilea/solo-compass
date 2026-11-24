@@ -579,7 +579,9 @@ A switch on the same tool turns the dice into cards (`CardControls`,
 `cards.ts`), on the same tray: a standard deck (jokers optional) or a
 tarot (reversals optional), written as Lonelog's Cards add-on
 (`draw=Qs -> Reina de picas`, `M16r` reversed; the name after "->" is
-ours, `cardName`), shown with suit symbols (`showDraws`) and read as a
+ours, `cardName`), shown with suit symbols (`showDraws`; drawn as a card in
+the tray and the history, `PlayingCard` from `cardLook`, the
+journal stays text) and read as a
 roll by the journal (a draw counts as a die in `splitRollSeries`).
 Each draw is a `"dados"` history roll that keeps its `card`; without
 repeats, what's left of an adventure's deck is derived from those

@@ -5,6 +5,7 @@ import { createDiceRollEntries, type DiceRollEntry } from "../lib/history";
 import { loadCardSettings, saveCardSettings, type CardSettings } from "../lib/cardSettings";
 import { isCardDraw, showDraws } from "../lib/cards";
 import { CardControls } from "./CardControls";
+import { PlayingCard } from "./PlayingCard";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
@@ -475,7 +476,9 @@ export function DiceTool({
         aria-live="polite"
         aria-label={t.journal.diceTrayLabel}
         className={[
-          "flex min-h-12 items-center rounded-xl border p-2",
+          // A row of cards is taller than a row of chips.
+          "flex items-center rounded-xl border p-2",
+          cards.tool === "cards" ? "min-h-[7rem]" : "min-h-12",
           rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
         ].join(" ")}
       >
@@ -491,24 +494,29 @@ export function DiceTool({
           </p>
         ) : (
           <ul className="flex w-full flex-wrap gap-1.5">
-            {tray.map((item, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
-              >
-                <span aria-hidden className="break-all">{trayText(item.text)}</span>
-                <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                <button
-                  type="button"
-                  onClick={() => removeFromTray([item])}
-                  aria-label={interpolate(t.journal.diceRemove, { roll: spokenRoll(trayText(item.text)) })}
-                  title={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
-                  className="shrink-0 rounded-md p-0.5 text-parchment-dim transition hover:text-no"
+            {tray.map((item, i) =>
+              item.card ? (
+                // A card lies face up with its name below it.
+                <li
+                  key={i}
+                  className="relative flex w-[5.5rem] flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-1 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment"
                 >
-                  <IconClose size={14} />
-                </button>
-              </li>
-            ))}
+                  <PlayingCard id={item.card.id} animate />
+                  <span aria-hidden className="min-h-[2lh]">{cardDrawName(item.text)}</span>
+                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                  <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                </li>
+              ) : (
+                <li
+                  key={i}
+                  className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
+                >
+                  <span aria-hidden className="break-all">{trayText(item.text)}</span>
+                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                  <TrayRemove item={item} onRemove={removeFromTray} className="shrink-0" />
+                </li>
+              ),
+            )}
           </ul>
         )}
       </div>
@@ -548,6 +556,34 @@ interface TrayItem {
 /** A roll in the tray: a card as "Q♠ Reina de picas", dice as written. */
 function trayText(roll: string): string {
   return isCardDraw(roll) ? showDraws(roll).replace(" -> ", " ") : roll;
+}
+
+function TrayRemove({
+  item,
+  onRemove,
+  className,
+}: {
+  item: TrayItem;
+  onRemove: (items: TrayItem[]) => void;
+  className: string;
+}) {
+  const { t } = useLocaleContext();
+  return (
+    <button
+      type="button"
+      onClick={() => onRemove([item])}
+      aria-label={interpolate(t.journal.diceRemove, { roll: spokenRoll(trayText(item.text)) })}
+      title={interpolate(t.journal.diceRemove, { roll: trayText(item.text) })}
+      className={`${className} rounded-md p-0.5 text-parchment-dim transition hover:text-no`}
+    >
+      <IconClose size={14} />
+    </button>
+  );
+}
+
+/** A card's name in the tray, beside its drawing: "Reina de picas". */
+function cardDrawName(roll: string): string {
+  return roll.slice(roll.lastIndexOf(" -> ") + 4);
 }
 
 /** A roll for a screen reader: "d6: 4", not "d6 hyphen greater-than 4". */

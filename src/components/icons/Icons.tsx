@@ -351,6 +351,40 @@ export function IconCards(props: IconProps) {
   return <TablerIcon icon={Tabler.IconCards} {...props} />;
 }
 
+// A drawn card's suits (PlayingCard): the standard deck's filled, as
+// printed; the tarot's (wands, cups, swords, pentacles) and the Major
+// Arcana's mark outlined, like the rest of the app.
+export function IconSuitHearts(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconHeartFilled} {...props} />;
+}
+export function IconSuitDiamonds(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconDiamondsFilled} {...props} />;
+}
+export function IconSuitClubs(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconClubsFilled} {...props} />;
+}
+export function IconSuitSpades(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSpadeFilled} {...props} />;
+}
+export function IconJoker(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconJoker} {...props} />;
+}
+export function IconSuitWands(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconWand} {...props} />;
+}
+export function IconSuitCups(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconGlassFull} {...props} />;
+}
+export function IconSuitSwords(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSword} {...props} />;
+}
+export function IconSuitPentacles(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconPentagram} {...props} />;
+}
+export function IconMajorArcana(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconSparkles} {...props} />;
+}
+
 export function IconShuffle(props: IconProps) {
   return <TablerIcon icon={Tabler.IconArrowsShuffle} {...props} />;
 }

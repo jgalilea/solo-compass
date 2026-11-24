@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.6",
+    date: "2026-11-24",
+    text: {
+      es: {
+        title: "Interludio · Cartas sobre la mesa",
+        intro: "Mara deja de leer nombres y vuelve a mirar las cartas.",
+        items: [
+          "Las cartas que sacas se ven como cartas, en la bandeja y en el historial: su número, su palo y, en el tarot, los arcanos mayores con su número romano y las invertidas boca abajo. En el diario se siguen apuntando igual.",
+        ],
+      },
+      en: {
+        title: "Interlude · Cards on the table",
+        intro: "Mara stops reading names and looks at the cards again.",
+        items: [
+          "The cards you draw look like cards, in the tray and in the history: their rank, their suit and, in the tarot, the Major Arcana with their roman numeral and reversed cards upside down. The journal writes them down just as before.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.0.5",
     date: "2026-11-12",
     text: {

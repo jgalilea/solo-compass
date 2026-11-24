@@ -131,6 +131,50 @@ export function cardName(id: string, locale: Locale): string | null {
   return (major?.[2] || minor?.[3]) ? `${name}, ${w.reversed}` : name;
 }
 
+/**
+ * What a card shows when it's drawn (PlayingCard): its corner (rank,
+ * a court card's letter in the player's language, a Major Arcana's
+ * roman numeral) and its suit. Null if it isn't a card.
+ */
+export type CardLook =
+  | { kind: "poker"; rank: string; suit: "h" | "d" | "c" | "s" }
+  | { kind: "joker"; red: boolean }
+  | { kind: "major"; numeral: string; reversed: boolean }
+  | { kind: "minor"; rank: string; suit: "Wa" | "Cu" | "Sw" | "Pe"; reversed: boolean };
+
+// Court cards' corner letters: the add-on's codes are English ("Pg", "Kn").
+const TAROT_COURT_LETTERS: Record<Locale, Record<"Pg" | "Kn" | "Q" | "K", string>> = {
+  es: { Pg: "S", Kn: "C", Q: "Q", K: "K" },
+  en: { Pg: "P", Kn: "Kn", Q: "Q", K: "K" },
+};
+
+function romanNumeral(n: number): string {
+  if (n === 0) return "0";
+  const parts: [number, string][] = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+  let left = n;
+  let out = "";
+  for (const [value, letters] of parts) {
+    while (left >= value) {
+      out += letters;
+      left -= value;
+    }
+  }
+  return out;
+}
+
+export function cardLook(id: string, locale: Locale): CardLook | null {
+  if (id === "RJkr" || id === "BJkr") return { kind: "joker", red: id === "RJkr" };
+  const poker = id.match(POKER_ID);
+  if (poker) return { kind: "poker", rank: poker[1], suit: poker[2] as "h" | "d" | "c" | "s" };
+  const major = id.match(MAJOR_ID);
+  if (major) return { kind: "major", numeral: romanNumeral(Number(major[1])), reversed: !!major[2] };
+  const minor = id.match(MINOR_ID);
+  if (!minor) return null;
+  const rank = minor[1] as (typeof TAROT_RANKS)[number];
+  const court = TAROT_COURT_LETTERS[locale][rank as keyof (typeof TAROT_COURT_LETTERS)["es"]];
+  return { kind: "minor", rank: court ?? rank, suit: minor[2] as "Wa" | "Cu" | "Sw" | "Pe", reversed: !!minor[3] };
+}
+
 const SUIT_SYMBOLS: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
 
 /**

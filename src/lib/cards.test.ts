@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardFace, cardIdentity, cardName, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
+import { cardFace, cardIdentity, cardLook, cardName, deckCards, drawCard, formatCardDraw, isCardDraw, showDraws } from "./cards";
 import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
 import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
 import { splitRollSeries, splitRollText } from "./journalUi";
@@ -66,6 +66,24 @@ describe("a draw in the journal", () => {
     expect(isCardDraw("Presagio draw=4d -> Cuatro de diamantes, draw=Ks -> Rey de picas")).toBe(true);
     expect(isCardDraw("draw=Qs -> Reina de picas, d6 -> 4")).toBe(false);
     expect(isCardDraw("d6 -> 4")).toBe(false);
+  });
+
+  it("is drawn with its corner and suit, court letters in the player's language", () => {
+    expect(cardLook("10h", "es")).toEqual({ kind: "poker", rank: "10", suit: "h" });
+    expect(cardLook("RJkr", "en")).toEqual({ kind: "joker", red: true });
+    expect(cardLook("M0", "es")).toEqual({ kind: "major", numeral: "0", reversed: false });
+    expect(cardLook("M14r", "es")).toEqual({ kind: "major", numeral: "XIV", reversed: true });
+    expect(cardLook("M19", "es")).toMatchObject({ numeral: "XIX" });
+    expect(cardLook("PgCu", "es")).toEqual({ kind: "minor", rank: "S", suit: "Cu", reversed: false });
+    expect(cardLook("KnSwr", "en")).toEqual({ kind: "minor", rank: "Kn", suit: "Sw", reversed: true });
+    expect(cardLook("7Pe", "en")).toMatchObject({ rank: "7", suit: "Pe" });
+    expect(cardLook("Zz", "es")).toBeNull();
+    for (const deck of ["poker", "tarot"] as const) {
+      for (const card of deckCards(deck, { jokers: true, reversed: false })) {
+        expect(cardLook(card, "es")).not.toBeNull();
+        expect(cardLook(`${card}r`, "en")?.kind ?? "poker").toMatch(deck === "tarot" ? /major|minor/ : /poker/);
+      }
+    }
   });
 
   it("reads as a roll, alone or with others", () => {
