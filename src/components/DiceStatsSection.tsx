@@ -4,6 +4,12 @@ import { interpolate } from "../lib/i18n";
 import { ColumnChart } from "./ColumnChart";
 
 /**
+ * A kind of die gets its chart early, for the joy of seeing it: only the
+ * verdict (MIN_DICE_FOR_TREND) waits for dice enough to mean something.
+ */
+const MIN_DICE_FOR_CHART = 5;
+
+/**
  * How the player's dice came up: whether they run high or low, the
  * feats worth telling (runs, extremes, a session's luck) and a small
  * chart per kind of die, with a line at what each face should get.
@@ -11,11 +17,10 @@ import { ColumnChart } from "./ColumnChart";
 export function DiceStatsSection({ stats }: { stats: DiceStats }) {
   const { t } = useLocaleContext();
   const s = t.journal.stats;
-  // As with the verdict: fewer dice draw nothing but noise.
-  const charts = stats.dice.filter((d) => d.count >= MIN_DICE_FOR_TREND);
+  const charts = stats.dice.filter((d) => d.count >= MIN_DICE_FOR_CHART);
   const waiting = stats.dice
-    .filter((d) => d.count < MIN_DICE_FOR_TREND)
-    .map((d) => interpolate(s.diceWaitingItem, { die: d.sides ? `d${d.sides}` : "dF", total: d.count, count: MIN_DICE_FOR_TREND }));
+    .filter((d) => d.count < MIN_DICE_FOR_CHART)
+    .map((d) => interpolate(s.diceWaitingItem, { die: d.sides ? `d${d.sides}` : "dF", total: d.count, count: MIN_DICE_FOR_CHART }));
   const trend = { high: s.diceHigh, low: s.diceLow, normal: s.diceNormal };
   const number = new Intl.NumberFormat(t.dateLocale, { maximumFractionDigits: 1 });
   const sessionName = (title: string | null) => title ?? t.journal.prologueLabel;
@@ -64,7 +69,7 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
         </ul>
       )}
       <div className="flex flex-col gap-1 text-xs text-parchment-dim">
-        <p>{interpolate(s.diceCharts, { count: MIN_DICE_FOR_TREND })}</p>
+        <p>{interpolate(s.diceCharts, { count: MIN_DICE_FOR_CHART })}</p>
         {waiting.length > 0 && <p>{interpolate(s.diceWaiting, { dice: waiting.join(", ") })}</p>}
       </div>
       {charts.length > 0 && (

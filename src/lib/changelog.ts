@@ -25,6 +25,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.3.2",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Interludio · Cinco dados bastan",
+        items: ["En las estadísticas, cada tipo de dado enseña su gráfica desde que ha caído 5 veces: no hace falta una campaña entera para verla."],
+      },
+      en: {
+        title: "Interlude · Five dice will do",
+        items: ["In the statistics, each kind of die shows its chart once it has fallen 5 times: no need for a whole campaign to see it."],
+      },
+    },
+  },
+  {
     version: "1.3.1",
     date: "2026-11-25",
     text: {
