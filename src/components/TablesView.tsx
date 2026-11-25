@@ -14,6 +14,7 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useMeaningTables } from "../hooks/useMeaningTables";
 import { usePlayActions } from "../hooks/usePlayActions";
+import { readTableDice } from "../lib/rolledDice";
 import { interpolate } from "../lib/i18n";
 import { downloadTextFile, sanitizeFilename } from "../lib/journalUi";
 import { canShare, shareTextFile } from "../lib/share";
@@ -129,9 +130,10 @@ export function TablesView() {
         sourceId: table.id,
         rollId: entry.id,
         title: entry.tableName,
-        detail: `${table.dice} · ${entry.rolls.join(" · ")}`,
+        detail: table.dice,
         total: entry.total,
         text: entry.resultText,
+        dice: readTableDice(`${table.dice}=${entry.total}`),
       };
     });
   }
@@ -147,6 +149,7 @@ export function TablesView() {
         title: t.tables.inspirationName,
         detail: rolled.detail,
         text: rolled.text,
+        dice: readTableDice(rolled.detail),
       };
     });
   }
@@ -163,6 +166,7 @@ export function TablesView() {
         title: generator.name,
         detail: rolled.detail,
         text: rolled.text,
+        dice: readTableDice(rolled.detail),
       };
     });
   }

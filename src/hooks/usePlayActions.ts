@@ -2,10 +2,10 @@ import { useCallback, useEffect } from "react";
 import { announce } from "../lib/announce";
 import type { Likelihood, OracleRoll } from "../lib/oracle";
 import { lonerTwistCounterOf, rollOracleWith } from "../lib/oracleEngines";
-import { formatTableRoll, resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
+import { rollJournalLines } from "../lib/rollLog";
+import { resolveResult, rollForTable, tableRollName, type MeaningTable } from "../lib/tables";
 import type { HistoryEntry, TableRollEntry } from "../lib/history";
-import { getOracle } from "../lib/oracles";
-import { formatOracleDice, formatOracleResult } from "../lib/i18n/answerText";
+import { formatOracleResult } from "../lib/i18n/answerText";
 import { gameState, loadGame, TABLE_GAMES, toMeaningTables } from "../lib/tableGames";
 import { useHistoryContext } from "./useHistoryContext";
 import { useJournalContext } from "./useJournalContext";
@@ -61,6 +61,7 @@ export function usePlayActions() {
         tableName: tableRollName(table),
         rolls,
         total,
+        dice: table.dice,
         // Follows "Roll twice" and "{Other table}" (see resolveResult).
         resultText: resolveResult(table, total, tables, t.tables.noEntryFallback),
         favorite: false,
@@ -94,9 +95,7 @@ export function usePlayActions() {
       record(roll, adventureId);
       announce(formatOracleResult(t, roll));
       if (adventureId) {
-        if (roll.question) addJournalEntry(adventureId, "question", roll.question, roll.id);
-        const diceText = `${getOracle(oracleId).name} — ${formatOracleDice(t, roll)} -> ${formatOracleResult(t, roll)}`;
-        addJournalEntry(adventureId, "roll", diceText, roll.id);
+        for (const line of rollJournalLines(t, roll)) addJournalEntry(adventureId, line.kind, line.text, roll.id);
       }
       return roll;
     },
@@ -109,12 +108,11 @@ export function usePlayActions() {
       record(entry, adventureId);
       announce(`${entry.tableName}: ${entry.resultText}`);
       if (adventureId) {
-        const diceText = formatTableRoll(entry.tableName, table.dice, entry.total, entry.resultText);
-        addJournalEntry(adventureId, "roll", diceText, entry.id);
+        for (const line of rollJournalLines(t, entry)) addJournalEntry(adventureId, line.kind, line.text, entry.id);
       }
       return entry;
     },
-    [activeAdventureId, record, addJournalEntry, buildTableRoll],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll, t],
   );
 
   /**

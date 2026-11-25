@@ -99,7 +99,9 @@ reached from "Últimas tiradas" (`RecentRolls`) on the Oracle, Tables and
 Dice screens, each with only its own rolls (`kind`), the one just made included, which open
 `/historial?tipo=oraculo|tabla|dados`, filtered, highlighting that tab
 and going back there; unfiltered (H) it belongs to the Oráculo tab. The history also
-filters by adventure (or free rolls), and an adventure's menu opens it
+filters by adventure (or free rolls), searches (`searchHistory`) and logs
+a free roll in a journal after all (`rollJournalLines`, which also
+writes what `usePlayActions` logs), and an adventure's menu opens it
 that way (`?aventura=<id>`). Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`, opening `SettingsPanel`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
@@ -555,7 +557,8 @@ or cleared isn't kept anywhere (`createDiceRollEntries`). Every
 history roll keeps the adventure it was for (`adventureId`, set by
 `usePlayActions` and `DiceTool`; older ones are found through the
 journal entry linked to them), shown on its card; none means a free
-roll. A die of one's own has an optional text, which goes in front of
+roll. The Dice screen's latest rolls can be rolled again into the tray
+(`rollAgain`). A die of one's own has an optional text, which goes in front of
 its roll in the journal (`savedRollLabel`: the formula names it
 otherwise). The dice (`DiceTool`) also take a formula (`rollFormula`
 in `diceNotation.ts`): the whole of Lonelog's dice notation add-on, a
@@ -587,7 +590,8 @@ history and journal (each roll, one or several, in its own box:
 `splitOwnRolls`, what was rolled above, the total large, how it adds up
 small below; `RollDrawing`, beside the text and no taller than
 its line; also the cards, from `readCards`, and, from `readOracleDice`,
-an oracle's dice). Past `MAX_DRAWN_DICE` or when the
+an oracle's dice, and from `readTableDice` a table's: a d66 is two d6; the
+history keeps a table roll's `dice`; older ones are given theirs once, `historyDice.ts`). Past `MAX_DRAWN_DICE` or when the
 text doesn't say, only the text shows. What's stored and exported is
 always the text, exactly as Lonelog writes it.
 

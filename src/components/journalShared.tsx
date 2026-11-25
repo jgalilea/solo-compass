@@ -588,7 +588,8 @@ function EntryContent({
         ) : (
           <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base font-medium text-parchment">
             <RollDrawing detail={detail} result={result} />
-            <span className="min-w-0 whitespace-pre-wrap break-words">{result}</span>
+            {/* Beside the dice while there's room for a few words. */}
+            <span className="min-w-32 flex-1 whitespace-pre-wrap break-words">{result}</span>
           </p>
         )}
       </div>

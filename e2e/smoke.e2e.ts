@@ -62,6 +62,16 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   await page.goto("./#/historial");
   await expect(page.getByText("¿Hay alguien en la posada?")).toBeVisible();
   await expect(page.getByText("Acción", { exact: true }).first()).toBeVisible();
+  // Searched, and the free roll logged in the journal after all (and undone).
+  await page.getByLabel("Buscar en el historial").fill("posada alguien");
+  await expect(page.getByText("Acción", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Apuntar", exact: true }).click();
+  await expect(page.getByText("Apuntado en «La cripta»")).toBeVisible();
+  await expect(page.getByRole("link", { name: "La cripta" })).toBeVisible();
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  await page.getByRole("button", { name: "Apuntar", exact: true }).click();
+  await page.getByRole("link", { name: "La cripta" }).click();
+  await expect(page.locator("[id^=entry-]").getByText("¿Hay alguien en la posada?")).toHaveCount(1);
 
   expect(errors).toEqual([]);
 });
@@ -156,6 +166,9 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   // The Dice tab's latest rolls, and the history filtered to them, with the adventure.
   await page.getByRole("link", { name: "Dados", exact: true }).click();
   await expect(page.getByText(/Ataque d20\+5/).first()).toBeVisible();
+  // Rolled again from there, into the tray.
+  await page.getByRole("button", { name: "Volver a tirar Ataque d20+5" }).click();
+  await expect(page.getByRole("button", { name: /^Quitar.*Ataque d20\+5/ })).toBeVisible();
   await page.getByRole("link", { name: "Ver historial" }).click();
   await expect(page.getByRole("link", { name: "La torre" }).first()).toBeVisible();
 

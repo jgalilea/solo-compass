@@ -5,13 +5,20 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-24 (dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-25 (historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Historial y tablas (2026-11-25, 1.2.0): buscar en el historial
+  (`searchHistory`); «Apuntar» lleva una tirada libre a un diario, con
+  Deshacer (`rollJournalLines`, `LogRollDialog`); «Volver a tirar» en las
+  últimas tiradas de Dados (`rollAgain`); los dados de las tablas,
+  dibujados (d66: dos d6). En el diario y el HTML se leen del texto; el
+  historial guarda el dado (`dice`) y completa el de las tiradas antiguas
+  (`historyDice.ts`: sus dos d6, el diario o la tabla de hoy). Descartado a propósito: conservar la bandeja al salir y la
+  pregunta a medias del oráculo.
 - «Últimas tiradas» (2026-11-24, 1.1.3): las del oráculo con sus dados, las de
-  tablas con el número, y la recién hecha entra al momento. Si se pide:
-  dibujar el dado de las tablas (habría que guardar sus caras).
+  tablas con el número, y la recién hecha entra al momento.
 - «Últimas tiradas» del oráculo, solo las suyas (2026-11-24, 1.1.2), como en
   Tablas y Dados; el enlace de las tres es «Ver historial» y lo abre
   filtrado.

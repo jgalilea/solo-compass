@@ -1,6 +1,8 @@
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
+import type { RolledDie } from "../lib/rolledDice";
 import type { Adventure } from "../lib/journal";
+import { TableDiceRow } from "./RolledDice";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 
 /** The latest roll on this screen: a table, or the quick inspiration. */
@@ -12,11 +14,13 @@ export interface LastResult {
   /** Every history roll it's made of (the inspiration's two tables). */
   rollIds?: string[];
   title: string;
-  /** "d20 · 14", or the inspiration's "Action 3/4, Theme 2/5". */
+  /** "d20", or the inspiration's "Action 3/4, Theme 2/5". */
   detail: string;
   /** Value looked up in the table (single tables only). */
   total?: number;
   text: string;
+  /** The dice of each table rolled, to draw them. */
+  dice: RolledDie[][] | null;
 }
 
 export function ResultPanel({
@@ -50,9 +54,12 @@ export function ResultPanel({
             {!inline && last.total !== undefined && ` → ${last.total}`}
           </span>
         </div>
-        <p className={inline ? "mt-2 text-parchment" : "mt-3 text-lg font-medium leading-snug text-parchment"}>
-          {last.text}
-        </p>
+        <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 ${inline ? "mt-2" : "mt-3"}`}>
+          {last.dice && <TableDiceRow groups={last.dice} size="sm" animate />}
+          <p className={`min-w-32 flex-1 ${inline ? "text-parchment" : "text-lg font-medium leading-snug text-parchment"}`}>
+            {last.text}
+          </p>
+        </div>
       </div>
 
       {activeAdventure && (

@@ -50,12 +50,13 @@ interface UseJournalResult {
   setAdventureStatus: (id: string, status: AdventureStatus) => void;
   setAdventureNotes: (id: string, notes: string) => void;
   setCastDescription: (adventureId: string, key: string, text: string) => void;
+  /** Returns the new entry's id. */
   addEntry: (
     adventureId: string,
     kind: JournalLineKind,
     text: string,
     linkedRollId?: string,
-  ) => void;
+  ) => string;
   removeEntry: (id: string) => void;
   /** One place up or down in the journal (across sessions too). */
   moveEntry: (id: string, direction: "up" | "down") => void;
@@ -310,6 +311,7 @@ export function useJournal(): UseJournalResult {
       updateAdventures((prev) =>
         prev.map((a) => (a.id === adventureId ? { ...a, updatedAt: now } : a)),
       );
+      return entry.id;
     },
     [updateEntries, updateAdventures, setInsertionPoint],
   );

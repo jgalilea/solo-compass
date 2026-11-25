@@ -3,14 +3,16 @@ import { cardPurpose } from "../lib/cards";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { formatAnswer } from "../lib/i18n/answerText";
-import { readRolledDice } from "../lib/diceNotation";
-import { rolledTotal, rolledWhat } from "../lib/rolledDice";
+import { readRolledDice, rollAgain } from "../lib/diceNotation";
+import { rolledTotal, rolledWhat, tableDice } from "../lib/rolledDice";
+import { tableRollDie, type TableRollEntry } from "../lib/history";
+import { interpolate } from "../lib/i18n";
 import { Die } from "./Die";
-import { RolledDice } from "./RolledDice";
+import { RolledDice, TableDiceRow } from "./RolledDice";
 import { oracleDice } from "../lib/oracle";
 import { ROLE_COLOR } from "../lib/oracleEngines";
 import { PlayingCard } from "./PlayingCard";
-import { IconChevronRight, IconDice, IconTable } from "./icons/Icons";
+import { IconChevronRight, IconDice, IconRepeat, IconTable } from "./icons/Icons";
 
 const ANSWER_COLOR: Record<string, string> = {
   si: "text-yes",
@@ -28,10 +30,13 @@ export function RecentRolls({
   limit = 3,
   kind,
   className = "",
+  onRepeat,
 }: {
   limit?: number;
   kind: "oraculo" | "tabla" | "dados";
   className?: string;
+  /** The dice screen: rolls the same dice again (a card can't be). */
+  onRepeat?: (text: string) => void;
 }) {
   const { status, entries } = useHistoryContext();
   const { t } = useLocaleContext();
@@ -99,19 +104,56 @@ export function RecentRolls({
               )
             ) : (
               <>
-                <IconTable size={16} className="shrink-0 text-parchment-faint" />
+                <TableDice entry={entry} />
                 <span className="min-w-0 text-parchment-dim">
-                  {entry.tableName} <span className="whitespace-nowrap tabular-nums text-parchment-faint">· {entry.total}</span>
+                  {entry.tableName}
+                  {/* A lone die already says it. */}
+                  {!(tableRollDie(entry) ?? "d66").match(/^d(?!66$)/) && (
+                    <span className="whitespace-nowrap tabular-nums text-parchment-faint"> · {entry.total}</span>
+                  )}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-right text-parchment/85">
                   {entry.resultText}
                 </span>
               </>
             )}
+            {onRepeat && entry.kind === "dados" && (
+              <RepeatButton text={entry.text} onRepeat={entry.card ? undefined : onRepeat} />
+            )}
           </li>
         ))}
       </ul>
     </section>
+  );
+}
+
+function RepeatButton({ text, onRepeat }: { text: string; onRepeat?: (text: string) => void }) {
+  const { t } = useLocaleContext();
+  // A card, or a roll the dice don't read: only its place, so the results stay in line.
+  if (!onRepeat || !rollAgain(text, () => 0)) return <span className="w-4 shrink-0" />;
+  const label = interpolate(t.dice.repeat, { roll: rolledWhat(text) });
+  return (
+    <button
+      type="button"
+      onClick={() => onRepeat(text)}
+      aria-label={label}
+      title={label}
+      className="-m-2.5 shrink-0 rounded-lg p-2.5 text-parchment-dim transition hover:text-gold active:scale-95"
+    >
+      <IconRepeat size={16} />
+    </button>
+  );
+}
+
+/** A table roll's dice, or the table's icon if it isn't known which. */
+function TableDice({ entry }: { entry: TableRollEntry }) {
+  const die = tableRollDie(entry);
+  const dice = die && tableDice(die, entry.total);
+  if (!dice) return <IconTable size={16} className="shrink-0 text-parchment-faint" />;
+  return (
+    <span className="-mx-1.5 -my-1 flex shrink-0">
+      <TableDiceRow groups={[dice]} />
+    </span>
   );
 }
 

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -117,5 +117,38 @@ test("rolls a table of one's own and keeps the language picked", async ({ page }
   await expect(page.getByRole("link", { name: "Oracle", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Botín del faro" })).toBeVisible();
 
+  expect(errors).toEqual([]);
+});
+
+test("draws the dice of table rolls from before the history kept them", async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto("./#/tablas");
+  await page.getByLabel("Buscar tabla").first().fill("gancho");
+  await page.getByRole("button", { name: "Tirar d6" }).first().click();
+  await page.goto("./#/historial");
+  await expect(page.getByText(/Tirada: d6 → \d/)).toBeVisible();
+
+  // The backup as an older version made it, restored.
+  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar todo" }).click();
+  const backup = JSON.parse(readFileSync(await (await download).path(), "utf8"));
+  expect(backup.history).toHaveLength(1);
+  expect(backup.history[0].dice).toBe("d6");
+  delete backup.history[0].dice;
+  const path = testInfo.outputPath("old.json");
+  writeFileSync(path, JSON.stringify(backup));
+  await page.locator('input[type=file][accept*="json"]').setInputFiles(path);
+  await page.getByRole("button", { name: /Sustituir todo/ }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goto("./#/historial");
+  await expect(page.getByText(/Tirada: d6 → \d/)).toBeVisible();
+
+  // Kept, not worked out each time.
+  await page.reload();
+  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  const again = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar todo" }).click();
+  expect(JSON.parse(readFileSync(await (await again).path(), "utf8")).history[0].dice).toBe("d6");
   expect(errors).toEqual([]);
 });

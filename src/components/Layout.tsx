@@ -7,6 +7,7 @@ import { isGuideOpen, openGuide, subscribeGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { useTableDiceFill } from "../hooks/useTableDiceFill";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { focusHotkeyTarget, isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
 import { KOFI_URL } from "../lib/support";
@@ -90,6 +91,8 @@ export function Layout() {
 
   // The other screens and the bigger dialogs, fetched once this one is up.
   useEffect(() => preloadAll(), []);
+
+  useTableDiceFill();
 
   // "Keep the screen on" (Settings), for as long as the app is open.
   useEffect(() => watchKeepScreenOn(), []);

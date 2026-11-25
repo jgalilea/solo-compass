@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useSavedRollsContext } from "../hooks/useSavedRollsContext";
@@ -7,7 +7,7 @@ import { INPUT_CLASS } from "../lib/journalUi";
 import { isRollable, savedRollLabel, type SavedRoll } from "../lib/savedRolls";
 import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
 import { loadFavoriteDice, saveFavoriteDice } from "../lib/diceFavorites";
-import { DiceTool } from "./PlayTools";
+import { DiceTool, type DiceToolHandle } from "./PlayTools";
 import { RecentRolls } from "./RecentRolls";
 import { Toast } from "./Toast";
 import { IconCheck, IconDice, IconPencil, IconPlus, IconStar, IconTrash } from "./icons/Icons";
@@ -23,6 +23,7 @@ export function DiceView() {
   const { t } = useLocaleContext();
   const { adventures, activeAdventureId } = useJournalContext();
   const active = adventures.find((a) => a.id === activeAdventureId) ?? null;
+  const tool = useRef<DiceToolHandle>(null);
   const [logged, setLogged] = useState(0);
   const dismissLogged = useCallback(() => setLogged(0), []);
 
@@ -41,10 +42,10 @@ export function DiceView() {
             <p className="text-xs text-parchment-dim">
               {active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
             </p>
-            <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" />
+            <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" handle={tool} />
           </section>
           {/* As on the Oracle screen: the latest dice rolls, and the full history. */}
-          <RecentRolls kind="dados" limit={5} />
+          <RecentRolls kind="dados" limit={5} onRepeat={(text) => tool.current?.repeat(text)} />
         </div>
         <SavedRollsPanel />
       </div>

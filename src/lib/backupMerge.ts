@@ -72,7 +72,10 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     (theirs.editedAt ?? theirs.timestamp) > (mine.editedAt ?? mine.timestamp) ? theirs : mine,
   ).filter((e) => !gone.has(e.id) && kept.has(e.adventureId));
 
-  const history = unionById(local.history, incoming.history, (mine) => mine)
+  const history = unionById(local.history, incoming.history, (mine, theirs) =>
+    // A free roll logged since on the other device.
+    mine.adventureId || !theirs.adventureId ? mine : { ...mine, adventureId: theirs.adventureId },
+  )
     .filter((h) => !gone.has(h.id))
     .sort((a, b) => b.timestamp - a.timestamp);
 

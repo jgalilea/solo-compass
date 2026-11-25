@@ -296,6 +296,7 @@ blockquote { margin: 0; padding: .2rem 0 .2rem .8rem; border-left: 3px solid col
 .die { display: inline-flex; flex-direction: column; align-items: center; min-width: 2.75rem; max-width: 100%; border: 1px solid var(--color-ink-border); border-radius: .5rem; padding: .15rem .5rem; font-weight: 600; }
 .die small { font-size: .65rem; font-weight: 400; color: var(--color-parchment-dim); }
 .drawn-row { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; }
+.result.drawn-row > span:last-child { flex: 1; min-width: 8rem; }
 .drawn, .drawn span { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
 .drawn svg { flex: none; filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / .4)); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 .die .drawn-row { justify-content: center; }

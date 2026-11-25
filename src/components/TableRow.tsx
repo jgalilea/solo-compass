@@ -47,12 +47,14 @@ export function TableRow({
   return (
     <li
       className={[
-        "rounded-2xl border bg-ink-800/50 p-4 transition-colors sm:p-5",
+        // min-w-0: a long word in the name breaks instead of widening the list.
+        "min-w-0 rounded-2xl border bg-ink-800/50 p-4 transition-colors sm:p-5",
         last ? "border-gold/40" : "border-ink-border",
       ].join(" ")}
     >
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
+      {/* On the narrowest phones the button goes below the name. */}
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="min-w-[8.25rem] flex-1">
           <div className="flex items-start gap-1.5">
             <h2 className="min-w-0 break-words font-display text-lg leading-snug text-parchment">{table.name}</h2>
             <button

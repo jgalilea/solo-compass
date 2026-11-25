@@ -101,6 +101,7 @@ export interface Dictionary {
     saveFormula: string;
     saveFormulaHint: string;
     saved: string;
+    repeat: string;
     trayHint: string;
     saveToHistory: string;
     builtinTitle: string;
@@ -543,6 +544,12 @@ export interface Dictionary {
     kindDice: string;
     kindCards: string;
     freeRoll: string;
+    log: string;
+    logTitle: string;
+    searchLabel: string;
+    searchPlaceholder: string;
+    searchClear: string;
+    searchNoResults: string;
     deletedAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;

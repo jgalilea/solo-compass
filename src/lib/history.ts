@@ -2,6 +2,7 @@ import { createCollection, diffById } from "./collectionStore";
 import type { OracleRoll } from "./oracle";
 import type { Dictionary } from "./i18n";
 import { makeId } from "./ids";
+import type { DiceType } from "./tables";
 import { cardIdentity, isDeckId, type DeckId } from "./cards";
 
 export interface TableRollEntry {
@@ -12,6 +13,8 @@ export interface TableRollEntry {
   tableName: string;
   rolls: number[];
   total: number;
+  /** What it was rolled with, to draw it; older rolls get it once (historyDice.ts). */
+  dice?: DiceType;
   resultText: string;
   favorite: boolean;
 }
@@ -34,6 +37,13 @@ export interface DiceRollEntry {
  * free roll, made with no adventure.
  */
 export type HistoryEntry = (OracleRoll | TableRollEntry | DiceRollEntry) & { adventureId?: string };
+
+/** What a table roll was made with; of an older one, only a d66 can be told (it kept its two dice). */
+export function tableRollDie(entry: Pick<TableRollEntry, "dice" | "rolls" | "total">): DiceType | null {
+  if (entry.dice) return entry.dice;
+  const [tens, ones] = entry.rolls;
+  return entry.rolls.length === 2 && tens * 10 + ones === entry.total ? "d66" : null;
+}
 
 export function createDiceRollEntry(
   text: string,
@@ -127,7 +137,9 @@ function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEn
     if (typeof v.tableName !== "string" || typeof v.resultText !== "string" || !Array.isArray(v.rolls) || !isNumber(v.total)) {
       return null;
     }
-    return { ...(v as unknown as TableRollEntry), favorite };
+    const entry: TableRollEntry = { ...(v as unknown as TableRollEntry), favorite };
+    if (typeof v.dice !== "string" || !/^d[1-9]\d*$/.test(v.dice)) delete entry.dice;
+    return entry;
   }
   if (v.kind === "dados") {
     if (typeof v.text !== "string" || !v.text.trim()) return null;

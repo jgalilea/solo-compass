@@ -3,14 +3,15 @@ import { cardPurpose, showDraws } from "../lib/cards";
 import { Die } from "./Die";
 import { readRolledDice } from "../lib/diceNotation";
 import { RollResult } from "./RollResult";
-import { RolledDice } from "./RolledDice";
+import { RolledDice, TableDiceRow } from "./RolledDice";
 import { PlayingCard } from "./PlayingCard";
 import { formatOracleResult } from "../lib/i18n/answerText";
 import { oracleDice } from "../lib/oracle";
 import { ROLE_COLOR } from "../lib/oracleEngines";
-import type { HistoryEntry } from "../lib/history";
+import { tableDice } from "../lib/rolledDice";
+import { tableRollDie, type HistoryEntry } from "../lib/history";
 import { Link } from "react-router-dom";
-import { IconJournal, IconStar, IconTrash } from "./icons/Icons";
+import { IconJournal, IconPencil, IconStar, IconTrash } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 
@@ -38,6 +39,7 @@ export function HistoryEntryCard({
   adventureName,
   onRequestDelete,
   onToggleFavorite,
+  onLog,
 }: {
   entry: HistoryEntry;
   /** The adventure it was rolled for (none: a free roll) and its name (null: deleted since). */
@@ -45,6 +47,8 @@ export function HistoryEntryCard({
   adventureName?: string | null;
   onRequestDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  /** Logs a free roll in a journal; none if there's no adventure to. */
+  onLog?: (entry: HistoryEntry) => void;
 }) {
   const { t } = useLocaleContext();
   const [dragX, setDragX] = useState(0);
@@ -122,6 +126,8 @@ export function HistoryEntryCard({
   const revealDelete = dragX < -4;
 
   const rolledDice = entry.kind === "dados" && !entry.card ? readRolledDice(entry.text) : null;
+  const tableDie = entry.kind === "tabla" ? tableRollDie(entry) : null;
+  const tableRolled = entry.kind === "tabla" && tableDie ? tableDice(tableDie, entry.total) : null;
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
@@ -190,7 +196,7 @@ export function HistoryEntryCard({
         </div>
 
         {/* Which story it belongs to, or that it was a free roll. */}
-        <p className="mt-1 flex min-w-0 items-center gap-1 text-xs text-parchment-dim">
+        <div className="mt-1 flex min-w-0 items-center gap-1 text-xs text-parchment-dim">
           <IconJournal size={12} className="shrink-0" />
           {adventureId && adventureName ? (
             <Link
@@ -203,7 +209,17 @@ export function HistoryEntryCard({
           ) : (
             <span className="truncate italic">{adventureId ? t.history.deletedAdventure : t.history.freeRoll}</span>
           )}
-        </p>
+          {!adventureId && onLog && (
+            <button
+              type="button"
+              onClick={() => onLog(entry)}
+              className="-my-2 ml-auto flex shrink-0 items-center gap-1 py-2 pl-2 font-medium text-gold/90 transition hover:text-gold"
+            >
+              <IconPencil size={12} />
+              {t.history.log}
+            </button>
+          )}
+        </div>
 
         {entry.kind === "oraculo" ? (
           <div className="mt-2">
@@ -252,14 +268,17 @@ export function HistoryEntryCard({
             </div>
           )
         ) : (
-          <div className="mt-2">
-            <p className="text-sm text-parchment/90">{entry.resultText}</p>
-            <p className="mt-1 text-xs text-parchment-dim">
-              {interpolate(t.history.rollLabel, {
-                rolls: entry.rolls.join(" · "),
-                total: entry.total,
-              })}
-            </p>
+          <div className="mt-2 flex items-center gap-3">
+            {tableRolled && <TableDiceRow groups={[tableRolled]} size="sm" />}
+            <div className="min-w-0">
+              <p className="break-words text-sm text-parchment/90">{entry.resultText}</p>
+              <p className="mt-1 text-xs text-parchment-dim">
+                {interpolate(t.history.rollLabel, {
+                  rolls: tableDie ?? entry.rolls.join(" · "),
+                  total: entry.total,
+                })}
+              </p>
+            </div>
           </div>
         )}
       </div>

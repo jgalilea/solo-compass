@@ -25,6 +25,34 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.2.0",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XIX · La memoria de los dados",
+        intro: "Mara descubre que sus dados lo recuerdan todo: basta con saber preguntarles.",
+        items: [
+          "Las tiradas en tablas también se dibujan, cada una con su dado (un d66 son dos d6): en el resultado, el diario, las últimas tiradas, el historial y la página exportada. También las de antes.",
+          "El historial tiene buscador: encuentra aquella pregunta, aquella tabla o aquel resultado.",
+          "¿Tiraste sin darte cuenta de que la aventura estaba en pausa? Desde el historial, «Apuntar» lleva esa tirada libre al diario que elijas.",
+          "En la pestaña Dados, las últimas tiradas se repiten con un toque.",
+          "En los móviles más estrechos, las tablas de nombre largo ya no se salen de la pantalla.",
+        ],
+      },
+      en: {
+        title: "Chapter XIX · The memory of dice",
+        intro: "Mara finds out her dice remember everything: you only have to know how to ask.",
+        items: [
+          "Table rolls are drawn too, each with its die (a d66 is two d6): in the result, the journal, the latest rolls, the history and the exported page. Earlier ones as well.",
+          "The history has a search: find that question, that table or that result.",
+          "Rolled without noticing the adventure was paused? From the history, “Log it” takes that free roll to the journal you pick.",
+          "On the Dice tab, the latest rolls can be made again with one tap.",
+          "On the narrowest phones, tables with long names no longer run off the screen.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.1.3",
     date: "2026-11-24",
     text: {

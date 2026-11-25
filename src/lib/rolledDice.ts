@@ -71,3 +71,30 @@ export function rolledWhat(roll: string): string {
 export function rolledTotal(roll: string): string {
   return roll.slice(roll.lastIndexOf(" -> ") + 4).split(" ")[0];
 }
+
+/**
+ * The dice of each table rolled, from a table or generator roll's
+ * detail ("Ironsworn: Action d100=42", "Action d66=34, Theme d66=25"):
+ * a d66 is its two d6. Null if there are none, or any can't be drawn.
+ */
+export function readTableDice(detail: string): RolledDie[][] | null {
+  const groups: RolledDie[][] = [];
+  for (const [, count, sides, value] of detail.matchAll(/(?<![\p{L}\d])(\d*)d(\d+)(?:=(\d+)(?![\w.]))?/gu)) {
+    // Some other dice, or a "d6" in a table's name: it isn't known what came up.
+    if (count || value === undefined) return null;
+    const dice = tableDice(`d${sides}`, Number(value));
+    if (!dice) return null;
+    groups.push(dice);
+  }
+  return groups.length > 0 && canDrawDice(groups.flat()) ? groups : null;
+}
+
+/** The dice a table was rolled with, by what came up ("d66", 34: a 3 and a 4). */
+export function tableDice(die: string, total: number): RolledDie[] | null {
+  const sides = Number(die.slice(1));
+  if (die === "d66") {
+    const pair = [Math.floor(total / 10), total % 10];
+    return pair.every((v) => v >= 1 && v <= 6) ? pair.map((value) => ({ sides: 6, value })) : null;
+  }
+  return total >= 1 && total <= sides && total < 1000 ? [{ sides, value: total }] : null;
+}

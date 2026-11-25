@@ -756,6 +756,15 @@ export function readRolledDice(text: string): RolledDie[] | null {
   }
 }
 
+/** The same roll made again, by its text ("Attack d20+5 -> 19 (14 + 5)"), with what it was for; null if it can't be. */
+export function rollAgain(text: string, random?: () => number): string | null {
+  const arrow = text.lastIndexOf(" -> ");
+  if (arrow < 0) return null;
+  const words = text.slice(0, arrow).trim().split(/\s+/);
+  const roll = rollFormula(words.pop()!, random);
+  return roll && [...words, roll].join(" ");
+}
+
 /**
  * Takes the description out: "// …" or "# …" to the end, "[ … ]" and
  * "/* … *\/" anywhere. Notation inside them isn't rolled.

@@ -388,3 +388,6 @@ export function IconMajorArcana(props: IconProps) {
 export function IconShuffle(props: IconProps) {
   return <TablerIcon icon={Tabler.IconArrowsShuffle} {...props} />;
 }
+export function IconRepeat(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconRepeat} {...props} />;
+}

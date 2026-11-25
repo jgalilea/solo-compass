@@ -7,6 +7,7 @@ import {
   saveHistoryChanges,
   type HistoryEntry,
 } from "../lib/history";
+import type { DiceType } from "../lib/tables";
 import { announceChange, onExternalChange } from "../lib/sync";
 import { useLocaleContext } from "./useLocaleContext";
 import { useStoredList } from "./useStoredList";
@@ -22,6 +23,10 @@ interface UseHistoryResult {
   /** Puts a deleted roll (Undo) back in its place, by date. */
   restoreEntry: (entry: HistoryEntry) => void;
   toggleFavorite: (id: string) => void;
+  /** The adventure a roll is for (null: a free roll). */
+  setAdventure: (id: string, adventureId: string | null) => void;
+  /** What older table rolls were made with, by id. */
+  setTableDice: (dice: ReadonlyMap<string, DiceType>) => void;
   clear: () => void;
   retry: () => void;
 }
@@ -137,6 +142,27 @@ export function useHistory(): UseHistoryResult {
     [persist],
   );
 
+  const setAdventure = useCallback(
+    (id: string, adventureId: string | null) => {
+      persist((prev) =>
+        prev.map((e) => {
+          if (e.id !== id) return e;
+          const free = { ...e };
+          delete free.adventureId;
+          return adventureId ? { ...free, adventureId } : free;
+        }),
+      );
+    },
+    [persist],
+  );
+
+  const setTableDice = useCallback(
+    (dice: ReadonlyMap<string, DiceType>) => {
+      persist((prev) => prev.map((e) => (e.kind === "tabla" && !e.dice && dice.has(e.id) ? { ...e, dice: dice.get(e.id) } : e)));
+    },
+    [persist],
+  );
+
   const clear = useCallback(() => {
     // So a merged backup from another device doesn't bring them back.
     recordDeletions(latest.current.map((e) => e.id));
@@ -163,6 +189,8 @@ export function useHistory(): UseHistoryResult {
     removeEntry,
     restoreEntry,
     toggleFavorite,
+    setAdventure,
+    setTableDice,
     clear,
     retry,
   };

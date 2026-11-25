@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { createDiceRollEntries, type DiceRollEntry } from "../lib/history";
@@ -19,9 +19,10 @@ import { useMeaningTables } from "../hooks/useMeaningTables";
 import { normalizeForSearch } from "../lib/text";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
+import { smoothBehavior } from "../lib/scrolling";
 import { announce } from "../lib/announce";
 import { DiceHelp } from "./DiceHelp";
-import { readRolledDice, rollFormula, withEdge, type Edge } from "../lib/diceNotation";
+import { readRolledDice, rollAgain, rollFormula, withEdge, type Edge } from "../lib/diceNotation";
 import { isRollable, rollSaved, savedRollLabel } from "../lib/savedRolls";
 import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
 import { loadFavoriteDice } from "../lib/diceFavorites";
@@ -209,6 +210,11 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
   );
 }
 
+export interface DiceToolHandle {
+  /** Rolls again what a roll's text says, into the tray. */
+  repeat: (text: string) => void;
+}
+
 /**
  * Rolls from your own system: they accumulate ("d20 -> 14, d6 -> 3")
  * with an optional text in front, and are logged together as a single
@@ -230,7 +236,8 @@ export function DiceTool({
   adventureId,
   onRolled,
   dice = "favorites",
-}: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all" }) {
+  handle,
+}: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all"; handle?: Ref<DiceToolHandle> }) {
   const { t } = useLocaleContext();
   const { addEntry } = useJournalContext();
   const { rolls: savedRolls, load: loadSavedRolls, addRoll } = useSavedRollsContext();
@@ -265,6 +272,17 @@ export function DiceTool({
     // The tray changes silently: say what came up.
     announce(spokenRoll(trayText(roll)));
   }
+
+  const trayRef = useRef<HTMLDivElement>(null);
+  useImperativeHandle(handle, () => ({
+    repeat(text) {
+      const roll = rollAgain(text);
+      if (!roll) return;
+      setTray((prev) => [...prev, { text: roll, dice: readRolledDice(roll) }]);
+      announce(spokenRoll(roll));
+      trayRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
+    },
+  }));
 
   function removeFromTray(items: TrayItem[]) {
     const gone = new Set(items);
@@ -475,9 +493,12 @@ export function DiceTool({
           It and its buttons are always there, a row high, so
           rolling or clearing doesn't push what's below up and down. */}
       <div
+        ref={trayRef}
         aria-live="polite"
         aria-label={t.journal.diceTrayLabel}
         className={[
+          // Clear of the phone's bar and header when scrolled to.
+          "scroll-mb-36 scroll-mt-20",
           // As high as a row of cards, or of dice.
           "flex items-center rounded-xl border p-2",
           cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-24",

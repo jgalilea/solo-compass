@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { Select } from "./Select";
 import { HistoryEntryCard } from "./HistoryEntryCard";
+import { LogRollDialog } from "./LogRollDialog";
+import { rollJournalLines, searchHistory } from "../lib/rollLog";
+import { interpolate } from "../lib/i18n";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
-import { IconArrowLeft, IconChevronDown, IconHistory, IconJournal, IconTrash } from "./icons/Icons";
+import { IconArrowLeft, IconCheck, IconChevronDown, IconClose, IconHistory, IconJournal, IconSearch, IconTrash } from "./icons/Icons";
 import type { HistoryEntry } from "../lib/history";
 
 type Filter = "todo" | "oraculo" | "tabla" | "dados" | "favoritas";
@@ -25,7 +28,7 @@ const ALL = "";
 const FREE = "-";
 
 export function HistoryView() {
-  const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, clear, retry } =
+  const { status, entries, error, removeEntry, restoreEntry, toggleFavorite, setAdventure, clear, retry } =
     useHistoryContext();
   const { t } = useLocaleContext();
   // Coming from the Oracle, Tables or Dice screen: their rolls only, and back there.
@@ -33,7 +36,7 @@ export function HistoryView() {
   const from = searchParams.get("tipo");
   const origin = from === "oraculo" || from === "tabla" || from === "dados" ? from : null;
   const [filter, setFilter] = useState<Filter>(origin ?? "todo");
-  const { adventures, entries: journalEntries } = useJournalContext();
+  const { adventures, activeAdventureId, entries: journalEntries, addEntry: addJournalEntry, removeEntry: removeJournalEntry } = useJournalContext();
   const adventureNames = useMemo(() => new Map(adventures.map((a) => [a.id, a.name])), [adventures]);
   // Rolls from before they kept their adventure: the journal entry
   // linked to them says which one (oracle and table rolls logged there).
@@ -56,18 +59,54 @@ export function HistoryView() {
   function deleteWithUndo(id: string) {
     const entry = entries.find((e) => e.id === id);
     removeEntry(id);
+    setLogged(null);
     if (entry) setDeletedEntry(entry);
   }
+
+  // A free roll (the adventure was paused, say) can still go to a journal:
+  // the only adventure there is, or the one picked, the active one first.
+  const openAdventures = useMemo(
+    () =>
+      adventures.filter((a) => a.status !== "archived").sort((a, b) => Number(b.id === activeAdventureId) - Number(a.id === activeAdventureId)),
+    [adventures, activeAdventureId],
+  );
+  const [logging, setLogging] = useState<HistoryEntry | null>(null);
+  const [logged, setLogged] = useState<{ rollId: string; entryIds: string[]; name: string } | null>(null);
+  const dismissLogged = useCallback(() => setLogged(null), []);
+
+  function logIn(entry: HistoryEntry, adventure: { id: string; name: string }) {
+    const entryIds = rollJournalLines(t, entry).map((line) => addJournalEntry(adventure.id, line.kind, line.text, entry.id));
+    setAdventure(entry.id, adventure.id);
+    setLogging(null);
+    setDeletedEntry(null);
+    setLogged({ rollId: entry.id, entryIds, name: adventure.name });
+  }
+
+  function undoLog({ rollId, entryIds }: { rollId: string; entryIds: string[] }) {
+    for (const id of entryIds) removeJournalEntry(id);
+    setAdventure(rollId, null);
+  }
+
+  function startLog(entry: HistoryEntry) {
+    if (openAdventures.length === 1) logIn(entry, openAdventures[0]);
+    else setLogging(entry);
+  }
+
+  const [query, setQuery] = useState("");
+  // Typing stays quick with thousands of rolls.
+  const search = useDeferredValue(query);
 
   const filtered = useMemo(() => {
     const byAdventure =
       adventureFilter === ALL
         ? entries
         : entries.filter((e) => (adventureFilter === FREE ? !adventureOf(e) : adventureOf(e) === adventureFilter));
-    if (filter === "todo") return byAdventure;
-    if (filter === "favoritas") return byAdventure.filter((e) => e.favorite);
-    return byAdventure.filter((e) => e.kind === filter);
-  }, [entries, filter, adventureFilter, adventureOf]);
+    const byKind =
+      filter === "todo"
+        ? byAdventure
+        : byAdventure.filter((e) => (filter === "favoritas" ? e.favorite : e.kind === filter));
+    return searchHistory(t, byKind, search);
+  }, [entries, filter, adventureFilter, adventureOf, search, t]);
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const showMore = useCallback(() => setShown((n) => n + PAGE_SIZE), []);
@@ -148,7 +187,7 @@ export function HistoryView() {
       </header>
 
       {status === "ready" && entries.length > 0 && (
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
           <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl md:flex-1">
             {filters.map(([key, label]) => (
               <button
@@ -187,6 +226,31 @@ export function HistoryView() {
               ))}
             </Select>
           </label>
+          <label className="relative flex min-w-0 md:basis-full lg:ml-auto lg:basis-72">
+            <IconSearch size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint" />
+            <input
+              data-hotkey="write"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShown(PAGE_SIZE);
+              }}
+              placeholder={t.history.searchPlaceholder}
+              aria-label={t.history.searchLabel}
+              enterKeyHint="search"
+              className="w-full min-w-0 rounded-xl border border-ink-border bg-ink-900/70 py-2 pl-9 pr-9 text-base text-parchment placeholder:text-parchment-dim/50 focus:border-gold focus:outline-none md:text-sm"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label={t.history.searchClear}
+                className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
+              >
+                <IconClose size={15} />
+              </button>
+            )}
+          </label>
         </div>
       )}
 
@@ -211,12 +275,14 @@ export function HistoryView() {
       {status === "ready" && entries.length > 0 && filtered.length === 0 && (
         <EmptyState
           title={
-            filter === "favoritas"
+            search.trim()
+              ? interpolate(t.history.searchNoResults, { query: search.trim() })
+              : filter === "favoritas"
               ? t.history.emptyFavoritesTitle
               : t.history.emptyFilterTitle
           }
           description={
-            filter === "favoritas" ? t.history.emptyFavoritesDescription : undefined
+            filter === "favoritas" && !search.trim() ? t.history.emptyFavoritesDescription : undefined
           }
         />
       )}
@@ -231,6 +297,7 @@ export function HistoryView() {
                 adventureName={adventureOf(entry) ? (adventureNames.get(adventureOf(entry)!) ?? null) : undefined}
                 onRequestDelete={deleteWithUndo}
                 onToggleFavorite={toggleFavorite}
+                onLog={openAdventures.length > 0 ? startLog : undefined}
               />
             </li>
           ))}
@@ -259,6 +326,27 @@ export function HistoryView() {
             setConfirmingClear(false);
           }}
           onCancel={() => setConfirmingClear(false)}
+        />
+      )}
+
+      {logging && (
+        <LogRollDialog
+          adventures={openAdventures}
+          activeId={activeAdventureId}
+          onPick={(adventure) => logIn(logging, adventure)}
+          onClose={() => setLogging(null)}
+        />
+      )}
+
+      {logged && (
+        <Toast
+          key={logged.rollId}
+          Icon={IconCheck}
+          title={interpolate(t.dice.loggedIn, { name: logged.name })}
+          closeLabel={t.common.close}
+          action={{ label: t.common.undo, onClick: () => undoLog(logged) }}
+          duration={6000}
+          onDismiss={dismissLogged}
         />
       )}
 
