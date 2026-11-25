@@ -2,11 +2,16 @@ import { useId, useMemo } from "react";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { computeAdventureStats } from "../lib/journalStats";
+import { computeDiceStats } from "../lib/diceStats";
+import { computeAdventureStats, mostNamed } from "../lib/journalStats";
+import { buildCast } from "../lib/lonelogTags";
 import type { JournalEntry } from "../lib/lonelog";
 import { ActivityHeatmap } from "./ActivityHeatmap";
+import { DiceStatsSection } from "./DiceStatsSection";
 import { IconChart } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
+import { NamedList } from "./NamedList";
+import { SessionStatsSection } from "./SessionStatsSection";
 import { Modal } from "./Modal";
 
 /**
@@ -31,11 +36,17 @@ export function AdventureStatsDialog({
     () => computeAdventureStats(entries, new Map(history.map((h) => [h.id, h]))),
     [entries, history],
   );
+  const dice = useMemo(() => computeDiceStats(entries), [entries]);
+  const named = useMemo(() => mostNamed(entries, buildCast(entries), 5), [entries]);
   const number = new Intl.NumberFormat(t.dateLocale);
   const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" });
 
   const { oracle } = stats;
   const yesTenths = oracle.total ? Math.round((oracle.si / oracle.total) * 10) : 0;
+  // Against the chances of what was asked, if they're known; otherwise
+  // (an imported journal, a cleared history) just how often it says yes.
+  const { oracleChance: chance } = stats;
+  const chanceMood = chance.mood && { generous: s.chanceGenerous, stubborn: s.chanceStubborn, fair: s.chanceFair }[chance.mood];
   const mood = yesTenths >= 6 ? s.moodKind : yesTenths <= 4 ? s.moodStubborn : s.moodFair;
   const longDay = (iso: string) => date.format(new Date(`${iso}T12:00`));
   const firstDay = stats.first !== null ? longDay(stats.first) : null;
@@ -81,13 +92,31 @@ export function AdventureStatsDialog({
               <ActivityHeatmap activity={stats.activity} longestStreak={stats.longestStreak} />
             )}
 
+            {stats.sessions > 1 && <SessionStatsSection sessions={stats.perSession} />}
+
+            {named.characters.length + named.places.length > 0 && (
+              <section className="flex flex-col gap-3">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.namedHeading}</h3>
+                <div className="grid gap-2.5 md:grid-cols-2">
+                  {named.characters.length > 0 && <NamedList title={s.namedCharacters} items={named.characters} />}
+                  {named.places.length > 0 && <NamedList title={s.namedPlaces} items={named.places} />}
+                </div>
+                <p className="text-xs text-parchment-dim">{s.namedHint}</p>
+              </section>
+            )}
+
             <section className="flex flex-col gap-3">
               <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.oracleHeading}</h3>
               {oracle.total === 0 ? (
                 <p className="text-sm text-parchment-dim">{s.noOracle}</p>
               ) : (
                 <>
-                  <p className="text-sm text-parchment">{interpolate(mood, { pct: yesTenths })}</p>
+                  <p className="text-sm text-parchment">{chanceMood ?? interpolate(mood, { pct: yesTenths })}</p>
+                  {chanceMood && (
+                    <p className="text-xs text-parchment-dim">
+                      {interpolate(s.chanceNote, { total: chance.total, expected: Math.round(chance.expected), yes: chance.yes })}
+                    </p>
+                  )}
                   {/* Colour plus the count beside each one: some themes are nearly monochrome. */}
                   <div className="flex h-2.5 overflow-hidden rounded-full bg-ink-900" aria-hidden>
                     <span className="bg-yes" style={{ width: `${(oracle.si / oracle.total) * 100}%` }} />
@@ -130,6 +159,8 @@ export function AdventureStatsDialog({
                 )}
               </section>
             )}
+
+            {dice.total > 0 && <DiceStatsSection stats={dice} />}
           </>
         )}
       </DialogBody>

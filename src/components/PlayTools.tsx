@@ -17,7 +17,7 @@ import { loadFavoriteTableIds } from "../lib/tableFavorites";
 import { gameOfTable } from "../lib/tableGames";
 import { useMeaningTables } from "../hooks/useMeaningTables";
 import { normalizeForSearch } from "../lib/text";
-import { INPUT_CLASS } from "../lib/journalUi";
+import { INPUT_CLASS, lastOwnRoll } from "../lib/journalUi";
 import { interpolate } from "../lib/i18n";
 import { smoothBehavior } from "../lib/scrolling";
 import { announce } from "../lib/announce";
@@ -32,7 +32,7 @@ import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
 import { TwistCounter } from "./TwistCounter";
-import { IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import { IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconRepeat, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
 import { generatorGames, generatorTables } from "../lib/generators";
 
@@ -239,7 +239,7 @@ export function DiceTool({
   handle,
 }: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all"; handle?: Ref<DiceToolHandle> }) {
   const { t } = useLocaleContext();
-  const { addEntry } = useJournalContext();
+  const { addEntry, entries: journalEntries } = useJournalContext();
   const { rolls: savedRolls, load: loadSavedRolls, addRoll } = useSavedRollsContext();
   const { addEntry: addHistoryEntry } = useHistoryContext();
   useEffect(() => loadSavedRolls(), [loadSavedRolls]);
@@ -283,6 +283,24 @@ export function DiceTool({
       trayRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" });
     },
   }));
+
+  // On the game table, the adventure's last roll can be made again (the
+  // Dice screen has its latest rolls for that).
+  const last = useMemo(
+    () => (dice === "favorites" && adventureId && tray.length === 0 ? lastOwnRoll(journalEntries, adventureId) : null),
+    [dice, adventureId, tray.length, journalEntries],
+  );
+  function repeatLast() {
+    const again = (last?.rolls ?? []).flatMap((roll) => {
+      const text = rollAgain(`${[roll.label, roll.die].filter(Boolean).join(" ")} -> 0`);
+      return text ? [text] : [];
+    });
+    if (again.length === 0) return;
+    if (!label.trim()) setLabel(last!.label);
+    setTray(again.map((text) => ({ text, dice: readRolledDice(text) })));
+    announce(again.map(spokenRoll).join(", "));
+  }
+  const lastText = last && [last.label, last.rolls.map((r) => [r.label, r.die].filter(Boolean).join(" ")).join(", ")].filter(Boolean).join(" · ");
 
   function removeFromTray(items: TrayItem[]) {
     const gone = new Set(items);
@@ -506,7 +524,8 @@ export function DiceTool({
         ].join(" ")}
       >
         {rolls.length === 0 ? (
-          <p className="px-1 text-xs text-parchment-faint">
+          <div className="flex min-w-0 flex-col items-start gap-2 px-1">
+          <p className="text-xs text-parchment-faint">
             {cards.tool === "cards"
               ? adventureId
                 ? t.dice.cardsHint
@@ -515,6 +534,18 @@ export function DiceTool({
                 ? t.journal.diceHint
                 : t.dice.trayHint}
           </p>
+          {last && cards.tool === "dice" && (
+            <button
+              type="button"
+              onClick={repeatLast}
+              title={interpolate(t.dice.repeat, { roll: lastText! })}
+              className="flex max-w-full items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+            >
+              <IconRepeat size={14} className="shrink-0" />
+              <span className="truncate">{interpolate(t.dice.repeat, { roll: lastText! })}</span>
+            </button>
+          )}
+          </div>
         ) : (
           <ul className="flex w-full flex-wrap gap-1.5">
             {tray.map((item, i) =>

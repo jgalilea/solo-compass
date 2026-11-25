@@ -549,6 +549,43 @@ function ModePicker({
 
   useDismiss(open, rootRef, () => setOpen(false));
 
+  // Never past what's seen of the screen (the phone's keyboard covers part
+  // of it, and the page doesn't scroll behind): what's left scrolls inside.
+  const menuRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const menu = menuRef.current;
+    const composer = menu?.offsetParent;
+    if (!open || !menu || !composer) return;
+    const viewport = window.visualViewport;
+    const fit = () => {
+      const header = document.querySelector("header");
+      const pinned = header && getComputedStyle(header).position === "sticky" ? header.offsetHeight : 0;
+      const top = (viewport?.offsetTop ?? 0) + pinned;
+      menu.style.maxHeight = `${Math.max(140, composer.getBoundingClientRect().top - top - 16)}px`;
+    };
+    fit();
+    const targets = [window, ...(viewport ? [viewport] : [])];
+    for (const target of targets) {
+      target.addEventListener("resize", fit);
+      target.addEventListener("scroll", fit);
+    }
+    return () => {
+      for (const target of targets) {
+        target.removeEventListener("resize", fit);
+        target.removeEventListener("scroll", fit);
+      }
+    };
+  }, [open]);
+
+  function toggle() {
+    // Choosing needs the screen, not the keyboard: it's back on picking.
+    // Only now, with the tap done (see keepTextFocus).
+    if (!open && window.matchMedia("(pointer: coarse)").matches && document.activeElement instanceof HTMLTextAreaElement) {
+      document.activeElement.blur();
+    }
+    setOpen((v) => !v);
+  }
+
   const kinds: { mode: ComposerMode; label: string; hint: string }[] = COMPOSER_KINDS.map((k) => ({
     mode: k,
     label: { note: t.journal.kindNote, action: t.journal.kindAction, consequence: t.journal.kindConsequence }[k],
@@ -582,7 +619,7 @@ function ModePicker({
     <div ref={rootRef} className="shrink-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-label={interpolate(t.journal.kindMenuLabel, { kind: current.label })}
         title={current.label}
         aria-haspopup="menu"
@@ -608,8 +645,9 @@ function ModePicker({
 
       {open && (
         <div
+          ref={menuRef}
           role="menu"
-          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 max-h-[calc(100dvh-12rem)] overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-96"
+          className="animate-fade-up absolute inset-x-3 bottom-full z-40 mb-2 overflow-y-auto overscroll-contain rounded-2xl border border-ink-border bg-ink-800 py-1.5 shadow-2xl sm:right-auto sm:w-96"
         >
           {kinds.map((o) => {
             const Icon = MODE_ICON[o.mode];

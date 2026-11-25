@@ -5,8 +5,10 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { Select } from "./Select";
 import { HistoryEntryCard } from "./HistoryEntryCard";
+import { ImportedRollCard } from "./ImportedRollCard";
 import { LogRollDialog } from "./LogRollDialog";
 import { rollJournalLines, searchHistory } from "../lib/rollLog";
+import { importedRolls, searchImportedRolls } from "../lib/importedRolls";
 import { interpolate } from "../lib/i18n";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
@@ -108,9 +110,22 @@ export function HistoryView() {
     return searchHistory(t, byKind, search);
   }, [entries, filter, adventureFilter, adventureOf, search, t]);
 
+  // An imported journal's own rolls (the sample's) were never made here:
+  // with its adventure picked they're listed too, after those that were.
+  const imported = useMemo(
+    () => (adventureFilter === ALL || adventureFilter === FREE ? [] : importedRolls(journalEntries, adventureFilter)),
+    [journalEntries, adventureFilter],
+  );
+  const filteredImported = useMemo(
+    () => searchImportedRolls(filter === "todo" ? imported : imported.filter((r) => r.kind === filter), search),
+    [imported, filter, search],
+  );
+  const total = filtered.length + filteredImported.length;
+  const anything = entries.length > 0 || imported.length > 0;
+
   const [shown, setShown] = useState(PAGE_SIZE);
   const showMore = useCallback(() => setShown((n) => n + PAGE_SIZE), []);
-  const hasMore = filtered.length > shown;
+  const hasMore = total > shown;
   const moreRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const button = moreRef.current;
@@ -186,7 +201,7 @@ export function HistoryView() {
         </p>
       </header>
 
-      {status === "ready" && entries.length > 0 && (
+      {status === "ready" && anything && (
         <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
           <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl md:flex-1">
             {filters.map(([key, label]) => (
@@ -264,7 +279,7 @@ export function HistoryView() {
         />
       )}
 
-      {status === "ready" && entries.length === 0 && (
+      {status === "ready" && !anything && (
         <EmptyState
           icon={<IconHistory size={28} />}
           title={t.history.emptyTitle}
@@ -272,7 +287,7 @@ export function HistoryView() {
         />
       )}
 
-      {status === "ready" && entries.length > 0 && filtered.length === 0 && (
+      {status === "ready" && anything && total === 0 && (
         <EmptyState
           title={
             search.trim()
@@ -287,7 +302,7 @@ export function HistoryView() {
         />
       )}
 
-      {status === "ready" && filtered.length > 0 && (
+      {status === "ready" && total > 0 && (
         <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtered.slice(0, shown).map((entry) => (
             <li key={entry.id}>
@@ -299,6 +314,11 @@ export function HistoryView() {
                 onToggleFavorite={toggleFavorite}
                 onLog={openAdventures.length > 0 ? startLog : undefined}
               />
+            </li>
+          ))}
+          {filteredImported.slice(0, Math.max(shown - filtered.length, 0)).map((roll) => (
+            <li key={roll.entry.id}>
+              <ImportedRollCard roll={roll} />
             </li>
           ))}
         </ul>

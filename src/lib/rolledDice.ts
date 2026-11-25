@@ -20,8 +20,8 @@ export interface RolledDie {
 export const MAX_DRAWN_DICE = 12;
 
 /** Whether these dice are worth drawing: not too many, and each number fits its die. */
-export function canDrawDice(dice: readonly RolledDie[]): boolean {
-  return dice.length > 0 && dice.length <= MAX_DRAWN_DICE && dice.every((d) => Math.abs(d.value) < 1000);
+export function canDrawDice(dice: readonly RolledDie[], max = MAX_DRAWN_DICE): boolean {
+  return dice.length > 0 && dice.length <= max && dice.every((d) => Math.abs(d.value) < 1000);
 }
 
 // What a journal in either language calls each oracle's dice (`oracleDice`

@@ -275,6 +275,25 @@ export function splitOwnRolls(text: string): OwnRolls | null {
   return { label: label.trim(), rolls: [{ label: "", die, result: result.trim() }] };
 }
 
+/**
+ * The player's last own roll in an adventure (what was rolled and what
+ * for), to make it again from the game table; null if there's none. A
+ * draw of cards isn't one.
+ */
+export function lastOwnRoll(entries: readonly JournalEntry[], adventureId: string): OwnRolls | null {
+  let last: JournalEntry | null = null;
+  let found: OwnRolls | null = null;
+  for (const entry of entries) {
+    if (entry.kind !== "roll" || entry.adventureId !== adventureId || (last && entry.timestamp < last.timestamp)) continue;
+    const own = splitOwnRolls(entry.text);
+    const rolls = own?.rolls.filter((roll) => !roll.die.startsWith("draw=")) ?? [];
+    if (!own || rolls.length === 0) continue;
+    last = entry;
+    found = { label: own.label, rolls };
+  }
+  return found;
+}
+
 /** "8 (7 + 1)": the total, and how it was reached if it says. */
 export function splitRollTotal(result: string): { total: string; faces: string | null } {
   const m = result.match(/^(\S+)\s+\((.+)\)$/);

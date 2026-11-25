@@ -723,9 +723,9 @@ class DetailReader {
 
 /**
  * The dice of a roll as it's written ("Attack 4d6dl1 -> 14 (6+5+3, 2✗)"),
- * to draw them. Null if it isn't one, or they're too many.
+ * to draw them. Null if it isn't one, or they're more than `max`.
  */
-export function readRolledDice(text: string): RolledDie[] | null {
+export function readRolledDice(text: string, max?: number): RolledDie[] | null {
   const arrow = text.lastIndexOf(" -> ");
   if (arrow < 0) return null;
   const formula = text.slice(0, arrow).split(/\s+/).at(-1)!.toLowerCase();
@@ -749,7 +749,7 @@ export function readRolledDice(text: string): RolledDie[] | null {
       if (node.kind !== "dice" || !/^1?d(\d+|%)/.test(formula)) return null;
       dice = [{ sides: node.sides, value: Number(m[1]) }];
     }
-    return canDrawDice(dice) ? dice : null;
+    return canDrawDice(dice, max) ? dice : null;
   } catch (e) {
     if (e instanceof Unreadable) return null;
     throw e;

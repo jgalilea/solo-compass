@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { HistoryEntry } from "./history";
 import type { JournalEntry } from "./lonelog";
-import { activityLevel, computeAdventureStats, lastYearByMonth, longestStreak } from "./journalStats";
+import { buildCast } from "./lonelogTags";
+import { activityLevel, computeAdventureStats, lastYearByMonth, longestStreak, mostNamed } from "./journalStats";
 
 let ts = Date.UTC(2026, 10, 1, 12);
 function entry(kind: JournalEntry["kind"], text: string, linkedRollId?: string): JournalEntry {
@@ -43,6 +44,43 @@ describe("adventure stats", () => {
       diceRolls: 2,
       daysPlayed: 1,
     });
+  });
+
+  it("counts each session, and what comes before the first", () => {
+    const stats = computeAdventureStats(
+      [entry("note", "Antes de todo"), entry("session", "Uno"), entry("note", "dos palabras"), entry("roll", "d6 -> 4"), entry("session", "Dos")],
+      new Map(),
+    );
+    expect(stats.perSession).toEqual([
+      { title: null, entries: 1, words: 3 },
+      { title: "Uno", entries: 2, words: 2 },
+      { title: "Dos", entries: 0, words: 0 },
+    ]);
+  });
+
+  it("sets the oracle's yes against the chances of what was asked", () => {
+    const ask = (answer: string, n: number) =>
+      Array.from({ length: n }, (_, i) => ({ kind: "oraculo", id: `${answer}${i}`, answer, oracle: "ironsworn", likelihood: "equilibrado" }) as HistoryEntry);
+    const stats = (history: HistoryEntry[]) =>
+      computeAdventureStats(history.map((h) => entry("roll", "Ironsworn — d100 67 -> Sí", h.id)), new Map(history.map((h) => [h.id, h]))).oracleChance;
+    expect(stats([...ask("si", 5), ...ask("no", 5)])).toMatchObject({ total: 10, yes: 5, expected: 5, mood: "fair" });
+    expect(stats(ask("si", 10)).mood).toBe("generous");
+    expect(stats(ask("no", 10)).mood).toBe("stubborn");
+    expect(stats(ask("si", 9)).mood).toBeNull();
+  });
+
+  it("counts who is named, with a tag or in plain words", () => {
+    const entries = [
+      entry("note", "[N:Sal|tabernero] espera en [L:El molino]"),
+      entry("note", "Sal me sirve. Voy a el Molino."),
+      entry("note", "Echo sal a la sopa"),
+      entry("note", "Salvador no es nadie"),
+      entry("note", 'N (Sal): "Adiós"'),
+      entry("note", "[PC:Ana]"),
+    ];
+    const { characters, places } = mostNamed(entries, buildCast(entries), 5);
+    expect(characters.map((c) => [c.name, c.count])).toEqual([["Sal", 3]]);
+    expect(places.map((c) => [c.name, c.count])).toEqual([["El molino", 2]]);
   });
 
   it("an empty adventure has no dates", () => {

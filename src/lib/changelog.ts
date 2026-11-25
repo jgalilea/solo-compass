@@ -25,6 +25,36 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.3.0",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XX · Lo que cuentan los dados",
+        intro: "Entre viaje y viaje, Mara abre su cuaderno y se ríe: ya sabía ella que aquel d20 le tenía manía.",
+        items: [
+          "Las estadísticas de cada aventura miran la suerte de tus dados: si están benditos o malditos, sus rachas, sus golpes de gloria y de infortunio, tu número del destino y cómo se reparten las caras.",
+          "También cuentan qué sesiones fueron más extensas, qué personajes y lugares se nombran más y si el oráculo ha sido generoso o tozudo con lo que le preguntaste.",
+          "Al buscar en el diario puedes quedarte solo con un tipo de entrada: preguntas, diálogos, consecuencias…",
+          "En la mesa de juego, la bandeja vacía ofrece tu última tirada para volver a hacerla con un toque.",
+          "«Ver sus tiradas» de una aventura importada, o de la de ejemplo, ya no sale en blanco: muestra las de su diario.",
+          "En el móvil, el menú de tipos de entrada cierra el teclado al abrirse y, si no cabe, se desplaza.",
+        ],
+      },
+      en: {
+        title: "Chapter XX · What the dice tell",
+        intro: "Between journeys, Mara opens her notebook and laughs: she knew that d20 held a grudge.",
+        items: [
+          "Each adventure's statistics look at the luck of your dice: whether they're blessed or cursed, their runs, their strokes of glory and misfortune, your number of fate and how the faces fall.",
+          "They also tell which sessions were the longest, which characters and places are named the most, and whether the oracle was generous or stubborn with what you asked.",
+          "Searching the journal, you can keep to one kind of entry: questions, dialogue, consequences…",
+          "On the game table, the empty tray offers your last roll, to make it again with one tap.",
+          "The rolls of an imported adventure, or of the sample, no longer come up blank: they're read from its journal.",
+          "On phones, the menu of entry types closes the keyboard when it opens and scrolls if it doesn't fit.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.2.0",
     date: "2026-11-25",
     text: {

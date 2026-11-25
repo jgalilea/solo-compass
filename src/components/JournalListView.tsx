@@ -10,8 +10,9 @@ import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { parseTitleFromMarkdown } from "../lib/lonelog";
 import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
-import { searchEntries } from "../lib/journalSearch";
+import { ENTRY_TYPES, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
 import { normalizeForSearch } from "../lib/text";
+import { FilterChips } from "./FilterChips";
 import { SearchResultList } from "./journalShared";
 import {
   IconCheck,
@@ -49,6 +50,7 @@ export function JournalListView() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
+  const [searchType, setSearchType] = useState<EntryType | null>(null);
   const [newAdventureName, setNewAdventureName] = useState("");
   const [showNewAdventureForm, setShowNewAdventureForm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -81,10 +83,14 @@ export function JournalListView() {
   }
   // The same search also looks inside every journal ("what was that
   // innkeeper called?"), below the matching adventures.
-  const entryMatches = useMemo(
-    () => (search.trim() ? searchEntries(entries, search, ENTRY_RESULTS_LIMIT + 1) : []),
+  const allMatches = useMemo(
+    () => (search.trim() ? searchEntries(entries, search) : []),
     [entries, search],
   );
+  // Only the types found; the one picked waits if this search has none of it.
+  const matchTypes = useMemo(() => new Set(allMatches.map((m) => entryType(m.entry))), [allMatches]);
+  const shownType = searchType && matchTypes.has(searchType) ? searchType : null;
+  const entryMatches = shownType ? allMatches.filter((m) => entryType(m.entry) === shownType) : allMatches;
 
   const orderedActive = order
     .map((id) => byId.get(id))
@@ -355,6 +361,16 @@ export function JournalListView() {
                       : interpolate(t.journal.searchMatchCount, { count: entryMatches.length })}
                 </span>
               </h2>
+              {matchTypes.size > 1 && (
+                <FilterChips
+                  label={t.journal.searchTypeLabel}
+                  allLabel={t.journal.searchTypeAll}
+                  options={ENTRY_TYPES.filter((id) => matchTypes.has(id)).map((id) => [id, t.journal.searchTypes[id]] as const)}
+                  value={shownType}
+                  onChange={setSearchType}
+                  className="-mx-4 px-4"
+                />
+              )}
               <SearchResultList
                 matches={entryMatches.slice(0, ENTRY_RESULTS_LIMIT)}
                 query={search.trim()}

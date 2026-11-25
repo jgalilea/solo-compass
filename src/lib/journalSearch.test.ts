@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { JournalEntry } from "./lonelog";
-import { searchEntries } from "./journalSearch";
+import { entryType, searchEntries } from "./journalSearch";
 import { highlightParts, matchesAllWords } from "./text";
 
 function entry(id: string, kind: JournalEntry["kind"], text: string, timestamp: number, adventureId = "a"): JournalEntry {
@@ -42,6 +42,22 @@ describe("journal search", () => {
       entry("1762717200000-1-abc", "note", "Bram importado", written + 4),
     ];
     expect(searchEntries(entries, "bram").map((m) => m.day)).toEqual(["2026-11-10", "2025-09-03", null]);
+  });
+
+  it("keeps to one type of entry, all of them with no query", () => {
+    const entries = [
+      entry("1", "question", "¿Está Bram?", 1),
+      entry("2", "note", 'N (Bram): "Pasa."', 2),
+      entry("3", "note", "Bram se ríe", 3),
+      entry("4", "note", "\\---\nQuerido Bram\n---\\", 4),
+      entry("5", "note", 'PC: "Hola."', 5),
+    ];
+    expect(entries.map(entryType)).toEqual(["question", "dialogue", "note", "excerpt", "dialogue"]);
+    const ids = (query: string, type: Parameters<typeof searchEntries>[3]) =>
+      searchEntries(entries, query, Infinity, type).map((m) => m.entry.id);
+    expect(ids("bram", "dialogue")).toEqual(["2"]);
+    expect(ids("", "dialogue")).toEqual(["2", "5"]);
+    expect(ids("bram", null)).toEqual(["1", "2", "3", "4"]);
   });
 
   it("highlights the matching parts, keeping the original accents", () => {

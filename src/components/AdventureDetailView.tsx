@@ -8,7 +8,7 @@ import { revealElement, scrollBehaviorFor, smoothBehavior } from "../lib/scrolli
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
-import { ADVENTURE_SEARCH_LIMIT, searchEntries } from "../lib/journalSearch";
+import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
 import { buildCast, castKey, combineSteps, renameInEntry } from "../lib/lonelogTags";
 import { withRollDrawings } from "./drawRolls";
 import { exportAdventureToHtml } from "../lib/htmlExport";
@@ -145,6 +145,7 @@ export function AdventureDetailView() {
   const [statsOpen, setStatsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState<EntryType | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [notebookOpen, setNotebookOpen] = useState(false);
   // The character/place chip last tapped in the journal; the tick makes
@@ -257,9 +258,10 @@ export function AdventureDetailView() {
   };
 
   const searchMatches = useMemo(
-    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1) : []),
-    [searchOpen, adventureEntries, searchQuery],
+    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1, searchType) : []),
+    [searchOpen, adventureEntries, searchQuery, searchType],
   );
+  const searchTypes = useMemo(() => new Set(searchOpen ? adventureEntries.map(entryType) : []), [searchOpen, adventureEntries]);
 
   // Jumping to an entry (from the search): its session is unfolded
   // first, and the scroll happens once it's painted (next effect).
@@ -580,6 +582,9 @@ export function AdventureDetailView() {
           <JournalSearchPanel
             query={searchQuery}
             onQueryChange={setSearchQuery}
+            type={searchType}
+            types={searchTypes}
+            onTypeChange={setSearchType}
             matches={searchMatches}
             onPick={(match) => jumpToEntry(match.entry.id)}
             onClose={() => setSearchOpen(false)}

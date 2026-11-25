@@ -5,10 +5,21 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-25 (historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-25 (estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Diario (2026-11-25, 1.3.0): la búsqueda se filtra por tipo de
+  entrada (`entryType`, `FilterChips`) y las estadísticas dicen cómo salen los
+  dados propios (`diceStats.ts`, `DiceStatsSection`), con rachas, caras
+  extremas, número del destino y mejor/peor sesión (ideas de los módulos de
+  Foundry, sin críticos de un sistema concreto). «Ver sus tiradas» de una
+  aventura importada (la de ejemplo) ya no sale vacío: lee las del diario
+  (`importedRolls.ts`). También: sesiones, más nombrados y oráculo frente a lo
+  esperado; «Volver a tirar» en la bandeja vacía de la mesa de juego; el menú
+  de tipos de entrada cierra el teclado al abrirse y se desplaza por dentro.
+  Descartado a propósito:
+  marcar entradas del diario con estrella (ya está la búsqueda).
 - Historial y tablas (2026-11-25, 1.2.0): buscar en el historial
   (`searchHistory`); «Apuntar» lleva una tirada libre a un diario, con
   Deshacer (`rollJournalLines`, `LogRollDialog`); «Volver a tirar» en las

@@ -1,4 +1,5 @@
 import { playDay, type JournalEntry } from "./lonelog";
+import { noteForm } from "./lonelogLines";
 import { matchesAllWords } from "./text";
 
 export interface EntryMatch {
@@ -9,18 +10,30 @@ export interface EntryMatch {
   day: string | null;
 }
 
+/** What an entry is, to search only those: its kind, or a note's own form. */
+export const ENTRY_TYPES = ["action", "question", "roll", "consequence", "dialogue", "excerpt", "note", "scene", "session"] as const;
+export type EntryType = (typeof ENTRY_TYPES)[number];
+
+export function entryType(entry: Pick<JournalEntry, "kind" | "text">): EntryType {
+  if (entry.kind !== "note") return entry.kind;
+  const { form } = noteForm(entry.text);
+  return form === "dialogue" || form === "excerpt" ? form : "note";
+}
+
+/** How many matches the search inside an adventure lists. */
+export const ADVENTURE_SEARCH_LIMIT = 50;
+
 /**
  * Searches the text of journal entries: every word of the query must
  * appear (in any order, ignoring case and accents), so "posadero
  * nombre" finds "El posadero dice que su nombre es Bram". Results come
  * in the journal's order (oldest first: where a name first shows up is
- * usually where it was introduced), each with the session it belongs to.
+ * usually where it was introduced), each with the session it belongs to. Only those of a
+ * `type`, if given: all of them, with no query.
  */
-/** How many matches the search inside an adventure lists. */
-export const ADVENTURE_SEARCH_LIMIT = 50;
-
-export function searchEntries(entries: JournalEntry[], query: string, limit = Infinity): EntryMatch[] {
-  if (!query.trim()) return [];
+export function searchEntries(entries: JournalEntry[], query: string, limit = Infinity, type: EntryType | null = null): EntryMatch[] {
+  const any = !query.trim();
+  if (any && !type) return [];
   const byAdventure = new Map<string, JournalEntry[]>();
   for (const entry of entries) {
     const list = byAdventure.get(entry.adventureId) ?? [];
@@ -32,7 +45,7 @@ export function searchEntries(entries: JournalEntry[], query: string, limit = In
     let session: JournalEntry | null = null;
     for (const entry of [...list].sort((a, b) => a.timestamp - b.timestamp)) {
       if (entry.kind === "session") session = entry;
-      if (matchesAllWords(entry.text, query)) {
+      if ((!type || entryType(entry) === type) && (any || matchesAllWords(entry.text, query))) {
         matches.push({ entry, sessionTitle: session?.text ?? null, day: playDay(entry, session) });
       }
     }

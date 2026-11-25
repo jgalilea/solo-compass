@@ -465,7 +465,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   );
 }
 
-function EntryContent({
+export function EntryContent({
   entry,
   answer,
   onTagClick,

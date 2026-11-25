@@ -102,7 +102,9 @@ and going back there; unfiltered (H) it belongs to the Oráculo tab. The history
 filters by adventure (or free rolls), searches (`searchHistory`) and logs
 a free roll in a journal after all (`rollJournalLines`, which also
 writes what `usePlayActions` logs), and an adventure's menu opens it
-that way (`?aventura=<id>`). Theme, mode, language, backup and credits all
+that way (`?aventura=<id>`). With one picked, the rolls an imported
+journal came with (the sample's) are listed too, read from its entries
+and never stored (`importedRolls.ts`). Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`, opening `SettingsPanel`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
 (`ActiveAdventureChip`), the same on every screen.
@@ -553,7 +555,8 @@ The tray is a preview: nothing is kept until "Log it" (the journal
 entry, and one history roll per die, kind `"dados"`, its text as the
 journal writes it; starred and filtered there like the oracle's and
 the tables') or, with no adventure, "Save to history"; what's removed
-or cleared isn't kept anywhere (`createDiceRollEntries`). Every
+or cleared isn't kept anywhere (`createDiceRollEntries`). Empty, on the game table it offers the
+adventure's last roll again (`lastOwnRoll`). Every
 history roll keeps the adventure it was for (`adventureId`, set by
 `usePlayActions` and `DiceTool`; older ones are found through the
 journal entry linked to them), shown on its card; none means a free
@@ -615,9 +618,20 @@ settings, merged by the latest).
 `journalSearch.ts` (every query word, accent-insensitive, in journal
 order) is used inside an adventure (header magnifier; jumping unfolds
 the session and highlights the entry via `entry-<id>` ids) and across
-all journals from the list view (navigates with `state.entryId`).
+all journals from the list view (navigates with `state.entryId`), by
+words and by type of entry (`entryType`, `FilterChips`: its kind, or
+dialogue and in-world text; inside an adventure, a type alone lists all
+of it).
 `journalStats.ts` derives the adventure statistics from entries plus
 the linked history, falling back to parsing roll text for imports.
+The player's own dice are counted by die (`diceStats.ts`, read from the
+rolls' text; every die that fell, dropped ones too): whether they run
+high or low, runs, extremes, a favourite face, the sessions furthest
+out. No system's criticals. Besides: what each session had, who and
+where is named most (`mostNamed`) and the oracle's "yes" against the
+chances of what was asked (`oracleChance`, only rolls still in the
+history). Statistics are for fun and curiosity, never goals or
+pressure; role-playing flavour, but always clear what a number is.
 Their heat map (`ActivityHeatmap`) is the last year as one row per
 month and one square per day (31 columns fit a phone), with the
 longest streak of days in a row. Every date shown for an entry (stats,

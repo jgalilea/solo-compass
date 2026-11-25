@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { TABLE_THEMES, type TableTheme } from "../lib/tables";
+import { FilterChips } from "./FilterChips";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { IconChevronRight } from "./icons/Icons";
@@ -25,33 +26,15 @@ export function TableSection({ title, actions, children }: { title: ReactNode; a
  */
 export function ThemeFilter({ value, onChange }: { value: TableTheme | null; onChange: (theme: TableTheme | null) => void }) {
   const { t } = useLocaleContext();
-  const chip = (selected: boolean) =>
-    [
-      "shrink-0 rounded-full border px-3 py-1.5 text-sm transition",
-      // Filled when selected: not colour alone (some themes' gold is near-white).
-      selected
-        ? "border-gold bg-gold font-medium text-ink-950"
-        : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
-    ].join(" ");
   return (
-    <div role="group" aria-label={t.tables.themeFilterLabel} className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:px-0">
-      <div className="flex gap-2 pb-1 lg:flex-wrap">
-        <button type="button" aria-pressed={value === null} onClick={() => onChange(null)} className={chip(value === null)}>
-          {t.tables.allThemes}
-        </button>
-        {TABLE_THEMES.map((theme) => (
-          <button
-            key={theme}
-            type="button"
-            aria-pressed={value === theme}
-            onClick={() => onChange(value === theme ? null : theme)}
-            className={chip(value === theme)}
-          >
-            {t.tables.themes[theme]}
-          </button>
-        ))}
-      </div>
-    </div>
+    <FilterChips
+      label={t.tables.themeFilterLabel}
+      allLabel={t.tables.allThemes}
+      options={TABLE_THEMES.map((theme) => [theme, t.tables.themes[theme]] as const)}
+      value={value}
+      onChange={onChange}
+      className="-mx-4 px-4"
+    />
   );
 }
 
