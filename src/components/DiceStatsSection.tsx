@@ -92,6 +92,7 @@ function DieChart({ die }: { die: DieStats }) {
   // What each would get; only where every bar has the same chance.
   const width = (b: DieStats["bars"][number]) => b.to - b.from;
   const even = die.bars.every((b) => width(b) === width(die.bars[0]));
+  const share = die.count / die.bars.length;
   // With many faces, only the numbers that fit a phone.
   const runs = die.bars.some((b) => b.from !== b.to);
   const labelled = (b: DieStats["bars"][number], i: number) => runs || die.bars.length <= 12 || i === 0 || b.from % 5 === 0;
@@ -122,7 +123,8 @@ function DieChart({ die }: { die: DieStats }) {
             expected: percent.format((b.to - b.from + 1) / (die.sides || 3)),
           }),
         }))}
-        line={even ? die.count / die.bars.length : undefined}
+        // Less than once each says nothing: no face can come up 0.3 times.
+        line={even && share >= 1 ? { at: share, label: interpolate(runs ? s.diceLineRuns : s.diceLine, { count: decimal.format(share) }) } : undefined}
       />
     </li>
   );

@@ -12,7 +12,7 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 - Oráculo y gráficas (2026-11-25, 1.3.1): la tarjeta del oráculo mide lo mismo con
   cualquier respuesta (`OracleVerdictSpace`; el giro de Loner, aparte); ejes,
   valores y detalle al tocar en las gráficas (`ColumnChart`, `countTicks`);
-  una por tipo de dado desde 5 dados (1.3.2; el veredicto, desde 20), con los que faltan.
+  una por tipo de dado desde 5 dados (1.3.2; el veredicto, desde 20; la línea del azar, desde una vez por cara, 1.3.3), con los que faltan.
 - Diario (2026-11-25, 1.3.0): la búsqueda se filtra por tipo de
   entrada (`entryType`, `FilterChips`) y las estadísticas dicen cómo salen los
   dados propios (`diceStats.ts`, `DiceStatsSection`), con rachas, caras

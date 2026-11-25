@@ -784,6 +784,8 @@ export interface Dictionary {
       sessionsChartX: string;
       namedTop: string;
       diceCharts: string;
+      diceLine: string;
+      diceLineRuns: string;
       diceWaiting: string;
       diceWaitingItem: string;
       diceAverage: string;

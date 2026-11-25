@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.3.3",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Interludio · La línea del azar",
+        items: [
+          "En las gráficas de los dados, la línea del azar dice debajo qué es, y espera a tener dados suficientes para decir algo.",
+          "Toca otra vez una barra elegida y la gráfica vuelve a estar como al principio.",
+        ],
+      },
+      en: {
+        title: "Interlude · The line of chance",
+        items: [
+          "On the dice charts, the line of chance says below what it is, and waits for dice enough to mean something.",
+          "Tap a picked bar again and the chart goes back to how it was.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.3.2",
     date: "2026-11-25",
     text: {
