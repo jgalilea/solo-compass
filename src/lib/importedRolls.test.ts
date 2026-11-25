@@ -7,7 +7,7 @@ describe("imported rolls", () => {
     "=== Sesión 1 ===",
     "[Date] 2025-09-03",
     "? ¿Hay guardias?",
-    "d: Recluse — blanco 5 / negro 2 -> Sí",
+    "d: Recluse: blanco 5 / negro 2 -> Sí",
     "@ Ataco",
     "d: d20 -> 14",
     "tbl: Tema d66=25 -> Fuego",

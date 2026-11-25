@@ -54,7 +54,7 @@ describe("oracle rolls in the journal", () => {
     for (const [r, dice, result] of cases) {
       expect(formatOracleDice(t, r)).toBe(dice);
       expect(formatOracleResult(t, r)).toBe(result);
-      expect(splitRollText(`Oráculo — ${dice} -> ${result}`).answer).toBe(r.answer);
+      expect(splitRollText(`Oráculo: ${dice} -> ${result}`).answer).toBe(r.answer);
     }
   });
 

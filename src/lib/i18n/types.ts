@@ -2,7 +2,7 @@ import type { EntryType } from "../journalSearch";
 import type { SceneVerdict } from "../sceneCheck";
 import type { Answer, Likelihood, Qualifier } from "../oracle";
 import type { OracleDiceGroup, OracleId } from "../oracleEngines";
-import type { CastKind } from "../lonelogTags";
+import type { CastKind, CategoryWords } from "../lonelogTags";
 import type { SoloCompassTableId } from "../tableGames";
 import type { TableTheme } from "../tables";
 import type { ThemeId } from "../theme";
@@ -181,6 +181,8 @@ export interface Dictionary {
     shiftKey: string;
     enterKey: string;
   };
+  /** Journal list: the adventures are only in this browser. */
+  backupNote: { title: string; text: string; button: string; failed: string };
   safariNote: {
     text: string;
     moveData: string;
@@ -863,7 +865,7 @@ export interface Dictionary {
     /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */
     kinds: Record<CastKind, string>;
     /** What a clock, a track and a timer are for (the add form). */
-    kindHints: Record<"clock" | "track" | "timer" | "event" | "room" | "foe" | "item" | "wealth", string>;
+    kindHints: Record<"clock" | "track" | "timer" | "event" | "room" | "foe" | "item" | "wealth" | "deck", string>;
     statuses: Record<"open" | "closed" | "abandoned", string>;
     threadsTitle: string;
     threadsEmpty: string;
@@ -877,7 +879,6 @@ export interface Dictionary {
     segmentsLabel: string;
     timerStartLabel: string;
     rollList: string;
-    addThreadButton: string;
     groupCharacters: string;
     groupPlaces: string;
     groupRooms: string;
@@ -887,12 +888,11 @@ export interface Dictionary {
     /** Resource tracking add-on: items and money. */
     inventoryTitle: string;
     inventoryEmpty: string;
-    addInventoryButton: string;
     quantityLabel: string;
     /** Whose purse the money is in. */
     ownerLabel: string;
-    /** A room's categories, as the app writes them (read in either language). */
-    categories: { status: string; exits: string };
+    /** The add-ons' categories, as the app writes and shows them (read in either language). */
+    categories: CategoryWords;
     /** "Use one {name}" / "One more {name}". */
     useOne: string;
     addOne: string;
@@ -916,7 +916,10 @@ export interface Dictionary {
     changePlaceholder: string;
     changeHint: string;
     logButton: string;
-    addButton: string;
+    /** Before the kinds an element can be added of ("Add:"). */
+    addHeading: string;
+    /** {kind} */
+    addOfKind: string;
     addKindLabel: string;
     addNameLabel: string;
     addDetailsLabel: string;

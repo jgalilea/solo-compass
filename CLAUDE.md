@@ -228,8 +228,10 @@ No backend; persistence is split by access pattern, not by feature:
 - **Backup reminder** (`backupReminder.ts`): last backup time in
   `localStorage`; a gold dot on the Settings button only when there are
   10+ journal entries newer than the last backup and it's 14+ days old,
-  snoozed 7 days once Settings is opened. Deliberately no toast or
-  dialog.
+  snoozed 7 days once Settings is opened. The journal list also has a
+  note (`BackupNote`: only in this browser, no cloud, with the export
+  button) while anything has no backup; closed, it's back in 30 days.
+  No toast or dialog, and nothing inside an adventure.
 - **Full backup/restore** (`backup.ts`, wired into `SettingsPanel`): exports
   everything above into one `.json` (download, or "Send" through the
   share sheet, as `.txt` on Chromium), and restores it either by
@@ -376,8 +378,8 @@ visible journal or notebook feature, work it into the sample.
 ### Notebook: pinned notes, characters and places
 
 Each adventure has a notebook (`AdventureNotebook.tsx`): in the left
-column at `xl` (under the session index), a sheet from the adventure
-header below that.
+column at `xl` (under the session index), a sheet from the composer
+(its notebook button, always in reach) below that.
 
 - **Pinned notes**: `notes` on `Adventure` (so they ride along in the
   backup). Edited in place, saved after a short pause; `- [ ]` lines
@@ -411,7 +413,7 @@ header below that.
   start of an action and "N (" at the start of a note list the NPCs and
   PCs (`findActorQuery`; picking writes the name and closes the
   notation), and in the journal the name opens them in the notebook
-  when it's a character there (`characterNamed`; "PC:" is the only PC;
+  when it's a character there (`characterNamed`; "PC:" is the storyline's point of view, or the first PC named, `mainPc`;
   each name of the spec's `@(A > B)` assist and `@(A+B)` joint actors,
   `actorParts`). Keep both strictly as the spec writes them: `@(Name)`
   with no space, `N (Name): ` with one, and `PC: `; a dialogue line in
@@ -421,7 +423,8 @@ header below that.
 descriptions (`t.sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms
   `[R:4|status:cleared|description|exits:N R2]` (`exits:+E R7` adds;
-  Spanish `estado:`/`salidas:` too; fields by order as before 1.7), foes
+  Spanish `estado:`/`salidas:` too, and `pos:`, `owner:`, `where:`, the same
+  category in either language and shown in the app's, `showDetail`; fields by order as before 1.7), foes
   `[F:Thug A|HP 6|pos:Close]` (`foeIsOut` for dead/fled/×0), items
   `[Inv:Torch|×3]`/`[Inv:Torch|×-1]`, decks `[Deck:Main|×38|out:Qs]` and
   purses `[Wealth:Kael|Gold 45|Silver 12]` (one member per owner and
@@ -489,9 +492,10 @@ Loner's Twist Counter is derived from the history, each adventure's
 rolls apart (`lonerTwistCounter`), never stored, and shown beside the oracle's
 name while Loner is picked (`TwistCounter`); the third double rolls its
 two twist tables, preloaded while Loner is selected. In the journal an
-oracle roll is "Name — dice -> answer" (`formatOracleDice`/
-`formatOracleResult`): the "—" is how `splitRollText` tells it from a
-table roll. Licences checked: never add an NC one (Mythic, Juice) or
+oracle roll is "Name: dice -> answer" (`formatOracleDice`/
+`formatOracleResult`), told from any other roll by its dice's names
+(`readOracleDice`); before 1.5.1 it was "Name — dice", still read
+(`fixOldOracle`). Licences checked: never add an NC one (Mythic, Juice) or
 one with no published licence (MUNE).
 
 ### Tables (`src/lib/tables.ts`, `tableGames.ts`, `customTables.ts`)

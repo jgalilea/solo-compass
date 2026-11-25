@@ -286,10 +286,36 @@ function statKey(tag: string): string | null {
   return m ? normalizeForSearch(m[1]) : null;
 }
 
+// The add-ons' own categories, in either language: the same one.
+const KNOWN_CATEGORIES: Record<string, keyof CategoryWords> = {
+  status: "status",
+  estado: "status",
+  exits: "exits",
+  salidas: "exits",
+  pos: "pos",
+  posicion: "pos",
+  owner: "owner",
+  dueno: "owner",
+  duena: "owner",
+  where: "where",
+  lugar: "where",
+  out: "out",
+  fuera: "out",
+};
+
+/** A detail as it's shown: an add-on's category, in the player's language ("owner:Nela" → "dueño:Nela"). */
+export function showDetail(detail: string, words: CategoryWords): string {
+  const category = readCategory(detail);
+  return category && Object.hasOwn(words, category.key) ? `${words[category.key as keyof CategoryWords]}:${category.values}` : detail;
+}
+
 /** A category's name and what it holds; null for any other value. */
 function readCategory(tag: string): { key: string; label: string; values: string } | null {
   const m = tag.match(CATEGORY);
-  return m ? { key: normalizeForSearch(m[1]), label: m[1], values: m[2] } : null;
+  if (!m) return null;
+  const word = normalizeForSearch(m[1]);
+  const key = Object.hasOwn(KNOWN_CATEGORIES, word) ? KNOWN_CATEGORIES[word] : word;
+  return { key, label: m[1], values: m[2] };
 }
 
 /**
@@ -477,8 +503,8 @@ const isPosition = (tag: string) => /^(pos|zone|zona)\s*:/i.test(tag);
 // "depleted", "agotado": an item or supply that's gone.
 const DEPLETED = /^(depleted|agotad[oa]s?|gastad[oa]s?)$/i;
 
-const STATUS = /^(?:status|estado)$/;
-const EXITS = /^(?:exits|salidas)$/;
+const STATUS = /^status$/;
+const EXITS = /^exits$/;
 // As written before 1.7: "exits N:R2, E:R5(secret)", merged by direction.
 const OLD_EXITS = /^(exits|salidas)\s+(.+)$/i;
 // The dungeon crawling add-on's statuses, in English and Spanish.
@@ -556,10 +582,14 @@ function roomTags(room: RoomState): string[] {
   ].filter(Boolean);
 }
 
-/** The categories' names in the player's language ("status" / "estado"). */
+/** The add-ons' categories in the player's language ("status" / "estado"). */
 export interface CategoryWords {
   status: string;
   exits: string;
+  pos: string;
+  owner: string;
+  where: string;
+  out: string;
 }
 
 /**
@@ -831,6 +861,11 @@ export function characterNamed(cast: CastMember[], name: string): CastMember | u
   return cast.find((m) => ACTOR_KINDS.has(m.kind) && normalizeForSearch(m.name) === wanted);
 }
 
+/** Who a bare "PC:" is: the first player character named in the journal. */
+export function mainPc(cast: CastMember[]): CastMember | undefined {
+  return cast.find((m) => m.kind === "pc");
+}
+
 /** The cast members that fit what's typed, all of them, in alphabetical order. */
 export function suggestCast(cast: CastMember[], query: TagQuery): CastMember[] {
   const q = normalizeForSearch(query.text.trim());
@@ -927,7 +962,7 @@ export function renameInEntry(
       )}]`;
     }
     const owner = character
-      ? details.replace(/(\|\s*owner\s*:\s*)([^|]+)/gi, (w, a: string, who: string) => (same(who) ? a + name : w))
+      ? details.replace(/(\|\s*(?:owner|dueñ[oa])\s*:\s*)([^|]+)/gi, (w, a: string, who: string) => (same(who) ? a + name : w))
       : details;
     if (tag.kind !== member.kind) return `[${hash}${prefix}:${tagName}${owner}]`;
     const split = numbered

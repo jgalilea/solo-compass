@@ -5,6 +5,8 @@ import { foeIsOut,
   progressDone,
   renameInEntry,
   buildCast,
+  mainPc,
+  showDetail,
   castKey,
   characterNamed,
   findActorQuery,
@@ -479,7 +481,7 @@ describe("Lonelog 1.7 tags", () => {
     expect(combineSteps("[Inv:Torch|×-1]", "[Inv:Torch|×-1]")).toBe("[Inv:Torch|×-2]");
     expect(combineSteps("[Wealth:Kael|Gold+1]", "[Wealth:Kael|Gold-1]")).toBe("");
     expect(combineSteps("[Wealth:Kael|Gold+1]", "[Wealth:Mara|Gold+1]")).toBeNull();
-    const words = { status: "status", exits: "exits" };
+    const words = { status: "status", exits: "exits", pos: "pos", owner: "owner", where: "where", out: "out" };
     expect(writeDetails("foe", ["HP 6", "Close"], words)).toEqual(["HP 6", "pos:Close"]);
     expect(writeDetails("room", ["cleared", "looted", "library"], words)).toEqual(["status:cleared, looted", "library"]);
     expect(writeDetails("room", ["+looted"], words)).toEqual(["status:+looted"]);
@@ -518,4 +520,26 @@ it("goes on with a clock written as an event, however it's named later", () => {
   const cast = buildCast([entry("note", "[E:Alarm 2/6]", 1), entry("note", "[E:Alarm] [E:Alarm 3]", 2)]);
   expect(cast).toHaveLength(1);
   expect(cast[0]).toMatchObject({ kind: "clock", progress: { value: 3, max: 6 } });
+});
+
+describe("the add-ons' categories in either language", () => {
+  const words = { status: "estado", exits: "salidas", pos: "posición", owner: "dueño", where: "lugar", out: "fuera" };
+  it("shows them in the player's language, and leaves any other as written", () => {
+    expect(showDetail("owner:guild", words)).toBe("dueño:guild");
+    expect(showDetail("dueña:Nela", words)).toBe("dueño:Nela");
+    expect(showDetail("pos:Cerca", words)).toBe("posición:Cerca");
+    for (const detail of ["ánimo:alerta", "15 m", "constructor:x", "wary"]) expect(showDetail(detail, words)).toBe(detail);
+  });
+  it("one replaces the other, whatever its language", () => {
+    const cast = buildCast(
+      ["[Inv:Cuerda|×1|owner:gremio|where:el carro]", "[Inv:Cuerda|lugar:el molino|dueño:Nela]"].map((text, i) => ({
+        id: String(i), adventureId: "a", timestamp: i, kind: "note" as const, text,
+      })),
+    );
+    expect(cast[0].tags).toEqual(["dueño:Nela", "lugar:el molino"]);
+  });
+  it("a bare PC is the first one named", () => {
+    const cast = buildCast(["[PC:Mara]", "[N:Odile]", "[PC:Nela]"].map((text, i) => ({ id: String(i), adventureId: "a", timestamp: i, kind: "note" as const, text })));
+    expect(mainPc(cast)?.name).toBe("Mara");
+  });
 });

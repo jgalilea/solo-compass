@@ -25,6 +25,36 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.5.1",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XXII, al margen · Notas del corrector",
+        items: [
+          "El cuaderno dice todo lo que puedes añadir: un botón para cada cosa, también salas, enemigos, progresos, cuentas atrás, sucesos y mazos.",
+          "Las palabras de los complementos se leen en tu idioma: owner es dueño, where es lugar y pos es posición. Puedes escribirlas en cualquiera de los dos.",
+          "Tocar «Tú» en un diálogo abre a tu personaje en el cuaderno aunque lleves a varios: el primero del diario, o quien viva esa trama.",
+          "El oráculo se apunta con dos puntos, «Recluse: blanco 5 / negro 2», en lugar de la raya. Las tiradas antiguas se ponen al día solas.",
+          "El cuaderno está siempre a mano en móvil y tableta: su botón pasa junto a los dados, abajo, por largo que sea el diario.",
+          "La lista de aventuras avisa de que todo está solo en tu navegador, sin nube ni copias automáticas, con un botón para exportarlo todo.",
+          "La aventura de ejemplo se ha repasado entera: el combate, las tiradas con su veredicto, las correcciones, las tramas y los recursos, como pide Lonelog.",
+        ],
+      },
+      en: {
+        title: "Chapter XXII, in the margin · The proofreader's notes",
+        items: [
+          "The notebook says everything you can add: a button for each thing, rooms, foes, tracks, timers, events and decks too.",
+          "The add-ons' words read in your language (owner, where, pos…), and you can write them in English or in Spanish.",
+          "Tapping “You” in a dialogue opens your character in the notebook even with several: the journal's first, or whoever lives that storyline.",
+          "The oracle is logged with a colon, “Recluse: white 5 / black 2”, instead of a dash. Old rolls are brought up to date by themselves.",
+          "The notebook is always in reach on phone and tablet: its button is now beside the dice, at the bottom, however long the journal.",
+          "The list of adventures warns that everything is only in your browser, with no cloud or automatic backup, and has a button to export it all.",
+          "The sample adventure has been gone over in full: the fight, rolls with their verdict, corrections, storylines and resources, as Lonelog asks.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.5.0",
     date: "2026-11-25",
     text: {

@@ -59,7 +59,7 @@ describe("sample adventure", () => {
       // Sessions keep their day of play.
       expect(entries.filter((e) => e.kind === "session").map((e) => e.date)).toEqual(["2026-10-03", "2026-10-10", "2026-10-17"]);
       // Scenes, one of them a fight, and a scene tested with the oracle.
-      expect(entries.filter((e) => e.kind === "scene").map((e) => parseScene(e.text).id)).toEqual(["S1", "S1a", "S2", "S2.1", "S2.2", "T1-S3", "T2-S1", "T1-S4", "S5"]);
+      expect(entries.filter((e) => e.kind === "scene").map((e) => parseScene(e.text).id)).toEqual(["S1", "S1a", "S2", "S2.1", "S2.2", "T1-S1", "T2-S1", "T1-S2", "S3", "S4"]);
       expect(entries.some((e) => e.kind === "scene" && parseScene(e.text).combat)).toBe(true);
       expect(entries.some((e) => e.kind === "question" && e.text === askedQuestion(t, t.journal.sceneCheckQuestion, SCENE_CHECK_LIKELIHOOD))).toBe(true);
       // Every kind of roll: tables, quick inspiration and dice formulas.
@@ -71,17 +71,17 @@ describe("sample adventure", () => {
       expect(rolls.some((e) => isGenerator(e.text) && e.text.includes("\n"))).toBe(true);
       expect(rolls.some((e) => splitRollSymbol(e.text).symbol === "result")).toBe(true);
       expect(rolls.some((e) => / vs \d+ -> /.test(e.text))).toBe(true);
-      expect(rolls.some((e) => /^\+\[.+\] -\[.+\] d20/.test(e.text))).toBe(true);
+      expect(rolls.some((e) => / \+\[.+\] -\[.+\] d20/.test(e.text))).toBe(true);
       expect(entries.some((e) => e.kind === "scene" && parseScene(e.text).pov)).toBe(true);
       expect(entries.some((e) => e.kind === "question" && e.text.endsWith(")"))).toBe(true);
-      expect(entries.filter((e) => e.kind === "action").map((e) => splitActor(e.text).actor ?? "").join()).toMatch(/\+.* > /);
+      expect(entries.filter((e) => e.kind === "action").map((e) => splitActor(e.text).actor ?? "").join()).toMatch(/ > .*\+/);
       const all = entries.map((e) => e.text).join("\n");
-      for (const form of [/\|[^|\]:]+>[^|\]]+[|\]]/, /:\+/, /\|×\d/, /\|×-\d/, /\|-\p{L}/u, /\[#/, /\[E:/, /\[Deck:/, /out:\+/, /\[Track:[^\]]+\+1\]/, /\[Timer:[^\]]+-1\]/, /owner:/, /where:/, /pos:/, /\(retcon:/, /\(todo:/, /\(interp:/])
+      for (const form of [/\|[^|\]:]+>[^|\]]+[|\]]/, /:\+/, /\|×\d/, /\|×-\d/, /\|-\p{L}/u, /\[#/, /\[E:/, /\[Deck:/, /(?:out|fuera):\+/, /\[Track:[^\]]+\+1\]/, /\[Timer:[^\]]+-1\]/, /owner:|dueño:/, /where:|lugar:/, /pos:/, /\(retcon:/, /\(todo:/, /\(interp:/])
         expect(all, String(form)).toMatch(form);
       expect(entries.some((e) => noteForm(e.text).form === "dialogue" && /^PC \(/.test(e.text))).toBe(true);
       expect(new Set(entries.map((e) => noteForm(e.text)).flatMap((f) => (f.form === "block" ? [f.name] : [])))).toEqual(new Set(["combat", "dungeon", "resources"]));
       expect(entries.some((e) => e.text.includes("kh1"))).toBe(true);
-      expect(entries.some((e) => e.kind === "roll" && /, \S+ 1d6\+1 ->/.test(e.text))).toBe(true);
+      expect(entries.some((e) => e.kind === "roll" && /, \S+ d20 ->/.test(e.text))).toBe(true);
       // A card drawn, as the cards tool writes it.
       expect(entries.some((e) => e.kind === "roll" && isCardDraw(e.text))).toBe(true);
       // Someone else's action and every special note.
@@ -93,7 +93,7 @@ describe("sample adventure", () => {
     it(`writes its dice rolls exactly as the dice tool would (${lang})`, async () => {
       const { entries } = await build(lang);
       for (const entry of entries) {
-        if (entry.kind !== "roll" || entry.text.includes(" — ")) continue;
+        if (entry.kind !== "roll" || entry.text.includes("Recluse: ")) continue;
         if (isCardDraw(entry.text)) {
           const [, card, name] = entry.text.match(/draw=(\S+) -> (.+)$/)!;
           expect(name).toBe(cardName(card, lang));

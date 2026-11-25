@@ -104,7 +104,7 @@ describe("a draw in the journal", () => {
     expect(readCards("draw=Qh vs red")).toEqual(["Qh"]);
     expect(readCards("draw=Jkr")).toEqual(["Jkr"]);
     expect(readCards("Past=4d, Present=Kh, Future=5Swr")).toEqual(["4d", "Kh", "5Swr"]);
-    for (const text of ["Loot d100=42", "Theme d66=25", "4d6dl1", "draw=The Abyss", "3d6>=4", "Recluse — blanco 3 / negro 5"]) {
+    for (const text of ["Loot d100=42", "Theme d66=25", "4d6dl1", "draw=The Abyss", "3d6>=4", "Recluse: blanco 3 / negro 5"]) {
       expect(readCards(text), text).toBeNull();
     }
   });

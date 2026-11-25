@@ -1,6 +1,6 @@
 import { ANSWER_CODE, readAnswerCode } from "./answerCodes";
 import { isCardDraw } from "./cards";
-import { tableDice } from "./rolledDice";
+import { readOracleDice, tableDice } from "./rolledDice";
 import { loneRoll, OWN_ROLL, splitRollSeries, type OwnRolls } from "./rollLine";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 import { actorParts, noteForm, parseScene, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
@@ -214,8 +214,8 @@ const ANSWER_PATTERNS: [Answer, RegExp][] = [
 ];
 
 /**
- * Splits a roll's text ("Recluse — blanco 3 / negro 5 -> No",
- * "Ironsworn — d100 67 vs 26+ -> Sí · Coincidencia") into the
+ * Splits a roll's text ("Recluse: blanco 3 / negro 5 -> No",
+ * "Ironsworn: d100 67 vs 26+ -> Sí · Coincidencia") into the
  * dice detail and the result. If the detail looks like an oracle roll,
  * it tries to recognise the answer.
  */
@@ -230,9 +230,9 @@ export function splitRollText(text: string): {
   if (i < 0) return { detail: body, result: null, answer: undefined };
   const detail = body.slice(0, i).trim();
   const result = body.slice(i + 2).trim();
-  // "Oracle — dice": table rolls and inspiration never carry a "—". A
+  // "Oracle: white 3 / black 5" ("Oracle — …" before 1.5.1). A
   // bare "-> Yes, but…" is an oracle's answer too (Lonelog §3.2.2).
-  const looksLikeOracle = /—.*\d/.test(detail) || (symbol === "result" && !detail);
+  const looksLikeOracle = (symbol === "d" && (/—.*\d/.test(detail) || readOracleDice(detail) !== null)) || (symbol === "result" && !detail);
   let answer = looksLikeOracle
     ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
     : undefined;
@@ -326,7 +326,7 @@ export function formatIsoDay(iso: string, locale: string): string {
 }
 
 /**
- * Who a bare "@" is in each action of a storyline that says so: the
+ * Who a bare "@" (or "PC:") is in each action of a storyline that says so: the
  * point of view on its first scene line (`T2-S1 *City* @(Jordan)`) holds
  * for all of its scenes. Names by entry id.
  */
@@ -340,7 +340,13 @@ export function storylineViews(groups: EntryGroup[]): Map<string, string> {
       const storyline = id.match(/^(T\d+)-/)?.[1];
       if (storyline && pov) byStoryline.set(storyline, pov);
       current = storyline ? byStoryline.get(storyline) : pov;
-    } else if (entry.kind === "action" && current && !splitActor(entry.text).actor) views.set(entry.id, current);
+    } else if (!current) continue;
+    else if (entry.kind === "action") {
+      if (!splitActor(entry.text).actor) views.set(entry.id, current);
+    } else if (entry.kind === "note") {
+      const form = noteForm(entry.text);
+      if (form.form === "dialogue" && form.pc && !form.name) views.set(entry.id, current);
+    }
   }
   return views;
 }
@@ -355,6 +361,7 @@ export function storylineViews(groups: EntryGroup[]): Map<string, string> {
 export function filterGroups(
   groups: EntryGroup[],
   member: Pick<CastMember, "kind" | "name" | "mentions">,
+  mainPcName?: string,
 ): { groups: EntryGroup[]; count: number } {
   const ids = new Set(member.mentions);
   const name = normalizeForSearch(member.name);
@@ -369,7 +376,9 @@ export function filterGroups(
     }
     if (e.kind !== "note") return false;
     const form = noteForm(e.text);
-    return form.form === "dialogue" && (form.pc && !form.name ? member.kind === "pc" : normalizeForSearch(form.name ?? "") === name);
+    if (form.form !== "dialogue") return false;
+    const speaker = form.name ?? pointsOfView.get(e.id) ?? (form.pc ? mainPcName : undefined);
+    return speaker === undefined ? member.kind === "pc" : normalizeForSearch(speaker) === name;
   };
   const pointsOfView = storylineViews(groups);
   let count = 0;

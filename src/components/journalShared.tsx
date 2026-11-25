@@ -5,7 +5,7 @@ import { RollResult } from "./RollResult";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
-import { castKey, characterNamed, progressDone, progressText, splitTags, tagKey, type CastMember } from "../lib/lonelogTags";
+import { castKey, characterNamed, mainPc, progressDone, progressText, showDetail, splitTags, tagKey, type CastMember } from "../lib/lonelogTags";
 import { actorParts, isGenerator, isTableDefinition, noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
@@ -547,7 +547,7 @@ export function EntryContent({
 
   if (entry.kind === "note") {
     const form = noteForm(entry.text);
-    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} cast={cast} />;
+    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} cast={cast} view={view} />;
   }
 
   if (entry.kind === "roll" && entry.text.includes("\n")) {
@@ -676,12 +676,6 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
   );
 }
 
-/** The player's character, when the notebook has exactly one ("PC:" is them). */
-function onlyPc(cast: CastMember[]): CastMember | undefined {
-  const pcs = cast.filter((m) => m.kind === "pc");
-  return pcs.length === 1 ? pcs[0] : undefined;
-}
-
 /**
  * Who acts (`@(Odile)`) or speaks (`N (Odile):`): Lonelog's notation,
  * not a tag, but when the name is a character in the notebook it opens
@@ -720,10 +714,13 @@ function NoteContent({
   form,
   onTagClick,
   cast,
+  view,
 }: {
   form: Exclude<NoteForm, { form: "plain" }>;
   onTagClick?: (key: string) => void;
   cast: CastMember[];
+  /** Who a bare "PC:" is, in a storyline. */
+  view?: string;
 }) {
   const { t } = useLocaleContext();
   switch (form.form) {
@@ -733,18 +730,20 @@ function NoteContent({
           {form.text}
         </blockquote>
       );
-    case "dialogue":
+    case "dialogue": {
+      const name = form.name ?? (form.pc ? view : undefined);
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
           <span className="mr-1.5 font-semibold text-gold">
-            <CharacterName member={form.name ? characterNamed(cast, form.name) : onlyPc(cast)} onTagClick={onTagClick}>
-              {form.pc && !form.name ? t.journal.dialoguePc : form.speaker}
+            <CharacterName member={name ? characterNamed(cast, name) : mainPc(cast)} onTagClick={onTagClick}>
+              {form.pc && !form.name ? (view ?? t.journal.dialoguePc) : form.speaker}
             </CharacterName>
             :
           </span>
           <TaggedText text={form.text} onTagClick={onTagClick} />
         </p>
       );
+    }
     case "meta":
       return (
         <p className="whitespace-pre-wrap text-sm italic text-parchment-dim">
@@ -782,7 +781,8 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
   if (parts.length === 1 && !parts[0].tag) return text;
   return parts.map((part, i) => {
     if (!part.tag) return part.text;
-    const { kind, name, details, progress } = part.tag;
+    const { kind, name, progress } = part.tag;
+    const details = part.tag.details.map((d) => showDetail(d, t.notebook.categories));
     // The icon never parts from the name's first word at a line's end.
     const firstWord = name.split(" ", 1)[0];
     const content = (

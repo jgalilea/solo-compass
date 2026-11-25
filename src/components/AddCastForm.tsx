@@ -13,32 +13,34 @@ import { NumberField } from "./NumberField";
  */
 export function AddCastForm({
   kinds,
+  initialKind,
   purseOwner,
   onAdd,
   onCancel,
 }: {
   kinds: CastKind[];
+  initialKind: CastKind;
   /** Whose money it is, to start with: the only player character. */
   purseOwner: string | undefined;
   onAdd: (text: string) => void;
   onCancel: () => void;
 }) {
   const { t } = useLocaleContext();
-  const [kind, setKind] = useState<CastKind>(kinds[0]);
+  const [kind, setKind] = useState<CastKind>(initialKind);
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [owner, setOwner] = useState(purseOwner ?? "");
   const [size, setSize] = useState(6);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(initialKind === "deck" ? 52 : 1);
   const hint = kind in t.notebook.kindHints ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints] : t.notebook.addHint;
   const sizeLabel = kind === "timer" ? t.notebook.timerStartLabel : t.notebook.segmentsLabel;
-  const hasDetails = kind === "pc" || kind === "npc" || kind === "place" || kind === "room" || kind === "foe" || kind === "item";
+  const hasDetails = kind === "pc" || kind === "npc" || kind === "place" || kind === "room" || kind === "foe" || kind === "item" || kind === "deck";
 
   function tag(): string {
     if (kind === "thread") return formatTag("thread", name, [t.notebook.statuses.open]);
     if (kind === "clock" || kind === "track") return formatProgressTag(kind, name, 0, size);
     if (kind === "timer") return formatProgressTag(kind, name, size);
-    if (kind === "item") return formatTag("item", name, [`×${quantity}`, ...details.split(",")]);
+    if (kind === "item" || kind === "deck") return formatTag(kind, name, [`×${quantity}`, ...details.split(",")]);
     if (kind === "wealth") return formatQuantity("wealth", name, String(quantity), owner.trim());
     // A group's size is a count, not part of its name: "Goblins×4".
     const group = kind === "foe" ? name.match(/^(.*?\S)\s*[×x]\s*(\d+)$/) : null;
@@ -113,7 +115,7 @@ export function AddCastForm({
           <NumberField value={size} onChange={setSize} min={1} max={99} label={sizeLabel} />
         </div>
       )}
-      {(kind === "item" || kind === "wealth") && (
+      {(kind === "item" || kind === "wealth" || kind === "deck") && (
         <div className="flex items-center gap-2 text-xs text-parchment-dim">
           <span className="flex-1">{t.notebook.quantityLabel}</span>
           <NumberField value={quantity} onChange={setQuantity} min={0} label={t.notebook.quantityLabel} />

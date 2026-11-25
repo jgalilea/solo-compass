@@ -103,13 +103,13 @@ describe("fitBlockWindow", () => {
 
 describe("splitRollText", () => {
   it("splits the detail from the result and recognises the oracle answer", () => {
-    expect(splitRollText("Recluse — blanco 5 / negro 2 -> Sí, y además.")).toEqual({
-      detail: "Recluse — blanco 5 / negro 2",
+    expect(splitRollText("Recluse: blanco 5 / negro 2 -> Sí, y además.")).toEqual({
+      detail: "Recluse: blanco 5 / negro 2",
       result: "Sí, y además.",
       answer: "si",
     });
-    expect(splitRollText("Recluse — white 1 / black 1 -> Contradiction").answer).toBe("contradiccion");
-    expect(splitRollText("Recluse — white 2 / black 4 -> No, but.").answer).toBe("no");
+    expect(splitRollText("Recluse: white 1 / black 1 -> Contradiction").answer).toBe("contradiccion");
+    expect(splitRollText("Recluse: white 2 / black 4 -> No, but.").answer).toBe("no");
   });
 
   it("doesn't mistake a normal roll for the oracle", () => {
@@ -186,7 +186,7 @@ describe("splitRollSeries", () => {
 
   it("leaves a single roll, the oracle or free text as a normal roll", () => {
     expect(splitRollSeries("d20 -> 14")).toBeNull();
-    expect(splitRollSeries("Recluse — blanco 5 / negro 2 -> Sí")).toBeNull();
+    expect(splitRollSeries("Recluse: blanco 5 / negro 2 -> Sí")).toBeNull();
     expect(splitRollSeries("Sigilo -> Sí, d6 -> 3")).toBeNull();
   });
 });
@@ -278,7 +278,7 @@ describe("filterGroups", () => {
       entry("session", "S1"),
       entry("note", "I reach the [L:Inn]."),
       entry("question", "Is [N:Odile|wary] awake?"),
-      entry("roll", "Recluse — white 5 / black 2 -> Yes"),
+      entry("roll", "Recluse: white 5 / black 2 -> Yes"),
       entry("consequence", "She dries tankards."),
       entry("note", 'N (Odile): "Maybe."'),
       entry("action", "(Odile) Shuts the door"),
@@ -313,7 +313,7 @@ describe("splitOwnRolls", () => {
 
   it("leaves oracles, tables and prose as they are", () => {
     for (const text of [
-      "Recluse — white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7",
+      "Recluse: white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7",
       "gen: Inspiration (Action d66=26, Theme d66=43) -> Hide", "d20+5=17 vs DC 15 -> Success", "d20 -> Success, barely", "d20", "-> Yes",
     ]) {
       expect(splitOwnRolls(text), text).toBeNull();

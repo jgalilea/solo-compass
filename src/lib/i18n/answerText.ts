@@ -38,8 +38,8 @@ export function formatOracleResult(t: Dictionary, roll: OracleRoll): string {
 }
 
 /**
- * A roll's dice for the journal, after the oracle's name and a "—"
- * (how an oracle roll is told apart from a table roll):
+ * A roll's dice for the journal, after the oracle's name and a colon
+ * (readOracleDice tells them from other rolls):
  * "white 4 / black 2", "d100 67 vs 26+", "answer 5 vs 4+ / modifier 1".
  */
 export function formatOracleDice(t: Dictionary, roll: OracleRoll): string {

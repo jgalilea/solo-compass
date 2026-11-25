@@ -15,7 +15,6 @@ import {
   IconArrowLeft,
   IconChart,
   IconDownload,
-  IconNotebook,
   IconPause,
   IconPencil,
   IconPlay,
@@ -32,7 +31,7 @@ import {
 /**
  * An adventure's header: back to the list, its name (renamed in
  * place), whether it's the active one, and its buttons: search,
- * notebook and sessions (where they aren't columns) and the menu with
+ * sessions (where they aren't a column) and the menu with
  * everything rarely used.
  */
 export function AdventureHeader({
@@ -41,8 +40,6 @@ export function AdventureHeader({
   hasEntries,
   searchOpen,
   onToggleSearch,
-  notebookOpen,
-  onOpenNotebook,
   groups,
   onJumpToSession,
   onJumpToEntry,
@@ -58,8 +55,6 @@ export function AdventureHeader({
   hasEntries: boolean;
   searchOpen: boolean;
   onToggleSearch: () => void;
-  notebookOpen: boolean;
-  onOpenNotebook: () => void;
   groups: EntryGroup[];
   onJumpToSession: (index: number) => void;
   onJumpToEntry: (id: string) => void;
@@ -168,19 +163,6 @@ export function AdventureHeader({
               <IconSearch size={21} />
             </button>
           )}
-          <button
-            type="button"
-            onClick={onOpenNotebook}
-            aria-label={t.notebook.openLabel}
-            title={t.notebook.openLabel}
-            aria-expanded={notebookOpen}
-            className={[
-              "-m-1 shrink-0 rounded-full p-1.5 transition xl:hidden",
-              notebookOpen ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
-            ].join(" ")}
-          >
-            <IconNotebook size={21} />
-          </button>
           {/* With a single session there's nowhere to jump to. */}
           {(groups.length > 1 || groups.some((g) => g.items.some((e) => e.kind === "scene"))) && (
             <SessionMenu groups={groups} onJump={onJumpToSession} onJumpToEntry={onJumpToEntry} className="xl:hidden" />

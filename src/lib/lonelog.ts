@@ -34,6 +34,7 @@ import type { CastDescription } from "./journal";
 import { escapeInner, SCENE_ID, splitCompact, unescapeInner } from "./lonelogCompact";
 import { buildCast, castKey, endsInsideTag, formatTag, purseKey, splitTags } from "./lonelogTags";
 import { isoDate } from "./isoDate";
+import { fixOldOracle } from "./rolledDice";
 import { fromRollLine, toRollLine } from "./rollLine";
 
 export type JournalLineKind =
@@ -589,7 +590,7 @@ export function parseMarkdownToEntries(
       content = legacySessionMatch[1];
     } else if (ROLL_PREFIX.test(line)) {
       kind = "roll";
-      content = fromRollLine(line.replace(ROLL_PREFIX, ""));
+      content = fixOldOracle(fromRollLine(line.replace(ROLL_PREFIX, "")));
     } else if (ACTION_PREFIX.test(line)) {
       kind = "action";
       content = line.replace(ACTION_PREFIX, "");

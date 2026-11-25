@@ -26,6 +26,7 @@ import {
   splitTags,
   threadStatus,
   type CastMember,
+  showDetail,
 } from "./lonelogTags";
 import type { Answer } from "./oracle";
 import { expandAnswer } from "./i18n/answerText";
@@ -79,12 +80,12 @@ function escapeHtml(s: string): string {
 }
 
 /** Prose with its character/place tags as chips; line breaks kept. */
-function taggedHtml(text: string): string {
+function taggedHtml(t: Dictionary, text: string): string {
   return splitTags(text)
     .map((part) => {
       if (!part.tag) return escapeHtml(part.text);
       const { name, details, progress } = part.tag;
-      const extra = [progress ? progressText(progress) : "", ...details].filter(Boolean).join(" · ");
+      const extra = [progress ? progressText(progress) : "", ...details.map((d) => showDetail(d, t.notebook.categories))].filter(Boolean).join(" · ");
       return `<span class="tag"><b>${escapeHtml(name)}</b>${extra ? ` <small>${escapeHtml(extra)}</small>` : ""}</span>`;
     })
     .join("")
@@ -122,20 +123,20 @@ function rollHtml(t: Dictionary, entry: JournalEntry, answer: Answer | undefined
 }
 
 /** A note as the journal draws it: a narrative block, a line of dialogue, an aside, a block marker. */
-function noteHtml(text: string): string {
+function noteHtml(t: Dictionary, text: string, view?: string): string {
   const form = noteForm(text);
   switch (form.form) {
     case "excerpt":
       return `<blockquote>${escapeHtml(form.text).replace(/\n/g, "<br>")}</blockquote>`;
     case "dialogue":
-      return `<p><b>${escapeHtml(form.speaker)}:</b> ${taggedHtml(form.text)}</p>`;
+      return `<p><b>${escapeHtml((form.pc && !form.name && view) || form.speaker)}:</b> ${taggedHtml(t, form.text)}</p>`;
     case "meta":
-      return `<p class="meta">(${form.label ? `${escapeHtml(form.label)}: ` : ""}${taggedHtml(form.text)})</p>`;
+      return `<p class="meta">(${form.label ? `${escapeHtml(form.label)}: ` : ""}${taggedHtml(t, form.text)})</p>`;
     case "block":
     case "round":
-      return `<p class="marker">${taggedHtml(text)}</p>`;
+      return `<p class="marker">${taggedHtml(t, text)}</p>`;
     default:
-      return `<p>${taggedHtml(text)}</p>`;
+      return `<p>${taggedHtml(t, text)}</p>`;
   }
 }
 
@@ -146,10 +147,10 @@ function entryHtml(t: Dictionary, entry: JournalEntry, answerFor: (rollId?: stri
     kind === "roll"
       ? rollHtml(t, entry, answerFor(entry.linkedRollId), drawRoll)
       : kind === "note"
-        ? noteHtml(entry.text)
+        ? noteHtml(t, entry.text, view)
         : kind === "action"
-          ? actionHtml(entry.text, view)
-          : `<p>${taggedHtml(entry.text)}</p>`;
+          ? actionHtml(t, entry.text, view)
+          : `<p>${taggedHtml(t, entry.text)}</p>`;
   return `<div class="entry ${kind}">${symbol ? `<span class="sym">${escapeHtml(symbol)}</span>` : `<span class="sym"></span>`}<div>${body}</div></div>`;
 }
 
@@ -180,16 +181,16 @@ function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<str
 }
 
 /** `@(Jonah) …`: who acts goes first, in bold. */
-function actionHtml(text: string, view?: string): string {
+function actionHtml(t: Dictionary, text: string, view?: string): string {
   const own = splitActor(text);
   const { actor, text: action } = own.actor || !view ? own : { actor: view, text };
-  return `<p>${actor ? `<b>${escapeHtml(actor)}:</b> ` : ""}${taggedHtml(action)}</p>`;
+  return `<p>${actor ? `<b>${escapeHtml(actor)}:</b> ` : ""}${taggedHtml(t, action)}</p>`;
 }
 
 /** "S1 · Tavern, evening", a heading within the session. */
-function sceneHtml(entry: JournalEntry): string {
+function sceneHtml(t: Dictionary, entry: JournalEntry): string {
   const { id, context, combat, pov } = parseScene(entry.text);
-  return `<h3 class="scene">${escapeHtml(id)}${context ? ` · ${taggedHtml(context)}` : ""}${pov ? ` · ${escapeHtml(pov)}` : ""}${combat ? " ⚔" : ""}</h3>`;
+  return `<h3 class="scene">${escapeHtml(id)}${context ? ` · ${taggedHtml(t, context)}` : ""}${pov ? ` · ${escapeHtml(pov)}` : ""}${combat ? " ⚔" : ""}</h3>`;
 }
 
 export function exportAdventureToHtml({
@@ -228,7 +229,7 @@ export function exportAdventureToHtml({
       const blocks = buildEntryBlocks(group.items)
         .map((block) =>
           block[0].kind === "scene"
-            ? sceneHtml(block[0])
+            ? sceneHtml(t, block[0])
             : `<section class="card">${block.map((e) => entryHtml(t, e, answerFor, drawRoll, views.get(e.id))).join("")}</section>`,
         )
         .join("");

@@ -41,6 +41,7 @@ import {
   IconExcerpt,
   IconInsertBelow,
   IconNote,
+  IconNotebook,
   IconOracle,
   IconPlus,
   IconSend,
@@ -142,6 +143,8 @@ export function JournalComposer({
   onInsertDone,
   onLogged,
   onRolled,
+  notebookOpen,
+  onOpenNotebook,
 }: {
   /** The journal measures it so the newest entry isn't left under the composer. */
   ref?: Ref<HTMLDivElement>;
@@ -159,6 +162,9 @@ export function JournalComposer({
   onLogged: () => void;
   /** A tool was rolled (rollId to link the consequence). */
   onRolled: (rollId?: string) => void;
+  /** The notebook's sheet (where it isn't a column): always at hand, however long the journal is. */
+  notebookOpen: boolean;
+  onOpenNotebook: () => void;
 }) {
   const { t } = useLocaleContext();
   const { entries, addEntry } = useJournalContext();
@@ -406,7 +412,7 @@ export function JournalComposer({
       <div className="flex items-center gap-1.5">
         {/* While typing on a narrow phone they fold away, to leave the
             width to the text (as in a messaging app). */}
-        <div className="flex shrink-0 gap-1 max-sm:group-has-[textarea:focus]/composer:hidden lg:hidden">
+        <div className="flex shrink-0 gap-1 max-sm:group-has-[textarea:focus]/composer:hidden xl:hidden">
           {tools.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -415,11 +421,21 @@ export function JournalComposer({
               aria-label={label}
               title={label}
               data-hotkey-open={id}
-              className="flex size-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/20 active:scale-95"
+              className="flex size-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/20 active:scale-95 max-sm:size-9 lg:hidden"
             >
               <Icon size={19} />
             </button>
           ))}
+          <button
+            type="button"
+            onClick={onOpenNotebook}
+            aria-label={t.notebook.openLabel}
+            title={t.notebook.openLabel}
+            aria-expanded={notebookOpen}
+            className="flex size-10 items-center justify-center rounded-xl border border-ink-border text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 max-sm:size-9"
+          >
+            <IconNotebook size={19} />
+          </button>
         </div>
 
         <form

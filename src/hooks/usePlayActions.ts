@@ -134,8 +134,8 @@ export function usePlayActions() {
       };
       announce(`${name}: ${inspiration.text}`);
       if (adventureId) {
-        // Content, so a `tbl:` in Lonelog, however many rolls it took. No "—" in the detail: that's
-        // how oracle rolls are recognised (splitRollText).
+        // Content, so a `tbl:` in Lonelog, however many rolls it took. Not an
+        // oracle's detail (readOracleDice).
         const diceText = `tbl: ${name} (${inspiration.detail}) -> ${inspiration.text}`;
         addJournalEntry(adventureId, "roll", diceText, inspiration.id);
       }

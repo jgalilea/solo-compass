@@ -23,7 +23,7 @@ describe("exportAdventureToHtml", () => {
     entries: [
       { ...entry("session", "Sesión 1", 1), date: "2025-09-03" },
       entry("question", "¿Hay alguien?", 2),
-      entry("roll", "Recluse — blanco 5 / negro 2 -> Sí", 3),
+      entry("roll", "Recluse: blanco 5 / negro 2 -> Sí", 3),
       entry("consequence", "La posadera, [N:Odile|desconfiada], seca jarras. <script>", 4),
       entry("note", "[Clock:Alerta 1/4]", 5),
     ],

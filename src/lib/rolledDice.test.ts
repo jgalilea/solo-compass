@@ -6,7 +6,7 @@ import { es } from "./i18n/locales/es";
 import { oracleDice } from "./oracle";
 import { ORACLES } from "./oracles";
 import { rollOracleWith } from "./oracleEngines";
-import { MAX_DRAWN_DICE, readOracleDice, rolledTotal, rolledWhat } from "./rolledDice";
+import { MAX_DRAWN_DICE, readOracleDice, rolledTotal, rolledWhat, fixOldOracle } from "./rolledDice";
 
 const d6 = (value: number, mark?: string) => ({ sides: 6, value, ...(mark ? { mark } : {}) });
 
@@ -84,12 +84,22 @@ describe("an oracle's dice, read from the journal", () => {
     for (const t of [es, en]) {
       for (const { id } of ORACLES) {
         const roll = rollOracleWith(id, "Is it?", "equilibrado");
-        expect(readOracleDice(`Name — ${formatOracleDice(t, roll)}`)).toEqual(
+        expect(readOracleDice(`Name: ${formatOracleDice(t, roll)}`)).toEqual(
           oracleDice(roll).map((g) => ({ role: g.role, sides: g.sides, value: g.kept })),
         );
       }
     }
     expect(readOracleDice("Attack d20")).toBeNull();
-    expect(readOracleDice("Name — something else")).toBeNull();
+    expect(readOracleDice("Name: something else")).toBeNull();
+  });
+});
+
+describe("fixOldOracle", () => {
+  it("writes an old oracle roll with its colon, and nothing else", () => {
+    expect(fixOldOracle("Recluse — blanco 3 / negro 5 -> No, pero.")).toBe("Recluse: blanco 3 / negro 5 -> No, pero.");
+    expect(fixOldOracle("Ironsworn — d100 67 vs 26+ -> Sí")).toBe("Ironsworn: d100 67 vs 26+ -> Sí");
+    for (const text of ["Loot — d20 -> 5", "tbl: A — b d6=1 -> x", "Recluse: white 1 / black 2 -> No — really"]) expect(fixOldOracle(text)).toBe(text);
+    expect(readOracleDice("Recluse — blanco 3 / negro 5")).toEqual(readOracleDice("Recluse: blanco 3 / negro 5"));
+    expect(readOracleDice("Ironsworn: Action d100=42")).toBeNull();
   });
 });

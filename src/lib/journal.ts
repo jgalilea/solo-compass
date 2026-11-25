@@ -1,4 +1,5 @@
 import { fixOldD66 } from "./diceNotation";
+import { fixOldOracle } from "./rolledDice";
 import { get, set } from "idb-keyval";
 import { createCollection, diffById } from "./collectionStore";
 import type { Dictionary } from "./i18n";
@@ -123,7 +124,7 @@ export function normalizeJournalEntry(value: unknown): JournalEntry | null {
     adventureId: v.adventureId,
     timestamp: v.timestamp,
     kind: v.kind as JournalLineKind,
-    text: v.kind === "roll" ? fixOldD66(v.text) : v.text,
+    text: v.kind === "roll" ? fixOldOracle(fixOldD66(v.text)) : v.text,
     ...(typeof linkedRollId === "string" ? { linkedRollId } : {}),
     ...(isNumber(editedAt) ? { editedAt } : {}),
     ...(typeof date === "string" && /^(\d{4}-\d{2}-\d{2})?$/.test(date) ? { date } : {}),

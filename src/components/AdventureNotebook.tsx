@@ -8,6 +8,7 @@ import {
   foeIsOut,
   PROGRESS_KINDS,
   threadStatus,
+  type CastKind,
   type CastMember,
 } from "../lib/lonelogTags";
 import { groupBySession } from "../lib/journalUi";
@@ -21,6 +22,7 @@ import {
 } from "../lib/notebookSections";
 import { FoldingHeading } from "./FoldingHeading";
 import { AddCastForm } from "./AddCastForm";
+import { CastIcon } from "./CastIcon";
 import { CastItem } from "./CastItem";
 import { PinnedNotes } from "./PinnedNotes";
 import {
@@ -29,7 +31,6 @@ import {
   IconDice,
   IconInventory,
   IconPinned,
-  IconPlus,
   IconSearch,
   IconThread,
 } from "./icons/Icons";
@@ -123,7 +124,7 @@ export function AdventureNotebook({
     }
     return map;
   }, [entries]);
-  const [adding, setAdding] = useState<"cast" | "threads" | "inventory" | null>(null);
+  const [adding, setAdding] = useState<CastKind | null>(null);
   const [folded, setFolded] = useState(loadFoldedNotebookSections);
 
   // A long cast: a search by name or trait (lists and blocks open while
@@ -268,17 +269,13 @@ export function AdventureNotebook({
     );
   }
 
-  function addButton(section: "cast" | "threads" | "inventory", label: string) {
-    return adding === section ? (
+  // One button per kind, so it's seen at a glance what can be added.
+  function addButtons(kinds: CastKind[]) {
+    return adding && kinds.includes(adding) ? (
       <AddCastForm
         purseOwner={purseOwner}
-        kinds={
-          section === "cast"
-            ? ["npc", "pc", "place", "room", "foe"]
-            : section === "threads"
-              ? ["thread", "clock", "track", "timer", "event"]
-              : ["item", "wealth"]
-        }
+        kinds={kinds}
+        initialKind={adding}
         onAdd={(text) => {
           onLog(text);
           setAdding(null);
@@ -286,14 +283,21 @@ export function AdventureNotebook({
         onCancel={() => setAdding(null)}
       />
     ) : (
-      <button
-        type="button"
-        onClick={() => setAdding(section)}
-        className="flex items-center gap-1.5 self-start rounded-lg px-1 py-1 text-xs font-medium text-gold transition hover:text-gold-soft"
-      >
-        <IconPlus size={14} />
-        {label}
-      </button>
+      <div className="flex flex-wrap items-center gap-1.5 px-1 py-1">
+        <span className="text-xs text-parchment-faint">{t.notebook.addHeading}</span>
+        {kinds.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => setAdding(kind)}
+            aria-label={interpolate(t.notebook.addOfKind, { kind: t.notebook.kinds[kind] })}
+            className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          >
+            <CastIcon kind={kind} size={13} className="shrink-0" />
+            {t.notebook.kinds[kind]}
+          </button>
+        ))}
+      </div>
     );
   }
 
@@ -340,7 +344,7 @@ export function AdventureNotebook({
           {group("places")}
           {group("rooms")}
           {group("foes")}
-          {addButton("cast", t.notebook.addButton)}
+          {addButtons(["npc", "pc", "place", "room", "foe"])}
         </>,
       )}
 
@@ -354,7 +358,7 @@ export function AdventureNotebook({
           {group("threads")}
           {group("progress")}
           {group("events")}
-          {addButton("threads", t.notebook.addThreadButton)}
+          {addButtons(["thread", "clock", "track", "timer", "event"])}
         </>,
       )}
 
@@ -367,7 +371,7 @@ export function AdventureNotebook({
           {!hasInventory && <p className="text-xs text-parchment-dim">{t.notebook.inventoryEmpty}</p>}
           {group("items")}
           {group("wealth")}
-          {addButton("inventory", t.notebook.addInventoryButton)}
+          {addButtons(["item", "wealth", "deck"])}
         </>,
       )}
     </div>

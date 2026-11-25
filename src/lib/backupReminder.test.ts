@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSince, shouldNudgeBackup } from "./backupReminder";
+import { formatSince, shouldNudgeBackup, shouldShowBackupNote } from "./backupReminder";
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = 100 * DAY;
@@ -38,5 +38,17 @@ describe("formatSince", () => {
     expect(formatSince(NOW, "es", NOW)).toBe("hoy");
     expect(formatSince(NOW - 3 * DAY, "es", NOW)).toBe("hace 3 días");
     expect(formatSince(NOW - 60 * DAY, "en", NOW)).toBe("2 months ago");
+  });
+});
+
+describe("shouldShowBackupNote", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  it("shows while something has no backup, and comes back a month after closing it", () => {
+    expect(shouldShowBackupNote([], 100 * DAY, null, null)).toBe(false);
+    expect(shouldShowBackupNote([DAY], 100 * DAY, null, null)).toBe(true);
+    expect(shouldShowBackupNote([DAY], 100 * DAY, 2 * DAY, null)).toBe(false);
+    expect(shouldShowBackupNote([DAY, 3 * DAY], 100 * DAY, 2 * DAY, null)).toBe(true);
+    expect(shouldShowBackupNote([DAY], 100 * DAY, null, 90 * DAY)).toBe(false);
+    expect(shouldShowBackupNote([DAY], 100 * DAY, null, 60 * DAY)).toBe(true);
   });
 });

@@ -22,9 +22,9 @@ describe("adventure stats", () => {
       entry("session", "Sesión 1"),
       entry("note", "Llego a la posada del cruce"),
       entry("question", "¿Hay alguien?"),
-      entry("roll", "Recluse — blanco 5 / negro 2 -> Sí, pero."),
+      entry("roll", "Recluse: blanco 5 / negro 2 -> Sí, pero."),
       entry("question", "¿Me ven?"),
-      entry("roll", "Recluse — blanco 1 / negro 6 -> No", "h1"),
+      entry("roll", "Recluse: blanco 1 / negro 6 -> No", "h1"),
       entry("roll", "Evento aleatorio 1/4 -> Aparece un rastro."),
       entry("roll", "Evento aleatorio 3/3 -> Algo te sigue."),
       entry("roll", "Inspiración (Acción 3/4, Tema 2/5) -> Revelar · Secreto"),
@@ -62,7 +62,7 @@ describe("adventure stats", () => {
     const ask = (answer: string, n: number) =>
       Array.from({ length: n }, (_, i) => ({ kind: "oraculo", id: `${answer}${i}`, answer, oracle: "ironsworn", likelihood: "equilibrado" }) as HistoryEntry);
     const stats = (history: HistoryEntry[]) =>
-      computeAdventureStats(history.map((h) => entry("roll", "Ironsworn — d100 67 -> Sí", h.id)), new Map(history.map((h) => [h.id, h]))).oracleChance;
+      computeAdventureStats(history.map((h) => entry("roll", "Ironsworn: d100 67 -> Sí", h.id)), new Map(history.map((h) => [h.id, h]))).oracleChance;
     expect(stats([...ask("si", 5), ...ask("no", 5)])).toMatchObject({ total: 10, yes: 5, expected: 5, mood: "fair" });
     expect(stats(ask("si", 10)).mood).toBe("generous");
     expect(stats(ask("no", 10)).mood).toBe("stubborn");

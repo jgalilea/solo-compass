@@ -1,7 +1,7 @@
 /**
- * Backup reminder, almost invisible on purpose: a dot on the Settings
- * button and a "Last backup: … ago" line on the backup card. No
- * toasts or dialogs — the journal is for playing.
+ * Backup reminder: a dot on the Settings button, a "Last backup: … ago"
+ * line on the backup card, and a note in the journal list (BackupNote)
+ * while something has no backup. No toasts or dialogs, nothing inside an adventure — the journal is for playing.
  *
  * The dot only shows if there really is something to lose: enough new
  * entries since the last backup and enough time without one. Opening
@@ -11,6 +11,8 @@
 
 const LAST_BACKUP_KEY = "solo-compass:last-backup";
 const NUDGE_SEEN_KEY = "solo-compass:backup-nudge-seen";
+
+const NOTE_CLOSED_KEY = "solo-compass:backup-note-closed";
 
 const DAY = 24 * 60 * 60 * 1000;
 /** New entries since the last backup from which it's worth it. */
@@ -63,6 +65,24 @@ export function shouldNudgeBackup(
   if (fresh.length < NUDGE_MIN_NEW_ENTRIES) return false;
   const reference = lastBackupAt ?? Math.min(...fresh);
   return now - reference >= NUDGE_AFTER_DAYS * DAY;
+}
+
+/** Days the journal list's note stays closed. */
+export const NOTE_SNOOZE_DAYS = 30;
+
+export function dismissBackupNote(now = Date.now()): void {
+  saveTime(NOTE_CLOSED_KEY, now);
+}
+
+/** The journal list's note: something no backup has, and not closed lately. */
+export function shouldShowBackupNote(
+  entryTimestamps: number[],
+  now = Date.now(),
+  lastBackupAt = loadLastBackupAt(),
+  closedAt = loadTime(NOTE_CLOSED_KEY),
+): boolean {
+  if (closedAt !== null && now - closedAt < NOTE_SNOOZE_DAYS * DAY) return false;
+  return entryTimestamps.some((ts) => ts > (lastBackupAt ?? 0));
 }
 
 /** "3 days ago", "2 months ago"… in the app's language. */

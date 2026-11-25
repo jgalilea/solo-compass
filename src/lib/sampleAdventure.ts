@@ -31,7 +31,7 @@ export function buildSampleAdventure(
     if ("oracle" in line) {
       const [white, black] = line.oracle;
       const answer = formatAnswer(t, judgeDice(white, black));
-      const text = `${oracleName} — ${t.die.color.blanco} ${white} / ${t.die.color.negro} ${black} -> ${answer}`;
+      const text = `${oracleName}: ${t.die.color.blanco} ${white} / ${t.die.color.negro} ${black} -> ${answer}`;
       return formatLine({ kind: "roll", text });
     }
     if ("table" in line) {

@@ -12,6 +12,7 @@ import {
   QUANTITY_KINDS,
   progressDone,
   progressText,
+  showDetail,
   tagsToPlainText,
   threadChange,
   threadStatus,
@@ -89,6 +90,7 @@ export function CastItem({
     const day = sessionOf.get(id)?.day;
     return day ? formatIsoDay(day, t.dateLocale) : null;
   };
+  const tags = member.tags.map((tag) => showDetail(tag, t.notebook.categories));
   const kindLabel = t.notebook.kinds[member.kind];
   const count = member.mentions.length;
   const status = member.kind === "thread" ? threadStatus(member) : null;
@@ -162,8 +164,8 @@ export function CastItem({
               <ProgressBar kind={member.kind} progress={progress} />
             ) : (
               member.tags.length > 0 && (
-                <span onMouseEnter={titleIfCut(member.tags.join(" · "))} className="block truncate text-xs text-parchment-dim">
-                  {member.tags.join(" · ")}
+                <span onMouseEnter={titleIfCut(tags.join(" · "))} className="block truncate text-xs text-parchment-dim">
+                  {tags.join(" · ")}
                 </span>
               )
             )}
@@ -214,7 +216,7 @@ export function CastItem({
             <ul className="flex flex-wrap gap-1">
               {member.tags.map((tag) => (
                 <li key={tag} className="rounded-md border border-ink-border px-1.5 py-0.5 text-xs text-parchment">
-                  {tag}
+                  {showDetail(tag, t.notebook.categories)}
                 </li>
               ))}
             </ul>

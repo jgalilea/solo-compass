@@ -22,7 +22,7 @@ export function rollJournalLines(t: Dictionary, entry: HistoryEntry): { kind: Jo
       : `tbl: ${entry.tableName} ${entry.total} -> ${entry.resultText}`;
     return [{ kind: "roll", text }];
   }
-  const roll = `${getOracle(rollOracleId(entry)).name} — ${formatOracleDice(t, entry)} -> ${formatOracleResult(t, entry)}`;
+  const roll = `${getOracle(rollOracleId(entry)).name}: ${formatOracleDice(t, entry)} -> ${formatOracleResult(t, entry)}`;
   return [...(entry.question ? [{ kind: "question" as const, text: askedQuestion(t, entry.question, entry.likelihood) }] : []), { kind: "roll", text: roll }];
 }
 

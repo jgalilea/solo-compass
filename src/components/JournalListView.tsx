@@ -6,6 +6,7 @@ import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { AllDiceStatsDialog } from "./AllDiceStatsDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
+import { BackupNote } from "./BackupNote";
 import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { parseTitleFromMarkdown, readLonelog } from "../lib/lonelog";
@@ -228,6 +229,7 @@ export function JournalListView() {
 
       {status === "ready" && (
         <>
+          <BackupNote />
           {hasAnyAdventures && (
             <div className="relative flex">
               <IconSearch

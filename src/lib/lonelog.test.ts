@@ -24,7 +24,7 @@ const SAMPLE: [JournalLineKind, string][] = [
   ["note", "La lluvia no ha parado en tres días."],
   ["action", "Lydia salta la valla"],
   ["question", "¿La ven los guardias?"],
-  ["roll", "Recluse — blanco 2 / negro 5 -> No, pero."],
+  ["roll", "Recluse: blanco 2 / negro 5 -> No, pero."],
   ["consequence", "No la ven, pero se le engancha la capa."],
   ["roll", "d20 -> 14"],
 ];
@@ -413,7 +413,7 @@ describe("Lonelog 1.7", () => {
       expect(read(line)).toEqual([["roll", text]]);
     }
     // A verdict, an oracle and prose stay as they are.
-    for (const text of ["Stealth d6=5 vs TN 4 -> Success", "Recluse — white 3 / black 5 -> No", "d100=60 vs 35 -> No", "1d8=6 damage", "Hack (spend 1 Gear) -> Success"]) {
+    for (const text of ["Stealth d6=5 vs TN 4 -> Success", "Recluse: white 3 / black 5 -> No", "d100=60 vs 35 -> No", "1d8=6 damage", "Hack (spend 1 Gear) -> Success"]) {
       expect(formatLine({ kind: "roll", text })).toBe(`d: ${text}`);
       expect(read(`d: ${text}`)).toEqual([["roll", text]]);
     }

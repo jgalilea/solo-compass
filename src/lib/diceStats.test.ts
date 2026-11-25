@@ -26,7 +26,7 @@ describe("dice stats", () => {
 
   it("leaves out what isn't a die of one's own, or is written changed", () => {
     const texts = [
-      "Recluse — blanco 3 / negro 5 -> No",
+      "Recluse: blanco 3 / negro 5 -> No",
       "tbl: Theme d66=25 -> Fire",
       "draw=Qs -> Queen of Spades",
       "4d6min3 -> 15 (3↑+4+3↑+5)",

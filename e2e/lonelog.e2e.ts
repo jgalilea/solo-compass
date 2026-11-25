@@ -70,8 +70,7 @@ test("imports, shows, changes and writes Lonelog 1.7", async ({ page }) => {
   await notebook.getByRole("button", { name: /^El robo/ }).click();
   await notebook.getByRole("button", { name: "Cerrar", exact: true }).last().click();
   // Money of a new currency: it asks whose it is (two characters: nobody's by default).
-  await notebook.getByRole("button", { name: "Añadir objeto o dinero" }).click();
-  await notebook.getByRole("radio", { name: "Dinero" }).click();
+  await notebook.getByRole("button", { name: "Añadir: Dinero" }).click();
   await notebook.getByLabel("Nombre", { exact: true }).fill("Oro");
   await expect(notebook.getByRole("button", { name: "Apuntar" })).toBeDisabled();
   await notebook.getByLabel("¿De quién es?").fill("Kael");

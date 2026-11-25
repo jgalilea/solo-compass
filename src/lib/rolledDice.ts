@@ -48,18 +48,26 @@ export interface OracleDieRead {
   value: number;
 }
 
-/** The dice of an oracle's roll in the journal ("Recluse — blanco 3 / negro 5"); null if it isn't one. */
+/** The dice of an oracle's roll in the journal ("Recluse: blanco 3 / negro 5", with a "—" before 1.5.1); null if it isn't one. */
 export function readOracleDice(detail: string): OracleDieRead[] | null {
-  const dash = detail.indexOf(" — ");
-  if (dash < 0) return null;
+  const after = detail.match(/^\S.*?(?:\s—|:)\s+(.+)$/)?.[1];
+  if (!after) return null;
   const dice: OracleDieRead[] = [];
-  for (const part of detail.slice(dash + 3).split(" / ")) {
+  for (const part of after.split(" / ")) {
     const m = part.match(/^(\S+) (\d+)(?: vs \d+\+)?$/);
     const role = m && ORACLE_DICE[m[1].toLowerCase()];
     if (!role) return null;
     dice.push({ role, sides: role === "percentile" ? 100 : 6, value: Number(m[2]) });
   }
   return dice;
+}
+
+/** An oracle's roll as it was written before 1.5.1 ("Recluse — blanco 3 …"), with its colon; any other as it is. */
+export function fixOldOracle(text: string): string {
+  const arrow = text.indexOf(" -> ");
+  if (arrow < 0) return text;
+  const detail = text.slice(0, arrow);
+  return readOracleDice(detail) ? detail.replace(" — ", ": ") + text.slice(arrow) : text;
 }
 
 /** "Attack d20+5 -> 19 (14 + 5)": "Attack d20+5". */

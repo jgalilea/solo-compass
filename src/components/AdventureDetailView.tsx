@@ -11,7 +11,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
-import { buildCast, castKey, combineSteps, findMember, purseKey, renameInEntry } from "../lib/lonelogTags";
+import { buildCast, castKey, combineSteps, findMember, mainPc, purseKey, renameInEntry } from "../lib/lonelogTags";
 import { withRollDrawings } from "./drawRolls";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
@@ -131,7 +131,7 @@ export function AdventureDetailView() {
   // about one element until the filter is taken off.
   const [journalFilter, setJournalFilter] = useState<string | null>(null);
   const filterMember = journalFilter ? (cast.find((c) => c.key === journalFilter) ?? null) : null;
-  const filtered = useMemo(() => (filterMember ? filterGroups(groups, filterMember) : null), [groups, filterMember]);
+  const filtered = useMemo(() => (filterMember ? filterGroups(groups, filterMember, mainPc(cast)?.name) : null), [groups, filterMember, cast]);
 
   // The current session is the last one: always open. The earlier ones
   // (and the session-less "prologue", if any) are folded above it.
@@ -574,8 +574,6 @@ export function AdventureDetailView() {
           hasEntries={adventureEntries.length > 0}
           searchOpen={searchOpen}
           onToggleSearch={() => setSearchOpen((v) => !v)}
-          notebookOpen={notebookOpen}
-          onOpenNotebook={() => setNotebookOpen(true)}
           groups={groups}
           onJumpToSession={jumpToSession}
           onJumpToEntry={jumpToEntry}
@@ -786,6 +784,8 @@ export function AdventureDetailView() {
           }}
           onLogged={handleLogged}
           onRolled={handleRolled}
+          notebookOpen={notebookOpen}
+          onOpenNotebook={() => setNotebookOpen(true)}
         />
       </div>
 
