@@ -3,10 +3,6 @@ import { MIN_DICE_FOR_TREND, type DiceStats, type DieStats } from "../lib/diceSt
 import { interpolate } from "../lib/i18n";
 import { ColumnChart } from "./ColumnChart";
 
-/** A chart needs a few dice, and more than four are too many to look at. */
-const MIN_DICE_FOR_CHART = 5;
-const MAX_CHARTS = 4;
-
 /**
  * How the player's dice came up: whether they run high or low, the
  * feats worth telling (runs, extremes, a session's luck) and a small
@@ -15,7 +11,11 @@ const MAX_CHARTS = 4;
 export function DiceStatsSection({ stats }: { stats: DiceStats }) {
   const { t } = useLocaleContext();
   const s = t.journal.stats;
-  const charts = stats.dice.filter((d) => d.count >= MIN_DICE_FOR_CHART).slice(0, MAX_CHARTS);
+  // As with the verdict: fewer dice draw nothing but noise.
+  const charts = stats.dice.filter((d) => d.count >= MIN_DICE_FOR_TREND);
+  const waiting = stats.dice
+    .filter((d) => d.count < MIN_DICE_FOR_TREND)
+    .map((d) => interpolate(s.diceWaitingItem, { die: d.sides ? `d${d.sides}` : "dF", total: d.count, count: MIN_DICE_FOR_TREND }));
   const trend = { high: s.diceHigh, low: s.diceLow, normal: s.diceNormal };
   const number = new Intl.NumberFormat(t.dateLocale, { maximumFractionDigits: 1 });
   const sessionName = (title: string | null) => title ?? t.journal.prologueLabel;
@@ -42,7 +42,7 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
       <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.diceHeading}</h3>
       <div className="flex flex-col gap-1">
         <p className="text-sm text-parchment">
-          {stats.trend ? trend[stats.trend] : interpolate(s.diceFew, { count: MIN_DICE_FOR_TREND })}
+          {stats.trend ? trend[stats.trend] : interpolate(s.diceFew, { count: MIN_DICE_FOR_TREND, total: stats.total })}
         </p>
         <p className="text-xs text-parchment-dim">{s.diceHint}</p>
       </div>
@@ -63,6 +63,10 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
           <li>{interpolate(s.sessionWorst, { session: sessionName(stats.sessions.worst.title) })}</li>
         </ul>
       )}
+      <div className="flex flex-col gap-1 text-xs text-parchment-dim">
+        <p>{interpolate(s.diceCharts, { count: MIN_DICE_FOR_TREND })}</p>
+        {waiting.length > 0 && <p>{interpolate(s.diceWaiting, { dice: waiting.join(", ") })}</p>}
+      </div>
       {charts.length > 0 && (
         <ul className="grid gap-2.5 md:grid-cols-2">
           {charts.map((die) => (
@@ -79,6 +83,7 @@ function DieChart({ die }: { die: DieStats }) {
   const s = t.journal.stats;
   const decimal = new Intl.NumberFormat(t.dateLocale, { maximumFractionDigits: 1 });
   const face = (b: DieStats["bars"][number]) => (b.from === b.to ? String(b.from).replace("-", "−") : `${b.from}–${b.to}`);
+  const percent = new Intl.NumberFormat(t.dateLocale, { style: "percent", maximumFractionDigits: 1 });
   // What each would get; only where every bar has the same chance.
   const width = (b: DieStats["bars"][number]) => b.to - b.from;
   const even = die.bars.every((b) => width(b) === width(die.bars[0]));
@@ -99,10 +104,18 @@ function DieChart({ die }: { die: DieStats }) {
         </span>
       </p>
       <ColumnChart
+        yLabel={s.diceChartY}
+        xLabel={runs ? interpolate(s.diceChartXRuns, { size: die.bars[0].to - die.bars[0].from + 1 }) : s.diceChartX}
         bars={die.bars.map((b, i) => ({
           label: labelled(b, i) ? (runs ? String(b.from) : face(b)) : "",
           value: b.count,
-          said: interpolate(s.diceFace, { face: face(b), count: b.count }),
+          said: interpolate(b.from === b.to ? s.diceFace : s.diceFaces, {
+            face: face(b),
+            count: b.count,
+            total: die.count,
+            share: percent.format(b.count / die.count),
+            expected: percent.format((b.to - b.from + 1) / (die.sides || 3)),
+          }),
         }))}
         line={even ? die.count / die.bars.length : undefined}
       />

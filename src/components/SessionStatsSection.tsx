@@ -26,15 +26,16 @@ export function SessionStatsSection({ sessions }: { sessions: AdventureStats["pe
         <p>{interpolate(s.sessionsAverage, { entries: average("entries"), words: average("words") })}</p>
         <p>{interpolate(s.sessionsLongest, { session: name(longest.title), words: number.format(longest.words) })}</p>
       </div>
-      <div className="flex max-w-xl flex-col gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
-        <p className="text-xs text-parchment-dim">{s.sessionsChart}</p>
+      <div className="rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
         <ColumnChart
+          yLabel={offset > 0 ? interpolate(s.sessionsChartLast, { count: MAX_SESSIONS }) : s.sessionsChart}
+          xLabel={s.sessionsChartX}
           bars={shown.map((x, i) => {
             const n = offset + i - firstReal + 1;
             return {
               label: n < 1 ? "" : shown.length <= 12 || n === 1 || n % 5 === 0 ? String(n) : "",
               value: x.entries,
-              said: interpolate(s.sessionsBar, { session: name(x.title), entries: x.entries }),
+              said: interpolate(s.sessionsBar, { session: name(x.title), entries: x.entries, words: number.format(x.words) }),
             };
           })}
         />

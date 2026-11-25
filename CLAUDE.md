@@ -442,7 +442,8 @@ About); `oracleEngines.ts` their mechanics, as engines that declare the
 dice for a likelihood and how to read the kept ones. Rolling throws
 those dice (`rollOracleWith`, called by `usePlayActions`); before the
 first roll the Oracle screen draws them blank (`OracleWaiting`, from
-`oracleDicePlan`), and the result card takes its answer's colour; the help's
+`oracleDicePlan`), and the result card takes its answer's colour and is always as high as
+its oracle's tallest answer (`OracleVerdictSpace`; Loner's twist apart); the help's
 odds table (`OracleHelp`) comes from `oracleOdds`, which goes through
 every possible throw, so the percentages always match (tested against
 the books' numbers). Loner and OPSE offer three likelihoods
@@ -630,7 +631,8 @@ high or low, runs, extremes, a favourite face, the sessions furthest
 out. No system's criticals. Besides: what each session had, who and
 where is named most (`mostNamed`) and the oracle's "yes" against the
 chances of what was asked (`oracleChance`, only rolls still in the
-history). Statistics are for fun and curiosity, never goals or
+history). A chart's columns (`ColumnChart`) and the heat map's days say
+their detail when tapped. Statistics are for fun and curiosity, never goals or
 pressure; role-playing flavour, but always clear what a number is.
 Their heat map (`ActivityHeatmap`) is the last year as one row per
 month and one square per day (31 columns fit a phone), with the

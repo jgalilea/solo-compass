@@ -1,12 +1,15 @@
 import type { NamedCount } from "../lib/journalStats";
 import { CastIcon } from "./CastIcon";
 
-/** The most named, each with a bar against the first. */
-export function NamedList({ title, items }: { title: string; items: NamedCount[] }) {
+/** The most named (`limit` says how many at most), each with a bar against the first. */
+export function NamedList({ title, limit, items }: { title: string; limit: string; items: NamedCount[] }) {
   const max = items[0]?.count ?? 1;
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
-      <p className="text-xs text-parchment-dim">{title}</p>
+      <p className="flex items-baseline justify-between gap-3 text-xs text-parchment-dim">
+        {title}
+        <span className="shrink-0 text-parchment-faint">{limit}</span>
+      </p>
       <ol className="flex flex-col gap-2">
         {items.map((item) => (
           <li key={item.key} className="flex flex-col gap-1">

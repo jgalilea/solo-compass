@@ -25,6 +25,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.3.1",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Interludio · La letra pequeña del azar",
+        items: [
+          "El recuadro del oráculo ya no crece ni encoge según lo que responda (salvo el giro de Loner, que pide su sitio).",
+          "Las gráficas de las estadísticas tienen sus valores al lado, dicen qué es cada eje y, al tocar una barra o un día, cuentan el detalle.",
+          "Cada tipo de dado estrena su gráfica cuando ha caído 20 veces, y se ve cuáles faltan. Los textos explican mejor qué tocaría por azar.",
+        ],
+      },
+      en: {
+        title: "Interlude · The fine print of chance",
+        items: [
+          "The oracle's card no longer grows or shrinks with its answer (save for Loner's twist, which asks for its room).",
+          "The statistics' charts have their values beside them, say what each axis is and, tapping a bar or a day, tell the detail.",
+          "Each kind of die gets its chart once it has fallen 20 times, and you can see which are still to come. The texts explain better what chance would give.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.3.0",
     date: "2026-11-25",
     text: {

@@ -1,6 +1,7 @@
 import { BlankDie } from "./Die";
 import type { Likelihood } from "../lib/oracle";
 import { ROLE_COLOR, oracleDicePlan, type OracleId } from "../lib/oracleEngines";
+import { OracleVerdictSpace } from "./OracleVerdict";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 
 /**
@@ -22,7 +23,7 @@ export function OracleWaiting({ oracleId, likelihood }: { oracleId: OracleId; li
           <div key={group.role} className="contents">
             {i > 0 && contest && <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>}
             <div className="flex flex-col items-center gap-1.5">
-              <div className="flex gap-2">
+              <div className="flex min-h-18 items-center gap-2">
                 {Array.from({ length: group.count }, (_, n) => (
                   <BlankDie key={n} sides={group.sides} color={ROLE_COLOR[group.role]} size={singleDie ? "lg" : "md"} />
                 ))}
@@ -32,10 +33,12 @@ export function OracleWaiting({ oracleId, likelihood }: { oracleId: OracleId; li
           </div>
         ))}
       </div>
+      <OracleVerdictSpace oracle={oracleId}>
       <div className="flex flex-col items-center gap-2">
         <p className="font-display text-base text-parchment">{t.oracle.emptyTitle}</p>
         <p className="max-w-sm text-sm text-parchment-dim">{t.oracle.emptyDescription}</p>
       </div>
+      </OracleVerdictSpace>
     </div>
   );
 }

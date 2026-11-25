@@ -14,6 +14,9 @@ import { NamedList } from "./NamedList";
 import { SessionStatsSection } from "./SessionStatsSection";
 import { Modal } from "./Modal";
 
+/** How many characters, and places, are listed at most. */
+const MAX_NAMED = 5;
+
 /**
  * A bit of fun about an adventure: how much was played and written,
  * and what the oracle and the tables said. Everything is derived from
@@ -37,7 +40,7 @@ export function AdventureStatsDialog({
     [entries, history],
   );
   const dice = useMemo(() => computeDiceStats(entries), [entries]);
-  const named = useMemo(() => mostNamed(entries, buildCast(entries), 5), [entries]);
+  const named = useMemo(() => mostNamed(entries, buildCast(entries), MAX_NAMED), [entries]);
   const number = new Intl.NumberFormat(t.dateLocale);
   const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" });
 
@@ -98,8 +101,8 @@ export function AdventureStatsDialog({
               <section className="flex flex-col gap-3">
                 <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.namedHeading}</h3>
                 <div className="grid gap-2.5 md:grid-cols-2">
-                  {named.characters.length > 0 && <NamedList title={s.namedCharacters} items={named.characters} />}
-                  {named.places.length > 0 && <NamedList title={s.namedPlaces} items={named.places} />}
+                  {named.characters.length > 0 && <NamedList title={s.namedCharacters} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.characters} />}
+                  {named.places.length > 0 && <NamedList title={s.namedPlaces} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.places} />}
                 </div>
                 <p className="text-xs text-parchment-dim">{s.namedHint}</p>
               </section>

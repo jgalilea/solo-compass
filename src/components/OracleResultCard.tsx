@@ -2,32 +2,12 @@ import { Die } from "./Die";
 import { oracleDice, rollOracleId, type OracleRoll } from "../lib/oracle";
 import { ROLE_COLOR, oracleTarget, type OracleDiceGroup } from "../lib/oracleEngines";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { interpolate } from "../lib/i18n";
+import { OracleVerdict, OracleVerdictSpace } from "./OracleVerdict";
 
-const ANSWER_STYLE: Record<
-  OracleRoll["answer"],
-  { className: string; sizeClass: string; cardClass: string; glowClass: string }
-> = {
-  si: {
-    className: "text-yes",
-    sizeClass: "text-5xl",
-    cardClass: "border-yes/40 shadow-yes/10",
-    glowClass: "from-yes/10",
-  },
-  no: {
-    className: "text-no",
-    sizeClass: "text-5xl",
-    cardClass: "border-no/40 shadow-no/10",
-    glowClass: "from-no/10",
-  },
-  contradiccion: {
-    className: "text-contradiction",
-    // Long word: uppercase (Cinzel/Playfair/mono) at text-5xl overflows
-    // the card's width on phones, so it goes smaller.
-    sizeClass: "text-3xl sm:text-4xl",
-    cardClass: "border-contradiction/40 shadow-contradiction/10",
-    glowClass: "from-contradiction/10",
-  },
+const CARD_STYLE: Record<OracleRoll["answer"], { cardClass: string; glowClass: string }> = {
+  si: { cardClass: "border-yes/40 shadow-yes/10", glowClass: "from-yes/10" },
+  no: { cardClass: "border-no/40 shadow-no/10", glowClass: "from-no/10" },
+  contradiccion: { cardClass: "border-contradiction/40 shadow-contradiction/10", glowClass: "from-contradiction/10" },
 };
 
 export function OracleResultCard({
@@ -38,7 +18,7 @@ export function OracleResultCard({
   animate: boolean;
 }) {
   const { t } = useLocaleContext();
-  const style = ANSWER_STYLE[roll.answer];
+  const style = CARD_STYLE[roll.answer];
   const oracle = rollOracleId(roll);
   const groups = oracleDice(roll);
   const singleDie = groups.every((g) => g.rolls.length === 1);
@@ -80,43 +60,10 @@ export function OracleResultCard({
         ))}
       </div>
 
-      <div className="mt-5 text-center">
-        <div
-          className={`break-words font-display font-semibold ${style.sizeClass} ${style.className}`}
-        >
-          {t.answer[roll.answer]}
-        </div>
-        {roll.qualifier && (
-          <div
-            className={`mt-1 text-lg font-medium ${
-              roll.qualifier === "y" ? "text-yes/90" : "text-no/90"
-            }`}
-          >
-            …{t.qualifier[roll.qualifier]}.
-          </div>
-        )}
-        {roll.answer === "contradiccion" && (
-          <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
-            {t.oracle.contradictionExplanation}
-          </p>
-        )}
-        {roll.special === "match" && (
-          <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
-            <span className="font-semibold text-contradiction">{t.oracle.matchLabel}.</span> {t.oracle.matchExplanation}
-          </p>
-        )}
-        {roll.twist && !roll.twist.happened && (
-          <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
-            {interpolate(t.oracle.doubleExplanation, { count: roll.twist.counter })}
-          </p>
-        )}
-        {roll.twist?.happened && (
-          <div className="mx-auto mt-4 max-w-sm rounded-2xl border border-contradiction/40 bg-contradiction/10 px-4 py-3">
-            <p className="font-display text-lg font-semibold text-contradiction">{t.oracle.twistLabel}</p>
-            {roll.twist.result && <p className="mt-1 text-base text-parchment">{roll.twist.result}</p>}
-            <p className="mt-1 text-xs text-parchment-dim">{t.oracle.twistExplanation}</p>
-          </div>
-        )}
+      <div className="mt-5">
+        <OracleVerdictSpace oracle={oracle}>
+          <OracleVerdict roll={roll} />
+        </OracleVerdictSpace>
       </div>
     </div>
   );
@@ -133,7 +80,7 @@ function DiceGroup({
 }) {
   const { t } = useLocaleContext();
   return (
-    <div className="flex gap-2">
+    <div className="flex min-h-18 items-center gap-2">
       {group.rolls.map((v, i) => (
         <Die
           key={i}
