@@ -1,6 +1,9 @@
+import { ANSWER_CODE, readAnswerCode } from "./answerCodes";
+import { isCardDraw } from "./cards";
 import { tableDice } from "./rolledDice";
+import { loneRoll, OWN_ROLL, splitRollSeries, type OwnRolls } from "./rollLine";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
-import { actorParts, noteForm, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
+import { actorParts, noteForm, parseScene, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
 import type { CastMember } from "./lonelogTags";
 import { normalizeForSearch } from "./text";
 
@@ -56,7 +59,9 @@ export function composerShortcut(text: string): { mode: ComposerMode; text: stri
   if ((m = text.match(/^@ ([\s\S]*)$/))) return { mode: "action", text: m[1] };
   if ((m = text.match(/^@(\([\s\S]*)$/))) return { mode: "action", text: m[1] };
   if ((m = text.match(/^=> ?([\s\S]*)$/)) && text.length > 2) return { mode: "consequence", text: m[1] };
-  if ((m = text.match(/^PC: ([\s\S]*)$/))) return { mode: "dialogue", text: m[1], speaker: { pc: true } };
+  if ((m = text.match(/^PC(?: \(([^()\n]+)\))?: ([\s\S]*)$/))) {
+    return { mode: "dialogue", text: m[2], speaker: m[1] ? { pc: true, name: m[1].trim() } : { pc: true } };
+  }
   if ((m = text.match(/^N \(([^()\n]+)\): ([\s\S]*)$/))) {
     return { mode: "dialogue", text: m[2], speaker: { pc: false, name: m[1].trim() } };
   }
@@ -228,24 +233,14 @@ export function splitRollText(text: string): {
   // "Oracle — dice": table rolls and inspiration never carry a "—". A
   // bare "-> Yes, but…" is an oracle's answer too (Lonelog §3.2.2).
   const looksLikeOracle = /—.*\d/.test(detail) || (symbol === "result" && !detail);
-  const answer = looksLikeOracle
+  let answer = looksLikeOracle
     ? ANSWER_PATTERNS.find(([, re]) => re.test(result))?.[0]
     : undefined;
+  // An answer code ("Yb"), "Exceptional Yes", or another tool's "d: d100=60 vs 35 -> No".
+  if (!answer && (looksLikeOracle || (symbol === "d" && /\d/.test(detail) && !OWN_ROLL.test(text) && foreignRollKind(detail, result) === "oracle"))) answer = readAnswer(result).answer;
   return { detail, result, answer };
 }
 
-/**
- * One die or formula from the generic roller: "d10", "2d6", "d%",
- * "4dF", "2d6+3", "4d6kh3", "4d6dl1", "3d6!", "d6!!", "5d6>=5",
- * "4d6>4f<3", "(1d6+2)*3", "{4d6,2d10}k1" (see rollFormula in
- * diceNotation.ts): faces right after the "d", then anything but a space.
- */
-// Not ending in "=9": "d6=5 ->" is Lonelog's rolled value (a table
-// roll, "Theme d66=25 -> …"), not a formula.
-// A card drawn ("draw=Qs", cards.ts) counts as one too.
-const DIE = String.raw`(?:draw=[A-Za-z0-9]+|[-({\d]*d(?:\d|%|F|\()[^\s]*?(?<!(?:^|[^<>!])=\d+))`;
-/** Text with a roll of the generic roller in it ("Attack 2d6+3 -> 9 (…)"). */
-export const OWN_ROLL = new RegExp(String.raw`(^|\s)${DIE}\s*->`);
 // How the app wrote a table's rolls before "tbl:", only the shapes a
 // check never has: a d66, a game's table ("Ironsworn: Action d100=42"), two
 // dice ("Theme 2/5") and quick inspiration ("Inspiration (Action d66=34, …)").
@@ -256,7 +251,7 @@ const OLD_TABLE = new RegExp(
 // What a check ends in, never a table's result ("Hit the road" is one).
 const VERDICT =
   /^(?:\d+ )?(?:[SF]|(?:(?:partial|critical|strong|weak|extreme|hard|regular) )?(?:success(?:es)?|fail(?:ure)?|hits?|miss)|crit(?:ical)?|fumble|step down|depleted|(?:no )?wounds?|éxitos?(?: (?:parcial|crítico|total))?|fallo|fracaso|pifia|crítico|acierto|impacto)(?:$|[.,;:!(]|\s[(-]|\swith\b|\scon\b)/i;
-const YES_NO = /^(?:exceptional |extreme )?(yes|no|s[ií])(?:$|[.!…]|,?\s*(?:and|but|y además|pero)(?!\p{L}))/iu;
+const YES_NO = /^(?:exceptional |extreme )?(yes|no|s[ií])(?:$|[.!…]|\s+\(|,?\s*(?:and|but|y además|pero)(?!\p{L}))/iu;
 
 /**
  * What a `d:` roll this app didn't make is (Lonelog: `d:` gives a
@@ -266,7 +261,7 @@ const YES_NO = /^(?:exceptional |extreme )?(yes|no|s[ií])(?:$|[.!…]|,?\s*(?:a
  * linked to the history (classifyRoll).
  */
 export function foreignRollKind(detail: string, result: string | null): "oracle" | "table" | "dice" {
-  if (result !== null && YES_NO.test(result)) return "oracle";
+  if (result !== null && (YES_NO.test(result) || ANSWER_CODE.test(result))) return "oracle";
   if (result === null || VERDICT.test(result) || /(?<!\p{L})vs\.?(?!\p{L})/iu.test(detail)) return "dice";
   const m = detail.match(OLD_TABLE);
   if (!m) return "dice";
@@ -276,23 +271,13 @@ export function foreignRollKind(detail: string, result: string | null): "oracle"
 
 /** Yes or no, and its shade, as an answer written in either language. */
 export function readAnswer(result: string): { answer?: Answer; qualifier?: "and" | "but" } {
+  const code = readAnswerCode(result);
+  if (code) return { answer: code.answer, qualifier: code.shade === "a" ? "and" : code.shade === "b" ? "but" : undefined };
   const answer = result.match(YES_NO)?.[1]?.toLowerCase();
   return {
     answer: answer ? (answer === "no" ? "no" : "si") : undefined,
     qualifier: /,\s*(pero|but)(?!\p{L})/iu.test(result) ? "but" : /,\s*(y además|and)(?!\p{L})/iu.test(result) ? "and" : undefined,
   };
-}
-
-// Each roll, and the description of every one after the first
-// ("…, Fire 2d6 -> 7 (3+4)"); the first one's is the series' label.
-const ROLL_SEGMENT = new RegExp(
-  String.raw`(?:([^,>]*?)\s+)?(${DIE})\s*->\s*(.+?)(?=\s*,\s*(?:[^,>]*?\s+)?${DIE}\s*->|\s+${DIE}\s*->|\s*$)`,
-  "g",
-);
-
-export interface OwnRolls {
-  label: string;
-  rolls: { label: string; die: string; result: string }[];
 }
 
 /**
@@ -302,15 +287,11 @@ export interface OwnRolls {
  * ("d20 -> Success, barely") is shown as a normal roll.
  */
 export function splitOwnRolls(text: string): OwnRolls | null {
-  const series = splitRollSeries(text);
-  if (series) return series;
-  // A table or a generator.
-  if (splitRollSymbol(text).symbol !== "d") return null;
-  const m = text.match(new RegExp(String.raw`^(?:(.*?)\s+)?(${DIE})\s*->\s*(.+)$`));
-  if (!m) return null;
-  const [, label = "", die, result] = m;
-  if (!die.startsWith("draw=") && !/^[+-]?\d+(?:\.\d+)?(?:\s+\(.+\))?$/.test(result.trim())) return null;
-  return { label: label.trim(), rolls: [{ label: "", die, result: result.trim() }] };
+  // A table or a generator; a card gives content too.
+  const { symbol, text: body } = splitRollSymbol(text);
+  if (symbol === "tbl" && isCardDraw(body)) return splitRollSeries(body) ?? loneRoll(body);
+  if (symbol !== "d") return null;
+  return splitRollSeries(text) ?? loneRoll(text);
 }
 
 /**
@@ -338,32 +319,30 @@ export function splitRollTotal(result: string): { total: string; faces: string |
   return { total: m ? m[1] : result, faces: m ? m[2] : null };
 }
 
-/**
- * Recognises several chained rolls in a single entry ("d10 -> 9,
- * d10 -> 5", or with spaces instead of commas as they used to be
- * saved), with an optional text in front ("Attack d20 -> 14, d8 -> 3").
- * Returns null if there are fewer than two or if there's leftover text
- * that doesn't fit, so that entry is shown as a normal roll
- * (splitRollText).
- */
-export function splitRollSeries(text: string): OwnRolls | null {
-  const first = text.search(OWN_ROLL);
-  if (first < 0) return null;
-  const label = text.slice(0, first).trim().replace(/,$/, "");
-  const rest = text.slice(first).trim();
-  const rolls: OwnRolls["rolls"] = [];
-  for (const m of rest.matchAll(ROLL_SEGMENT)) {
-    rolls.push({ label: m[1]?.trim() ?? "", die: m[2], result: m[3].trim() });
-  }
-  const leftover = rest.replace(ROLL_SEGMENT, "").replace(/[\s,]/g, "");
-  if (rolls.length < 2 || leftover) return null;
-  return { label, rolls };
-}
-
 /** "2025-09-03" as a short date ("3 sept 2025"), on that day in local time. */
 export function formatIsoDay(iso: string, locale: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
+}
+
+/**
+ * Who a bare "@" is in each action of a storyline that says so: the
+ * point of view on its first scene line (`T2-S1 *City* @(Jordan)`) holds
+ * for all of its scenes. Names by entry id.
+ */
+export function storylineViews(groups: EntryGroup[]): Map<string, string> {
+  const byStoryline = new Map<string, string>();
+  const views = new Map<string, string>();
+  let current: string | undefined;
+  for (const entry of groups.flatMap((g) => g.items)) {
+    if (entry.kind === "scene") {
+      const { id, pov } = parseScene(entry.text);
+      const storyline = id.match(/^(T\d+)-/)?.[1];
+      if (storyline && pov) byStoryline.set(storyline, pov);
+      current = storyline ? byStoryline.get(storyline) : pov;
+    } else if (entry.kind === "action" && current && !splitActor(entry.text).actor) views.set(entry.id, current);
+  }
+  return views;
 }
 
 /**
@@ -384,12 +363,15 @@ export function filterGroups(
     if (member.kind !== "npc" && member.kind !== "pc") return false;
     if (e.kind === "action") {
       const actor = splitActor(e.text).actor;
-      return !!actor && actorParts(actor).some((part) => part.name !== undefined && normalizeForSearch(part.name) === name);
+      // Inside a storyline, a bare "@" is its point of view.
+      if (!actor) return normalizeForSearch(pointsOfView.get(e.id) ?? "") === name;
+      return actorParts(actor).some((part) => part.name !== undefined && normalizeForSearch(part.name) === name);
     }
     if (e.kind !== "note") return false;
     const form = noteForm(e.text);
-    return form.form === "dialogue" && (form.pc ? member.kind === "pc" : normalizeForSearch(form.speaker) === name);
+    return form.form === "dialogue" && (form.pc && !form.name ? member.kind === "pc" : normalizeForSearch(form.name ?? "") === name);
   };
+  const pointsOfView = storylineViews(groups);
   let count = 0;
   const filtered = groups
     .map((g) => {

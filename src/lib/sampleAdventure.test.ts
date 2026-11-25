@@ -3,10 +3,12 @@ import { DICTIONARIES } from "./i18n/allDictionaries";
 import type { SampleLine } from "./i18n/types";
 import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";
-import { parseDescriptionsFromMarkdown, parseMarkdownToEntries, parseNotesFromMarkdown } from "./lonelog";
-import { splitRollText } from "./journalUi";
+import { exportAdventureToMarkdown, parseDescriptionsFromMarkdown, parseMarkdownToEntries, parseNotesFromMarkdown } from "./lonelog";
+import { splitOwnRolls, splitRollText } from "./journalUi";
 import { buildCast, foeIsOut, threadStatus } from "./lonelogTags";
-import { noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
+import { askedQuestion } from "./rollLog";
+import { SCENE_CHECK_LIKELIHOOD } from "./sceneCheck";
+import { isGenerator, isTableDefinition, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
 import { rollFormula } from "./diceNotation";
 import { cardName, isCardDraw } from "./cards";
 
@@ -43,6 +45,12 @@ describe("sample adventure", () => {
         .filter((_, i) => "oracle" in t.sample.script[i])
         .map((e) => splitRollText(e.text).answer);
       expect(answers).toEqual(["si", "si", "no", "contradiccion", "no", "si"]);
+      // Word for word: nothing in it is split or read as something else.
+      expect(entries.filter((_, i) => "kind" in t.sample.script[i]).map((e) => e.text)).toEqual(
+        t.sample.script.flatMap((l) => ("kind" in l ? [l.text] : [])),
+      );
+      const again = parseMarkdownToEntries(exportAdventureToMarkdown(t, "A", entries), "a", 0);
+      expect(again.map((e) => [e.kind, e.text, e.date])).toEqual(entries.map((e) => [e.kind, e.text, e.date]));
       expect(entries.some((e) => e.text.includes("\n"))).toBe(true);
     });
 
@@ -51,12 +59,27 @@ describe("sample adventure", () => {
       // Sessions keep their day of play.
       expect(entries.filter((e) => e.kind === "session").map((e) => e.date)).toEqual(["2026-10-03", "2026-10-10", "2026-10-17"]);
       // Scenes, one of them a fight, and a scene tested with the oracle.
-      expect(entries.filter((e) => e.kind === "scene").map((e) => parseScene(e.text).id)).toEqual(["S1", "S2", "S3", "S4"]);
+      expect(entries.filter((e) => e.kind === "scene").map((e) => parseScene(e.text).id)).toEqual(["S1", "S1a", "S2", "S2.1", "S2.2", "T1-S3", "T2-S1", "T1-S4", "S5"]);
       expect(entries.some((e) => e.kind === "scene" && parseScene(e.text).combat)).toBe(true);
-      expect(entries.some((e) => e.kind === "question" && e.text === t.journal.sceneCheckQuestion)).toBe(true);
+      expect(entries.some((e) => e.kind === "question" && e.text === askedQuestion(t, t.journal.sceneCheckQuestion, SCENE_CHECK_LIKELIHOOD))).toBe(true);
       // Every kind of roll: tables, quick inspiration and dice formulas.
-      const rolls = entries.filter((e) => e.kind === "roll").map((e) => splitRollSymbol(e.text).symbol);
-      expect(new Set(rolls)).toEqual(new Set(["d", "tbl", "gen"]));
+      const rolls = entries.filter((e) => e.kind === "roll");
+      expect(new Set(rolls.map((e) => splitRollSymbol(e.text).symbol))).toEqual(new Set(["d", "tbl", "result"]));
+      expect(rolls.some((e) => isGenerator(e.text))).toBe(true);
+      // Lonelog 1.7's: a table written out, axes, an answer's code, a verdict, roll context, a storyline's view…
+      expect(rolls.some((e) => isTableDefinition(e.text))).toBe(true);
+      expect(rolls.some((e) => isGenerator(e.text) && e.text.includes("\n"))).toBe(true);
+      expect(rolls.some((e) => splitRollSymbol(e.text).symbol === "result")).toBe(true);
+      expect(rolls.some((e) => / vs \d+ -> /.test(e.text))).toBe(true);
+      expect(rolls.some((e) => /^\+\[.+\] -\[.+\] d20/.test(e.text))).toBe(true);
+      expect(entries.some((e) => e.kind === "scene" && parseScene(e.text).pov)).toBe(true);
+      expect(entries.some((e) => e.kind === "question" && e.text.endsWith(")"))).toBe(true);
+      expect(entries.filter((e) => e.kind === "action").map((e) => splitActor(e.text).actor ?? "").join()).toMatch(/\+.* > /);
+      const all = entries.map((e) => e.text).join("\n");
+      for (const form of [/\|[^|\]:]+>[^|\]]+[|\]]/, /:\+/, /\|×\d/, /\|×-\d/, /\|-\p{L}/u, /\[#/, /\[E:/, /\[Deck:/, /out:\+/, /\[Track:[^\]]+\+1\]/, /\[Timer:[^\]]+-1\]/, /owner:/, /where:/, /pos:/, /\(retcon:/, /\(todo:/, /\(interp:/])
+        expect(all, String(form)).toMatch(form);
+      expect(entries.some((e) => noteForm(e.text).form === "dialogue" && /^PC \(/.test(e.text))).toBe(true);
+      expect(new Set(entries.map((e) => noteForm(e.text)).flatMap((f) => (f.form === "block" ? [f.name] : [])))).toEqual(new Set(["combat", "dungeon", "resources"]));
       expect(entries.some((e) => e.text.includes("kh1"))).toBe(true);
       expect(entries.some((e) => e.kind === "roll" && /, \S+ 1d6\+1 ->/.test(e.text))).toBe(true);
       // A card drawn, as the cards tool writes it.
@@ -70,16 +93,19 @@ describe("sample adventure", () => {
     it(`writes its dice rolls exactly as the dice tool would (${lang})`, async () => {
       const { entries } = await build(lang);
       for (const entry of entries) {
-        if (entry.kind !== "roll" || splitRollSymbol(entry.text).symbol !== "d" || entry.text.includes(" — ")) continue;
+        if (entry.kind !== "roll" || entry.text.includes(" — ")) continue;
         if (isCardDraw(entry.text)) {
           const [, card, name] = entry.text.match(/draw=(\S+) -> (.+)$/)!;
           expect(name).toBe(cardName(card, lang));
           continue;
         }
-        for (const roll of entry.text.split(/, (?=\p{L})/u)) {
+        if (splitRollSymbol(entry.text).symbol !== "d") continue;
+        // A roll with its verdict isn't the tool's; what helps or hinders goes before the dice.
+        if (!splitOwnRolls(entry.text)) continue;
+        for (const roll of entry.text.replace(/^(?:[+-]\[[^\]]*\] )+/, lang === "es" ? "Regatear " : "Haggle ").split(/, (?=\p{L})/u)) {
           const [, label, formula] = roll.match(/^(\p{L}+) (\S+) ->/u)!;
           // Same formula, same faces: only the numbers can differ.
-          const shape = (s: string) => s.replace(/\d+/g, "#");
+          const shape = (s: string) => s.replace(/\d+✓?/g, "#");
           expect(shape(rollFormula(`${formula} // ${label}`)!)).toBe(shape(roll));
         }
       }
@@ -93,15 +119,16 @@ describe("sample adventure notebook", () => {
       const { t, markdown, entries } = await build(lang);
       const cast = buildCast(entries);
       expect(new Set(cast.map((c) => c.kind))).toEqual(
-        new Set(["pc", "npc", "place", "thread", "clock", "track", "timer", "room", "foe", "item", "wealth"]),
+        new Set(["pc", "npc", "place", "thread", "clock", "track", "timer", "event", "room", "foe", "item", "wealth", "deck"]),
       );
       const one = (kind: string) => cast.find((c) => c.kind === kind)!;
       expect(one("pc").tags).toContain(lang === "es" ? "herida" : "wounded");
-      expect(foeIsOut(one("foe"))).toBe(true);
+      expect(cast.filter((c) => c.kind === "foe").map(foeIsOut)).toEqual([true, true]);
       expect(cast.filter((c) => c.kind === "place")[1].tags).toEqual(lang === "es" ? ["habitado"] : ["inhabited"]);
       // Money and supplies spent along the way; the trail followed to the end.
       expect(one("wealth").progress?.value).toBe(3);
-      expect(cast.filter((c) => c.kind === "item").map((c) => c.progress?.value)).toEqual([1, 2]);
+      expect(one("wealth").owner).toBe("Mara");
+      expect(cast.filter((c) => c.kind === "item").map((c) => c.progress?.value)).toEqual([1, 2, 1]);
       expect(one("track").progress).toEqual({ value: 4, max: 4 });
       expect(cast.filter((c) => c.kind === "thread").map((c) => threadStatus(c))).toEqual(["closed", "open"]);
 

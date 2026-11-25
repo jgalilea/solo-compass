@@ -5,15 +5,19 @@ import type { JournalEntry } from "../lib/lonelog";
 import {
   foeIsOut,
   formatProgressTag,
+  formatQuantity,
+  formatReference,
   formatTag,
   PROGRESS_KINDS,
   QUANTITY_KINDS,
   progressDone,
   progressText,
   tagsToPlainText,
+  threadChange,
   threadStatus,
   type CastKind,
   type CastMember,
+  writeDetails,
 } from "../lib/lonelogTags";
 import { INPUT_CLASS, formatIsoDay } from "../lib/journalUi";
 import { titleIfCut } from "../lib/truncation";
@@ -40,6 +44,7 @@ export function CastItem({
   onFilter,
   onRename,
   onLog,
+  purseOwner,
   description,
   onDescriptionChange,
 }: {
@@ -56,6 +61,8 @@ export function CastItem({
   onRename: (name: string) => void;
   /** `step`: a −/+, which may join the one just before (see combineSteps). */
   onLog: (text: string, step?: boolean) => void;
+  /** Whose money it is when it doesn't say: the only player character. */
+  purseOwner: string | undefined;
   description: string;
   onDescriptionChange: (text: string) => void;
 }) {
@@ -93,15 +100,17 @@ export function CastItem({
   // A closed thread or a foe out of the fight: dimmed and struck through.
   const done = (status && status !== "open") || (member.kind === "foe" && foeIsOut(member));
 
+  const quantity = (amount: string) => formatQuantity(member.kind, member.name, amount, member.owner ?? purseOwner);
+
   // −/+ on a clock writes its new value as a journal entry (the log is
   // a record: nothing is edited in place). Clocks and tracks stay
   // within their size, timers don't go below zero.
   function step(delta: number) {
     const value = (progress?.value ?? 0) + delta;
     if (value < 0 || (progress?.max !== undefined && value > progress.max)) return;
-    // An item or money logs the change ("[Inv:Torch-1]"), as the
+    // An item or money logs the change ("[Inv:Torch|×-1]"), as the
     // resource add-on writes it; a clock, where it stands now.
-    if (isQuantity) onLog(formatTag(member.kind, `${member.name}${delta > 0 ? "+" : "-"}${Math.abs(delta)}`), true);
+    if (isQuantity) onLog(quantity(`${delta > 0 ? "+" : "-"}${Math.abs(delta)}`), true);
     else onLog(formatProgressTag(member.kind, member.name, value, progress?.max), true);
   }
 
@@ -109,14 +118,13 @@ export function CastItem({
     e.preventDefault();
     // An amount for an item or money: "+15", "-8", or "45" (what there is now).
     const amount = change.trim().match(/^([+-]?)\s*(\d+)$/);
-    if (isQuantity && amount) {
-      if (amount[1]) onLog(formatTag(member.kind, `${member.name}${amount[1]}${amount[2]}`));
-      else if (member.kind === "wealth") onLog(formatProgressTag("wealth", member.name, Number(amount[2])));
-      else onLog(formatTag("item", member.name, [amount[2]]));
-    } else {
+    if (isQuantity && amount) onLog(quantity(`${amount[1]}${amount[2]}`));
+    // Money is only its amount: "in the chest" has nowhere to go.
+    else if (member.kind === "wealth") return;
+    else {
       const details = change.split(",").map((d) => d.trim()).filter(Boolean);
       if (details.length === 0) return;
-      onLog(formatTag(member.kind, member.name, details));
+      onLog(formatTag(member.kind, member.name, writeDetails(member.kind, details, t.notebook.categories)));
     }
     setChange("");
     setChanging(false);
@@ -309,7 +317,7 @@ export function CastItem({
                 <button
                   type="button"
                   onClick={() =>
-                    onLog(formatTag("thread", member.name, [t.notebook.statuses[status === "open" ? "closed" : "open"]]))
+                    onLog(formatTag("thread", member.name, [threadChange(member, t.notebook.statuses[status === "open" ? "closed" : "open"])]))
                   }
                   className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
                 >
@@ -318,7 +326,7 @@ export function CastItem({
               )}
               <button
                 type="button"
-                onClick={() => onMention(formatTag(member.kind, member.name, [], true))}
+                onClick={() => onMention(formatReference(member))}
                 title={t.notebook.mentionHint}
                 className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
               >

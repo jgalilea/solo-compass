@@ -119,7 +119,7 @@ export function usePlayActions() {
    * Several tables at once, one journal entry: quick inspiration
    * (action + theme, the tables from useMeaningTables) and the player's
    * generators. Each roll goes to the history on its own (they're
-   * different tables), but the journal gets a single `gen:` entry,
+   * different tables), but the journal gets a single `tbl:` entry,
    * linked to the first, so the consequence follows them all.
    */
   const rollCombined = useCallback(
@@ -134,9 +134,9 @@ export function usePlayActions() {
       };
       announce(`${name}: ${inspiration.text}`);
       if (adventureId) {
-        // A generator, in Lonelog (`gen:`). No "—" in the detail: that's
+        // Content, so a `tbl:` in Lonelog, however many rolls it took. No "—" in the detail: that's
         // how oracle rolls are recognised (splitRollText).
-        const diceText = `gen: ${name} (${inspiration.detail}) -> ${inspiration.text}`;
+        const diceText = `tbl: ${name} (${inspiration.detail}) -> ${inspiration.text}`;
         addJournalEntry(adventureId, "roll", diceText, inspiration.id);
       }
       return inspiration;

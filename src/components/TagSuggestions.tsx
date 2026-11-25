@@ -60,7 +60,7 @@ export function TagSuggestions({
                 ? t.notebook.suggestAll
                 : null;
           return (
-            <Fragment key={`${kind}:${name}:${existing}:${recent}`}>
+            <Fragment key={`${existing ? option.member.key : `${kind}:${name}`}:${recent}`}>
               {heading && (
                 <p
                   aria-hidden

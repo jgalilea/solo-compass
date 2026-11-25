@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { cardFace, cardIdentity, cardLook, cardName, cardPurpose, deckCards, drawCard, formatCardDraw, isCardDraw, readCards, showDraws } from "./cards";
 import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
 import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
-import { splitRollSeries, splitRollText } from "./journalUi";
+import { splitRollText } from "./journalUi";
+import { splitRollSeries } from "./rollLine";
 import { exportAdventureToMarkdown, parseMarkdownToEntries } from "./lonelog";
 import { es } from "./i18n/locales/es";
 

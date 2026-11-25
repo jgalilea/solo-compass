@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollSeries, splitRollText, splitOwnRolls } from "./journalUi";
+import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollText, splitOwnRolls } from "./journalUi";
 import { buildCast } from "./lonelogTags";
+import { splitRollSeries } from "./rollLine";
+import { DICTIONARIES } from "./i18n/allDictionaries";
+import { expandAnswer } from "./i18n/answerText";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 let n = 0;
@@ -205,6 +208,45 @@ describe("Lonelog 1.6 lines", () => {
   });
 });
 
+describe("Lonelog 1.7 answers", () => {
+  it("reads every form of an oracle's answer", () => {
+    for (const text of ["-> Yes (d6=5)", "-> Ya (6)", "-> Y", "-> Exceptional Yes (d100=4)", "d100=30 vs 35 -> Yes", "d100=3 vs 25 (CF 5) -> Yx"]) {
+      expect(splitRollText(text).answer, text).toBe("si");
+    }
+    for (const text of ["-> Nb (3)", "-> No, but...", "d100=60 vs 35 -> No"]) expect(splitRollText(text).answer, text).toBe("no");
+    for (const text of ["-> Partially", "Stealth d6=5 vs TN 4 -> Success", "2<4 -> F", "-> Nobody", "d6 -> Yes"]) {
+      expect(splitRollText(text).answer, text).toBeUndefined();
+    }
+  });
+
+  it("writes an answer code out", () => {
+    expect(expandAnswer(DICTIONARIES.en, "Nb (3)")).toBe("No, but. (3)");
+    expect(expandAnswer(DICTIONARIES.es, "Yx")).toBe("Sí excepcional");
+    expect(expandAnswer(DICTIONARIES.en, "Yes, but...")).toBe("Yes, but...");
+  });
+});
+
+describe("a storyline's point of view", () => {
+  it("is who a bare @ means in all its scenes", () => {
+    const entries = [
+      entry("note", "[PC:Alex] [PC:Jordan]"),
+      entry("scene", "T1-S1 *Tower* @(Alex)"),
+      entry("action", "Climb"),
+      entry("scene", "T2-S1 *Archives* @(Jordan)"),
+      entry("action", "Search"),
+      entry("scene", "T1-S2 *Basement*"),
+      entry("action", "Follow"),
+      entry("note", 'PC (Jordan): "Alex?"'),
+      entry("scene", "S3 *Together*"),
+      entry("action", "Nobody's in particular"),
+    ];
+    const about = (name: string) =>
+      filterGroups(groupBySession(entries), buildCast(entries).find((c) => c.name === name)!).groups.flatMap((g) => g.items.map((e) => e.text));
+    expect(about("Alex").slice(1)).toEqual(["Climb", "Follow"]);
+    expect(about("Jordan").slice(1)).toEqual(["Search", 'PC (Jordan): "Alex?"']);
+  });
+});
+
 describe("composerShortcut", () => {
   it("picks the entry type from the Lonelog typed at the start", () => {
     expect(composerShortcut("@ ")).toEqual({ mode: "action", text: "" });
@@ -212,6 +254,7 @@ describe("composerShortcut", () => {
     expect(composerShortcut("@(Odile) Shuts it")).toEqual({ mode: "action", text: "(Odile) Shuts it" });
     expect(composerShortcut("=> ")).toEqual({ mode: "consequence", text: "" });
     expect(composerShortcut("PC: ")).toEqual({ mode: "dialogue", text: "", speaker: { pc: true } });
+    expect(composerShortcut("PC (Alex): Hi")).toEqual({ mode: "dialogue", text: "Hi", speaker: { pc: true, name: "Alex" } });
     expect(composerShortcut("N (Grey Cloak): Run")).toEqual({
       mode: "dialogue",
       text: "Run",
@@ -264,12 +307,13 @@ describe("splitOwnRolls", () => {
       label: "Dark omen",
       rolls: [{ label: "", die: "draw=M16r", result: "The Tower, reversed" }],
     });
+    expect(splitOwnRolls("tbl: Dark omen draw=M16r -> The Tower, reversed")).toEqual(splitOwnRolls("Dark omen draw=M16r -> The Tower, reversed"));
     expect(splitOwnRolls("Attack d20 -> 15, Damage 1d6+1 -> 5 (4 + 1)")?.rolls).toHaveLength(2);
   });
 
   it("leaves oracles, tables and prose as they are", () => {
     for (const text of [
-      "Recluse — white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7", "tbl: draw=Qs -> Dark omen",
+      "Recluse — white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7",
       "gen: Inspiration (Action d66=26, Theme d66=43) -> Hide", "d20+5=17 vs DC 15 -> Success", "d20 -> Success, barely", "d20", "-> Yes",
     ]) {
       expect(splitOwnRolls(text), text).toBeNull();

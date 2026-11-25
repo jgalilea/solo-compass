@@ -17,7 +17,7 @@
 import { interpolate, type Dictionary } from "./i18n";
 import { sessionDate, type JournalEntry } from "./lonelog";
 import type { CastDescription } from "./journal";
-import { buildEntryBlocks, groupBySession, splitOwnRolls, splitRollText, splitRollTotal } from "./journalUi";
+import { buildEntryBlocks, groupBySession, splitOwnRolls, splitRollText, splitRollTotal, storylineViews } from "./journalUi";
 import {
   buildCast,
   PROGRESS_KINDS,
@@ -28,6 +28,7 @@ import {
   type CastMember,
 } from "./lonelogTags";
 import type { Answer } from "./oracle";
+import { expandAnswer } from "./i18n/answerText";
 import { noteForm, parseScene, splitActor } from "./lonelogLines";
 
 /** The theme as exported: colour tokens and the display font. */
@@ -93,7 +94,7 @@ function taggedHtml(text: string): string {
 /** A roll's dice or cards as HTML ("" for none), by its detail and result (RollDrawing). */
 type DrawRoll = (detail: string, result: string | null) => string;
 
-function rollHtml(entry: JournalEntry, answer: Answer | undefined, drawRoll: DrawRoll): string {
+function rollHtml(t: Dictionary, entry: JournalEntry, answer: Answer | undefined, drawRoll: DrawRoll): string {
   const drawn = (detail: string, result: string | null) => {
     const html = drawRoll(detail, result);
     return html && `<span class="drawn">${html}</span>`;
@@ -108,12 +109,15 @@ function rollHtml(entry: JournalEntry, answer: Answer | undefined, drawRoll: Dra
       .join("");
     return `${series.label ? `<p class="detail">${escapeHtml(series.label)}</p>` : ""}<p class="dice">${dice}</p>`;
   }
+  // A generator's axes or a table written out, under its first line.
+  const [first, ...rest] = entry.text.split("\n");
+  if (rest.length) return `${rollHtml(t, { ...entry, text: first }, answer, drawRoll)}<p class="detail">${rest.map(escapeHtml).join("<br>")}</p>`;
   const { detail, result, answer: parsed } = splitRollText(entry.text);
   const drawing = drawn(detail, result);
   if (result === null) return `<p>${drawing}${escapeHtml(entry.text)}</p>`;
   const known = answer ?? parsed;
   return `<p class="detail">${escapeHtml(detail)}</p>${
-    known ? `<p class="drawn-row">${drawing}<span class="answer ${known}">${escapeHtml(result)}</span></p>` : `<p class="result drawn-row">${drawing}<span>${escapeHtml(result)}</span></p>`
+    known ? `<p class="drawn-row">${drawing}<span class="answer ${known}">${escapeHtml(expandAnswer(t, result))}</span></p>` : `<p class="result drawn-row">${drawing}<span>${escapeHtml(result)}</span></p>`
   }`;
 }
 
@@ -135,16 +139,16 @@ function noteHtml(text: string): string {
   }
 }
 
-function entryHtml(entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined, drawRoll: DrawRoll): string {
+function entryHtml(t: Dictionary, entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined, drawRoll: DrawRoll, view?: string): string {
   const kind = entry.kind === "session" || entry.kind === "scene" ? "note" : entry.kind;
   const symbol = KIND_SYMBOL[kind];
   const body =
     kind === "roll"
-      ? rollHtml(entry, answerFor(entry.linkedRollId), drawRoll)
+      ? rollHtml(t, entry, answerFor(entry.linkedRollId), drawRoll)
       : kind === "note"
         ? noteHtml(entry.text)
         : kind === "action"
-          ? actionHtml(entry.text)
+          ? actionHtml(entry.text, view)
           : `<p>${taggedHtml(entry.text)}</p>`;
   return `<div class="entry ${kind}">${symbol ? `<span class="sym">${escapeHtml(symbol)}</span>` : `<span class="sym"></span>`}<div>${body}</div></div>`;
 }
@@ -176,15 +180,16 @@ function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<str
 }
 
 /** `@(Jonah) …`: who acts goes first, in bold. */
-function actionHtml(text: string): string {
-  const { actor, text: action } = splitActor(text);
+function actionHtml(text: string, view?: string): string {
+  const own = splitActor(text);
+  const { actor, text: action } = own.actor || !view ? own : { actor: view, text };
   return `<p>${actor ? `<b>${escapeHtml(actor)}:</b> ` : ""}${taggedHtml(action)}</p>`;
 }
 
 /** "S1 · Tavern, evening", a heading within the session. */
 function sceneHtml(entry: JournalEntry): string {
-  const { id, context, combat } = parseScene(entry.text);
-  return `<h3 class="scene">${escapeHtml(id)}${context ? ` · ${taggedHtml(context)}` : ""}${combat ? " ⚔" : ""}</h3>`;
+  const { id, context, combat, pov } = parseScene(entry.text);
+  return `<h3 class="scene">${escapeHtml(id)}${context ? ` · ${taggedHtml(context)}` : ""}${pov ? ` · ${escapeHtml(pov)}` : ""}${combat ? " ⚔" : ""}</h3>`;
 }
 
 export function exportAdventureToHtml({
@@ -212,10 +217,11 @@ export function exportAdventureToHtml({
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
   const cast = buildCast(sorted);
   const characters = cast.filter((c) => ["pc", "npc", "place", "room", "foe"].includes(c.kind));
-  const threads = cast.filter((c) => c.kind === "thread" || PROGRESS_KINDS.has(c.kind));
+  const threads = cast.filter((c) => c.kind === "thread" || c.kind === "event" || PROGRESS_KINDS.has(c.kind));
   const inventory = cast.filter((c) => QUANTITY_KINDS.has(c.kind));
   const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(exportedAt);
 
+  const views = storylineViews(groupBySession(sorted));
   const sessions = groupBySession(sorted)
     .filter((g) => g.sessionEntry || g.items.length)
     .map((group) => {
@@ -223,7 +229,7 @@ export function exportAdventureToHtml({
         .map((block) =>
           block[0].kind === "scene"
             ? sceneHtml(block[0])
-            : `<section class="card">${block.map((e) => entryHtml(e, answerFor, drawRoll)).join("")}</section>`,
+            : `<section class="card">${block.map((e) => entryHtml(t, e, answerFor, drawRoll, views.get(e.id))).join("")}</section>`,
         )
         .join("");
       const session = group.sessionEntry;

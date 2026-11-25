@@ -1,35 +1,39 @@
 /**
- * Lonelog's persistent-element tags (spec 1.6.0, §4.1–4.2):
+ * Lonelog's persistent-element tags (spec 1.7.0, §4.1–4.2):
  * `[N:Jonah|friendly|wounded]` for an NPC, `[PC:Alex|HP 8]` for the
  * player character, `[L:Lighthouse|ruined]` for a location,
+ * `[E:Bridge Collapse]` for something notable that happened,
  * `[Thread:The box|Open]` for a story thread, and progress: clocks
- * `[Clock:Ritual 5/12]` (also the older `[E:Plot 2/6]`), tracks
- * `[Track:Escape 3/8]` and timers `[Timer:Dawn 3]`. `[#N:Jonah]`
- * refers back to one without restating it. From the official add-ons:
- * rooms `[R:4|cleared|library|exits N:R2]` (dungeon crawling), foes
- * `[F:Thug A|HP 6|Close]` (combat), items `[Inv:Torch|3]` and money
- * `[Wealth:Gold 45|Silver 12]` (resource tracking).
+ * `[Clock:Ritual 5/12]`, tracks `[Track:Escape 3/8]` and timers
+ * `[Timer:Dawn 3]`. `[#N:Jonah]` refers back to one and changes
+ * nothing. From the official add-ons: rooms
+ * `[R:4|status:cleared|library|exits:N R2]` (dungeon crawling), foes
+ * `[F:Thug A|HP 6|pos:Close]` (combat), items `[Inv:Torch|×3]` and purses
+ * `[Wealth:Kael|Gold 45|Silver 12]` (resource tracking) and decks
+ * `[Deck:Main|×38|out:Qs]` (cards).
  *
  * Tags stay in the entry's text as written, so the .md keeps them
  * as is in both directions. What this module adds is reading them:
  * splitting a text into prose and tags (to draw them as chips) and
  * deriving each element's current state from the whole journal (the
- * cast panel), following the spec's update styles:
+ * cast panel). Tags accumulate:
  *
- *   [N:Jonah|captured]        a plain tag is added (the rest persist)
- *   [N:Jonah|+captured]       added
+ *   [N:Jonah|captured]        a plain value is added (also "+captured")
  *   [N:Jonah|-wounded]        removed
- *   [N:Jonah|friendly→hostile] (or "->") replaced
- *   [PC:Alex|HP 6]            a "name value" stat replaces the old value
- *   [PC:Alex|HP-2]            …or changes it by that much
- *   [PC:Kael|Supply d8→d6]    the value after a label is replaced
- *   [N:Guard|status:alert]    a category replaces the same category
+ *   [N:Jonah|friendly>hostile] (also "→") replaced
+ *   [N:Guard|status:alert]    a category replaces what it held
+ *   [PC:Jonah|trait:+reckless] one entry of it, added ("-": removed)
+ *   [PC:Alex|HP 6]            a number is set
+ *   [PC:Alex|HP-2]            …or changed by that much
+ *   [PC:Kael|Supply d8>d6]    the value after a label is replaced
+ *   [N:Bandits|×6]            a count is set; ×-1 and ×+2 change it
+ *   [Clock:Alert+1]           a counter advances from its name
  *
- * and each add-on's own: a room's first field is its status (replaced;
- * "+looted" adds to it), the second its description, and "exits …"
- * merges exits by direction; a foe's range band (Close, Far…) and group
- * size ("Goblins×3") replace the old ones; an item's or a currency's
- * number is its quantity ("Torch-1", "|3→2", "Gold+15").
+ * A multi-line tag is a full status block: it starts its element over.
+ * The forms 1.7 retired are still read (its Appendix E.3): `[E:Plot 2/6]`
+ * is a clock, "->" replaces, a count or an amount in the name
+ * ("Goblins×3", "Torch-1", "Gold 45"), a bare range band, and a room's
+ * fields by their order.
  */
 
 import { normalizeForSearch } from "./text";
@@ -43,16 +47,18 @@ export type CastKind =
   | "clock"
   | "track"
   | "timer"
+  | "event"
   | "room"
   | "foe"
   | "item"
-  | "wealth";
+  | "wealth"
+  | "deck";
 
 /** Kinds whose name carries a number: "Ritual 5/12", "Dawn 3". */
 export const PROGRESS_KINDS: ReadonlySet<CastKind> = new Set(["clock", "track", "timer"]);
 
-/** Kinds counted by a quantity, changed one by one ("Torch-1", "Gold+15"). */
-export const QUANTITY_KINDS: ReadonlySet<CastKind> = new Set(["item", "wealth"]);
+/** Kinds counted by a quantity, changed one by one ("×-1", "Gold+15"). */
+export const QUANTITY_KINDS: ReadonlySet<CastKind> = new Set(["item", "wealth", "deck"]);
 
 const PREFIX: Record<CastKind, string> = {
   pc: "PC",
@@ -62,10 +68,12 @@ const PREFIX: Record<CastKind, string> = {
   clock: "Clock",
   track: "Track",
   timer: "Timer",
+  event: "E",
   room: "R",
   foe: "F",
   item: "Inv",
   wealth: "Wealth",
+  deck: "Deck",
 };
 const KIND_OF_PREFIX: Record<string, CastKind> = {
   PC: "pc",
@@ -75,14 +83,19 @@ const KIND_OF_PREFIX: Record<string, CastKind> = {
   Clock: "clock",
   Track: "track",
   Timer: "timer",
-  // Events (§4.1.3) are the clocks of earlier versions of the spec.
-  E: "clock",
+  E: "event",
   R: "room",
   F: "foe",
   Inv: "item",
   Wealth: "wealth",
+  Deck: "deck",
 };
-const PREFIXES = "PC|N|L|Thread|Clock|Track|Timer|E|R|F|Inv|Wealth";
+const PREFIXES = "PC|N|L|Thread|Clock|Track|Timer|E|R|F|Inv|Wealth|Deck";
+
+/** A tag's kind; an `[E:…]` with a counter is a clock, as it was written before 1.7. */
+function kindOf(prefix: string, name: string): CastKind {
+  return prefix === "E" && /\d\s*\/\s*\d+$|\S\s*[+-]\d+$/.test(name) ? "clock" : KIND_OF_PREFIX[prefix];
+}
 
 /** A clock's, track's or timer's number: "5/12" sets it, "+1" changes it. */
 export interface Progress {
@@ -100,13 +113,24 @@ export interface TagRef {
   /** What comes after the name, one item per "|" (may be updates). */
   details: string[];
   progress?: Progress;
+  /** A purse, `[Wealth:Kael|Gold 45]`: the name is whose it is. */
+  owned?: true;
+  /** Written across lines: a full status block, which starts over. */
+  block?: true;
 }
 
 export type TextPart = { text: string; tag?: undefined } | { text: string; tag: TagRef };
 
 // "[", optional "#", the type, ":", the name (one line), then optional
-// "|"-separated details, which may span lines (multi-line tags, §4.1.8).
-const TAG = new RegExp(`\\[(#?)(${PREFIXES}):[ \\t]*([^\\]|\\n]*?)[ \\t]*((?:\\s*\\|[^\\]]*)?)\\]`, "g");
+// "|"-separated details, which may span lines (multi-line tags, §4.1.8;
+// on paper their first line needs no "|").
+const TAG = new RegExp(`\\[(#?)(${PREFIXES}):[ \\t]*([^\\]|\\n]*?)[ \\t]*((?:\\s*\\|[^\\]]*|\\n[^\\]]*)?)\\]`, "g");
+const OPEN_BLOCK = new RegExp(`\\[(?:${PREFIXES}):[^\\]]*$`);
+
+/** Whether a text ends inside a tag (a multi-line one whose "]" is on its own line). */
+export function endsInsideTag(text: string): boolean {
+  return OPEN_BLOCK.test(text);
+}
 
 // "Ritual 5/12", "Dawn 3", "Ritual +1".
 const PROGRESS_NAME = /^(.*?\S)\s*(?:([+-])\s*(\d+)|(\d+)(?:\s*\/\s*(\d+))?)$/;
@@ -118,12 +142,22 @@ function readProgress(raw: string): { name: string; progress?: Progress } {
   return { name: m[1], progress: { value: Number(m[4]), ...(m[5] ? { max: Number(m[5]) } : {}) } };
 }
 
-/** "45→52" (or "->"): what it is now, 52. */
-const toLatest = (raw: string) => raw.replace(/\d+\s*(?:→|->)\s*(\d+)\s*$/, "$1");
+/** "45>52" (or "→", "->"): what it is now, 52. */
+const toLatest = (raw: string) => raw.replace(/\d+\s*(?:→|->|>)\s*(\d+)\s*$/, "$1");
+
+// "×3" sets a count, "×-1" changes it, "×3>2" sets it and says what it was.
+const COUNT = /^[×x]\s*(?:\d+\s*(?:→|->|>)\s*[×x]?\s*)?([+-]?)\s*(\d+)$/;
+
+function readCount(detail: string): Progress | null {
+  const m = detail.match(COUNT);
+  if (!m) return null;
+  return m[1] ? { value: Number(`${m[1]}${m[2]}`), relative: true } : { value: Number(m[2]) };
+}
 
 // "Torch-1", "Arrow +2": an item's change, after its name.
-const RELATIVE_NAME = /^(.*?\S)\s*([+-])\s*(\d+)$/;
-// "Goblins×4" (or "x4"): a group of foes and how many are left.
+// ("Slot 6-10" is a name.)
+const RELATIVE_NAME = /^(.*?[^\s\d])\s*([+-])\s*(\d+)$/;
+// "Goblins×4": a count in the name, as it was written before 1.7 (a foe's with "x" too).
 const GROUP_NAME = /^(.*?\S)\s*[×x]\s*(\d+)$/;
 
 /** The name and the number in it, each kind as the spec writes it. */
@@ -133,7 +167,7 @@ function readName(kind: CastKind, raw: string): { name: string; progress?: Progr
     const m = raw.match(RELATIVE_NAME);
     return m ? { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } } : { name: raw };
   }
-  if (kind === "foe") {
+  if (kind === "foe" || (kind === "npc" && raw.includes("×"))) {
     const m = raw.match(GROUP_NAME);
     return m ? { name: m[1], group: `×${m[2]}` } : { name: raw };
   }
@@ -147,8 +181,17 @@ export function splitTags(text: string): TextPart[] {
   for (const match of text.matchAll(TAG)) {
     const raw = match[3].trim();
     if (!raw) continue;
-    const kind = KIND_OF_PREFIX[match[2]];
+    const kind = kindOf(match[2], raw);
     const { name, progress, group } = readName(kind, raw);
+    const details = [
+      ...(group ? [group] : []),
+      ...match[4]
+        // On paper each line is a value; after a "|", a line break is just a wrap.
+        .split(/^\s*\n\s*[^|\s]/.test(match[4]) ? /[|\n]/ : "|")
+        .map((d) => d.replace(/\s+/g, " ").trim())
+        .filter(Boolean),
+    ];
+    const owned = kind === "wealth" && !progress && details.some((d) => readProgress(toLatest(d)).progress);
     if (match.index > last) parts.push({ text: text.slice(last, match.index) });
     parts.push({
       text: match[0],
@@ -156,14 +199,10 @@ export function splitTags(text: string): TextPart[] {
         kind,
         name,
         reference: match[1] === "#",
-        details: [
-          ...(group ? [group] : []),
-          ...match[4]
-            .split("|")
-            .map((d) => d.replace(/\s+/g, " ").trim())
-            .filter(Boolean),
-        ],
+        details,
         ...(progress ? { progress } : {}),
+        ...(owned ? { owned } : {}),
+        ...(/^\s*\n/.test(match[4]) ? { block: true as const } : {}),
       },
     });
     last = match.index + match[0].length;
@@ -177,9 +216,28 @@ export function castKey(kind: CastKind, name: string): string {
   return `${kind}:${normalizeForSearch(name.trim())}`;
 }
 
+/** A currency in someone's purse: two people's gold are two elements. */
+export function purseKey(owner: string, currency: string): string {
+  return castKey("wealth", `${owner.trim()}|${currency.trim()}`);
+}
+
+/** The element a tag names (a purse's, its first currency). */
+export function tagKey(tag: TagRef): string {
+  return tag.owned ? purseKey(tag.name, readProgress(toLatest(tag.details[0])).name) : castKey(tag.kind, tag.name);
+}
+
+/** The element with this key, also by what it was called before its purse had an owner, or by the owner alone. */
+export function findMember(cast: readonly CastMember[], key: string): CastMember | undefined {
+  return (
+    cast.find((m) => m.key === key || m.aliases?.includes(key)) ??
+    cast.find((m) => m.owner !== undefined && castKey("wealth", m.owner) === key)
+  );
+}
+
 // A step from the notebook's −/+, alone in its entry.
 const PROGRESS_STEP = /^\[(Clock|Track|Timer|E):\s*(.+?)\s+(\d+)(?:\/(\d+))?\]$/;
-const QUANTITY_STEP = /^\[(Inv|Wealth):\s*(.+?)\s*([+-])\s*(\d+)\]$/;
+// "[Inv:Torch|×-1]", "[Wealth:Kael|Gold+1]" (and without an owner, "[Wealth:Gold+1]").
+const QUANTITY_STEP = /^\[(Inv|Wealth|Deck):\s*(.+?)\s*([+-])\s*(\d+)\]$/;
 
 /**
  * Two −/+ in a row on the same clock or quantity become one entry
@@ -212,43 +270,106 @@ export function formatTag(kind: CastKind, name: string, details: string[] = [], 
   return `[${reference ? "#" : ""}${PREFIX[kind]}:${clean(name)}${rest.map((d) => `|${d}`).join("")}]`;
 }
 
-// "HP 8", "HP-2", "Stress +1", "Clock 3/6": a named value.
-const STAT = /^(\p{L}[\p{L}\s'.]*?)\s*([+-]?)\s*(\d+)(\/\d+)?$/u;
+// "HP 8", "HP-2", "ATK +3", "Clock 3/6": a labelled number.
+const STAT = /^(\p{L}[\p{L}\s'.]*?)(\s*)([+-]?)\s*(\d+)(\/\d+)?$/u;
 // "status: wounded, alert": a category with its values.
 const CATEGORY = /^([^:]+?)\s*:\s*(.+)$/;
-const REPLACE = /^(.+?)\s*(?:→|->)\s*(.+)$/;
+const REPLACE = /^(.+?)\s*(?:→|->|>)\s*(.+)$/;
+// "Torchlight depleted": a labelled value that ran out.
+const RAN_OUT = /^(.+\S)\s+(?:depleted|agotad[oa]s?|gastad[oa]s?)$/i;
 
 const same = (a: string, b: string) => normalizeForSearch(a) === normalizeForSearch(b);
+const listOf = (values: string) => values.split(",").map((x) => x.trim()).filter(Boolean);
 
 function statKey(tag: string): string | null {
   const m = tag.match(STAT);
   return m ? normalizeForSearch(m[1]) : null;
 }
 
-function categoryKey(tag: string): string | null {
+/** A category's name and what it holds; null for any other value. */
+function readCategory(tag: string): { key: string; label: string; values: string } | null {
   const m = tag.match(CATEGORY);
-  return m ? normalizeForSearch(m[1]) : null;
+  return m ? { key: normalizeForSearch(m[1]), label: m[1], values: m[2] } : null;
+}
+
+/**
+ * A category's list after an update: its entries one by one if they're
+ * changes ("+looted", "-cleared", "alert>calm"), or the new list.
+ */
+function updateList(current: string[], update: string): string[] {
+  const entries = listOf(update);
+  // A number ("+2") is a value, not an addition.
+  const isChange = (e: string) => /^[+-]\s*\S/.test(e) && !/^[+-]\s*\d+$/.test(e);
+  if (!entries.some((e) => isChange(e) || REPLACE.test(e))) return entries;
+  let list = current.filter((x) => !/^(none|ningun[oa]?|nada)$/i.test(x));
+  const add = (x: string) => {
+    if (!list.some((y) => same(x, y))) list.push(x);
+  };
+  for (const entry of entries) {
+    const swap = isChange(entry) ? null : entry.match(REPLACE);
+    if (swap) {
+      const index = list.findIndex((x) => same(x, swap[1]));
+      if (index >= 0) list.splice(index, 1, swap[2]);
+      else if (list.length <= 1) list = [swap[2]];
+      else add(swap[2]);
+    } else if (isChange(entry) && entry.startsWith("-")) list = list.filter((x) => !same(x, entry.slice(1).trim()));
+    else add(isChange(entry) ? entry.slice(1).trim() : entry);
+  }
+  return list;
 }
 
 /** Applies a tag's details to an element's current tags (see the header). */
 export function applyTagUpdates(current: string[], updates: string[]): string[] {
   let tags = [...current];
   for (const update of updates) {
-    if (update.startsWith("-") && update.length > 1 && !STAT.test(update)) {
-      const target = update.slice(1).trim();
-      tags = tags.filter((t) => !same(t, target));
+    const count = readCount(update);
+    if (count) {
+      const index = tags.findIndex((t) => COUNT.test(t));
+      const before = index >= 0 ? (readCount(tags[index])?.value ?? 0) : 0;
+      const next = `×${Math.max(0, count.relative ? before + count.value : count.value)}`;
+      if (index >= 0) tags[index] = next;
+      else tags.push(next);
       continue;
     }
-    const value = update.startsWith("+") && !STAT.test(update) ? update.slice(1).trim() : update;
+    if (update.startsWith("-") && update.length > 1) {
+      const target = update.slice(1).trim();
+      const kept = tags.filter((t) => !same(t, target));
+      const category = kept.length === tags.length ? readCategory(target) : null;
+      tags = kept;
+      if (!category) continue;
+      // "-status:armed": out of the category's list.
+      tags = tags.flatMap((t) => {
+        const c = readCategory(t);
+        if (c?.key !== category.key) return [t];
+        const left = listOf(c.values).filter((x) => !same(x, category.values));
+        return left.length ? [`${c.label}:${left.join(", ")}`] : [];
+      });
+      continue;
+    }
+    const value = update.startsWith("+") ? update.slice(1).trim() : update;
+    const category = readCategory(value);
+    if (category) {
+      const index = tags.findIndex((t) => readCategory(t)?.key === category.key);
+      const before = index >= 0 ? readCategory(tags[index])! : null;
+      const list = updateList(before ? listOf(before.values) : [], category.values);
+      // A whole new list is kept as written.
+      const changed = !same(list.join(","), listOf(category.values).join(","));
+      const next = changed ? `${before?.label ?? category.label}:${list.join(", ")}` : value;
+      if (list.length === 0) {
+        if (index >= 0) tags.splice(index, 1);
+      } else if (index >= 0) tags[index] = next;
+      else tags.push(next);
+      continue;
+    }
     const replace = value.match(REPLACE);
     if (replace) {
-      // "Supply d8→d6", "Supplies:abundant→low": the label stays and the
-      // value after it changes, whatever it was before.
-      const labelled = replace[1].match(/^(.*?:\s*|.*\s)(\S+)$/);
-      const label = labelled && !/[:\s]/.test(replace[2].trim()) ? labelled[1] : null;
+      // "Supply d8>d6": the label stays and the value after it changes,
+      // whatever it was before.
+      const labelled = replace[1].match(/^(.*\s)(\S+)$/);
+      const label = labelled && !/\s/.test(replace[2].trim()) ? labelled[1] : null;
       const next = label ? `${label}${replace[2]}` : replace[2];
       const index = tags.findIndex((t) => same(t, replace[1]) || (!!label && same(t.slice(0, label.length), label)));
-      // Never twice: "wary→ally" when it's already an ally.
+      // Never twice: "wary>ally" when it's already an ally.
       const existing = tags.findIndex((t) => same(t, next));
       if (index >= 0) {
         tags[index] = next;
@@ -258,27 +379,31 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     }
     const stat = value.match(STAT);
     if (stat) {
-      const key = normalizeForSearch(stat[1]);
+      const [, label, space, sign, digits, max = ""] = stat;
+      const key = normalizeForSearch(label);
       const index = tags.findIndex((t) => statKey(t) === key);
+      const previous = index >= 0 ? tags[index].match(STAT)! : null;
       let next = value;
-      if (stat[2] && index >= 0) {
-        // A change relative to the value it had: "HP 8" + "HP-2" = "HP 6".
-        const previous = tags[index].match(STAT)!;
-        const delta = Number(stat[3]) * (stat[2] === "-" ? -1 : 1);
-        next = `${previous[1]} ${Number(previous[3]) + delta}${previous[4] ?? ""}`;
-      } else if (stat[2]) {
-        next = `${stat[1]} ${stat[2] === "-" ? "-" : ""}${stat[3]}${stat[4] ?? ""}`;
+      // "HP-2" changes it; "ATK +3" (with a space) is a bonus, unless it
+      // changes a number without a sign.
+      const bonus = !!sign && !!space && (!previous || !!previous[3]);
+      if (sign && !bonus) {
+        const delta = Number(`${sign}${digits}`);
+        next = previous
+          ? `${previous[1]} ${Number(`${previous[3]}${previous[4]}`) + delta}${previous[5] ?? ""}`
+          : `${label} ${sign === "-" ? "-" : ""}${digits}${max}`;
       }
       if (index >= 0) tags[index] = next;
       else tags.push(next);
       continue;
     }
-    const category = categoryKey(value);
-    if (category) {
-      const index = tags.findIndex((t) => categoryKey(t) === category);
-      if (index >= 0) tags[index] = value;
-      else tags.push(value);
-      continue;
+    const out = value.match(RAN_OUT);
+    if (out) {
+      const index = tags.findIndex((t) => /\s(?:d?\d\S*|\d+)$/.test(t) && same(t.replace(/\s+\S+$/, ""), out[1]));
+      if (index >= 0) {
+        tags[index] = value;
+        continue;
+      }
     }
     if (!tags.some((t) => same(t, value))) tags.push(value);
   }
@@ -298,6 +423,10 @@ export interface CastMember {
   progress?: { value: number; max?: number };
   /** When it was last mentioned (that entry's timestamp). */
   lastSeen: number;
+  /** Money: whose purse it's in, if it says. */
+  owner?: string;
+  /** Other keys it goes by (findMember). */
+  aliases?: string[];
 }
 
 export type ThreadStatus = "open" | "closed" | "abandoned";
@@ -320,6 +449,18 @@ const THREAD_STATES: Record<string, ThreadStatus> = {
 
 const stateOf = (tag: string) => THREAD_STATES[normalizeForSearch(tag.replace(/^[+]/, "").trim())];
 
+/** "Open>Closed" is Closed; null when it isn't a change of state. */
+function newState(detail: string): string | null {
+  const m = detail.match(REPLACE);
+  return m && (stateOf(m[1]) || stateOf(m[2])) ? m[2].trim() : null;
+}
+
+/** A thread's change of state, as the spec writes it: "Open>Closed". */
+export function threadChange(member: CastMember, to: string): string {
+  const from = [...member.tags].reverse().find(stateOf);
+  return from ? `${from}>${to}` : to;
+}
+
 /** A thread's state: its last state tag (open if none). */
 export function threadStatus(member: CastMember): ThreadStatus {
   for (const tag of [...member.tags].reverse()) {
@@ -332,51 +473,113 @@ export function threadStatus(member: CastMember): ThreadStatus {
 // A foe's range band (combat add-on §3.3), in English and Spanish: one at a time.
 const RANGES = new Set(["close", "near", "medium", "far", "engaged", "cerca", "media", "medio", "lejos", "trabado", "cuerpo a cuerpo"]);
 const isRange = (tag: string) => RANGES.has(normalizeForSearch(tag.trim()));
-const isGroup = (tag: string) => /^×\d+$/.test(tag);
+const isPosition = (tag: string) => /^(pos|zone|zona)\s*:/i.test(tag);
 // "depleted", "agotado": an item or supply that's gone.
 const DEPLETED = /^(depleted|agotad[oa]s?|gastad[oa]s?)$/i;
-// A room's connections: "exits N:R2, E:R5(secret)" (or "salidas …").
-const EXITS = /^(exits|salidas)\s+(.+)$/i;
+
+const STATUS = /^(?:status|estado)$/;
+const EXITS = /^(?:exits|salidas)$/;
+// As written before 1.7: "exits N:R2, E:R5(secret)", merged by direction.
+const OLD_EXITS = /^(exits|salidas)\s+(.+)$/i;
+// The dungeon crawling add-on's statuses, in English and Spanish.
+const ROOM_STATUS =
+  /^(unexplored|active|explored|cleared|looted|locked|trapped|safe|collapsed|sin explorar|inexplorada|activa|explorada|despejada|saqueada|cerrada|con trampas?|segura|derrumbada)$/i;
+const isRoomStatus = (detail: string) => listOf(detail).every((x) => ROOM_STATUS.test(x));
 
 /** A room's state, kept by field (dungeon crawling add-on §1–2). */
 interface RoomState {
   status: string[];
   description?: string;
-  /** By direction (or by room, when there's none): "N" → "N:R2". */
+  /** Its other categories and numbers ("level:2"). */
+  rest: string[];
+  /** By direction (or by room, when there's none): "N" → "N R2". */
   exits: Map<string, string>;
   /** The word written before them, "exits" or "salidas", shown as is. */
   exitsWord?: string;
+  /** Written with categories (1.7): a plain value is its description, whatever its place. */
+  labelled?: boolean;
+}
+
+const newRoom = (): RoomState => ({ status: [], rest: [], exits: new Map() });
+
+function exitKey(exit: string): string {
+  // "N:R5(secret)", "N R2", "E R7 secret", "R4".
+  const direction = exit.match(/^([^\s:]+)(?::|\s+(?=R?\d))/);
+  return normalizeForSearch(direction ? direction[1] : exit.replace(/\s*\(.*\)$/, "").split(/\s/)[0]);
 }
 
 function applyRoomUpdates(room: RoomState, details: string[]): void {
+  const categories = details.map(readCategory);
+  if (categories.some((c) => c && !OLD_EXITS.test(c.label))) room.labelled = true;
   let plain = 0;
-  for (const detail of details) {
-    const exits = detail.match(EXITS);
-    if (exits) {
-      room.exitsWord = exits[1];
-      for (const exit of exits[2].split(",").map((x) => x.trim()).filter(Boolean)) {
-        room.exits.set(normalizeForSearch(exit.includes(":") ? exit.split(":")[0] : exit.replace(/\(.*\)$/, "")), exit);
+  details.forEach((detail, i) => {
+    const oldExits = detail.match(OLD_EXITS);
+    const category = oldExits ? null : categories[i];
+    if (oldExits) {
+      room.exitsWord = oldExits[1];
+      for (const exit of listOf(oldExits[2])) room.exits.set(exitKey(exit), exit);
+    } else if (category && STATUS.test(category.key)) {
+      room.status = updateList(room.status, category.values);
+    } else if (category && EXITS.test(category.key)) {
+      room.exitsWord = category.label;
+      const entries = listOf(category.values);
+      if (!entries.some((e) => /^[+-]/.test(e))) room.exits = new Map();
+      for (const entry of entries) {
+        const exit = entry.replace(/^[+-]\s*/, "");
+        if (entry.startsWith("-")) room.exits.delete(exitKey(exit));
+        else room.exits.set(exitKey(exit), exit);
       }
+    } else if (category || STAT.test(detail)) {
+      room.rest = applyTagUpdates(room.rest, [detail]);
     } else if (/^[+-]\S/.test(detail)) {
       const value = detail.slice(1).trim();
-      room.status = detail.startsWith("+")
-        ? [...room.status.filter((x) => !same(x, value)), value]
-        : room.status.filter((x) => !same(x, value));
-    } else if (plain++ === 0) {
+      if (detail.startsWith("-") && room.description && same(room.description, value)) room.description = undefined;
+      else if (room.labelled && detail.startsWith("+") && !isRoomStatus(value)) room.description = value;
+      else room.status = updateList(room.status, detail);
+    } else if (isRoomStatus(detail) || (!room.labelled && plain === 0)) {
       // "cleared, looted": a status can be several at once.
-      room.status = detail.split(",").map((x) => x.trim()).filter(Boolean);
+      room.status = listOf(detail);
+      plain++;
     } else {
-      room.description = detail;
+      room.description = detail.match(REPLACE)?.[2] ?? detail;
+      plain++;
     }
-  }
+  });
 }
 
 function roomTags(room: RoomState): string[] {
   return [
     room.status.join(", "),
     room.description ?? "",
+    ...room.rest,
     room.exits.size ? `${room.exitsWord ?? "exits"} ${[...room.exits.values()].join(", ")}` : "",
   ].filter(Boolean);
+}
+
+/** The categories' names in the player's language ("status" / "estado"). */
+export interface CategoryWords {
+  status: string;
+  exits: string;
+}
+
+/**
+ * What's typed for an element, as the add-ons write it: a room's status
+ * and a foe's range go in their categories, so a new one replaces the
+ * old ("Close" → "pos:Close", "cleared" → "status:cleared").
+ */
+export function writeDetails(kind: CastKind, values: string[], words: CategoryWords): string[] {
+  const details = values.map((v) => v.trim()).filter(Boolean);
+  if (kind === "foe") return details.map((d) => (isRange(d) ? `pos:${d}` : d));
+  if (kind !== "room") return details;
+  const status: string[] = [];
+  const rest: string[] = [];
+  details.forEach((d, i) => {
+    const bare = d.replace(/^[+-]\s*/, "");
+    const other = d.includes(":") || OLD_EXITS.test(d) || REPLACE.test(d) || STAT.test(d);
+    if (!other && (ROOM_STATUS.test(bare) || (i === 0 && bare === d))) status.push(d);
+    else rest.push(d);
+  });
+  return [...(status.length ? [`${words.status}:${status.join(", ")}`] : []), ...rest];
 }
 
 /**
@@ -391,16 +594,41 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
   const rooms = new Map<string, RoomState>();
   const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
 
-  function memberFor(kind: CastKind, name: string, entry: JournalEntry): CastMember {
-    const key = castKey(kind, name);
+  function mention(member: CastMember, entry: JournalEntry): CastMember {
+    member.lastSeen = entry.timestamp;
+    if (member.mentions.at(-1) !== entry.id) member.mentions.push(entry.id);
+    return member;
+  }
+
+  function memberFor(kind: CastKind, name: string, entry: JournalEntry, key = castKey(kind, name)): CastMember {
     let member = byKey.get(key);
     if (!member) {
       member = { key, kind, name, tags: [], mentions: [], lastSeen: entry.timestamp };
       byKey.set(key, member);
     }
-    member.lastSeen = entry.timestamp;
-    if (member.mentions.at(-1) !== entry.id) member.mentions.push(entry.id);
+    return mention(member, entry);
+  }
+
+  const money = () => [...new Set(byKey.values())].filter((m) => m.kind === "wealth");
+
+  /** A currency in someone's purse; one that had no owner yet (before 1.7) becomes theirs. */
+  function purse(owner: string, currency: string, entry: JournalEntry): CastMember {
+    const key = purseKey(owner, currency);
+    const loose = byKey.get(castKey("wealth", currency));
+    if (!byKey.has(key) && loose && !loose.owner) {
+      loose.aliases = [key];
+      byKey.set(key, loose);
+    }
+    const member = memberFor("wealth", currency, entry, key);
+    member.owner ??= owner;
+    member.tags = [member.owner];
     return member;
+  }
+
+  /** A currency with no owner: the only one there is of it, or loose money. */
+  function currency(name: string, entry: JournalEntry): CastMember {
+    const known = money().filter((m) => same(m.name, name));
+    return known.length === 1 ? mention(known[0], entry) : memberFor("wealth", name, entry);
   }
 
   function applyProgress(member: CastMember, progress: Progress) {
@@ -414,33 +642,61 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
     if (entry.kind === "roll" || entry.kind === "session") continue;
     for (const part of splitTags(entry.text)) {
       if (!part.tag) continue;
-      const { kind, name, details, progress } = part.tag;
+      const { kind, name, details, progress, reference } = part.tag;
+
+      if (reference) {
+        // It changes nothing. `[#E:Alarm]` may be a clock from before 1.7,
+        // and `[#Wealth:Kael]` everything in a purse.
+        const owned = kind === "wealth" ? money().filter((m) => m.owner && same(m.owner, name)) : [];
+        if (owned.length) for (const member of owned) mention(member, entry);
+        else if (kind === "wealth") currency(name, entry);
+        else if (kind === "event" && !byKey.has(castKey("event", name)) && byKey.has(castKey("clock", name))) memberFor("clock", name, entry);
+        else memberFor(kind, name, entry);
+        continue;
+      }
 
       if (kind === "wealth") {
         // Each currency counts on its own: "Gold 45|Silver 12" is two.
-        for (const { name: currency, progress: amount } of [{ name, progress }, ...details.map((d) => readProgress(toLatest(d)))]) {
-          const member = memberFor("wealth", currency, entry);
+        for (const { name: coin, progress: amount } of [...(part.tag.owned ? [] : [{ name, progress }]), ...details.map((d) => readProgress(toLatest(d)))]) {
+          if (part.tag.owned && !amount) continue;
+          const member = part.tag.owned ? purse(name, coin, entry) : currency(coin, entry);
           if (amount) applyProgress(member, amount);
         }
         continue;
       }
 
+      // "[E:Alarm]" or "[E:Alarm 3]" of one already a clock (before 1.7).
+      const counted = kind === "event" ? readProgress(name) : null;
+      const clock = counted && !byKey.has(castKey("event", name)) && byKey.get(castKey("clock", counted.name));
+      if (clock) {
+        mention(clock, entry);
+        if (counted.progress) applyProgress(clock, counted.progress);
+        continue;
+      }
+
       const member = memberFor(kind, name, entry);
+      // A multi-line tag is a full status block.
+      if (part.tag.block) {
+        member.tags = [];
+        rooms.delete(member.key);
+      }
       if (kind === "room") {
-        const room = rooms.get(member.key) ?? { status: [], exits: new Map() };
+        const room = rooms.get(member.key) ?? newRoom();
         rooms.set(member.key, room);
         applyRoomUpdates(room, details);
         member.tags = roomTags(room);
         continue;
       }
 
-      if (kind === "item") {
-        // The quantity: "Torch-1" in the name, or "|3", "|3→2" or
-        // "|depleted" after it; anything else is a property.
+      if (QUANTITY_KINDS.has(kind)) {
+        // The quantity: "×3", "×-1", "×3>2" or "depleted" (before 1.7, "3",
+        // "3→2", or "Torch-1" in the name); anything else is a property.
         const rest: string[] = [];
         for (const detail of details) {
-          const amount = toLatest(detail);
-          if (/^\d+$/.test(amount)) applyProgress(member, { value: Number(amount) });
+          const amount = readCount(detail);
+          const plain = toLatest(detail);
+          if (amount) applyProgress(member, amount);
+          else if (/^\d+$/.test(plain)) applyProgress(member, { value: Number(plain) });
           else if (DEPLETED.test(detail)) applyProgress(member, { value: 0 });
           else rest.push(detail);
         }
@@ -449,22 +705,31 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
         continue;
       }
 
-      // One state at a time for a thread, one range band and one group
-      // size for a foe: a new one replaces the old.
+      // One state at a time for a thread and one range band for a foe: a
+      // new one replaces the old, however it's written.
       let current = member.tags;
-      if (kind === "thread" && details.some(stateOf)) current = current.filter((t) => !stateOf(t));
-      if (kind === "foe" && details.some(isRange)) current = current.filter((t) => !isRange(t));
-      if (kind === "foe" && details.some(isGroup)) current = current.filter((t) => !isGroup(t));
-      member.tags = applyTagUpdates(current, details);
+      let updates = details;
+      if (kind === "thread") {
+        updates = details.map((d) => newState(d) ?? d);
+        if (updates.some((d, i) => stateOf(d) || newState(details[i]) !== null)) {
+          const replaced = details.map((d) => d.match(REPLACE)?.[1].trim() ?? "");
+          current = current.filter((t) => !stateOf(t) && !replaced.some((r) => same(r, t)));
+        }
+      }
+      if (kind === "foe") {
+        if (details.some((d) => isRange(d))) current = current.filter((t) => !isRange(t) && !isPosition(t));
+        else if (details.some(isPosition)) current = current.filter((t) => !isRange(t));
+      }
+      member.tags = applyTagUpdates(current, updates);
       if (progress) applyProgress(member, progress);
     }
   }
-  return [...byKey.values()];
+  return [...new Set(byKey.values())];
 }
 
 /** A foe that's out of the fight ("dead", "fled"…): shown dimmed. */
 export function foeIsOut(member: CastMember): boolean {
-  return member.tags.some((t) => /^(dead|fled|muert[oa]s?|huid[oa]s?|derrotad[oa]s?|defeated)$/i.test(t.trim()));
+  return member.tags.some((t) => /^(?:(?:status|estado)\s*:\s*)?(×0|dead|fled|muert[oa]s?|huid[oa]s?|derrotad[oa]s?|defeated)$/i.test(t.trim()));
 }
 
 /** "5/12", "3", "+1". */
@@ -486,8 +751,29 @@ export function progressText(progress: Progress | { value: number; max?: number 
 /** The text with each tag as just its name, for short previews. */
 export function tagsToPlainText(text: string): string {
   return splitTags(text)
-    .map((part) => (part.tag ? part.tag.name + (part.tag.progress ? ` ${progressText(part.tag.progress)}` : "") : part.text))
+    .map((part) => {
+      if (!part.tag) return part.text;
+      const { name, progress, kind, details, owned } = part.tag;
+      const amount = progress ? progressText(progress) : owned ? details.join(", ") : kind === "item" ? (details.find((d) => COUNT.test(d)) ?? "") : "";
+      return amount ? `${name} ${amount}` : name;
+    })
     .join("");
+}
+
+/** The reference that names an element: a purse, by whose it is (`[#Wealth:Kael]`). */
+export function formatReference(member: Pick<CastMember, "kind" | "name" | "owner">): string {
+  return formatTag(member.kind, member.owner ?? member.name, [], true);
+}
+
+/**
+ * How much there is of something, or how it changes ("+1", "-8"), as the
+ * spec writes it: `[Inv:Torch|×-1]`, `[Wealth:Kael|Gold+15]`. Money with
+ * no owner known keeps the form from before 1.7 (`[Wealth:Gold+15]`).
+ */
+export function formatQuantity(kind: CastKind, name: string, amount: string, owner?: string): string {
+  if (kind !== "wealth") return formatTag(kind, name, [`×${amount}`]);
+  const currency = `${name.replace(/[[\]|]/g, " ").trim()}${/^[+-]/.test(amount) ? "" : " "}${amount}`;
+  return owner ? formatTag("wealth", owner, [currency]) : formatTag("wealth", currency);
 }
 
 export interface TagQuery {
@@ -561,7 +847,7 @@ export type TagOption = { member: CastMember; recent?: boolean } | { kind: CastK
 /** How many of the last named go first in the "[" list. */
 const RECENT = 3;
 /** Every kind a new tag can be, in the order "[" offers them. */
-const NEW_KINDS: CastKind[] = ["npc", "place", "pc", "thread", "clock", "track", "timer", "room", "foe", "item", "wealth"];
+const NEW_KINDS: CastKind[] = ["npc", "place", "pc", "thread", "clock", "track", "timer", "event", "room", "foe", "item", "wealth", "deck"];
 
 /**
  * What "[" offers: the cast members that fit what's typed, in
@@ -600,7 +886,7 @@ export function tagOptionText(option: TagOption, query?: Pick<TagQuery, "actor">
     const name = ("member" in option ? option.member.name : option.name).replace(/[()\n]/g, " ").replace(/\s+/g, " ").trim();
     return query.actor === "dialogue" ? `${name}): ` : `${name}) `;
   }
-  if ("member" in option) return formatTag(option.member.kind, option.member.name, [], true);
+  if ("member" in option) return formatReference(option.member);
   const { kind, name } = option;
   if (!PROGRESS_KINDS.has(kind) || readProgress(name).progress) return formatTag(kind, name);
   return kind === "timer"
@@ -611,31 +897,59 @@ export function tagOptionText(option: TagOption, query?: Pick<TagQuery, "actor">
 /**
  * An element renamed in one entry's text ("Odille" → "Odile"): every tag
  * of its kind with that name, references and numbered ones too
- * ("[Clock:Alarm 2/6]", "[Inv:Torch-1]") keeping their number and
- * details; for an NPC, also the lines they say (`N (Odille): …`) and
- * what they do (`@(Odille) …`). The text as it was if it isn't there.
+ * ("[Clock:Alarm 2/6]") keeping their number and details; for a
+ * character, also the lines they say (`N (Odille): …`), what they do
+ * (`@(Odille) …`, alone or with others), a storyline's point of view and
+ * what they own (`[Wealth:Odille|…]`, `owner:Odille`); for money, its
+ * currency in that purse. The text as it was if it isn't there.
  */
 export function renameInEntry(
   entry: Pick<JournalEntry, "kind" | "text">,
-  member: Pick<CastMember, "kind" | "name">,
+  member: Pick<CastMember, "kind" | "name" | "owner">,
   newName: string,
 ): string {
   const name = newName.replace(/[[\]|\n]/g, " ").replace(/\s+/g, " ").trim();
   if (!name) return entry.text;
   const target = normalizeForSearch(member.name.trim());
+  const same = (s: string) => normalizeForSearch(s.trim()) === target;
+  const character = member.kind === "npc" || member.kind === "pc";
   const numbered = PROGRESS_KINDS.has(member.kind) || QUANTITY_KINDS.has(member.kind);
+  const isGroup = member.kind === "foe" || member.kind === "npc";
   let text = entry.text.replace(new RegExp(TAG.source, "g"), (whole, hash: string, prefix: string, tagName: string, details: string) => {
-    if (KIND_OF_PREFIX[prefix] !== member.kind) return whole;
-    const split = numbered ? tagName.match(/^(.*?)(\s*[+-]?\s*\d+(?:\/\d+)?)?$/) : null;
-    const base = split ? split[1] : tagName;
-    if (normalizeForSearch(base.trim()) !== target) return whole;
-    return `[${hash}${prefix}:${name}${split?.[2] ?? ""}${details}]`;
+    const tag = splitTags(whole)[0].tag;
+    if (!tag) return whole;
+    if (tag.owned || (tag.kind === "wealth" && hash)) {
+      if (character && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
+      if (!tag.owned && member.kind === "wealth" && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
+      if (!tag.owned || member.kind !== "wealth" || (member.owner && normalizeForSearch(member.owner) !== normalizeForSearch(tag.name))) return whole;
+      return `[${hash}${prefix}:${tagName}${details.replace(/(\|\s*)([^|]+)/g, (w, bar: string, d: string) =>
+        same(readProgress(toLatest(d.trim())).name) ? `${bar}${name}${d.trimEnd().match(/\s*[+-]?\s*\d+(?:\s*(?:→|->|>)\s*\d+)?$/)?.[0] ?? ""}` : w,
+      )}]`;
+    }
+    const owner = character
+      ? details.replace(/(\|\s*owner\s*:\s*)([^|]+)/gi, (w, a: string, who: string) => (same(who) ? a + name : w))
+      : details;
+    if (tag.kind !== member.kind) return `[${hash}${prefix}:${tagName}${owner}]`;
+    const split = numbered
+      ? tagName.match(/^(.*?)(\s*[+-]?\s*\d+(?:\/\d+|\s*(?:→|->|>)\s*\d+)?)?$/)
+      : isGroup
+        ? tagName.match(/^(.*?)(\s*[×x]\s*\d+)?$/)
+        : null;
+    const base = same(tagName) ? tagName : split ? split[1] : tagName;
+    if (!same(base)) return whole;
+    return `[${hash}${prefix}:${name}${tagName.slice(base.length)}${owner}]`;
   });
-  if (member.kind === "npc") {
-    const same = (s: string) => normalizeForSearch(s.trim()) === target;
-    if (entry.kind === "note") text = text.replace(/^(N\s*\()([^()\n]+)(\)\s*:)/, (w, a, n: string, b) => (same(n) ? a + name + b : w));
-    if (entry.kind === "action") text = text.replace(/^\(([^()\n]+)\)/, (w, n: string) => (same(n) ? `(${name})` : w));
+  if (!character) return text;
+  if (entry.kind === "note") {
+    const speaker = member.kind === "npc" ? /^(N\s*\()([^()\n]+)(\)\s*:)/ : /^(PC\s*\()([^(),\n]+)((?:,[^()\n]*)?\)\s*:)/;
+    text = text.replace(speaker, (w, a, n: string, b) => (same(n) ? a + name + b : w));
   }
+  const actors = (list: string) =>
+    list
+      .split(/(\s*[>+]\s*)/)
+      .map((n) => (same(n) ? name : n))
+      .join("");
+  if (entry.kind === "action") text = text.replace(/^\(([^()\n]+)\)/, (_, n: string) => `(${actors(n)})`);
+  if (entry.kind === "scene") text = text.replace(/(@\()([^()\n]+)(\)\s*)$/, (_, a, n: string, b) => a + actors(n) + b);
   return text;
 }
-

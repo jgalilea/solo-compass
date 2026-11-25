@@ -8,11 +8,17 @@ import { foeIsOut,
   castKey,
   characterNamed,
   findActorQuery,
+  findMember,
   findTagQuery,
   formatProgressTag,
+  formatQuantity,
+  formatReference,
   formatTag,
   splitTags,
   suggestCast,
+  tagKey,
+  threadChange,
+  writeDetails,
   tagOptions,
   tagOptionText,
   tagsToPlainText,
@@ -49,6 +55,7 @@ describe("splitTags", () => {
       name: "Jonah",
       reference: false,
       details: ["trait: friendly, curious", "status: wounded"],
+      block: true,
     });
   });
 
@@ -257,7 +264,7 @@ describe("tagOptions", () => {
 
   it("offers a new one of every kind, or only the typed kind after a prefix", () => {
     const kinds = (q: string) => tagOptions([], findTagQuery(q)!).map((o) => ("kind" in o ? o.kind : ""));
-    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread", "clock", "track", "timer", "room", "foe", "item", "wealth"]);
+    expect(kinds("[Torre")).toEqual(["npc", "place", "pc", "thread", "clock", "track", "timer", "event", "room", "foe", "item", "wealth", "deck"]);
     expect(kinds("[Clock:Torre")).toEqual(["clock"]);
   });
 
@@ -292,7 +299,7 @@ describe("the official add-ons' tags", () => {
     expect(foe?.tags).toEqual(["HP 3", "armed", "Far", "dead"]);
     expect(foeIsOut(foe!)).toBe(true);
     const goblins = find(["[F:Goblins×4|HP 3 each|Close]", "[F:Goblins×3|Close]"], "foe:goblins");
-    expect(goblins?.tags).toEqual(["HP 3 each", "×3", "Close"]);
+    expect(goblins?.tags).toEqual(["×3", "HP 3 each", "Close"]);
   });
 
   it("counts items and money (resource tracking)", () => {
@@ -385,3 +392,130 @@ describe("progressDone", () => {
   });
 });
 
+
+describe("Lonelog 1.7 tags", () => {
+  const log = (...lines: string[]) => lines.map((text, i) => entry("note", text, i));
+  const find = (key: string, ...lines: string[]) => findMember(buildCast(log(...lines)), key)!;
+
+  it("follows the spec's own examples", () => {
+    expect(find("npc:jonah", "[N:Jonah|friendly|injured]", "[N:Jonah|captured]", "[N:Jonah|-injured]", "[N:Jonah|friendly>hostile]").tags).toEqual(["hostile", "captured"]);
+    expect(find("npc:guard", "[N:Guard|status:alert]", "[N:Guard|status:unconscious]").tags).toEqual(["status:unconscious"]);
+    expect(find("pc:alex", "[PC:Alex|HP 8|Gold 12]", "[PC:Alex|HP-2|Gold-5]").tags).toEqual(["HP 6", "Gold 7"]);
+    expect(find("npc:bandits", "[N:Bandits|×6]", "[N:Bandits|×4]", "[N:Bandits|×-1]").tags).toEqual(["×3"]);
+    expect(find("npc:bandits", "[N:Bandits×6|wary]", "[N:Bandits|×4]").tags).toEqual(["×4", "wary"]);
+    expect(find("pc:jonah", "[PC:Jonah|trait:friendly,curious]", "[PC:Jonah|trait:+reckless]", "[PC:Jonah|trait:-curious]").tags).toEqual(["trait:friendly, reckless"]);
+    expect(find("pc:kael", "[PC:Kael|Supply d8]", "[PC:Kael|Supply d8>d6]", "[PC:Kael|Torchlight d4]", "[PC:Kael|Torchlight depleted]").tags).toEqual(["Supply d6", "Torchlight depleted"]);
+    expect(find("timer:dawn", "[Timer:Dawn 3]", "[Timer:Dawn-1]").progress).toEqual({ value: 2 });
+  });
+
+  it("sets a bonus and adjusts a number, below zero too", () => {
+    expect(applyTagUpdates(applyTagUpdates([], ["ATK +3"]), ["ATK +4"])).toEqual(["ATK +4"]);
+    expect(applyTagUpdates(applyTagUpdates(["HP 1"], ["HP-2"]), ["HP-1"])).toEqual(["HP -2"]);
+    expect(applyTagUpdates(["charges 2/5"], ["charges-1"])).toEqual(["charges 1/5"]);
+    expect(applyTagUpdates(["status:alert, armed"], ["-status:armed"])).toEqual(["status:alert"]);
+    expect(applyTagUpdates(["out:none"], ["out:+Qs"])).toEqual(["out:Qs"]);
+  });
+
+  it("starts over with a multi-line tag, on paper too, and changes nothing with a reference", () => {
+    expect(find("pc:jonah", "[PC:Jonah|tired]", "[PC:Jonah\n  | trait: friendly\n  | HP 8\n]").tags).toEqual(["trait: friendly", "HP 8"]);
+    expect(find("pc:jonah", "[PC:Jonah\n  trait: friendly | status: wounded\n  stat: HP 8]").tags).toEqual(["trait: friendly", "status: wounded", "stat: HP 8"]);
+    expect(find("npc:jonah", "[N:Jonah|wary]", "[#N:Jonah|friendly]").tags).toEqual(["wary"]);
+  });
+
+  it("tells an event from a clock written as one", () => {
+    const cast = buildCast(log("[E:Bridge Collapse] [E:Siege 1812]", "[E:Alarm 2/6]", "[#E:Alarm] [#E:Bridge Collapse]"));
+    expect(cast.map((c) => [c.kind, c.name, c.mentions.length])).toEqual([["event", "Bridge Collapse", 2], ["event", "Siege 1812", 1], ["clock", "Alarm", 2]]);
+  });
+
+  it("changes a thread's state", () => {
+    const thread = find("thread:escape", "[Thread:Escape|Abierto|urgente]", "[Thread:Escape|Open>Closed]");
+    expect(thread.tags).toEqual(["urgente", "Closed"]);
+    expect(threadChange(thread, "Open")).toBe("Closed>Open");
+    expect(threadChange(find("thread:x", "[Thread:X]"), "Closed")).toBe("Closed");
+    expect(threadStatus(find("thread:x", "[Thread:X|Urgent]", "[Thread:X|Urgent>Closed]"))).toBe("closed");
+  });
+
+  it("reads a room's fields for what they are", () => {
+    const room = find("room:3", "[R:3|status:unexplored|exits:N R2, W R4|level:2]", "[R:3|status:cleared|armory]", "[R:3|status:+looted]", "[R:3|exits:+E R7 secret]", "[R:3|exits:-W R4]", "[R:3|-armory]", "[R:3|marked on the map]");
+    expect(room.tags).toEqual(["cleared, looted", "marked on the map", "level:2", "exits N R2, E R7 secret"]);
+    expect(find("room:1", "[R:1|estado:activa|salidas:Arriba R2]", "[R:1|estado:despejada]").tags).toEqual(["despejada", "salidas Arriba R2"]);
+    // Writing exits again replaces them; the older form merges by direction.
+    expect(find("room:5", "[R:5|exits:R4, R6]", "[R:5|exits:R7]").tags).toEqual(["exits R7"]);
+    expect(find("room:3", "[R:3|cleared|library]").tags).toEqual(["cleared", "library"]);
+  });
+
+  it("keeps one position per foe, as a category or bare", () => {
+    expect(find("foe:thug", "[F:Thug|HP 6|pos:Far]", "[F:Thug|pos:Close]").tags).toEqual(["HP 6", "pos:Close"]);
+    expect(find("foe:thug", "[F:Thug|Far]", "[F:Thug|pos:Close]").tags).toEqual(["pos:Close"]);
+    expect(foeIsOut(find("foe:pirates", "[F:Pirates|×2]", "[F:Pirates|×0]"))).toBe(true);
+  });
+
+  it("counts items and decks", () => {
+    const torch = find("item:torch", "[Inv:Torch|×3|where:base camp]", "[Inv:Torch|×-1]", "[Inv:Torch|×2>1]", "[Inv:Torch|×+4|where:carried]");
+    expect([torch.progress, torch.tags]).toEqual([{ value: 5 }, ["where:carried"]]);
+    const deck = find("deck:main", "[Deck:Main|×52]", "[Deck:Main|×-1|out:+Qs]", "[Deck:Main|×-1|out:+M16]");
+    expect([deck.progress, deck.tags]).toEqual([{ value: 50 }, ["out:Qs, M16"]]);
+  });
+
+  it("keeps each purse apart, and takes in the money that had no owner", () => {
+    const cast = buildCast(log("[Wealth:Silver 9]", "[Wealth:Mara|Silver-6|Gold 1]", "[Wealth:Kael|Silver 4]", "[Wealth:Gold+2]", "[#Wealth:Mara]"));
+    expect(cast.map((m) => [m.name, m.owner, m.progress?.value, m.mentions.length])).toEqual([
+      ["Silver", "Mara", 3, 3],
+      ["Gold", "Mara", 3, 3],
+      ["Silver", "Kael", 4, 1],
+    ]);
+    const key = tagKey(splitTags("[Wealth:Mara|Silver-6]")[0].tag!);
+    expect(findMember(cast, key)).toBe(cast[0]);
+    expect(findMember(cast, "wealth:mara")).toBe(cast[0]);
+    expect(formatReference(cast[2])).toBe("[#Wealth:Kael]");
+    expect(tagsToPlainText("[Wealth:Mara|Silver-6] [Inv:Torch|×-1]")).toBe("Mara Silver-6 Torch ×-1");
+  });
+
+  it("writes quantities and what's typed as the spec does", () => {
+    expect(formatQuantity("item", "Torch", "-1")).toBe("[Inv:Torch|×-1]");
+    expect(formatQuantity("wealth", "Gold", "+15", "Kael")).toBe("[Wealth:Kael|Gold+15]");
+    expect(formatQuantity("wealth", "Gold", "45", "Kael")).toBe("[Wealth:Kael|Gold 45]");
+    expect(formatQuantity("wealth", "Gold", "+15")).toBe("[Wealth:Gold+15]");
+    expect(combineSteps("[Inv:Torch|×-1]", "[Inv:Torch|×-1]")).toBe("[Inv:Torch|×-2]");
+    expect(combineSteps("[Wealth:Kael|Gold+1]", "[Wealth:Kael|Gold-1]")).toBe("");
+    expect(combineSteps("[Wealth:Kael|Gold+1]", "[Wealth:Mara|Gold+1]")).toBeNull();
+    const words = { status: "status", exits: "exits" };
+    expect(writeDetails("foe", ["HP 6", "Close"], words)).toEqual(["HP 6", "pos:Close"]);
+    expect(writeDetails("room", ["cleared", "looted", "library"], words)).toEqual(["status:cleared, looted", "library"]);
+    expect(writeDetails("room", ["+looted"], words)).toEqual(["status:+looted"]);
+    expect(writeDetails("npc", ["wary", ""], words)).toEqual(["wary"]);
+  });
+
+  it("renames owners, purses, points of view and who acts together", () => {
+    const mara = { kind: "pc" as const, name: "Mara" };
+    expect(renameInEntry({ kind: "note", text: "[PC:Mara|HP 2] [Wealth:Mara|Gold 3] [Inv:Rope|owner:Mara] [#Wealth:Mara]" }, mara, "Lía")).toBe(
+      "[PC:Lía|HP 2] [Wealth:Lía|Gold 3] [Inv:Rope|owner:Lía] [#Wealth:Lía]",
+    );
+    expect(renameInEntry({ kind: "note", text: 'PC (Mara, whisper): "Hi"' }, mara, "Lía")).toBe('PC (Lía, whisper): "Hi"');
+    expect(renameInEntry({ kind: "action", text: "(Odile > Mara) Boosts" }, mara, "Lía")).toBe("(Odile > Lía) Boosts");
+    expect(renameInEntry({ kind: "scene", text: "T1-S1 *Inn* @(Mara)" }, mara, "Lía")).toBe("T1-S1 *Inn* @(Lía)");
+    const gold = { kind: "wealth" as const, name: "Gold", owner: "Mara" };
+    expect(renameInEntry({ kind: "note", text: "[Wealth:Mara|Gold-3|Silver 2] [Wealth:Kael|Gold 1] [Wealth:Gold 4]" }, gold, "Crowns")).toBe(
+      "[Wealth:Mara|Crowns-3|Silver 2] [Wealth:Kael|Gold 1] [Wealth:Crowns 4]",
+    );
+    expect(renameInEntry({ kind: "note", text: "[F:Goblins×4]" }, { kind: "foe", name: "Goblins" }, "Orcs")).toBe("[F:Orcs×4]");
+  });
+});
+
+it("reads a range of slots as a name, not a change", () => {
+  expect(splitTags("[Inv:Slot 6-10|empty]")[0].tag).toMatchObject({ name: "Slot 6-10", details: ["empty"] });
+});
+
+it("a value wrapped over two lines is one value, and doesn't start its element over", () => {
+  const cast = buildCast([
+    entry("note", "[R:7|active|exits N:R2]", 1),
+    entry("note", "[R:7|active|vaulted throne room,\nbones on the floor]", 2),
+  ]);
+  expect(cast[0].tags).toEqual(["active", "vaulted throne room, bones on the floor", "exits N:R2"]);
+});
+
+it("goes on with a clock written as an event, however it's named later", () => {
+  const cast = buildCast([entry("note", "[E:Alarm 2/6]", 1), entry("note", "[E:Alarm] [E:Alarm 3]", 2)]);
+  expect(cast).toHaveLength(1);
+  expect(cast[0]).toMatchObject({ kind: "clock", progress: { value: 3, max: 6 } });
+});

@@ -291,6 +291,10 @@ export function IconClock(props: IconProps) {
 export function IconTrack(props: IconProps) {
   return <TablerIcon icon={Tabler.IconFlag} {...props} />;
 }
+// An event (`[E:…]`): a turning point.
+export function IconEvent(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconBolt} {...props} />;
+}
 export function IconTimer(props: IconProps) {
   return <TablerIcon icon={Tabler.IconHourglass} {...props} />;
 }

@@ -8,7 +8,7 @@ import { AllDiceStatsDialog } from "./AllDiceStatsDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
-import { parseTitleFromMarkdown } from "../lib/lonelog";
+import { parseTitleFromMarkdown, readLonelog } from "../lib/lonelog";
 import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import { ENTRY_TYPES, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
@@ -172,7 +172,7 @@ export function JournalListView() {
     try {
       const text = await file.text();
       const name = parseTitleFromMarkdown(text) || file.name.replace(/\.(md|markdown|txt)$/i, "");
-      const adventure = importAdventure(name, text);
+      const adventure = importAdventure(name, readLonelog(text));
       setActiveAdventureId(adventure.id);
       navigate(`/diario/${adventure.id}`);
       setImportError(null);
@@ -189,7 +189,7 @@ export function JournalListView() {
     loadMeaningTables("solo-compass", t, locale)
       .then((tables) => {
         const { name, markdown } = buildSampleAdventure(t, tables);
-        const adventure = importAdventure(name, markdown);
+        const adventure = importAdventure(name, readLonelog(markdown));
         navigate(`/diario/${adventure.id}`);
       })
       .catch(() => undefined);

@@ -3,6 +3,7 @@ import { DICTIONARIES } from "./i18n/allDictionaries";
 import {
   buildEntries,
   createCustomTable,
+  definitionDraft,
   diceChoiceFor,
   entriesToText,
   exportTableToMarkdown,
@@ -155,5 +156,21 @@ describe("custom tables: files", () => {
     const weighted = { dice: "d6" as const, entries: [{ range: [1, 4] as [number, number], text: "A" }, { range: [5, 6] as [number, number], text: "B" }] };
     expect(entriesToText(weighted)).toBe("1-4 A\n5-6 B");
     expect(diceChoiceFor(weighted)).toBe("d6");
+  });
+});
+
+describe("a table written out in a journal", () => {
+  it("becomes one of the player's, on its die", () => {
+    expect(definitionDraft(t, "tbl: Clima (d4) [Sol, 3 nubes, Lluvia, Nieve]")).toEqual({
+      name: "Clima", description: "", dice: "d4",
+      entries: ["Sol", "3 nubes", "Lluvia", "Nieve"].map((text, i) => ({ range: [i + 1, i + 1], text })),
+    });
+    expect(definitionDraft(t, "tbl: Bosque (d6)\n1-2: Nada\n3: Huellas\n4: Campamento\n5: Viajero\n6: Algo te sigue")).toMatchObject({
+      name: "Bosque", dice: "d6", entries: [{ range: [1, 2], text: "Nada" }, {}, {}, {}, { range: [6, 6] }],
+    });
+    // With no die, or one that doesn't fit, a face each.
+    expect(definitionDraft(t, "tbl: Ánimo [Tenso, Sereno, Raro]").dice).toBe("d3");
+    expect(definitionDraft(t, "tbl: Ánimo (d8) [Tenso, Sereno, Raro]").dice).toBe("d3");
+    expect(definitionDraft(t, "tbl: Vacía [Uno]").entries).toHaveLength(1);
   });
 });

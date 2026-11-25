@@ -1,6 +1,6 @@
 /**
  * The player's own generators: several tables rolled at once, logged
- * as one entry (`gen: New place (Kind of place d20=15, …) -> Guard post
+ * as one entry (`tbl: New place (Kind of place d20=15, …) -> Guard post
  * · …`, like quick inspiration). A name and the ids of its tables, in
  * order; the tables themselves stay where they are (built-in or the
  * player's), so a generator is only as current as they are, and a

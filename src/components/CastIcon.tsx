@@ -1,7 +1,9 @@
 import type { ComponentType } from "react";
 import type { CastKind } from "../lib/lonelogTags";
 import {
+  IconCards,
   IconClock,
+  IconEvent,
   IconFoe,
   IconInventory,
   IconNpc,
@@ -22,10 +24,12 @@ const CAST_ICON: Record<CastKind, ComponentType<{ size?: number; className?: str
   clock: IconClock,
   track: IconTrack,
   timer: IconTimer,
+  event: IconEvent,
   room: IconRoom,
   foe: IconFoe,
   item: IconInventory,
   wealth: IconWealth,
+  deck: IconCards,
 };
 
 /** The icon of a notebook element: character, place, thread, clock… */

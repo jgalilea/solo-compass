@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { formatProgressTag, formatTag, type CastKind } from "../lib/lonelogTags";
+import { formatProgressTag, formatQuantity, formatTag, writeDetails, type CastKind } from "../lib/lonelogTags";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { CastIcon } from "./CastIcon";
 import { NumberField } from "./NumberField";
@@ -8,15 +8,18 @@ import { NumberField } from "./NumberField";
 /**
  * A new element, logged as its tag: "[N:Odile|innkeeper]",
  * "[Thread:The box|Open]", "[Clock:Alarm 0/6]", "[Timer:Dawn 6]",
- * "[R:4|active|library]", "[F:Thug|HP 6|Close]", "[Inv:Torch|3]",
- * "[Wealth:Gold 45]".
+ * "[E:Bridge Collapse]", "[R:4|status:active|library]",
+ * "[F:Thug|HP 6|pos:Close]", "[Inv:Torch|×3]", "[Wealth:Kael|Gold 45]".
  */
 export function AddCastForm({
   kinds,
+  purseOwner,
   onAdd,
   onCancel,
 }: {
   kinds: CastKind[];
+  /** Whose money it is, to start with: the only player character. */
+  purseOwner: string | undefined;
   onAdd: (text: string) => void;
   onCancel: () => void;
 }) {
@@ -24,6 +27,7 @@ export function AddCastForm({
   const [kind, setKind] = useState<CastKind>(kinds[0]);
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
+  const [owner, setOwner] = useState(purseOwner ?? "");
   const [size, setSize] = useState(6);
   const [quantity, setQuantity] = useState(1);
   const hint = kind in t.notebook.kindHints ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints] : t.notebook.addHint;
@@ -34,16 +38,18 @@ export function AddCastForm({
     if (kind === "thread") return formatTag("thread", name, [t.notebook.statuses.open]);
     if (kind === "clock" || kind === "track") return formatProgressTag(kind, name, 0, size);
     if (kind === "timer") return formatProgressTag(kind, name, size);
-    if (kind === "item") return formatTag("item", name, [String(quantity), ...details.split(",")]);
-    if (kind === "wealth") return formatProgressTag("wealth", name, quantity);
-    return formatTag(kind, name, details.split(","));
+    if (kind === "item") return formatTag("item", name, [`×${quantity}`, ...details.split(",")]);
+    if (kind === "wealth") return formatQuantity("wealth", name, String(quantity), owner.trim());
+    // A group's size is a count, not part of its name: "Goblins×4".
+    const group = kind === "foe" ? name.match(/^(.*?\S)\s*[×x]\s*(\d+)$/) : null;
+    return formatTag(kind, group ? group[1] : name, [...(group ? [`×${group[2]}`] : []), ...writeDetails(kind, details.split(","), t.notebook.categories)]);
   }
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        if (!name.trim() || (kind === "wealth" && !owner.trim())) return;
         onAdd(tag());
       }}
       onKeyDown={(e) => {
@@ -91,6 +97,16 @@ export function AddCastForm({
           className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
         />
       )}
+      {kind === "wealth" && (
+        <input
+          value={owner}
+          onChange={(e) => setOwner(e.target.value)}
+          required
+          placeholder={t.notebook.ownerLabel}
+          aria-label={t.notebook.ownerLabel}
+          className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
+        />
+      )}
       {(kind === "clock" || kind === "track" || kind === "timer") && (
         <div className="flex items-center gap-2 text-xs text-parchment-dim">
           <span className="flex-1">{sizeLabel}</span>
@@ -114,7 +130,7 @@ export function AddCastForm({
         </button>
         <button
           type="submit"
-          disabled={!name.trim()}
+          disabled={!name.trim() || (kind === "wealth" && !owner.trim())}
           className="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-ink-950 transition hover:bg-gold-soft disabled:bg-ink-700 disabled:text-parchment-dim/50"
         >
           {t.notebook.logButton}

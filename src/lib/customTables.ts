@@ -137,6 +137,29 @@ export function createCustomTable(draft: CustomTableDraft, index = 0): CustomTab
   return { ...draft, id: makeId("custom-"), createdAt: now + index, updatedAt: now };
 }
 
+/**
+ * A table written out in a journal (Lonelog §4.3.1–4.3.2) as one of the
+ * player's, to review in the editor: "tbl: Mood (d4) [Tense, Calm…]" or
+ * a first line and a result per line ("1-2: Nothing"). On the die it
+ * says if its results fit it, or one face each. With results the editor
+ * can't take (fewer than two), it opens with what there is.
+ */
+export function definitionDraft(t: Dictionary, text: string): CustomTableDraft {
+  const [first, ...rest] = text.replace(/^tbl:\s*/, "").split("\n");
+  const list = first.match(/^(.*?)\s*\[(.+)\]\s*$/);
+  const head = (list ? list[1] : first).trim();
+  const name = head.replace(/\s*\([^()]*\)$/, "").trim() || t.tables.editor.newTitle;
+  const die = head.match(/\(\s*\d*(d(?:\d+|%))\s*\)$/i)?.[1].toLowerCase().replace("%", "100") as DiceType | undefined;
+  const parsed = list
+    ? { lines: list[2].split(",").map((x) => ({ text: x.trim() })).filter((l) => l.text), mixedRanges: false }
+    : parseEntryLines(rest.join("\n"));
+  const attempts = [...(die ? [buildEntries(t, parsed, die)] : []), buildEntries(t, parsed, "auto"), buildEntries(t, { lines: parsed.lines.map((l) => ({ text: l.text })), mixedRanges: false }, "auto")];
+  const built = attempts.find((b) => b.ok);
+  return built?.ok
+    ? { name, description: "", dice: built.dice, entries: built.entries }
+    : { name, description: "", dice: "d1" as DiceType, entries: parsed.lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })) };
+}
+
 /** Same shape as the built-in tables, so everything else rolls it the same way. */
 export function toMeaningTable(table: CustomTable, t: Dictionary): MeaningTable {
   const source = table.source ?? {};

@@ -45,10 +45,33 @@ export function GuideDialog() {
           <div className="flex flex-col gap-6">
             <GuideRows heading={g.tagsHeading} intro={g.tagsIntro} rows={g.tags} />
             <GuideRows heading={g.updatesHeading} intro={g.updatesIntro} rows={g.updates} />
+            <section className="flex flex-col gap-2">
+              <HelpHeading>{g.scopeHeading}</HelpHeading>
+              <p className="text-sm text-parchment-dim">{g.scopeIntro}</p>
+              <ScopeList label={g.scopeUsedLabel} rows={g.scopeUsed} />
+              <ScopeList label={g.scopeApartLabel} rows={g.scopeApart} />
+              <p className="text-sm text-parchment-dim">{g.scopeNote}</p>
+            </section>
           </div>
         </div>
       </DialogBody>
     </Modal>
+  );
+}
+
+/** Lonelog's documents that are used, or aren't. */
+function ScopeList({ label, rows }: { label: string; rows: GuideRow[] }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="text-sm font-semibold text-parchment">{label}</p>
+      <ul className="flex flex-col gap-1 border-l border-ink-border pl-3">
+        {rows.map(({ code, text }) => (
+          <li key={code} className="text-sm text-parchment-dim">
+            <span className="font-medium text-parchment">{code}</span> · {text}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

@@ -25,8 +25,10 @@
  *                         (4-2)d10, 3d(2*6)
  *   {4d6, 2d10}k1         groups: added up, or kept, dropped or counted
  *                         by each part's total
- *   // Strength, # …,     a description, written before the roll
- *   [ … ], /* … *\/
+ *   // Strength, /* … *\/  a description, written before the roll (also
+ *                         "# …" and "[ … ]", the grammar's, which Lonelog
+ *                         no longer writes)
+ *   +[cover] -[hurt] d20  roll context before the dice, kept there
  *
  * Modifiers act in the spec's fixed order, whatever order they're
  * written in. A condition right after a modifier that takes one is
@@ -803,7 +805,11 @@ export function rollAgain(text: string, random?: () => number): string | null {
  */
 function splitDescription(input: string): { formula: string; description: string } {
   const parts: string[] = [];
+  // Roll context (Lonelog §4.1.9), "+[cover] -[injured] d20", isn't a
+  // description: it's kept as it is, right before the dice.
+  const context = input.match(/^(?:\s*[+-]\[[^\]]*\])+/)?.[0] ?? "";
   let formula = input
+    .slice(context.length)
     .replace(/\/\*([\s\S]*?)\*\//g, (_, text: string) => (parts.push(text), " "))
     .replace(/\[([^\]]*)\]/g, (_, text: string) => (parts.push(text), " "));
   const tail = formula.match(/(?:\/\/|#)([\s\S]*)$/);
@@ -811,7 +817,7 @@ function splitDescription(input: string): { formula: string; description: string
     parts.push(tail[1]);
     formula = formula.slice(0, tail.index);
   }
-  return { formula, description: parts.map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).join(" ") };
+  return { formula, description: [...parts, context].map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).join(" ") };
 }
 
 export type Edge = "advantage" | "disadvantage";

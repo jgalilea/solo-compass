@@ -7,7 +7,7 @@
  * are given as dice and written here in the same format as
  * `usePlayActions` (oracle with its answer, table with its result), so
  * the sample looks exactly like a real game; quick inspiration too
- * (a `gen:` with Action and Theme). It's returned as Lonelog (sessions
+ * (a `tbl:` with Action and Theme). It's returned as Lonelog (sessions
  * with their date, pinned notes and descriptions as front matter) and
  * goes in through the normal import. The caller passes Solo
  * Compass's own tables, already loaded (they aren't in the main bundle).
@@ -42,7 +42,7 @@ export function buildSampleAdventure(
       // Written like usePlayActions' rollInspiration.
       const rolls = INSPIRATION_TABLE_IDS.map((id, i) => roll(id, line.inspiration[i]));
       const detail = rolls.map((r) => `${r.table.name} ${r.table.dice}=${r.total}`).join(", ");
-      const text = `gen: ${t.tables.inspirationName} (${detail}) -> ${rolls.map((r) => r.result).join(" · ")}`;
+      const text = `tbl: ${t.tables.inspirationName} (${detail}) -> ${rolls.map((r) => r.result).join(" · ")}`;
       return formatLine({ kind: "roll", text });
     }
     // A session's date goes on the line below it, as in the export.

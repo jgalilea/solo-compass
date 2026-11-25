@@ -145,6 +145,14 @@ export interface Dictionary {
     updatesHeading: string;
     updatesIntro: string;
     updates: GuideRow[];
+    /** Which of Lonelog's documents the app reads, and which it leaves apart. */
+    scopeHeading: string;
+    scopeIntro: string;
+    scopeUsedLabel: string;
+    scopeUsed: GuideRow[];
+    scopeApartLabel: string;
+    scopeApart: GuideRow[];
+    scopeNote: string;
   };
   shortcuts: {
     ctrlKey: string;
@@ -639,8 +647,13 @@ export interface Dictionary {
     blocks: Record<"combat" | "dungeon" | "resources", { open: string; close: string }>;
     /** Who speaks, when it's the player character ("PC: …"). */
     dialoguePc: string;
-    /** A roll's kind when it isn't plain dice: tbl: and gen:. */
-    rollSymbol: { tbl: string; gen: string };
+    /** A roll's kind when it isn't plain dice: a table, several at once, a table written out. */
+    rollSymbol: { tbl: string; gen: string; definition: string };
+    /** A table written out in the journal, to the player's own. {name} */
+    saveTable: string;
+    tableSaved: string;
+    /** An answer code's "x" ("Yx"): {answer}. */
+    exceptionalAnswer: string;
     toolOracle: string;
     toolTable: string;
     toolOracleTitle: string;
@@ -850,12 +863,13 @@ export interface Dictionary {
     /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */
     kinds: Record<CastKind, string>;
     /** What a clock, a track and a timer are for (the add form). */
-    kindHints: Record<"clock" | "track" | "timer" | "room" | "foe" | "item" | "wealth", string>;
+    kindHints: Record<"clock" | "track" | "timer" | "event" | "room" | "foe" | "item" | "wealth", string>;
     statuses: Record<"open" | "closed" | "abandoned", string>;
     threadsTitle: string;
     threadsEmpty: string;
     groupThreads: string;
     groupProgress: string;
+    groupEvents: string;
     closeThread: string;
     reopenThread: string;
     increase: string;
@@ -875,6 +889,10 @@ export interface Dictionary {
     inventoryEmpty: string;
     addInventoryButton: string;
     quantityLabel: string;
+    /** Whose purse the money is in. */
+    ownerLabel: string;
+    /** A room's categories, as the app writes them (read in either language). */
+    categories: { status: string; exits: string };
     /** "Use one {name}" / "One more {name}". */
     useOne: string;
     addOne: string;

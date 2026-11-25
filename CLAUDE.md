@@ -32,7 +32,7 @@ Playwright tests (`e2e/*.e2e.ts`, config in `playwright.config.ts`) on a
 phone and a desktop viewport against `vite preview`, failing on any
 console error: `smoke.e2e.ts` plays the main path (oracle, new
 adventure, an entry, a table roll, reload; two tabs at once; own dice
-and cards) and `data.e2e.ts` what would hurt most to lose (an
+and cards) and `lonelog.e2e.ts` Lonelog 1.7 in, changed and out; `data.e2e.ts` what would hurt most to lose (an
 adventure out as Lonelog and back in, the full backup restored on an
 empty browser, a table of one's own, the language picked). The deploy
 workflow runs `npm test`, builds, then runs the smoke test, so a
@@ -244,7 +244,7 @@ No backend; persistence is split by access pattern, not by feature:
 ### Lonelog (`src/lib/lonelog.ts`)
 
 The journal's storage/interchange format is [Lonelog](https://lonelog.itch.io/lonelog)
-(spec 1.6.0, source in github.com/zeruhur/lonelog), an open plain-text
+(spec 1.7.0, source in github.com/lonelog/lonelog), an open plain-text
 notation (`@` action, `?` question, `d:` roll, `=>` consequence,
 `=== Title ===` for sessions, `S1 *context*` for scenes). A session
 keeps its day of play (`date`, set when it's opened so moving it
@@ -253,10 +253,10 @@ a `[Date] 2025-09-03` line below it and read back from that or
 Lonelog's other forms (`Date: … | Duration: …`); an imported session
 without one has none (`""`), and older ones fall back to their
 timestamp (`sessionDate`). Rolls that
-carry their own symbol (`tbl:` table, `gen:` generator, a bare
-`-> result`) keep it in the roll's text and are written back as is;
+carry their own symbol (`tbl:` content: a table, a generator, a card;
+`gen:`, its form before 1.7; a bare `-> answer`) keep it in the roll's text and are written back as is;
 the app's own table rolls are `tbl: Name d66=42 -> …` (`formatTableRoll`)
-and quick inspiration a `gen:`. Scenes are their own entry kind
+and quick inspiration a `tbl:` with several dice (`isGenerator`; a `tbl:` with no result is a table written out, `isTableDefinition`, never a roll). Scenes are their own entry kind
 (`scene`, text "S4 *Tavern*", numbered by `nextSceneId`, offered in the
 composer beside "New session", listed under their session in the
 index). A new scene can be tested, optionally (a switch in the
@@ -273,9 +273,13 @@ every open session's bar (`SESSION_BAR`) and the scene being read
 (`.scene-bar` in `index.css`) stay pinned at the top, so old entries
 always show where they belong. The front matter
 carries the campaign header (`title`, `start_date`, `last_update`) and
-import names the adventure from it (`parseTitleFromMarkdown`). Not
-read: Partylog/Lorelog/Maplog/Wargaming (separate systems). The Cards
-add-on's draws (`d: draw=Qs -> …`) are rolls like any other (see the
+import names the adventure from it (`parseTitleFromMarkdown`). **Used**: the
+core and the Combat, Dungeon Crawling, Resource Tracking, Dice and Cards
+add-ons. **Left apart on purpose** (separate systems): Partylog, Lorelog,
+Maplog and the Wargaming add-on; what's theirs is kept as text and
+exported the same (tested), never in the notebook. The guide
+(`scopeUsed`/`scopeApart`) and the README say so: keep the three in step. The Cards
+add-on's draws (`tbl: draw=Qs -> …`; they give content) are rolls like any other (see the
 dice below). This module does both directions:
 
 - `exportAdventureToMarkdown` — produces a `.md` valid for any
@@ -287,6 +291,31 @@ dice below). This module does both directions:
   with a symbol (`d:` under its `@` is its own entry); continuation lines
   that start with one are exported escaped with `\`. Code fences (how
   Lonelog wraps notation in digital logs) are skipped.
+
+What 1.7 settled, and where it lives:
+
+- **The player's rolls** are stored as "Attack d20+5 -> 19 (14 + 5)" (what
+  every reader of rolls expects) and written to Lonelog as `d: Attack
+  d20+5[14]=19`; `rollLine.ts` converts both ways (only if it comes back
+  the same). Wherever a roll is seen as text (the .md, copying, editing
+  an entry, the dice help) it's the Lonelog form; the drawn box is the
+  only other way it shows.
+- **Compact form** (`lonelogCompact.ts`): a line of notation with several
+  elements becomes one entry each on import; a symbol in the player's
+  own words is escaped on export (`\=>`). Prose is never split.
+- An oracle question carries its **likelihood** unless it's even
+  (`askedQuestion` in `rollLog.ts`), answer codes (`Yb`, `Nx`) are read
+  and shown written out (`answerCodes.ts`, `expandAnswer`), and a bare
+  answer is always an oracle's.
+- `PC (Alex): "…"` with several PCs; a storyline's first scene says its
+  point of view (`T2-S1 *City* @(Jordan)`), who a bare `@` is in all its
+  scenes (`storylineViews`: their name is drawn on each of its actions).
+- A table written out (`isTableDefinition`) has a button that opens it in
+  the tables' editor (`definitionDraft`); otherwise it's only text.
+- Retired forms (the spec's Appendix E.3) are read, never written.
+
+The first screen doesn't load `lonelog.ts` nor `lonelogTags.ts`:
+`useJournal` gets an import already read (`readLonelog`); keep it so.
 
 There's also a read-only **HTML export** (`htmlExport.ts`, theme read
 by `htmlExportTheme.ts`): one self-contained page in the theme on
@@ -336,7 +365,7 @@ created on its own, and opened without making it active). The script
 lives in the dictionaries (`t.sample.script`); rolls are given as dice
 and written with the same format as `usePlayActions` (oracle verdict via
 `judgeDice` in `oracle.ts`, table results from the real tables, loaded
-first with `loadMeaningTables`; quick inspiration as the same `gen:`;
+first with `loadMeaningTables`; quick inspiration as the same `tbl:`;
 dice formulas written as `rollFormula` writes them), then imported as
 Lonelog, with session dates, pinned notes and notebook descriptions
 (`t.sample.descriptions`). It's the showcase: it uses every kind of
@@ -361,8 +390,11 @@ header below that.
   tags (Lonelog has no description field); in the .md they're a
   `descriptions` front matter field, one `[N:Name] text` line each.
 - **Characters and places** are Lonelog tags (`lonelogTags.ts`):
-  `[N:…]` NPC, `[PC:…]` PC, `[L:…]` place, `[#N:…]` reference, with
-  `+`/`-`/`→`, "HP 6"/"HP-2" stats and `category:` updates. They stay
+  `[N:…]` NPC, `[PC:…]` PC, `[L:…]` place, `[E:…]` event, `[#N:…]` reference (changes
+  nothing), with `-`/`a>b` (`→`), "HP 6"/"HP-2" stats ("ATK +3", with a
+  space, is a bonus), `×N` counts and `category:` values, which replace
+  what it held (`category:+v`/`-v` one entry); a multi-line tag starts
+  its element over. They stay
   in the entry text as written (so they round-trip for free); the
   cast and each element's state are **derived** from the entries
   (`buildCast`), never stored. Tags inside roll entries are roll
@@ -388,17 +420,19 @@ header below that.
   adventure uses tags and has pinned notes (`t.sample.notes`) and
 descriptions (`t.sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms
-  `[R:4|status|description|exits N:R2]` (first field is the status,
-  replaced; `+looted` adds; exits merge by direction), foes
-  `[F:Thug A|HP 6|Close]` (range band and `×N` group size replace;
-  `foeIsOut` for dead/fled), items `[Inv:Torch|3]`/`[Inv:Torch-1]`
-  and money `[Wealth:Gold 45|Silver 12]` (one member per currency),
-  both `QUANTITY_KINDS` with −/+ in the notebook's Inventory section.
-  A "label value" change keeps the label (`Supply d8→d6`,
-  `Supplies:abundant→low`).
+  `[R:4|status:cleared|description|exits:N R2]` (`exits:+E R7` adds;
+  Spanish `estado:`/`salidas:` too; fields by order as before 1.7), foes
+  `[F:Thug A|HP 6|pos:Close]` (`foeIsOut` for dead/fled/×0), items
+  `[Inv:Torch|×3]`/`[Inv:Torch|×-1]`, decks `[Deck:Main|×38|out:Qs]` and
+  purses `[Wealth:Kael|Gold 45|Silver 12]` (one member per owner and
+  currency, `purseKey`; money from before 1.7 has no owner and is taken
+  into the first purse that names it, keeping its key: resolve keys with
+  `findMember`), all `QUANTITY_KINDS` with −/+ in the notebook's Inventory
+  section. What's typed in the notebook goes through `writeDetails`.
+  A "label value" change keeps the label (`Supply d8>d6`).
 - **Threads and progress** are tags too: `[Thread:…|Open]` (one state
   at a time, English or Spanish words, `threadStatus`), clocks
-  `[Clock:Name 2/6]` (and the older `[E:…]`), tracks `[Track:…]` and
+  `[Clock:Name 2/6]` (and `[E:Name 2/6]`, before 1.7), tracks `[Track:…]` and
   timers `[Timer:Name 3]`; the number is read from the name
   (`progress`, also "+1"/"-1"). The notebook's −/+ log the new value as
   an entry (the journal is a record); several in a row on the same
@@ -532,7 +566,7 @@ export is read back by the same parser (tested). "Quick inspiration"
 history rolls, one journal entry. The player's **generators**
 (`generators.ts`, state in the `Generators` context, their own
 IndexedDB collection and backup schema 6) do the same with any tables
-they pick, by id and in order (`rollGenerator`, a `gen:` entry); a
+they pick, by id and in order (`rollGenerator`, a `tbl:` entry); a
 table that's gone is skipped. Screens that show them load their
 tables' games (`generatorGames`): the Tables screen (a folding block,
 edited in `GeneratorEditorDialog`) and the game table (under quick
@@ -607,7 +641,7 @@ always the text, exactly as Lonelog writes it.
 A switch on the same tool turns the dice into cards (`CardControls`,
 `cards.ts`), on the same tray: a standard deck (jokers optional) or a
 tarot (reversals optional, or the Major Arcana alone), written as Lonelog's Cards add-on
-(`draw=Qs -> Reina de picas`, `M16r` reversed; the name after "->" is
+(`draw=Qs -> Reina de picas`, a `tbl:` in the journal, apart from the tray's dice, `M16r` reversed; the name after "->" is
 ours, `cardName`), shown with suit symbols (`showDraws`; drawn as a card in
 the tray, the history and, `small`, the latest rolls: `PlayingCard`
 from `cardLook`) and read as a

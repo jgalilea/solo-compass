@@ -322,7 +322,11 @@ export function DiceTool({
     setTray([]);
     setLabel("");
     if (!adventureId) return;
-    addEntry(adventureId, "roll", text(rolls.join(", ")));
+    // A roll gives a verdict and a card, content: each its own line in Lonelog.
+    const thrown = tray.filter((item) => !item.card).map((item) => item.text);
+    const drawn = tray.filter((item) => item.card).map((item) => item.text);
+    if (thrown.length) addEntry(adventureId, "roll", text(thrown.join(", ")));
+    if (drawn.length) addEntry(adventureId, "roll", `tbl: ${text(drawn.join(", "))}`);
     onRolled();
   }
 

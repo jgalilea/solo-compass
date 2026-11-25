@@ -40,6 +40,9 @@ for (const locale of LOCALES) {
       expect(splitActor(read(actor).text).actor).toBe("Odile");
       expect(noteForm(read(dialogue).text).form).toBe("dialogue");
       expect(noteForm(read(meta).text).form).toBe("meta");
+      expect(parseMarkdownToEntries(g.notation.find((r) => r.code.startsWith("S4 "))!.code, "a", 0).map((e) => e.kind)).toEqual([
+        "scene", "action", "roll", "consequence",
+      ]);
       expect(splitRollSymbol(read(table).text).symbol).toBe("tbl");
       expect(read(card).kind).toBe("roll");
       expect(isCardDraw(read(card).text)).toBe(true);
@@ -50,15 +53,15 @@ for (const locale of LOCALES) {
 
     it("makes one notebook element of each tag", () => {
       const kinds = g.tags.map((r, i) => buildCast([note(r.code, i)]).map((c) => c.kind));
-      expect(kinds).toEqual([["pc"], ["npc"], ["place"], ["npc"], ["thread"], ["clock"], ["timer"], ["room"], ["foe"], ["item"], ["wealth"]]);
+      expect(kinds).toEqual([["pc"], ["npc"], ["place"], ["npc"], ["thread"], ["clock"], ["timer"], ["room"], ["foe"], ["event"], ["item"], ["wealth"], ["deck"]]);
     });
 
     it("changes their state as the updates say", () => {
       const cast = buildCast([...g.tags, ...g.updates].map((r, i) => note(r.code, i)));
       const one = (kind: string) => cast.find((c) => c.kind === kind)!;
-      const [ally, , , hp] = g.updates.map((r) => r.code.match(/\|([^\]]+)\]/)?.[1] ?? "");
+      const [ally, , , mood, hp] = g.updates.map((r) => r.code.match(/\|([^\]]+)\]/)?.[1] ?? "");
       // Odile: the trait added stays, the one removed and the one swapped don't.
-      expect(one("npc").tags).toEqual([ally]);
+      expect(one("npc").tags).toEqual([ally, mood]);
       expect(one("pc").tags.join()).toMatch(new RegExp(hp.replace(/-\d+$/, "")));
       expect(one("clock").progress).toEqual({ value: 3, max: 4 });
       expect(one("item").progress?.value).toBe(2);

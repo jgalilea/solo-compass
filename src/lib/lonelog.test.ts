@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { rollFormula } from "./diceNotation";
+import { buildCast, purseKey } from "./lonelogTags";
 import { es } from "./i18n/locales/es";
 import {
   exportAdventureToMarkdown,
@@ -31,7 +33,7 @@ describe("formatLine", () => {
   it("prefixes each kind's Lonelog symbol", () => {
     expect(formatLine({ kind: "action", text: "Abro la puerta" })).toBe("@ Abro la puerta");
     expect(formatLine({ kind: "question", text: "¿Está cerrada?" })).toBe("? ¿Está cerrada?");
-    expect(formatLine({ kind: "roll", text: "d6 -> 4" })).toBe("d: d6 -> 4");
+    expect(formatLine({ kind: "roll", text: "d6 -> 4" })).toBe("d: d6=4");
     expect(formatLine({ kind: "consequence", text: "Cruje" })).toBe("=> Cruje");
     expect(formatLine({ kind: "session", text: "Sesión 2" })).toBe("=== Sesión 2 ===");
     expect(formatLine({ kind: "note", text: "Prosa libre" })).toBe("Prosa libre");
@@ -344,6 +346,102 @@ describe("a full Lonelog 1.6 log with the add-ons", () => {
   });
 });
 
+describe("Lonelog 1.7", () => {
+  const read = (md: string) => parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text]);
+
+  it("splits the compact form into its elements", () => {
+    expect(read("S1 @Sneak d:4<5 ->F => noise [Clock:Alert 1/6] ?Seen? ->Nb (3) => distracted")).toEqual([
+      ["scene", "S1"],
+      ["action", "Sneak"],
+      ["roll", "4<5 -> F"],
+      ["consequence", "noise [Clock:Alert 1/6]"],
+      ["question", "Seen?"],
+      ["roll", "-> Nb (3)"],
+      ["consequence", "distracted"],
+    ]);
+    expect(read("Rd1 @Slash Dock Rat d:17≥10 ->Hit =>[F:Dock Rat|dead] @(Pirate Captain)Cutlass d:19≥14 ->Hit d:Damage 1d8+2=7 =>[PC:Alex|HP-7]")).toEqual([
+      ["note", "Rd1"],
+      ["action", "Slash Dock Rat"],
+      ["roll", "17≥10 -> Hit"],
+      ["consequence", "[F:Dock Rat|dead]"],
+      ["action", "(Pirate Captain)Cutlass"],
+      ["roll", "19≥14 -> Hit"],
+      ["roll", "Damage 1d8+2 -> 7"],
+      ["consequence", "[PC:Alex|HP-7]"],
+    ]);
+    expect(read("[/COMBAT] =>Captain escapes")).toEqual([["note", "[/COMBAT]"], ["consequence", "Captain escapes"]]);
+    expect(read("[F:Thug A|pos:Close] @(A) Slash d:14<15 ->Miss").map(([k]) => k)).toEqual(["note", "action", "roll"]);
+    expect(read("d: d20+4=17 vs AC 10 -> Hit => [F:Dock Rat|dead]").map(([k]) => k)).toEqual(["roll", "consequence"]);
+    expect(read("? Seen? -> Nb (3)").map(([k]) => k)).toEqual(["question", "roll"]);
+  });
+
+  it("leaves prose, brackets and quotes whole", () => {
+    for (const line of [
+      "The sign reads => this way", "=> She writes to @odile ", "? Quoi ?", '=> He says "go => there"', "@ Wait (d: nothing)",
+      "T2-S1 *City archives* @(Jordan)", "S7 *Entrance* (note: storylines T1 and T2 merge)", "S9 *Ambush* [COMBAT]", "@ Show the arrow -> to them", "Rd3 Roster: [PC:Alex|HP 3]",
+    ]) expect(read(line), line).toHaveLength(1);
+  });
+
+  it("gives back whatever the player wrote, symbols and all", () => {
+    const written = [
+      entry("consequence", "It goes => there d: and ?Why -> x", 1),
+      entry("action", "(Odile) Points => at me", 2),
+      entry("question", "Is it here -> or there?", 3),
+      entry("note", "S1 *not a scene*", 4),
+      entry("note", "[N:Odile] => she leaves", 5),
+      entry("note", "Rd1 @ I strike", 6),
+      entry("note", "Two lines\nwith => in them", 7),
+    ];
+    const md = exportAdventureToMarkdown(es, "A", written);
+    expect(read(md)).toEqual(written.map((e) => [e.kind, e.text]));
+  });
+
+  it("writes the player's rolls as Lonelog orders them, and reads them back", () => {
+    const rolls: [string, string][] = [
+      ["d20 -> 14", "d: d20=14"],
+      ["Attack d20+5 -> 19 (14 + 5)", "d: Attack d20+5[14]=19"],
+      ["2d6+3 -> 9 (4+2 + 3)", "d: 2d6+3[4, 2]=9"],
+      ["Strength 4d6dl1 -> 14 (6+5+3, 2✗)", "d: Strength 4d6dl1[6, 5, 3, 2d]=14"],
+      ["5d10>=7 -> 2 (8✓ 7✓ 3 2 1)", "d: 5d10>=7[8✓ 7✓ 3 2 1] =2"],
+      ["2d6! -> 13 (6!+6!+1)", "d: 2d6![6!+6!+1] =13"],
+      ["4dF -> +1 (+ 0 − +)", "d: 4dF[+ 0 − +]=+1"],
+      ["Ataque, con cuidado d20 -> 15, Daño 1d6+1 -> 5 (4 + 1)", "d: Ataque, con cuidado d20=15, Daño 1d6+1[4]=5"],
+      ["+[flanking] -[wounded] 2d6+2 -> 9 (4+3 + 2)", "d: +[flanking] -[wounded] 2d6+2[4, 3]=9"],
+    ];
+    for (const [text, line] of rolls) {
+      expect(formatLine({ kind: "roll", text })).toBe(line);
+      expect(read(line)).toEqual([["roll", text]]);
+    }
+    // A verdict, an oracle and prose stay as they are.
+    for (const text of ["Stealth d6=5 vs TN 4 -> Success", "Recluse — white 3 / black 5 -> No", "d100=60 vs 35 -> No", "1d8=6 damage", "Hack (spend 1 Gear) -> Success"]) {
+      expect(formatLine({ kind: "roll", text })).toBe(`d: ${text}`);
+      expect(read(`d: ${text}`)).toEqual([["roll", text]]);
+    }
+    // As other tools write them.
+    expect(read("d: 4d6dl1[6, 4d, 5, 3]=14")).toEqual([["roll", "4d6dl1 -> 14 (6+5+3, 4✗)"]]);
+    expect(read("d: 4d6dl1 // STR=15")).toEqual([["roll", "4d6dl1 // STR=15"]]);
+    expect(read("d: Fighting {d8!, d6!}kh1 =12 -> Hit")).toEqual([["roll", "Fighting {d8!, d6!}kh1 =12 -> Hit"]]);
+    expect(read("d: Damage 1d8=5")).toEqual([["roll", "Damage 1d8 -> 5"]]);
+  });
+
+  it("keeps a multi-line tag in one entry, and the forms it retired", () => {
+    const tag = "[PC:Jonah\n  | trait: friendly\n  | stat: HP 8\n]";
+    const [only, ...rest] = parseMarkdownToEntries(tag, "a", 0);
+    expect(rest).toEqual([]);
+    expect(read(exportAdventureToMarkdown(es, "A", [only]))).toEqual([["note", only.text]]);
+    expect(read("=> A broken sword [tbl]")).toEqual([["roll", "tbl: -> A broken sword"]]);
+    expect(read("gen: NPC -> Merchant")).toEqual([["roll", "gen: NPC -> Merchant"]]);
+    expect(read("T1+T2-S5 *Reunited*")).toEqual([["scene", "T1+T2-S5 *Reunited*"]]);
+  });
+
+  it("keeps the description of a currency in someone's purse", () => {
+    const entries = [entry("note", "[Wealth:Mara|Silver 9] [Wealth:Kael|Silver 2]", 1)];
+    const md = exportAdventureToMarkdown(es, "A", entries, "", { [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 } });
+    expect(md).toContain("[Wealth:Kael|Silver] Stolen");
+    expect(parseDescriptionsFromMarkdown(md, 1)).toEqual({ [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 } });
+  });
+});
+
 describe("sectionToLonelog", () => {
   const entries = [
     { ...entry("session", "Session 1", 1), date: "2026-10-03" },
@@ -371,3 +469,49 @@ describe("sectionToLonelog", () => {
   });
 });
 
+
+describe("whatever is written", () => {
+  // A small fixed generator, so a failure can be repeated.
+  let seed = 7;
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(random() * list.length)];
+  const WORDS = [
+    "I", "run", "=>", "=>there", "->", "d:", "d:4", "tbl:", "gen:", "@", "@(Odile)", "@pepe", "?", "?Why", "S1", "Rd2", "[N:Odile|wary]", "[#L:Mill]",
+    "[COMBAT]", '"hi', 'there"', "(note:", "ok)", "[", "]", "|", "\\", "===", "#", ">", "*x*", "T1-S2", "¿Quién?", "PC:", "d20", "=5",
+  ] as const;
+  const words = (n: number) => Array.from({ length: n }, () => pick(WORDS)).join(" ");
+
+  it("comes back the same from the .md", () => {
+    for (let i = 0; i < 4000; i++) {
+      const kind = pick(["action", "question", "consequence", "note"] as const);
+      const text = `${pick(["", "Word "])}${words(1 + Math.floor(random() * 7))}`.trim();
+      // A heading, a fence or a narrative block are Markdown's own; not what's tested here.
+      if (kind === "note" && /^\\---|^---/.test(text)) continue;
+      const md = exportAdventureToMarkdown(es, "A", [entry("note", "Before", 1), entry(kind, text, 2), entry("note", "After", 3)]);
+      const read = parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text]);
+      expect(read, `${kind}: ${text}`).toEqual([["note", "Before"], [kind, text], ["note", "After"]]);
+    }
+  });
+
+  it("any dice roll comes back the same from the .md", () => {
+    const formulas = [
+      "d20", "d%", "d66", "d(66)", "2d6+3", "1d8+1d6-2", "4dF", "4dF+2", "d6min3", "3d6!", "3d6!!", "3d6!p", "4d6r", "4d6ro<3", "3d6u", "4d6kh3", "4d6dl1",
+      "2d20kl1", "5d10>=7", "4d6>4f<3", "2d20cs>18", "4d6s", "(1d6+2)*3", "{4d6,2d10}k1", "{2d6+3,2d6+3}kh1", "3d(2*6)", "10d6=6", "-2d6", "{d8!,d6!}kh1",
+    ];
+    for (const formula of formulas)
+      for (let i = 0; i < 60; i++) {
+        const roll = rollFormula(formula, random);
+        expect(roll, formula).not.toBeNull();
+        for (const text of [roll!, `Attack ${roll}`, `Attack, again ${roll}, Fire d6 -> 3`, `+[cover] -[hurt] ${roll}`])
+          expect(parseMarkdownToEntries(formatLine({ kind: "roll", text }), "a", 0).map((e) => [e.kind, e.text]), text).toEqual([["roll", text]]);
+      }
+  });
+});
+
+it("keeps what the notations left apart write as text, out of the notebook and the rolls", () => {
+  const lines = ["! The bridge collapses behind the party", "[Party:Crew|Gold 150]", "[Faction:Guild|rising]", "[Unit:Spearmen|×10|status:steady]", "[Force:Red|points 500]", "[Scenario:Dawn raid]"];
+  const entries = parseMarkdownToEntries(lines.join("\n\n"), "a", 0);
+  expect(entries.map((e) => [e.kind, e.text])).toEqual(lines.map((l) => ["note", l]));
+  expect(buildCast(entries)).toEqual([]);
+  expect(parseMarkdownToEntries(exportAdventureToMarkdown(es, "A", entries), "a", 0).map((e) => e.text)).toEqual(lines);
+});

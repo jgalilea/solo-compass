@@ -16,7 +16,7 @@ export function lacksDice(entry: HistoryEntry): entry is TableRollEntry & { adve
   return entry.kind === "tabla" && !entry.dice;
 }
 
-/** "tbl: Action d100=42 -> …", "gen: … (Action d66=34, Theme d66=25) -> …": the die next to this table's name and number. */
+/** "tbl: Action d100=42 -> …", "tbl: … (Action d66=34, Theme d66=25) -> …": the die next to this table's name and number. */
 function dieInText(entry: TableRollEntry, text: string): string | undefined {
   const at = text.indexOf(`${entry.tableName} d`);
   if (at < 0) return undefined;

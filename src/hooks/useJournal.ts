@@ -11,14 +11,8 @@ import {
   type Adventure,
   type AdventureStatus,
 } from "../lib/journal";
-import {
-  isoDate,
-  parseDescriptionsFromMarkdown,
-  parseMarkdownToEntries,
-  parseNotesFromMarkdown,
-  type JournalEntry,
-  type JournalLineKind,
-} from "../lib/lonelog";
+import { isoDate } from "../lib/isoDate";
+import type { JournalEntry, JournalLineKind, LonelogImport } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { forgetDeletions, recordDeletions } from "../lib/deletions";
 import { insertEntryAfter, moveEntryIn } from "../lib/journalOrder";
@@ -65,7 +59,7 @@ interface UseJournalResult {
   /** Puts a deleted entry (Undo) back, with its original id and date. */
   restoreEntry: (entry: JournalEntry) => void;
   editEntry: (id: string, text: string) => void;
-  importAdventure: (name: string, markdownText: string) => Adventure;
+  importAdventure: (name: string, log: LonelogImport) => Adventure;
   retry: () => void;
 }
 
@@ -347,9 +341,7 @@ export function useJournal(): UseJournalResult {
   );
 
   const importAdventure = useCallback(
-    (name: string, markdownText: string) => {
-      const notes = parseNotesFromMarkdown(markdownText);
-      const descriptions = parseDescriptionsFromMarkdown(markdownText);
+    (name: string, { notes, descriptions, entries: read }: LonelogImport) => {
       const adventure: Adventure = {
         ...buildAdventure(name),
         ...(notes ? { notes } : {}),
@@ -358,7 +350,7 @@ export function useJournal(): UseJournalResult {
       // One millisecond per line, ending now: dated from the adventure's
       // creation on, a long file would run into the future and what's
       // written next could land among its lines.
-      const parsed = parseMarkdownToEntries(markdownText, adventure.id, adventure.createdAt);
+      const parsed = read(adventure.id, adventure.createdAt);
       const imported = parsed.map((e) => ({ ...e, timestamp: e.timestamp - parsed.length }));
       updateAdventures((prev) => [adventure, ...prev]);
       updateEntries((prev) => [...prev, ...imported]);

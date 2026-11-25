@@ -8,7 +8,8 @@
  */
 
 import { readRolledDice } from "./diceNotation";
-import { splitOwnRolls } from "./journalUi";
+import { splitOwnRolls, splitRollText } from "./journalUi";
+import { diceInDetail } from "./rollLine";
 import type { JournalEntry } from "./lonelog";
 import type { RolledDie } from "./rolledDice";
 
@@ -99,7 +100,10 @@ export function computeDiceStats(entries: readonly JournalEntry[], nameOf?: (ent
   for (const entry of [...entries].sort((a, b) => a.timestamp - b.timestamp)) {
     if (entry.kind === "session") sessions.push({ title: entry.text, deviation: 0, count: 0 });
     if (entry.kind !== "roll") continue;
-    const rolled = (splitOwnRolls(entry.text)?.rolls ?? []).flatMap(({ die, result }) => thrownDice(die, result));
+    const own = splitOwnRolls(entry.text)?.rolls;
+    // One with its verdict ("2d6+2[4, 3]=9 -> Hit") says its dice too.
+    const verdict = own ? null : diceInDetail(splitRollText(entry.text).detail);
+    const rolled = own ? own.flatMap(({ die, result }) => thrownDice(die, result)) : verdict ? thrownDice(...(verdict.split(" -> ") as [string, string])) : [];
     for (const die of rolled) {
       const { sides, value } = die;
       // Written by hand or by another tool: not a face of that die.

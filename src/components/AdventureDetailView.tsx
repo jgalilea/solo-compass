@@ -1,6 +1,8 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
+import { definitionDraft, type CustomTableDraft } from "../lib/customTables";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { isTypingTarget } from "../hooks/useHotkeys";
 import { useHistoryContext } from "../hooks/useHistoryContext";
@@ -9,7 +11,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
-import { buildCast, castKey, combineSteps, renameInEntry } from "../lib/lonelogTags";
+import { buildCast, castKey, combineSteps, findMember, purseKey, renameInEntry } from "../lib/lonelogTags";
 import { withRollDrawings } from "./drawRolls";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
@@ -31,7 +33,7 @@ import { EntryList, LineButtons, SESSION_BAR, SESSION_RAIL, SessionDate, Session
 import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
-  filterGroups,
+  filterGroups, storylineViews,
   groupBySession,
   INPUT_CLASS,
   PRIMARY_BUTTON_CLASS,
@@ -52,6 +54,8 @@ import {
   IconTable,
   IconTrash,
 } from "./icons/Icons";
+
+const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
 
 /**
  * One adventure: its journal and the "game table" to keep playing it.
@@ -105,6 +109,9 @@ export function AdventureDetailView() {
     [entries, adventureId],
   );
   const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
+  const views = useMemo(() => storylineViews(groups), [groups]);
+  const { load: loadTables, status: tablesStatus, addTables } = useCustomTablesContext();
+  const [tableDraft, setTableDraft] = useState<CustomTableDraft | null>(null);
 
   // "Write below" an entry: new entries go after it instead of at the
   // end (see useJournal). Only while on this screen; at the last entry
@@ -209,7 +216,7 @@ export function AdventureDetailView() {
   }, [undoable]);
   // Any other short notice (renamed, copied), maybe with an action.
   const [notice, setNotice] = useState<{ key: number; title: string; action?: { label: string; onClick: () => void } } | null>(null);
-  const dismissNotice = useCallback(() => setNotice(null), []);
+  const dismissNotice = useCallback(() => setNotice(null), [setNotice]);
 
   // A session, a scene or the whole adventure as Lonelog, to paste elsewhere.
   function copyToClipboard(text: string, done: string) {
@@ -229,6 +236,12 @@ export function AdventureDetailView() {
     selectedId: selectedEntryId,
     onSelect: setSelectedEntryId,
     answerFor: (rollId) => (rollId ? answersByRollId.get(rollId)?.answer : undefined),
+    viewOf: (id) => views.get(id),
+    // Reviewed in the tables' editor before it's saved.
+    onSaveTable: (text) => {
+      loadTables();
+      setTableDraft(definitionDraft(t, text));
+    },
     highlightedId,
     anchorId: inserting ? insertAfter.id : null,
     cast,
@@ -251,7 +264,7 @@ export function AdventureDetailView() {
     },
     onCopy: (id) => copyToClipboard(sectionToLonelog(adventureEntries, id), t.journal.copiedSection),
     onTagClick: (key) => {
-      setCastFocus((prev) => ({ key, tick: prev.tick + 1 }));
+      setCastFocus((prev) => ({ key: findMember(cast, key)?.key ?? key, tick: prev.tick + 1 }));
       // From xl the notebook is always visible in the left column.
       if (!window.matchMedia("(min-width: 80rem)").matches) setNotebookOpen(true);
     },
@@ -495,7 +508,8 @@ export function AdventureDetailView() {
         const before = adventureEntries.filter((e) => renameInEntry(e, member, name) !== e.text);
         for (const e of before) editEntry(e.id, renameInEntry(e, member, name));
         const description = adventure.descriptions?.[member.key];
-        const newKey = castKey(member.kind, name);
+        const newKey =
+          member.owner && member.key === purseKey(member.owner, member.name) ? purseKey(member.owner, name) : castKey(member.kind, name);
         if (description?.text && newKey !== member.key) {
           setCastDescription(adventure.id, newKey, description.text);
           setCastDescription(adventure.id, member.key, "");
@@ -822,6 +836,21 @@ export function AdventureDetailView() {
           }}
           onCancel={() => setDeleting(false)}
         />
+      )}
+
+      {tableDraft && tablesStatus === "ready" && (
+        <Suspense fallback={null}>
+          <TableEditorDialog
+            initial={tableDraft}
+            editing={false}
+            onSave={(draft) => {
+              addTables([draft]);
+              setTableDraft(null);
+              setNotice({ key: Date.now(), title: interpolate(t.journal.tableSaved, { name: draft.name }) });
+            }}
+            onClose={() => setTableDraft(null)}
+          />
+        </Suspense>
       )}
 
       {undoable ? (

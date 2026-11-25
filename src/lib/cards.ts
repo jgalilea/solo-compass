@@ -1,7 +1,9 @@
 /**
- * Card draws, as Lonelog's Cards add-on writes them (v1.0.0, CC BY-SA
- * 4.0, github.com/zeruhur/lonelog): `draw=Qs -> Queen of Spades` is a
- * roll like any other (`d:` in the log, a "roll" entry here). Card
+ * Card draws, as Lonelog's Cards add-on writes them (v1.1.0, CC BY-SA
+ * 4.0, github.com/lonelog/lonelog): `draw=Qs -> Queen of Spades` is a
+ * roll like any other (a "roll" entry), `tbl:` in the log because it
+ * gives content; one that answers yes or no, or from before 1.7, is
+ * a `d:`. Card
  * identities are the add-on's: rank + suit for a standard deck (`Qs`,
  * `10h`, `RJkr`), `M0`–`M21` for the Major Arcana and rank + suit for
  * the Minor (`KnCu`, `7Wa`), with `r` for a reversed tarot card. The

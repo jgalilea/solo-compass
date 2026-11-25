@@ -1,10 +1,13 @@
 import type { HistoryEntry } from "./history";
-import { isoDate, playDay, type JournalEntry } from "./lonelog";
+import { isoDate } from "./isoDate";
+import { playDay, type JournalEntry } from "./lonelog";
 import { rollOracleId, type Answer, type OracleRoll } from "./oracle";
 import { oracleOdds, type OracleId } from "./oracleEngines";
 import type { CastMember } from "./lonelogTags";
-import { splitRollSymbol } from "./lonelogLines";
-import { foreignRollKind, OWN_ROLL, readAnswer, splitRollSeries, splitRollText } from "./journalUi";
+import { isCardDraw, readCards } from "./cards";
+import { isTableDefinition, splitRollSymbol } from "./lonelogLines";
+import { OWN_ROLL, splitRollSeries } from "./rollLine";
+import { foreignRollKind, readAnswer, splitRollText } from "./journalUi";
 
 export interface AdventureStats {
   sessions: number;
@@ -62,8 +65,17 @@ export function classifyRoll(
       qualifier: linked.qualifier === "y" ? "and" : linked.qualifier === "pero" ? "but" : undefined,
     };
   }
-  const { detail, result, answer } = splitRollText(entry.text);
-  if (answer) {
+  const { symbol, text } = splitRollSymbol(entry.text);
+  // A generator's axes and a table written out: their first line names it.
+  const { detail, result, answer } = splitRollText(entry.text.split("\n", 1)[0]);
+  if (symbol === "tbl" || symbol === "gen") {
+    // A card gives content too, but it's a deck's.
+    if (isCardDraw(text) || readCards(detail)) return { kind: "dice" };
+    return { kind: "table", name: tableName(detail) };
+  }
+  // A bare answer is an oracle's, whatever its scale ("-> Partially").
+  if (symbol === "result") return { kind: "oracle", ...readAnswer(result ?? ""), ...(answer ? { answer } : {}) };
+  if (answer && !linked) {
     const qualifier = /,\s*(pero|but)\b/i.test(result ?? "")
       ? "but"
       : /,\s*(y además|and)\b/i.test(result ?? "")
@@ -76,18 +88,21 @@ export function classifyRoll(
   let table = linked?.kind === "tabla" || (result !== null && !own);
   // Linked to the history, it was made here, even if it's no longer there:
   // a table's, as the dice have their formula.
-  if (!entry.linkedRollId && !own && splitRollSymbol(entry.text).symbol === "d") {
+  if (!entry.linkedRollId && !own) {
     const kind = foreignRollKind(detail, result);
     if (kind === "oracle") return { kind, ...readAnswer(result!) };
     table = kind === "table";
   }
   if (table) {
-    // "Theme d66=25", "Theme 2/5" (as written before) or
-    // "Inspiration (Action d66=34, Theme d66=25)": just the name.
-    const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+$/, "").trim();
-    return { kind: "table", name: name || detail };
+    return { kind: "table", name: tableName(detail) };
   }
   return { kind: "dice" };
+}
+
+/** "Theme d66=25", "Theme 2/5" (as written before), "NPC d8=3,d10=7" or "Inspiration (Action d66=34, Theme d66=25)": just the name. */
+function tableName(detail: string): string {
+  const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+(?:,\s*\d*d\w+=\d+)*$/, "").trim();
+  return name || detail;
 }
 
 export function computeAdventureStats(
@@ -150,6 +165,7 @@ export function computeAdventureStats(
     }
 
     const linked = entry.linkedRollId ? historyById.get(entry.linkedRollId) : undefined;
+    if (isTableDefinition(entry.text)) continue;
     const roll = classifyRoll(entry, linked);
     if (linked?.kind === "oraculo" && linked.likelihood) {
       const p = chanceOfYes(linked);

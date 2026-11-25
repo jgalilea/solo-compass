@@ -20,6 +20,7 @@ import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/journalUi";
 import { loadDraft, saveDraft } from "../lib/drafts";
 import type { JournalEntry } from "../lib/lonelog";
+import { toRollLine } from "../lib/rollLine";
 import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
 import { buildCast, formatTag, type CastMember } from "../lib/lonelogTags";
 import { normalizeForSearch } from "../lib/text";
@@ -61,6 +62,9 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
   session: IconSession,
   scene: IconScene,
 };
+
+/** An entry quoted in a line: a roll as Lonelog writes it. */
+const entryLine = (entry: JournalEntry) => (entry.kind === "roll" ? toRollLine(entry.text) : entry.text);
 
 /** The selector's order, which Alt+Shift+1…7 follow. */
 const MODE_ORDER: ComposerMode[] = ["note", "action", "dialogue", "consequence", "excerpt", "session", "scene"];
@@ -244,7 +248,9 @@ export function JournalComposer({
   // a scene's context (it's numbered anyway); anything else needs text,
   // and a dialogue line someone who says it.
   const canSend = marker || (text.trim() !== "" && (mode !== "dialogue" || speaker.pc || speaker.name.trim() !== ""));
-  const pc = cast.find((c) => c.kind === "pc");
+  const pcs = cast.filter((c) => c.kind === "pc");
+  // "PC: " is the only one there is, or the first of several.
+  const pc = pcs.find((c) => speaker.pc && c.name === speaker.name) ?? pcs[0];
   const isQuestion = (mode === "note" || mode === "action") && text.trim().endsWith("?");
 
   function askFromComposer() {
@@ -305,7 +311,7 @@ export function JournalComposer({
       onModeChange("note");
     } else if (mode === "dialogue") {
       if (!canSend) return;
-      addEntry(adventureId, "note", formatDialogue(speaker, text));
+      addEntry(adventureId, "note", formatDialogue(speaker.pc && pcs.length > 1 ? { pc: true, name: pc.name } : speaker, text));
     } else if (mode === "excerpt") {
       if (!canSend) return;
       addEntry(adventureId, "note", formatExcerpt(text));
@@ -340,7 +346,7 @@ export function JournalComposer({
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconInsertBelow size={14} className="shrink-0 text-gold" />
           <span className="shrink-0">{t.journal.insertingAfter}</span>
-          <span className="min-w-0 flex-1 truncate italic text-parchment">«{insertAfter.text}»</span>
+          <span className="min-w-0 flex-1 truncate italic text-parchment">«{entryLine(insertAfter)}»</span>
           <button
             type="button"
             onClick={onInsertDone}
@@ -377,7 +383,7 @@ export function JournalComposer({
           {lastEntry ? (
             <>
               <span className="shrink-0">{t.journal.consequenceJoins}</span>
-              <span className="min-w-0 truncate italic text-parchment">«{showDraws(lastEntry.text)}»</span>
+              <span className="min-w-0 truncate italic text-parchment">«{showDraws(entryLine(lastEntry))}»</span>
             </>
           ) : (
             <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
@@ -389,7 +395,7 @@ export function JournalComposer({
           speaker={speaker}
           onChange={setSpeaker}
           cast={cast}
-          pc={pc}
+          pcs={pcs}
           onDone={() => inputRef.current?.focus()}
           onAddToNotebook={(name) => {
             addEntry(adventureId, "note", formatTag("npc", name));
@@ -735,14 +741,15 @@ function SpeakerPicker({
   speaker,
   onChange,
   cast,
-  pc,
+  pcs,
   onDone,
   onAddToNotebook,
 }: {
   speaker: Speaker;
   onChange: (speaker: Speaker) => void;
   cast: CastMember[];
-  pc: CastMember | undefined;
+  /** The player characters: with several, the line says which (`PC (Alex): "…"`). */
+  pcs: CastMember[];
   /** Picked from the search with the keyboard: on to the words. */
   onDone: () => void;
   /** A name typed by hand becomes an NPC of the notebook. */
@@ -802,9 +809,27 @@ function SpeakerPicker({
         {t.journal.dialogueSpeaker}
       </span>
       <div role="radiogroup" aria-labelledby="dialogue-speaker" className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
-        <button type="button" role="radio" aria-checked={speaker.pc} onClick={() => pick({ pc: true })} className={chip(speaker.pc)}>
-          {pc?.name ?? t.journal.dialoguePc}
-        </button>
+        {pcs.length > 1 ? (
+          pcs.map((pc, i) => {
+            const selected = speaker.pc && (speaker.name ? speaker.name === pc.name : i === 0);
+            return (
+              <button
+                key={pc.key}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => pick({ pc: true, name: pc.name })}
+                className={chip(selected)}
+              >
+                {pc.name}
+              </button>
+            );
+          })
+        ) : (
+          <button type="button" role="radio" aria-checked={speaker.pc} onClick={() => pick({ pc: true })} className={chip(speaker.pc)}>
+            {pcs[0]?.name ?? t.journal.dialoguePc}
+          </button>
+        )}
         {chips.map((npc) => {
           const selected = !speaker.pc && speaker.name === npc.name;
           return (

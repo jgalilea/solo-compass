@@ -1,4 +1,5 @@
 import { oracleDice, rollOracleId, type Answer, type OracleRoll, type Qualifier } from "../oracle";
+import { readAnswerCode } from "../answerCodes";
 import { oracleTarget } from "../oracleEngines";
 import { interpolate } from "./types";
 import type { Dictionary } from "./types";
@@ -11,6 +12,15 @@ export function formatAnswer(
   const base = t.answer[roll.answer];
   if (!roll.qualifier) return base;
   return `${base}, ${t.qualifier[roll.qualifier]}.`;
+}
+
+/** An imported answer's code written out: "Nb (3)" → "No, but. (3)"; any other result as it is. */
+export function expandAnswer(t: Dictionary, result: string): string {
+  const code = readAnswerCode(result);
+  if (!code) return result;
+  const qualifier = code.shade === "a" ? "y" : code.shade === "b" ? "pero" : null;
+  const answer = formatAnswer(t, { answer: code.answer, qualifier });
+  return [code.shade === "x" ? interpolate(t.journal.exceptionalAnswer, { answer }) : answer, code.rest].filter(Boolean).join(" ");
 }
 
 /**

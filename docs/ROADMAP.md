@@ -5,17 +5,26 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-25 (estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-25 (Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
+  (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
+  nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con
+  categorías; `tbl:` para cartas e inspiración; tiradas propias en el orden de la
+  spec al exportar (`rollLine.ts`), forma compacta al importar
+  (`lonelogCompact.ts`), códigos de respuesta, probabilidad en la pregunta,
+  punto de vista de las tramas y `PC (Nombre):`. Comprobado con los 340 bloques
+  de ejemplo de la spec. Las formas retiradas (apéndice E.3) se siguen leyendo.
+  Fuera, como antes: Partylog, Lorelog, Maplog y Wargaming. Además, la pantalla
+  inicial ya no carga `lonelog.ts` (~5 kB menos). Aventura de ejemplo reescrita como guía; tabla escrita en el diario → mis tablas (`definitionDraft`). Descartado: que sacar una carta cambie su `[Deck:]`.
 - OSR como tema principal (2026-11-25, 1.4.0): tema por defecto en automático,
   icono (`scripts/app-icons.mjs`) e imagen del enlace. Pendiente, a mano: rehacer
   en OSR las imágenes del README, promoción e itch.io. También: `d66` son dos d6
   (`d(66)`, el dado de 66 caras; `fixOldD66` corrige los antiguos), tiradas
   importadas clasificadas por su forma (`foreignRollKind`), suerte de los dados de
-  todas las aventuras, secciones plegables y `diceRolls.test.ts`. Por revisar:
-  Lonelog 1.7 (13-11-2026; `gen:` pasa a `tbl:`).
+  todas las aventuras, secciones plegables y `diceRolls.test.ts`.
 - Oráculo y gráficas (2026-11-25, 1.3.1): la tarjeta del oráculo mide lo mismo con
   cualquier respuesta (`OracleVerdictSpace`; el giro de Loner, aparte); ejes,
   valores y detalle al tocar en las gráficas (`ColumnChart`, `countTicks`);

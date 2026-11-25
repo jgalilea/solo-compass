@@ -494,7 +494,7 @@ function AboutSettings() {
             <LegendRow Icon={IconNote} description={t.about.legendNote} />
             <LegendRow Icon={IconSession} symbol="=== ===" description={t.about.legendSession} />
             <LegendRow Icon={IconScene} symbol="S1 *…*" description={t.about.legendScene} />
-            <LegendRow Icon={IconTable} symbol="tbl: gen:" description={t.about.legendTable} />
+            <LegendRow Icon={IconTable} symbol="tbl:" description={t.about.legendTable} />
             <LegendRow Icon={IconDialogue} symbol="@( )" description={t.about.legendNarrative} />
             <LegendRow Icon={IconCast} symbol="[N:]" description={t.about.legendTags} />
             <LegendRow Icon={IconCombat} symbol="[R:] [F:]" description={t.about.legendAddons} />

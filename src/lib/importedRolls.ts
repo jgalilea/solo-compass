@@ -1,6 +1,7 @@
 import { entryType } from "./journalSearch";
 import { classifyRoll } from "./journalStats";
 import { isImportedEntry, playDay, type JournalEntry } from "./lonelog";
+import { isTableDefinition } from "./lonelogLines";
 import { matchesAllWords } from "./text";
 
 /**
@@ -26,7 +27,7 @@ export function importedRolls(entries: readonly JournalEntry[], adventureId: str
   let previous: JournalEntry | null = null;
   for (const entry of entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp)) {
     if (entry.kind === "session") session = entry;
-    if (entry.kind === "roll" && isImportedEntry(entry) && !entry.linkedRollId) {
+    if (entry.kind === "roll" && isImportedEntry(entry) && !entry.linkedRollId && !isTableDefinition(entry.text)) {
       const kind = KIND[classifyRoll(entry, undefined).kind];
       rolls.push({
         entry,

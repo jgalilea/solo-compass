@@ -87,10 +87,10 @@ Create adventures, split them into sessions and scenes, and log actions, rolls, 
 - Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, d66 (as two d6; a die of 66 sides is `d(66)`), 4dF for Fate/Fudge, advantage and disadvantage, and typed formulas such as `2d6+3`, `4d6kh3` or `4d6dl1` (keep the highest three), `5d6>=5` (count successes, `f<3` to subtract failures), `3d6!` and `d6!!` (exploding and compounding) or `4d6dl1 // Strength` (with a description), and a deck of cards or a tarot. This lets you log rolls from your own system without leaving the app.
 - Each adventure has a **notebook** (beside the journal on wide screens, behind the notebook button elsewhere):
   - **Pinned notes** for what you want at hand: inventory, clues, loose ends. They're edited in place, and `- [ ]` lines become checkboxes you can tick.
-  - **Characters and places**: name them in any entry with Lonelog tags, like `[N:Odile|wary]`, `[PC:Mara|coins 9]` or `[L:The mill|idle]`. They show as chips in the journal and are gathered in the notebook with their current traits and every entry that mentions them. Changes such as `[N:Odile|+captured|-wary]` or `[PC:Mara|coins-6]` update them. Typing `[` in the journal field (or while editing an entry) suggests the ones you already have, or makes a new one from the name you type, so you don't need to know the syntax. You can also add them, log a change or mention them from the notebook.
-  - **Threads and clocks**: open plot threads (`[Thread:The sealed box|Open]`), threat clocks (`[Clock:Alarm 2/6]`), tracks (`[Track:Escape 3/8]`) and timers (`[Timer:Dawn 3]`), ticked up or down with a tap. A die beside Characters, Places and Threads **rolls on the list** to pick one at random.
-  - **Rooms, foes and inventory**, from Lonelog's official add-ons: dungeon rooms (`[R:4|cleared|library|exits N:R2]`), foes in a fight (`[F:Thug A|HP 6|Close]`, struck through once dead or fled), items (`[Inv:Torch|3]`) and money (`[Wealth:Gold 45]`), with −/+ to use one up or gain one.
-- The journal reads all of **Lonelog 1.6**: scenes inside sessions (`S1 *Tavern, night*`, numbered for you from "New scene"; flashbacks `S5a`, montages `S7.1`, parallel threads `T2-S1`), table and generator rolls (`tbl:`, `gen:`), bare answers (`-> Yes, but…`), other characters acting (`@(Jonah) …`), dialogue, `(note: …)` asides, `\---` in-world text and the add-ons' `[COMBAT]` blocks with `Rd1` rounds. Each is drawn as what it is, and written back exactly as it was.
+  - **Characters and places**: name them in any entry with Lonelog tags, like `[N:Odile|wary]`, `[PC:Mara|coins 9]` or `[L:The mill|idle]`. They show as chips in the journal and are gathered in the notebook with their current traits and every entry that mentions them. Changes such as `[N:Odile|captured|-wary]` or `[PC:Mara|coins-6]` update them. Typing `[` in the journal field (or while editing an entry) suggests the ones you already have, or makes a new one from the name you type, so you don't need to know the syntax. You can also add them, log a change or mention them from the notebook.
+  - **Threads, clocks and events**: open plot threads (`[Thread:The sealed box|Open]`), threat clocks (`[Clock:Alarm 2/6]`), tracks (`[Track:Escape 3/8]`) and timers (`[Timer:Dawn 3]`), ticked up or down with a tap, and the turning points (`[E:The bridge falls]`). A die beside Characters, Places and Threads **rolls on the list** to pick one at random.
+  - **Rooms, foes and inventory**, from Lonelog's official add-ons: dungeon rooms (`[R:4|status:cleared|library|exits:N R2]`), foes in a fight (`[F:Thug A|HP 6|pos:Close]`, struck through once dead or fled), items (`[Inv:Torch|×3]`) and money (`[Wealth:Mara|Gold 45]`), decks (`[Deck:Main|×52]`), with −/+ to use one up or gain one.
+- The journal reads all of **Lonelog 1.7** (and everything earlier versions wrote): scenes inside sessions (`S1 *Tavern, night*`, numbered for you from "New scene"; flashbacks `S5a`, montages `S7.1`, parallel storylines `T2-S1 *City* @(Jordan)`), tables and generators (`tbl:`), answers (`-> Yes, but…`, `-> Yb`), the compact one-line form (`@Sneak d:2<4 ->F => noise`), other characters acting (`@(Jonah) …`), dialogue, `(note: …)` asides, `\---` in-world text and the add-ons' `[COMBAT]` blocks with `Rd1` rounds. Each is drawn as what it is, and written back as it was; your own rolls come out in Lonelog's order (`d: Attack d20+5[14]=19`).
 - Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
 - **Search** the journal (or all of them) by words and by type of entry.
 - **Statistics**, for the fun of it: an adventure's sessions, its year in a heat map, who and where is named most, the oracle against its odds and the luck of your dice, with a chart per kind of die. The journal list tells the luck of your dice across all your adventures.
@@ -100,6 +100,18 @@ Create adventures, split them into sessions and scenes, and log actions, rolls, 
 <p align="center">
   <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with a scene and the one-row composer; and the meaning tables, one folding block per game" width="860">
 </p>
+
+#### What's used of Lonelog, and what isn't
+
+| Used (Lonelog 1.7.0) | Left apart, on purpose |
+|---|---|
+| **Core**, all of it, and the forms earlier versions wrote | **Partylog**: group play (`!`, `[Party:]`) |
+| **Combat** 1.2: `[COMBAT]`, `Rd1`, `[F:]` | **Lorelog** (a draft): facts and lore of the world |
+| **Dungeon Crawling** 1.2: `[R:]`, `[DUNGEON STATUS]` | **Maplog** (a draft): drawing maps |
+| **Resource Tracking** 1.2: `[Inv:]`, `[Wealth:]`, `[RESOURCES]` | **Solo Wargaming**: `[Unit:]`, `[Force:]`, `[Scenario:]` |
+| **Dice Notation** 1.1 and **Card Notation** 1.1 (`[Deck:]`) | |
+
+A journal that has any of the latter loses nothing: what is theirs stays as text and is exported the same, but the notebook doesn't gather or count it.
 
 ### Themes and language
 

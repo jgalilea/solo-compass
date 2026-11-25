@@ -1,12 +1,12 @@
 import { createElement, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { isCardDraw, showDraws } from "../lib/cards";
+import { isCardDraw, readCards, showDraws } from "../lib/cards";
 import { RollDrawing } from "./RollDrawing";
 import { RollResult } from "./RollResult";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
-import { castKey, characterNamed, progressDone, progressText, splitTags, type CastMember } from "../lib/lonelogTags";
-import { actorParts, noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
+import { castKey, characterNamed, progressDone, progressText, splitTags, tagKey, type CastMember } from "../lib/lonelogTags";
+import { actorParts, isGenerator, isTableDefinition, noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
@@ -14,6 +14,8 @@ import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
 import { BLOCK_PAGE, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type BlockWindow, type EntryGroup, buildEntryBlocks, fitBlockWindow, formatIsoDay, splitOwnRolls, splitRollText } from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { expandAnswer } from "../lib/i18n/answerText";
+import { fromRollLine, toRollLine } from "../lib/rollLine";
 import { titleIfCut } from "../lib/truncation";
 import { ActionMenu, type ActionMenuItem } from "./ActionMenu";
 import {
@@ -72,6 +74,10 @@ export interface EntryActions {
   onSelect: (id: string | null) => void;
   /** Oracle answer of a linked roll, if known (via history). */
   answerFor: (rollId: string | undefined) => Answer | undefined;
+  /** Whose a bare action is, in a storyline with a point of view (storylineViews). */
+  viewOf?: (id: string) => string | undefined;
+  /** A table written out in the journal, to the player's own tables. */
+  onSaveTable?: (text: string) => void;
   /** Entry just jumped to from the search: briefly highlighted. */
   highlightedId?: string | null;
   /** A character/place chip was tapped (its castKey). */
@@ -127,9 +133,9 @@ const BLOCK_ICON: Record<"combat" | "dungeon" | "resources", IconType> = {
 function entryIcon(entry: JournalEntry): IconType {
   if (entry.kind === "roll") {
     const { symbol } = splitRollSymbol(entry.text);
-    if (symbol === "tbl") return IconTable;
-    if (symbol === "gen") return IconGenerator;
-    return isCardDraw(entry.text) ? IconCards : IconDice;
+    if (isCardDraw(entry.text) || (symbol !== "result" && readCards(splitRollText(entry.text).detail))) return IconCards;
+    if (isGenerator(entry.text)) return IconGenerator;
+    return symbol === "tbl" ? IconTable : IconDice;
   }
   if (entry.kind === "note") {
     const form = noteForm(entry.text);
@@ -370,7 +376,10 @@ export function SessionGroupRow({
 
 function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActions }) {
   const { t } = useLocaleContext();
-  const [value, setValue] = useState(entry.text);
+  const isRoll = entry.kind === "roll";
+  // A roll is edited as Lonelog writes it ("2d6+3[4, 2]=9"), like in the .md.
+  const editText = isRoll ? toRollLine(entry.text) : entry.text;
+  const [value, setValue] = useState(editText);
   const editing = actions.editingId === entry.id;
   const inputRef = useRef<HTMLTextAreaElement>(null);
   // Not in a roll: a "[...]" there is roll context, not a character.
@@ -394,7 +403,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   }[entry.kind];
 
   function commit() {
-    if (value.trim()) actions.onEdit(entry.id, value.trim());
+    if (value.trim()) actions.onEdit(entry.id, isRoll ? fromRollLine(value.trim()) : value.trim());
     actions.onStopEdit();
   }
 
@@ -450,12 +459,25 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
     >
       {icon}
       <div className="min-w-0 flex-1">
-        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} cast={actions.cast} />
+        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} cast={actions.cast} view={actions.viewOf?.(entry.id)} />
+        {entry.kind === "roll" && actions.onSaveTable && isTableDefinition(entry.text) && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.onSaveTable!(entry.text);
+            }}
+            className="mt-1.5 flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          >
+            <IconTable size={13} />
+            {t.journal.saveTable}
+          </button>
+        )}
       </div>
       <LineButtons
         visible={selected}
         onEdit={() => {
-          setValue(entry.text);
+          setValue(editText);
           actions.onStartEdit(entry.id);
         }}
         onDelete={() => actions.onDelete(entry.id)}
@@ -465,13 +487,25 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   );
 }
 
+/** An action's actor, or whoever lives the storyline it's in. */
+function withView(text: string, view: string | undefined) {
+  const own = splitActor(text);
+  return own.actor || !view ? own : { actor: view, text };
+}
+
 export function EntryContent({
   entry,
+  whole = entry.text,
   answer,
   onTagClick,
   cast = [],
+  view,
 }: {
   entry: JournalEntry;
+  /** Whose a bare action is, in a storyline. */
+  view?: string;
+  /** A roll's whole text, when only its first line is drawn. */
+  whole?: string;
   answer: Answer | undefined;
   onTagClick?: (key: string) => void;
   /** To open who acts or speaks in the notebook, like a tag. */
@@ -489,7 +523,7 @@ export function EntryContent({
   if (entry.kind === "scene") return <SceneContent text={entry.text} onTagClick={onTagClick} />;
 
   if (entry.kind === "action") {
-    const { actor, text } = splitActor(entry.text);
+    const { actor, text } = withView(entry.text, view);
     if (actor) {
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
@@ -521,7 +555,7 @@ export function EntryContent({
     const [first, ...rest] = entry.text.split("\n");
     return (
       <div className="flex flex-col gap-1">
-        <EntryContent entry={{ ...entry, text: first }} answer={answer} onTagClick={onTagClick} cast={cast} />
+        <EntryContent entry={{ ...entry, text: first }} whole={entry.text} answer={answer} onTagClick={onTagClick} cast={cast} />
         <p className="whitespace-pre-wrap border-l border-ink-border pl-2.5 text-sm text-parchment/90">{rest.join("\n")}</p>
       </div>
     );
@@ -561,7 +595,14 @@ export function EntryContent({
     const { symbol } = splitRollSymbol(entry.text);
     const knownAnswer = answer ?? parsedAnswer;
     // A table or a generator says so before its name ("Table · Forest Encounter d6=5").
-    const kind = symbol === "tbl" || symbol === "gen" ? t.journal.rollSymbol[symbol] : null;
+    const kind =
+      symbol !== "tbl" && symbol !== "gen"
+        ? null
+        : readCards(detail)
+          ? null
+          : isTableDefinition(whole)
+            ? t.journal.rollSymbol.definition
+            : t.journal.rollSymbol[isGenerator(whole) ? "gen" : "tbl"];
     if (result === null) {
       return (
         <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base text-parchment/90">
@@ -582,7 +623,7 @@ export function EntryContent({
             <span
               className={`w-fit rounded-full border px-2.5 py-0.5 text-sm font-semibold uppercase tracking-wide ${ANSWER_CHIP[knownAnswer]}`}
             >
-              {result}
+              {expandAnswer(t, result)}
             </span>
           </span>
         ) : (
@@ -611,7 +652,7 @@ export function EntryContent({
 /** "S4 · Tavern, night", with ⚔ Combat when the scene is a fight. */
 function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: string) => void }) {
   const { t } = useLocaleContext();
-  const { id, context, combat } = parseScene(text);
+  const { id, context, combat, pov } = parseScene(text);
   return (
     // One line: pinned, a longer scene would peek out from under the next
     // (its right padding is room for the italic's last letter, which leans
@@ -624,6 +665,7 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
           <TaggedText text={context} onTagClick={onTagClick} />
         </span>
       )}
+      {pov && <span className="shrink-0 self-center rounded-md bg-ink-700/70 px-1.5 text-sm font-semibold text-gold">{pov}</span>}
       {combat && (
         <span className="inline-flex shrink-0 items-center gap-1 self-center text-xs font-medium uppercase tracking-wide text-no">
           <IconCombat size={13} />
@@ -695,8 +737,8 @@ function NoteContent({
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
           <span className="mr-1.5 font-semibold text-gold">
-            <CharacterName member={form.pc ? onlyPc(cast) : characterNamed(cast, form.speaker)} onTagClick={onTagClick}>
-              {form.pc ? t.journal.dialoguePc : form.speaker}
+            <CharacterName member={form.name ? characterNamed(cast, form.name) : onlyPc(cast)} onTagClick={onTagClick}>
+              {form.pc && !form.name ? t.journal.dialoguePc : form.speaker}
             </CharacterName>
             :
           </span>
@@ -771,7 +813,7 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
       "mx-0.5 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 font-sans normal-case not-italic",
       long ? "box-decoration-clone" : "inline-block max-w-full align-baseline leading-snug",
     ].join(" ");
-    const open = () => onTagClick?.(castKey(kind, name));
+    const open = () => onTagClick?.(tagKey(part.tag));
     return onTagClick ? (
       // Not a <button>: a button can't break across lines (the long ones do).
       <span

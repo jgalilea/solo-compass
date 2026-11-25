@@ -1,16 +1,20 @@
 /**
  * Lonelog notation (Roberto Bisceglie, CC BY-SA 4.0):
  * https://lonelog.itch.io/lonelog — an open plain-text standard for
- * logging solo RPG sessions (spec 1.6.0). Its symbols, as entries:
+ * logging solo RPG sessions (spec 1.7.0). Its symbols, as entries:
  *
  *   @   player action (`@(Name)` for another actor)
  *   ?   question to the oracle
- *   d:  roll (the result goes inline with "->", e.g. "d: ... -> ...");
- *       also `tbl:` (a table), `gen:` (a generator) and a bare
- *       `-> result`, kept as written in the roll's text
+ *   d:  roll that gives a verdict ("d: Stealth d6=5 vs 4 -> Success"),
+ *       or a total (rollLine.ts); also `tbl:` (content: a table, a
+ *       generator, a card; `gen:` before 1.7) and a bare `-> answer`,
+ *       kept as written in the roll's text
  *   =>  narrative consequence
  *   === Title ===   session header
  *   S1 *context*    scene (also S5a, S7.1, T1-S2)
+ *
+ * Several on one line, in the compact form, are read as an entry each
+ * (lonelogCompact.ts).
  *
  * Anything else (prose, tags, dialogue, `(note: …)`, `\---` blocks)
  * is a note.
@@ -27,7 +31,10 @@
 
 import { interpolate, type Dictionary } from "./i18n";
 import type { CastDescription } from "./journal";
-import { buildCast, castKey, formatTag, splitTags } from "./lonelogTags";
+import { escapeInner, SCENE_ID, splitCompact, unescapeInner } from "./lonelogCompact";
+import { buildCast, castKey, endsInsideTag, formatTag, purseKey, splitTags } from "./lonelogTags";
+import { isoDate } from "./isoDate";
+import { fromRollLine, toRollLine } from "./rollLine";
 
 export type JournalLineKind =
   | "action"
@@ -85,10 +92,8 @@ const STARTS_ENTRY = /^(@|\?|d:|tbl:|gen:|->|=>|===)/;
  */
 const OWN_ROLL_SYMBOL = /^(tbl:|gen:|->)/;
 
-/** A scene marker (§5.3): S1, S5a (flashback), S7.1 (montage), T1-S2 or T1+T2-S5 (threads). */
-export const SCENE_ID = String.raw`(?:T\d+(?:\+T\d+)*-)?S\d+(?:\.\d+|[a-z])?`;
-/** "S1", "S1 *Tavern*", "S5 [R:4|active] *Store*", "### S1 *…*" (Markdown heading). */
-const SCENE_LINE = new RegExp(String.raw`^(?:###\s+)?(${SCENE_ID}(?:\s+[*\[(].*)?)$`);
+/** "S1", "S1 *Tavern*", "S5 [R:4|status:active] *Store*", "T2-S1 *City* @(Jordan)", "### S1 *…*" (Markdown heading). */
+const SCENE_LINE = new RegExp(String.raw`^(?:###\s+)?(${SCENE_ID}(?:\s+(?:[*\[(]|@\().*)?)$`);
 
 /** A narrative block (§4.4): in-world text between `\---` and `---\`. */
 const EXCERPT = /^\\---\n[\s\S]*\n---\\$/;
@@ -109,18 +114,18 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
     // A session title is a single line by definition.
     return `=== ${entry.text.replace(/\s*\n\s*/g, " ")} ===`;
   }
-  if (entry.kind === "scene") return entry.text.replace(/\s*\n\s*/g, " ");
+  if (entry.kind === "scene") return escapeInner(entry.text.replace(/\s*\n\s*/g, " "));
   // Its own markers delimit it: written as is, lines and all.
   if (entry.kind === "note" && EXCERPT.test(entry.text)) return entry.text;
   const [first, ...rest] = entry.text.split(/\r?\n/);
   const head =
     entry.kind === "note"
-      ? NEEDS_ESCAPE.test(first) ? `\\${first}` : first
-      : entry.kind === "roll" && OWN_ROLL_SYMBOL.test(first)
-        ? first
+      ? NEEDS_ESCAPE.test(first) || SCENE_LINE.test(first) ? `\\${first}` : escapeInner(first)
+      : entry.kind === "roll"
+        ? OWN_ROLL_SYMBOL.test(first) ? first : `${PREFIX.roll}${toRollLine(entry.text).split(/\r?\n/, 1)[0]}`
         : entry.kind === "action" && ACTOR.test(first)
-          ? `@${first}` // "@(Jonah) Keeps watch": no space (§ multiple actors)
-          : `${PREFIX[entry.kind]}${first}`;
+          ? escapeInner(`@${first}`) // "@(Jonah) Keeps watch": no space (§ multiple actors)
+          : escapeInner(`${PREFIX[entry.kind]}${first}`);
   const continuation = (line: string) =>
     line.trim() ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}` : "";
   return [head, ...rest.map(continuation)].join("\n");
@@ -217,12 +222,6 @@ export function playDay(
   return (session && sessionDate(session)) || (isImportedEntry(entry) ? null : isoDate(entry.timestamp));
 }
 
-/** "2025-09-03", in local time like the dates shown in the app. */
-export function isoDate(time: number): string {
-  const d = new Date(time);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 /**
  * Lonelog has no place for describing a character or place (only for
  * its tags), but its front matter takes any field, and its own example
@@ -235,7 +234,12 @@ function formatDescriptions(sorted: JournalEntry[], descriptions: Record<string,
   return buildCast(sorted)
     .map((member) => {
       const text = descriptions[member.key]?.text.replace(/\r\n?/g, "\n").trim();
-      return text ? `${formatTag(member.kind, member.name)} ${text.replace(/\n/g, "\n  ")}` : "";
+      // Money in someone's purse: "[Wealth:Kael|Gold] …".
+      const tag =
+        member.owner && member.key === purseKey(member.owner, member.name)
+          ? formatTag("wealth", member.owner, [member.name])
+          : formatTag(member.kind, member.name);
+      return text ? `${tag} ${text.replace(/\n/g, "\n  ")}` : "";
     })
     .filter(Boolean)
     .join("\n");
@@ -321,13 +325,30 @@ export function parseDescriptionsFromMarkdown(text: string, now = Date.now()): R
     const first = splitTags(line)[0];
     if (first?.tag && !/^\s/.test(line)) {
       save();
-      current = { key: castKey(first.tag.kind, first.tag.name), lines: [line.slice(first.text.length).trim()] };
+      const { kind, name, details } = first.tag;
+      const key = kind === "wealth" && details.length === 1 && !first.tag.progress ? purseKey(name, details[0]) : castKey(kind, name);
+      current = { key, lines: [line.slice(first.text.length).trim()] };
     } else if (current) {
       current.lines.push(line.replace(/^ {2}/, ""));
     }
   }
   save();
   return result;
+}
+
+/** What an imported .md holds, for `importAdventure`: the hook itself doesn't load this module (it's in the first screen's bundle). */
+export interface LonelogImport {
+  notes: string;
+  descriptions: Record<string, CastDescription>;
+  entries: (adventureId: string, startTimestamp: number) => JournalEntry[];
+}
+
+export function readLonelog(text: string): LonelogImport {
+  return {
+    notes: parseNotesFromMarkdown(text),
+    descriptions: parseDescriptionsFromMarkdown(text),
+    entries: (adventureId, startTimestamp) => parseMarkdownToEntries(text, adventureId, startTimestamp),
+  };
 }
 
 /**
@@ -390,6 +411,8 @@ const CODE_FENCE = /^(```|~~~)/;
 /** An indented line continues the previous entry (see formatLine). */
 const CONTINUATION_LINE = /^[ \t]+\S/;
 const ACTION_PREFIX = /^@\s?/;
+/** "=> A broken sword [tbl]": a table's result, as it could be written before 1.7. */
+const TABLE_RESULT = /^=>\s*(\S.*?)\s*\[(?:tbl|gen)\]$/;
 const QUESTION_PREFIX = /^\?\s?/;
 const CONSEQUENCE_PREFIX = /^=>\s?/;
 /** "=== Title ===", Lonelog's session marker. */
@@ -421,6 +444,9 @@ const H1_TITLE_LINE = /^#(?!#)/;
  * - An indented line continues the previous entry (multi-line
  *   entries), unless it starts with a symbol; a leading "\\" escapes a
  *   note or a continuation line that starts with one.
+ * - A compact line ("@ Sneak d: 4<5 -> F => noise") is an entry per
+ *   element, and `=> result [tbl]` (before 1.7) is a table's roll.
+ * - A multi-line tag is kept in one entry up to its "]".
  * - Code fences (Lonelog's digital format wraps notation in them) are
  *   skipped.
  */
@@ -487,6 +513,11 @@ export function parseMarkdownToEntries(
     if (CODE_FENCE.test(line)) continue;
 
     const previous = entries[entries.length - 1];
+    // "[PC:Jonah", "| trait: friendly", "]": the rest of a multi-line tag.
+    if (previous && pendingBlankLines === 0 && /^[|\]]/.test(line) && endsInsideTag(previous.text)) {
+      previous.text += `\n${line}`;
+      continue;
+    }
     // An indented line continues the previous entry, unless it opens
     // one ("    d: …" under its "@", as Lonelog's examples indent them);
     // "\\" escapes a continuation that starts with a symbol.
@@ -498,7 +529,7 @@ export function parseMarkdownToEntries(
       (line.startsWith("\\") || !STARTS_ENTRY.test(line))
     ) {
       const content = line.startsWith("\\") ? line.slice(1) : line;
-      previous.text += "\n".repeat(pendingBlankLines + 1) + content;
+      previous.text += "\n".repeat(pendingBlankLines + 1) + unescapeInner(content);
       pendingBlankLines = 0;
       continue;
     }
@@ -523,6 +554,15 @@ export function parseMarkdownToEntries(
       continue;
     }
 
+    for (const element of splitCompact(line)) read(unescapeInner(element));
+  }
+  // A block left open at the end keeps what it had.
+  if (excerpt?.length) push("note", ["\\---", ...excerpt, "---\\"].join("\n"));
+
+  return entries;
+
+  /** One element, on a line of its own. */
+  function read(line: string) {
     const h2Match = line.match(H2_SESSION_LINE);
     const sceneMatch = line.match(SCENE_LINE);
     const legacySessionMatch = line.match(LEGACY_SESSION_LINE);
@@ -538,6 +578,9 @@ export function parseMarkdownToEntries(
     } else if (sceneMatch) {
       kind = "scene";
       content = sceneMatch[1];
+    } else if (TABLE_RESULT.test(line)) {
+      kind = "roll";
+      content = `tbl: -> ${line.match(TABLE_RESULT)![1]}`;
     } else if (OWN_ROLL_LINE.test(line)) {
       kind = "roll";
       content = line;
@@ -546,7 +589,7 @@ export function parseMarkdownToEntries(
       content = legacySessionMatch[1];
     } else if (ROLL_PREFIX.test(line)) {
       kind = "roll";
-      content = line.replace(ROLL_PREFIX, "");
+      content = fromRollLine(line.replace(ROLL_PREFIX, ""));
     } else if (ACTION_PREFIX.test(line)) {
       kind = "action";
       content = line.replace(ACTION_PREFIX, "");
@@ -563,8 +606,4 @@ export function parseMarkdownToEntries(
 
     push(kind, content);
   }
-  // A block left open at the end keeps what it had.
-  if (excerpt?.length) push("note", ["\\---", ...excerpt, "---\\"].join("\n"));
-
-  return entries;
 }

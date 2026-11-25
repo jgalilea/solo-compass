@@ -1,5 +1,6 @@
 import { readCards } from "../lib/cards";
 import { readRolledDice } from "../lib/diceNotation";
+import { diceInDetail } from "../lib/rollLine";
 import { readOracleDice, readTableDice } from "../lib/rolledDice";
 import { PlayingCard } from "./PlayingCard";
 import { OracleDiceRow, RolledDice, TableDiceRow } from "./RolledDice";
@@ -13,7 +14,7 @@ export function RollDrawing({ detail, result }: { detail: string; result: string
   const cards = readCards(detail);
   const oracle = cards ? null : readOracleDice(detail);
   const tables = cards || oracle ? null : readTableDice(detail);
-  const dice = cards || oracle || tables || result === null ? null : readRolledDice(`${detail} -> ${result}`);
+  const dice = cards || oracle || tables || result === null ? null : readRolledDice(diceInDetail(detail) ?? `${detail} -> ${result}`);
   if (!cards && !oracle && !tables && !dice) return null;
   return (
     // As high as the line it's on (dice and cards are a bit taller), so

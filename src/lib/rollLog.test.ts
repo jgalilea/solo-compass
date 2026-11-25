@@ -61,6 +61,10 @@ describe("rollJournalLines", () => {
     const roll: OracleRoll = rollOracleWith("recluse", "¿Está abierta?", "equilibrado", 0);
     const lines = rollJournalLines(es, roll);
     expect(lines[0]).toEqual({ kind: "question", text: "¿Está abierta?" });
+    // Its likelihood goes on the question, unless it's even.
+    expect(rollJournalLines(es, { ...roll, likelihood: "muy-improbable" })[0].text).toBe("¿Está abierta? (Muy improbable)");
+    // A card gives content.
+    expect(rollJournalLines(es, createDiceRollEntry("draw=Qs -> Reina de picas", undefined, { deck: "poker", id: "Qs" }))[0].text).toBe("tbl: draw=Qs -> Reina de picas");
     expect(lines[1].text).toMatch(/^Recluse — blanco \d \/ negro \d -> /);
   });
 });

@@ -25,6 +25,48 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.5.0",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XXII · La gramática de los cronistas",
+        intro: "El gremio de cronistas ha puesto en limpio su notación, y Mara repasa su diario a la luz del candil. Nada de lo ya escrito cambia.",
+        items: [
+          "El diario habla Lonelog 1.7 y sus complementos. Lo que escribiste con versiones anteriores se sigue leyendo igual.",
+          "Al editar, copiar o exportar, tus tiradas salen como pide Lonelog (2d6+3[4, 2]=9) y las cartas e «Inspírame», como contenido (tbl:). Al volver a importarlas, regresan tal cual.",
+          "La pregunta al oráculo guarda en el diario lo probable que era: «¿Aguanta la cuerda? (Probable)».",
+          "Importar entiende la forma compacta, con toda la jugada en una línea, y las respuestas abreviadas (Yb es «Sí, pero»).",
+          "El cuaderno gana los sucesos, [E:Cae el puente], para reencontrar los giros de la historia, y los mazos, [Deck:Principal|×52].",
+          "Cada bolsa tiene dueño: [Wealth:Mara|Plata 9]. El dinero que ya tenías se queda donde estaba.",
+          "Un estado que solo puede ser uno a la vez se escribe con su nombre (ánimo:contenta) y sustituye al anterior; los objetos se cuentan con ×3 y ×-1.",
+          "Si llevas a varios personajes, el diálogo dice cuál habla, y cada trama paralela, quién la vive: su nombre va en cada acción.",
+          "Una tabla escrita en el diario se guarda en tus tablas con un botón.",
+          "La guía dice qué se usa de Lonelog y qué queda aparte (Partylog, Lorelog, Maplog y las batallas).",
+          "La aventura de ejemplo se ha reescrito como guía de uso: enseña todo lo que cabe en un diario y lo explica sobre la marcha.",
+          "Cambiar el nombre de un personaje llega también a su bolsa y a lo que hace junto a otros.",
+        ],
+      },
+      en: {
+        title: "Chapter XXII · The chroniclers' grammar",
+        intro: "The chroniclers' guild has written its notation out fair, and Mara goes over the journal by lamplight. Nothing already written changes.",
+        items: [
+          "The journal speaks Lonelog 1.7 and its add-ons. What you wrote with earlier versions still reads the same.",
+          "Edited, copied or exported, your rolls come out the way Lonelog asks (2d6+3[4, 2]=9), and cards and quick inspiration as content (tbl:). Imported again, they come back as they were.",
+          "A question to the oracle keeps in the journal how likely it was: “Does the rope hold? (Likely)”.",
+          "Importing understands the compact form, with a whole play on one line, and shortened answers (Yb is “Yes, but”).",
+          "The notebook gains events, [E:The bridge falls], to find the story's turning points again, and decks, [Deck:Main|×52].",
+          "Every purse has an owner: [Wealth:Mara|Silver 9]. The money you already had stays where it was.",
+          "A state that can only be one at a time is written with its name (mood:happy) and replaces the one before; items are counted with ×3 and ×-1.",
+          "If you play several characters, dialogue says which one speaks, and each parallel storyline, who lives it: their name is on every action.",
+          "A table written out in the journal goes to your tables with a button.",
+          "The guide says what's used of Lonelog and what's left apart (Partylog, Lorelog, Maplog and wargaming).",
+          "The sample adventure has been rewritten as a guide: it shows everything a journal can hold and explains it along the way.",
+          "Renaming a character also reaches their purse and what they do with others.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.4.0",
     date: "2026-11-25",
     text: {

@@ -9,7 +9,7 @@
  * localStorage fails, they just start unfolded.
  */
 
-export type NotebookSection = "characters" | "places" | "rooms" | "foes" | "threads" | "progress" | "items" | "wealth";
+export type NotebookSection = "characters" | "places" | "rooms" | "foes" | "threads" | "progress" | "events" | "items" | "wealth";
 export type NotebookBlock = "sessionsBlock" | "notesBlock" | "castBlock" | "threadsBlock" | "inventoryBlock";
 export type PlayToolBlock = "oracleTool" | "diceTool" | "tableTool";
 export type StatsBlock = "activityStats" | "sessionStats" | "namedStats" | "oracleStats" | "rollStats" | "diceStats";
