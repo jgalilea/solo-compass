@@ -16,11 +16,11 @@
     "test:perf": "playwright test -c playwright.perf.config.ts"
   },
   "dependencies": {
-    "@tabler/icons-react": "^3.40.0",
+    "@tabler/icons-react": "^3.52.0",
     "idb-keyval": "^6.3.0",
     "react": "~19.2.9",
     "react-dom": "~19.2.9",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.6"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
