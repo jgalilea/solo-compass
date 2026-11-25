@@ -136,8 +136,11 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   await expect(page.locator("[id^=entry-]").getByText("Bram:")).toBeVisible();
 
   // The die from the game table (a sheet on phones, a panel on desktop).
-  const opener = page.locator('[data-hotkey-open="dice"]');
-  if (await opener.isVisible()) await opener.click();
+  const opener = page.getByRole("button", { name: "Tirar: oráculo, dados o tablas" });
+  if (await opener.isVisible()) {
+    await opener.click();
+    await page.getByRole("tab", { name: "Dados" }).click();
+  }
   const dice = page.locator('[data-hotkey="dice"]').filter({ visible: true });
   await dice.getByRole("button", { name: "Ataque", exact: true }).click();
   await dice.getByRole("button", { name: "Apuntar" }).click();
@@ -146,7 +149,10 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   await expect(attack.getByText("d20+5", { exact: true })).toBeVisible();
 
   // A card from the deck, on the same tray.
-  if (await opener.isVisible()) await opener.click();
+  if (await opener.isVisible()) {
+    await opener.click();
+    await page.getByRole("tab", { name: "Dados" }).click();
+  }
   await dice.getByRole("button", { name: "Cartas" }).click();
   await dice.getByRole("button", { name: "Sacar carta" }).click();
   await expect(dice.getByText("Quedan 51 de 52")).toBeVisible();

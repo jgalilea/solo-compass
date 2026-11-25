@@ -910,6 +910,8 @@ export const en: Dictionary = {
     saveTable: "Save to my tables",
     tableSaved: "“{name}” is in your tables",
     exceptionalAnswer: "Exceptional {answer}",
+    rollMenu: "Roll",
+    rollMenuLabel: "Roll: oracle, dice or tables",
     toolOracle: "Oracle",
     toolTable: "Table",
     toolOracleTitle: "Ask the oracle",

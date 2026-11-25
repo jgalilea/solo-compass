@@ -78,8 +78,11 @@ test("imports, shows, changes and writes Lonelog 1.7", async ({ page }) => {
   if ((await notebook.getAttribute("role")) === "dialog") await page.keyboard.press("Escape");
 
   // Dice and a card in one tray: a verdict's line and a content's.
-  const opener = page.locator('[data-hotkey-open="dice"]');
-  if (await opener.isVisible()) await opener.click();
+  const opener = page.getByRole("button", { name: "Tirar: oráculo, dados o tablas" });
+  if (await opener.isVisible()) {
+    await opener.click();
+    await page.getByRole("tab", { name: "Dados" }).click();
+  }
   const dice = page.locator('[data-hotkey="dice"]').filter({ visible: true });
   await dice.getByRole("button", { name: "d20", exact: true }).click();
   await dice.getByRole("button", { name: "Cartas" }).click();

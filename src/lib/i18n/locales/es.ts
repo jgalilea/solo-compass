@@ -914,6 +914,8 @@ export const es: Dictionary = {
     saveTable: "Guardar en mis tablas",
     tableSaved: "«{name}» está en tus tablas",
     exceptionalAnswer: "{answer} excepcional",
+    rollMenu: "Tirar",
+    rollMenuLabel: "Tirar: oráculo, dados o tablas",
     toolOracle: "Oráculo",
     toolTable: "Tabla",
     toolOracleTitle: "Preguntar al oráculo",

@@ -656,6 +656,9 @@ export interface Dictionary {
     tableSaved: string;
     /** An answer code's "x" ("Yx"): {answer}. */
     exceptionalAnswer: string;
+    /** Phones: the one button that opens the game table. */
+    rollMenu: string;
+    rollMenuLabel: string;
     toolOracle: string;
     toolTable: string;
     toolOracleTitle: string;

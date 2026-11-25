@@ -64,7 +64,8 @@ export function focusHotkeyTarget(name: string): boolean {
       return true;
     }
   }
-  const opener = [...document.querySelectorAll(`[data-hotkey-open="${name}"]`)].find(isVisible);
+  // Hidden too: on phones they're behind a single button.
+  const opener = document.querySelector(`[data-hotkey-open="${name}"]`);
   if (opener instanceof HTMLElement) {
     opener.click();
     return true;

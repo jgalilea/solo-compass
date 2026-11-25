@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.5.2",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XXII, al margen · El escritorio despejado",
+        items: [
+          "En el móvil, la barra de abajo del diario se queda con lo justo: «Tirar», que abre el oráculo, los dados y las tablas por donde los dejaste, la casilla para escribir y el cuaderno.",
+          "El botón de enviar aparece cuando hay algo que enviar.",
+        ],
+      },
+      en: {
+        title: "Chapter XXII, in the margin · The cleared desk",
+        items: [
+          "On phones, the journal's bottom bar keeps only what's needed: “Roll”, which opens the oracle, dice and tables where you left them, the box to write in and the notebook.",
+          "The send button shows once there's something to send.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.5.1",
     date: "2026-11-25",
     text: {
