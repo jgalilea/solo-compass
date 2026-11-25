@@ -11,10 +11,10 @@ const MIN_DICE_FOR_CHART = 5;
 
 /**
  * How the player's dice came up: whether they run high or low, the
- * feats worth telling (runs, extremes, a session's luck) and a small
- * chart per kind of die, with a line at what each face should get.
+ * feats worth telling (runs, extremes, a session's luck, or an
+ * adventure's with `across`) and a small chart per kind of die, with a line at what each face should get.
  */
-export function DiceStatsSection({ stats }: { stats: DiceStats }) {
+export function DiceStatsSection({ stats, across = false }: { stats: DiceStats; across?: boolean }) {
   const { t } = useLocaleContext();
   const s = t.journal.stats;
   const charts = stats.dice.filter((d) => d.count >= MIN_DICE_FOR_CHART);
@@ -43,8 +43,7 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
       ]
     : [];
   return (
-    <section className="flex flex-col gap-3">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.diceHeading}</h3>
+    <>
       <div className="flex flex-col gap-1">
         <p className="text-sm text-parchment">
           {stats.trend ? trend[stats.trend] : interpolate(s.diceFew, { count: MIN_DICE_FOR_TREND, total: stats.total })}
@@ -64,8 +63,8 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
       )}
       {stats.sessions && (
         <ul className="flex flex-col gap-1 text-sm text-parchment">
-          <li>{interpolate(s.sessionBest, { session: sessionName(stats.sessions.best.title) })}</li>
-          <li>{interpolate(s.sessionWorst, { session: sessionName(stats.sessions.worst.title) })}</li>
+          <li>{interpolate(across ? s.adventureBest : s.sessionBest, { session: sessionName(stats.sessions.best.title) })}</li>
+          <li>{interpolate(across ? s.adventureWorst : s.sessionWorst, { session: sessionName(stats.sessions.worst.title) })}</li>
         </ul>
       )}
       <div className="flex flex-col gap-1 text-xs text-parchment-dim">
@@ -79,7 +78,7 @@ export function DiceStatsSection({ stats }: { stats: DiceStats }) {
           ))}
         </ul>
       )}
-    </section>
+    </>
   );
 }
 

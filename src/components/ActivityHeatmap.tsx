@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { activityLevel, lastYearByMonth } from "../lib/journalStats";
+import { StatsSection } from "./StatsSection";
 
 /** From nothing to the busiest day: the gold's strength (brightness, not hue, so it reads in every theme). */
 const LEVEL_CLASS = ["bg-ink-700/70", "bg-gold/25", "bg-gold/50", "bg-gold/75", "bg-gold"] as const;
@@ -40,11 +41,8 @@ export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<
 
   return (
     // As wide as the map at most, so the legend sits under its edge.
-    <section className="flex max-w-xl flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.activityHeading}</h3>
-        <p className="text-xs text-parchment-dim">{s.activityHint}</p>
-      </div>
+    <StatsSection id="activityStats" title={s.activityHeading} className="max-w-xl">
+      <p className="text-xs text-parchment-dim">{s.activityHint}</p>
       <div
         role="img"
         aria-label={`${s.activityHeading}: ${summary.join(", ")}`}
@@ -80,6 +78,6 @@ export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<
           {s.activityMore}
         </div>
       </div>
-    </section>
+    </StatsSection>
   );
 }

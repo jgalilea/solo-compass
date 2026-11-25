@@ -569,7 +569,7 @@ export function DiceTool({
                   <RolledDice dice={item.dice} animate />
                   <span aria-hidden title={item.text} className="max-w-full break-words">
                     {rolledWhat(item.text)}
-                    {item.text.endsWith(")") && (
+                    {(item.text.endsWith(")") || item.dice.length > 1) && (
                       <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">{rolledTotal(item.text)}</span>
                     )}
                   </span>

@@ -67,3 +67,18 @@ describe("dice stats", () => {
     expect(compute(session("Uno", 2)).sessions).toBeNull();
   });
 });
+
+describe("across adventures", () => {
+  it("compares adventures, not sessions, even with the same name", () => {
+    const roll = (adventureId: string, text: string): JournalEntry => ({ ...entry("roll", text), adventureId });
+    const all = [roll("a", "6d6 -> 36 (6+6+6+6+6+6)"), entry("session", "S"), roll("b", "6d6 -> 6 (1+1+1+1+1+1)")];
+    const { sessions, total } = compute(all, () => "Same");
+    expect(total).toBe(12);
+    expect(sessions!.best.score).toBeGreaterThan(0);
+    expect(sessions!.worst.score).toBeLessThan(0);
+  });
+
+  it("counts a d66 as two d6 and a d(66) as itself", () => {
+    expect(computeDiceStats(["d66 -> 34", "d(66) -> 38"]).dice.map((d) => [d.sides, d.count])).toEqual([[6, 2], [66, 1]]);
+  });
+});

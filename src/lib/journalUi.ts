@@ -1,3 +1,4 @@
+import { tableDice } from "./rolledDice";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 import { actorParts, noteForm, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
 import type { CastMember } from "./lonelogTags";
@@ -245,6 +246,43 @@ export function splitRollText(text: string): {
 const DIE = String.raw`(?:draw=[A-Za-z0-9]+|[-({\d]*d(?:\d|%|F|\()[^\s]*?(?<!(?:^|[^<>!])=\d+))`;
 /** Text with a roll of the generic roller in it ("Attack 2d6+3 -> 9 (…)"). */
 export const OWN_ROLL = new RegExp(String.raw`(^|\s)${DIE}\s*->`);
+// How the app wrote a table's rolls before "tbl:", only the shapes a
+// check never has: a d66, a game's table ("Ironsworn: Action d100=42"), two
+// dice ("Theme 2/5") and quick inspiration ("Inspiration (Action d66=34, …)").
+const TABLE_TAGS = "Ironsworn|Delve|Starforged|Knave|Loner|Starsmith|Ironsmith|Lazy GM|Cairn|OPSE";
+const OLD_TABLE = new RegExp(
+  String.raw`^(?:\S.*?\sd(66)=(\d+)|(?:${TABLE_TAGS}): \S.*?\sd([1-9]\d*)=(\d+)|\S.*?\s\d+/\d+|\S.*\(\S.*?\s(?:d\d+=)?[\d/]+(?:, \S.*?\s(?:d\d+=)?[\d/]+)+\))$`,
+);
+// What a check ends in, never a table's result ("Hit the road" is one).
+const VERDICT =
+  /^(?:\d+ )?(?:[SF]|(?:(?:partial|critical|strong|weak|extreme|hard|regular) )?(?:success(?:es)?|fail(?:ure)?|hits?|miss)|crit(?:ical)?|fumble|step down|depleted|(?:no )?wounds?|éxitos?(?: (?:parcial|crítico|total))?|fallo|fracaso|pifia|crítico|acierto|impacto)(?:$|[.,;:!(]|\s[(-]|\swith\b|\scon\b)/i;
+const YES_NO = /^(?:exceptional |extreme )?(yes|no|s[ií])(?:$|[.!…]|,?\s*(?:and|but|y además|pero)(?!\p{L}))/iu;
+
+/**
+ * What a `d:` roll this app didn't make is (Lonelog: `d:` gives a
+ * verdict, `tbl:` content). A yes or a no is an oracle's; a table's is
+ * only one written as the app used to; anything else is a roll of the
+ * player's own system. A roll the app did make never gets here: it's
+ * linked to the history (classifyRoll).
+ */
+export function foreignRollKind(detail: string, result: string | null): "oracle" | "table" | "dice" {
+  if (result !== null && YES_NO.test(result)) return "oracle";
+  if (result === null || VERDICT.test(result) || /(?<!\p{L})vs\.?(?!\p{L})/iu.test(detail)) return "dice";
+  const m = detail.match(OLD_TABLE);
+  if (!m) return "dice";
+  const [, d66, d66Value, sides = d66, value = d66Value] = m;
+  return sides && !tableDice(`d${sides}`, Number(value)) ? "dice" : "table";
+}
+
+/** Yes or no, and its shade, as an answer written in either language. */
+export function readAnswer(result: string): { answer?: Answer; qualifier?: "and" | "but" } {
+  const answer = result.match(YES_NO)?.[1]?.toLowerCase();
+  return {
+    answer: answer ? (answer === "no" ? "no" : "si") : undefined,
+    qualifier: /,\s*(pero|but)(?!\p{L})/iu.test(result) ? "but" : /,\s*(y además|and)(?!\p{L})/iu.test(result) ? "and" : undefined,
+  };
+}
+
 // Each roll, and the description of every one after the first
 // ("…, Fire 2d6 -> 7 (3+4)"); the first one's is the series' label.
 const ROLL_SEGMENT = new RegExp(

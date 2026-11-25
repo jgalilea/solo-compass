@@ -10,7 +10,7 @@
 import { readRolledDice } from "./diceNotation";
 import { splitOwnRolls } from "./journalUi";
 import type { JournalEntry } from "./lonelog";
-import { tableDice, type RolledDie } from "./rolledDice";
+import type { RolledDie } from "./rolledDice";
 
 export interface DieStats {
   /** 0 for a Fudge die. */
@@ -23,7 +23,7 @@ export interface DieStats {
   bars: { from: number; to: number; count: number }[];
 }
 
-/** A session's dice, against what they tend to. */
+/** A session's dice (or an adventure's), against what they tend to. */
 export interface SessionLuck {
   /** Null: before the first session. */
   title: string | null;
@@ -66,9 +66,7 @@ const MAX_BARS = 20;
 function thrownDice(die: string, result: string): RolledDie[] {
   // min/max and penetrating dice are written changed.
   if (die.startsWith("draw=") || /m(?:in|ax)\d|!p/i.test(die)) return [];
-  return (readRolledDice(`${die} -> ${result}`, Infinity) ?? []).flatMap((d) =>
-    d.sides === 66 ? (tableDice("d66", d.value) ?? []) : [d],
-  );
+  return readRolledDice(`${die} -> ${result}`, Infinity) ?? [];
 }
 
 const expectedOf = (sides: number) => (sides ? (sides + 1) / 2 : 0);
@@ -79,9 +77,20 @@ function deviationOf({ sides, value }: RolledDie): number {
 }
 const zScore = (deviation: number, count: number) => deviation / Math.sqrt(count || 1);
 
-export function computeDiceStats(entries: readonly JournalEntry[]): DiceStats {
+/**
+ * One journal's dice, session by session; with `nameOf`, several
+ * journals', adventure by adventure (each one's name).
+ */
+export function computeDiceStats(entries: readonly JournalEntry[], nameOf?: (entry: JournalEntry) => string): DiceStats {
   const bySides = new Map<number, number[]>();
-  const sessions: { title: string | null; deviation: number; count: number }[] = [{ title: null, deviation: 0, count: 0 }];
+  type Group = { title: string | null; deviation: number; count: number };
+  const sessions: Group[] = [{ title: null, deviation: 0, count: 0 }];
+  const adventures = new Map<string, Group>();
+  const adventureGroup = ({ adventureId }: JournalEntry, title: string): Group => {
+    // By adventure, not by name: two can be called the same.
+    if (!adventures.has(adventureId)) adventures.set(adventureId, { title, deviation: 0, count: 0 });
+    return adventures.get(adventureId)!;
+  };
   const stats: DiceStats = { total: 0, dice: [], trend: null, highRun: 0, lowRun: 0, top: 0, bottom: 0, extremes: 0, favourite: null, sessions: null };
   let deviation = 0;
   let high = 0;
@@ -100,7 +109,7 @@ export function computeDiceStats(entries: readonly JournalEntry[]): DiceStats {
       bySides.set(sides, values);
 
       const off = deviationOf(die);
-      const session = sessions.at(-1)!;
+      const session = nameOf ? adventureGroup(entry, nameOf(entry)) : sessions.at(-1)!;
       session.deviation += off;
       session.count++;
       deviation += off;
@@ -128,7 +137,7 @@ export function computeDiceStats(entries: readonly JournalEntry[]): DiceStats {
   if (stats.total >= MIN_DICE_FOR_TREND) stats.trend = z >= TREND_Z ? "high" : z <= -TREND_Z ? "low" : "normal";
 
   stats.favourite = favouriteFace(bySides);
-  const ranked = sessions
+  const ranked = (nameOf ? [...adventures.values()] : sessions)
     .filter((s) => s.count >= MIN_DICE_PER_SESSION)
     .map((s): SessionLuck => ({ title: s.title, score: zScore(s.deviation, s.count) }))
     .sort((a, b) => b.score - a.score);

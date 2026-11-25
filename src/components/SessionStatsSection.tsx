@@ -2,6 +2,7 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { AdventureStats } from "../lib/journalStats";
 import { ColumnChart } from "./ColumnChart";
+import { StatsSection } from "./StatsSection";
 
 /** More sessions than these don't fit a phone: the latest. */
 const MAX_SESSIONS = 20;
@@ -20,8 +21,7 @@ export function SessionStatsSection({ sessions }: { sessions: AdventureStats["pe
   const firstReal = sessions.length - real.length;
   const offset = sessions.length - shown.length;
   return (
-    <section className="flex flex-col gap-3">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.sessionsHeading}</h3>
+    <StatsSection id="sessionStats" title={s.sessionsHeading}>
       <div className="flex flex-col gap-1 text-sm text-parchment">
         <p>{interpolate(s.sessionsAverage, { entries: average("entries"), words: average("words") })}</p>
         <p>{interpolate(s.sessionsLongest, { session: name(longest.title), words: number.format(longest.words) })}</p>
@@ -40,6 +40,6 @@ export function SessionStatsSection({ sessions }: { sessions: AdventureStats["pe
           })}
         />
       </div>
-    </section>
+    </StatsSection>
   );
 }

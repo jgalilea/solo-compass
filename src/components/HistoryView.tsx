@@ -155,6 +155,14 @@ export function HistoryView() {
     ["favoritas", t.history.filterFavorites],
   ];
 
+  const pickedName = adventureNames.get(adventureFilter);
+  const subtitle =
+    adventureFilter === FREE
+      ? t.history.subtitleFree
+      : pickedName !== undefined
+        ? interpolate(t.history.subtitleAdventure, { name: pickedName })
+        : t.history.subtitle;
+
   const backLabel = fromAdventure
     ? t.history.backToAdventure
     : origin === "tabla"
@@ -193,7 +201,7 @@ export function HistoryView() {
         </div>
         {/* Below the title's row, across the whole width: beside the
             button they wrapped into a narrow column on phones. */}
-        <p className="text-sm text-parchment-dim">{t.history.subtitle}</p>
+        <p className="text-sm text-parchment-dim">{subtitle}</p>
         {/* Gestures only exist on touch screens; with a mouse each roll
             already has its star and trash icons. */}
         <p className="hidden text-xs text-parchment-faint pointer-coarse:block">

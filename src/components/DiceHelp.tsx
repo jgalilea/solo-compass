@@ -108,7 +108,7 @@ export function DiceHelp() {
             </li>
           ))}
           {/* Last card: with the formulas it fills the grid's last row on desktop. */}
-          <li className="flex flex-col gap-2 rounded-2xl border border-dashed border-ink-border p-4">
+          <li className="flex flex-col gap-2 rounded-2xl border border-dashed border-ink-border p-4 lg:col-span-2">
             <h4 className="text-base font-semibold text-parchment">{help.rulesHeading}</h4>
             <ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-parchment-dim marker:text-gold">
               {help.rules.map((rule) => (

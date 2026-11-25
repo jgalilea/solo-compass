@@ -20,6 +20,11 @@ export interface ThemeInfo {
 // must match the ones defined in src/index.css.
 export const THEMES: ThemeInfo[] = [
   {
+    id: "osr",
+    swatch: ["#000000", "#f24646", "#f2f0eb"],
+    swatchLight: ["#f4f1ea", "#af1d19", "#0a0a0a"],
+  },
+  {
     id: "fantasia",
     swatch: ["#0b0c10", "#d7b26d", "#f4efe6"],
     swatchLight: ["#f7f1e4", "#74541c", "#2b2013"],
@@ -39,15 +44,11 @@ export const THEMES: ThemeInfo[] = [
     swatch: ["#04070a", "#39e75f", "#d7ecdf"],
     swatchLight: ["#eef8f4", "#0d6d46", "#0c1f17"],
   },
-  {
-    id: "osr",
-    swatch: ["#000000", "#f24646", "#f2f0eb"],
-    swatchLight: ["#f4f1ea", "#af1d19", "#0a0a0a"],
-  },
 ];
 
 const STORAGE_KEY = "solo-compass:theme";
-export const DEFAULT_THEME: ThemeId = "fantasia";
+// index.html applies the same default before the first paint: keep them in step.
+export const DEFAULT_THEME: ThemeId = "osr";
 
 export function isThemeId(value: string): value is ThemeId {
   return THEMES.some((t) => t.id === value);

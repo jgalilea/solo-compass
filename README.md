@@ -24,7 +24,7 @@ Playing an RPG on your own means being both the player and the game master. You 
 - **Works on a phone at the table and on a big screen at your desk.** On a phone the journal is clear of clutter, with the tools in a sheet. On desktop, an adventure becomes a workspace with a session index and a game-table panel.
 - **Offline and installable.** It's a PWA: install it from the browser, and it keeps working without a connection.
 - **No account and no server.** Everything stays in your browser. The app makes no network requests, has no analytics and needs no sign-up.
-- **Five looks, light or dark.** Fantasy, Pulp, Modern, Sci-fi and OSR, each with its own palette and display font.
+- **Five looks, light or dark.** OSR is the main one, plus Fantasy, Pulp, Modern and Sci-fi, each with its own palette and display font.
 - **English and Spanish.** The app follows your browser's language by default, and you can switch it in Settings.
 
 ## Getting started
@@ -73,7 +73,7 @@ The oracle's name next to the title switches to another one (and a star marks yo
 
 Each oracle's **?** explains its rules in a few lines and has a table with the exact chance of each answer at every likelihood, worked out from every possible roll.
 
-When an adventure is active, the question and answer go into its journal, and a small field lets you add the consequence right away. Every roll is also kept in **History**, which you reach from "Recent rolls". There you can filter by oracle, tables or favourites, mark rolls as favourites or delete them.
+When an adventure is active, the question and answer go into its journal, and a small field lets you add the consequence right away. Every roll is also kept in **History**, which you reach from "Recent rolls". There you can search, filter by oracle, tables, dice, favourites or adventure, log a free roll in a journal, mark rolls as favourites or delete them.
 
 ### Meaning tables
 
@@ -84,7 +84,7 @@ Roll for inspiration when a yes or no isn't enough. Besides its own generic tabl
 Create adventures, split them into sessions and scenes, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
 
 - Only one adventure is **active** at a time. Rolls go there, and the chip in the header shows which one it is from every screen.
-- Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, 4dF for Fate/Fudge, advantage and disadvantage, and typed formulas such as `2d6+3`, `4d6kh3` or `4d6dl1` (keep the highest three), `5d6>=5` (count successes, `f<3` to subtract failures), `3d6!` and `d6!!` (exploding and compounding) or `4d6dl1 // Strength` (with a description). This lets you log rolls from your own system without leaving the app.
+- Inside an adventure, the **game table** gives you the oracle, the tables and a dice roller: d4 to d20, d%, d66 (as two d6; a die of 66 sides is `d(66)`), 4dF for Fate/Fudge, advantage and disadvantage, and typed formulas such as `2d6+3`, `4d6kh3` or `4d6dl1` (keep the highest three), `5d6>=5` (count successes, `f<3` to subtract failures), `3d6!` and `d6!!` (exploding and compounding) or `4d6dl1 // Strength` (with a description), and a deck of cards or a tarot. This lets you log rolls from your own system without leaving the app.
 - Each adventure has a **notebook** (beside the journal on wide screens, behind the notebook button elsewhere):
   - **Pinned notes** for what you want at hand: inventory, clues, loose ends. They're edited in place, and `- [ ]` lines become checkboxes you can tick.
   - **Characters and places**: name them in any entry with Lonelog tags, like `[N:Odile|wary]`, `[PC:Mara|coins 9]` or `[L:The mill|idle]`. They show as chips in the journal and are gathered in the notebook with their current traits and every entry that mentions them. Changes such as `[N:Odile|+captured|-wary]` or `[PC:Mara|coins-6]` update them. Typing `[` in the journal field (or while editing an entry) suggests the ones you already have, or makes a new one from the name you type, so you don't need to know the syntax. You can also add them, log a change or mention them from the notebook.
@@ -92,6 +92,9 @@ Create adventures, split them into sessions and scenes, and log actions, rolls, 
   - **Rooms, foes and inventory**, from Lonelog's official add-ons: dungeon rooms (`[R:4|cleared|library|exits N:R2]`), foes in a fight (`[F:Thug A|HP 6|Close]`, struck through once dead or fled), items (`[Inv:Torch|3]`) and money (`[Wealth:Gold 45]`), with −/+ to use one up or gain one.
 - The journal reads all of **Lonelog 1.6**: scenes inside sessions (`S1 *Tavern, night*`, numbered for you from "New scene"; flashbacks `S5a`, montages `S7.1`, parallel threads `T2-S1`), table and generator rolls (`tbl:`, `gen:`), bare answers (`-> Yes, but…`), other characters acting (`@(Jonah) …`), dialogue, `(note: …)` asides, `\---` in-world text and the add-ons' `[COMBAT]` blocks with `Rd1` rounds. Each is drawn as what it is, and written back exactly as it was.
 - Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
+- **Search** the journal (or all of them) by words and by type of entry.
+- **Statistics**, for the fun of it: an adventure's sessions, its year in a heat map, who and where is named most, the oracle against its odds and the luck of your dice, with a chart per kind of die. The journal list tells the luck of your dice across all your adventures.
+- Rolls are **drawn**: each die with its shape and what came up, and each card with its suit. What's stored and exported is still plain Lonelog text.
 - **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
 
 <p align="center">
@@ -112,7 +115,7 @@ Shortcuts work whenever you aren't typing in a field. Press <kbd>?</kbd> to see 
 
 | Key | Action |
 |---|---|
-| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> | Oracle, Tables, Journal (or the active adventure) |
+| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> | Oracle, Tables, Dice, Journal (or the active adventure) |
 | <kbd>H</kbd> | Roll history |
 | <kbd>/</kbd> | Write: the question, search or journal field, depending on the screen |
 | <kbd>O</kbd> <kbd>T</kbd> <kbd>D</kbd> | Game-table oracle, tables, dice |
@@ -136,7 +139,7 @@ Clearing the site's data in your browser deletes everything, so export a backup 
 
 ## Development
 
-You need Node.js 22 (the version CI uses) and npm.
+You need Node.js 24 (the version CI uses) and npm.
 
 ```bash
 git clone https://github.com/jgalilea/solo-compass.git

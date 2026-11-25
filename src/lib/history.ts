@@ -1,3 +1,4 @@
+import { fixOldD66 } from "./diceNotation";
 import { createCollection, diffById } from "./collectionStore";
 import type { OracleRoll } from "./oracle";
 import type { Dictionary } from "./i18n";
@@ -148,7 +149,7 @@ function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEn
       kind: "dados",
       id: v.id as string,
       timestamp: v.timestamp as number,
-      text: v.text,
+      text: fixOldD66(v.text),
       favorite,
       ...(card && isDeckId(card.deck) && typeof card.id === "string" ? { card: { deck: card.deck, id: card.id } } : {}),
     };

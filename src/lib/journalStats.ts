@@ -3,7 +3,8 @@ import { isoDate, playDay, type JournalEntry } from "./lonelog";
 import { rollOracleId, type Answer, type OracleRoll } from "./oracle";
 import { oracleOdds, type OracleId } from "./oracleEngines";
 import type { CastMember } from "./lonelogTags";
-import { OWN_ROLL, splitRollSeries, splitRollText } from "./journalUi";
+import { splitRollSymbol } from "./lonelogLines";
+import { foreignRollKind, OWN_ROLL, readAnswer, splitRollSeries, splitRollText } from "./journalUi";
 
 export interface AdventureStats {
   sessions: number;
@@ -70,7 +71,17 @@ export function classifyRoll(
         : undefined;
     return { kind: "oracle", answer, qualifier };
   }
-  if (linked?.kind === "tabla" || (result !== null && !splitRollSeries(entry.text) && !OWN_ROLL.test(entry.text))) {
+  // A generator's "(Action d66=34, Theme d66=25) ->" isn't a formula.
+  const own = splitRollSeries(entry.text) || (OWN_ROLL.test(entry.text) && !/=\d+\)$/.test(detail));
+  let table = linked?.kind === "tabla" || (result !== null && !own);
+  // Linked to the history, it was made here, even if it's no longer there:
+  // a table's, as the dice have their formula.
+  if (!entry.linkedRollId && !own && splitRollSymbol(entry.text).symbol === "d") {
+    const kind = foreignRollKind(detail, result);
+    if (kind === "oracle") return { kind, ...readAnswer(result!) };
+    table = kind === "table";
+  }
+  if (table) {
     // "Theme d66=25", "Theme 2/5" (as written before) or
     // "Inspiration (Action d66=34, Theme d66=25)": just the name.
     const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+$/, "").trim();

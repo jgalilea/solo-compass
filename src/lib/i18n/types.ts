@@ -518,6 +518,9 @@ export interface Dictionary {
   history: {
     title: string;
     subtitle: string;
+    /** With an adventure picked, or the free rolls. */
+    subtitleAdventure: string;
+    subtitleFree: string;
     swipeHint: string;
     showMore: string;
     backToOracle: string;
@@ -764,6 +767,12 @@ export interface Dictionary {
       featFavouriteNote: string;
       sessionBest: string;
       sessionWorst: string;
+      /** Across adventures (the journal list's statistics). */
+      adventureBest: string;
+      adventureWorst: string;
+      allDiceButton: string;
+      allDiceSubtitle: string;
+      allDiceEmpty: string;
       chanceGenerous: string;
       chanceStubborn: string;
       chanceFair: string;

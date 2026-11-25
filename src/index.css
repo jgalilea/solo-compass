@@ -50,7 +50,8 @@
 }
 
 @theme {
-  /* Fantasy is the default theme: these values are the ones Tailwind
+  /* Fantasy is the base theme (a new player starts with OSR,
+     DEFAULT_THEME in theme.ts): these values are the ones Tailwind
      uses to generate the classes (bg-gold, text-parchment,
      font-display…) and also the ones applied when <html> has no
      data-theme. The other themes override them further down with

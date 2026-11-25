@@ -9,6 +9,13 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- OSR como tema principal (2026-11-25, 1.4.0): tema por defecto en automático,
+  icono (`scripts/app-icons.mjs`) e imagen del enlace. Pendiente, a mano: rehacer
+  en OSR las imágenes del README, promoción e itch.io. También: `d66` son dos d6
+  (`d(66)`, el dado de 66 caras; `fixOldD66` corrige los antiguos), tiradas
+  importadas clasificadas por su forma (`foreignRollKind`), suerte de los dados de
+  todas las aventuras, secciones plegables y `diceRolls.test.ts`. Por revisar:
+  Lonelog 1.7 (13-11-2026; `gen:` pasa a `tbl:`).
 - Oráculo y gráficas (2026-11-25, 1.3.1): la tarjeta del oráculo mide lo mismo con
   cualquier respuesta (`OracleVerdictSpace`; el giro de Loner, aparte); ejes,
   valores y detalle al tocar en las gráficas (`ColumnChart`, `countTicks`);

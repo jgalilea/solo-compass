@@ -190,6 +190,7 @@ No backend; persistence is split by access pattern, not by feature:
   Its `shortcuts` (long press on the installed icon: the four tabs) use icons drawn by `scripts/shortcut-icons.mjs` from the tabs'
   Tabler icons; only installs that are real apps show them (Chrome's
   on Android, desktop), not a browser's home-screen bookmark (Brave).
+  `scripts/app-icons.mjs` draws the app icon from `favicon.svg`, in OSR's bone on black.
   The viewport blocks pinch zoom on purpose (native-app feel): keep
   text fields at 16px+ so iOS doesn't zoom into them.
 - **Install** (`install.ts`, card in `InstallApp.tsx`): imported early
@@ -576,7 +577,11 @@ written so the journal shows each roll die by die like the buttons'
 rolls (`✓`/`✗`, `1→4` rerolled, `2↑`/`3↓` min/max, `▲`/`▼`
 criticals); in a list of rolls each one keeps its own description
 (`splitRollSeries`), and `d66=25 ->` stays a table roll's value, not
-a formula. Advantage/disadvantage is a switch for the next roll,
+a formula. A typed `d66` is two d6 (11 to 66, as Lonelog's examples use
+it), drawn as both; a die of 66 faces is `d(66)`. It used to be that
+die: an old roll only it can give is read as `d(66)` (`fixOldD66`, when
+the journal and the history are normalized). `diceRolls.test.ts` checks
+that nothing the app rolls can come up impossible: add new dice there. Advantage/disadvantage is a switch for the next roll,
 button or formula (`withEdge`: `d20` → `2d20kh1`, anything else
 `{F,F}kh1`), then turns itself off. Its "?" (`DiceHelp`, on the shared
 `HelpDialog` shell like `OracleHelp`) explains the buttons, how to
@@ -628,7 +633,8 @@ the linked history, falling back to parsing roll text for imports.
 The player's own dice are counted by die (`diceStats.ts`, read from the
 rolls' text; every die that fell, dropped ones too): whether they run
 high or low, runs, extremes, a favourite face, the sessions furthest
-out. No system's criticals. Besides: what each session had, who and
+out. Each block folds (`StatsSection`); the journal list tells the luck of the dice
+across every adventure (`AllDiceStatsDialog`; free rolls aren't in it). No system's criticals. Besides: what each session had, who and
 where is named most (`mostNamed`) and the oracle's "yes" against the
 chances of what was asked (`oracleChance`, only rolls still in the
 history). A chart's columns (`ColumnChart`) and the heat map's days say
@@ -730,7 +736,10 @@ a backup).
 
 ### Theming (`src/lib/theme.ts` + `src/index.css`)
 
-Five themes (`fantasia`, `pulp`, `moderno`, `scifi`, `osr`), each a
+Five themes (`fantasia`, `pulp`, `moderno`, `scifi`, `osr`; **`osr` is the main
+theme**, also of everything outside the app: link preview, manifest,
+promotion images; a new player starts with it in the system's mode, set in `theme.ts`, `mode.ts` and
+`index.html`), each a
 `:root[data-theme="…"]` block in `src/index.css` redefining CSS custom
 properties (`--color-gold`, `--color-parchment`, `--color-ink-*`, etc.) and
 `--font-display`. Components never hardcode colors — they use Tailwind

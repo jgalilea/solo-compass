@@ -12,6 +12,7 @@ import { IconChart } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { NamedList } from "./NamedList";
 import { SessionStatsSection } from "./SessionStatsSection";
+import { StatsSection } from "./StatsSection";
 import { Modal } from "./Modal";
 
 /** How many characters, and places, are listed at most. */
@@ -98,18 +99,16 @@ export function AdventureStatsDialog({
             {stats.sessions > 1 && <SessionStatsSection sessions={stats.perSession} />}
 
             {named.characters.length + named.places.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.namedHeading}</h3>
+              <StatsSection id="namedStats" title={s.namedHeading}>
                 <div className="grid gap-2.5 md:grid-cols-2">
                   {named.characters.length > 0 && <NamedList title={s.namedCharacters} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.characters} />}
                   {named.places.length > 0 && <NamedList title={s.namedPlaces} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.places} />}
                 </div>
                 <p className="text-xs text-parchment-dim">{s.namedHint}</p>
-              </section>
+              </StatsSection>
             )}
 
-            <section className="flex flex-col gap-3">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.oracleHeading}</h3>
+            <StatsSection id="oracleStats" title={s.oracleHeading}>
               {oracle.total === 0 ? (
                 <p className="text-sm text-parchment-dim">{s.noOracle}</p>
               ) : (
@@ -146,11 +145,10 @@ export function AdventureStatsDialog({
                   </p>
                 </>
               )}
-            </section>
+            </StatsSection>
 
             {(stats.tableRolls > 0 || stats.diceRolls > 0) && (
-              <section className="flex flex-col gap-2">
-                <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{s.rollsHeading}</h3>
+              <StatsSection id="rollStats" title={s.rollsHeading}>
                 <p className="text-sm text-parchment">
                   {s.tableRolls}: {number.format(stats.tableRolls)} · {s.diceRolls}: {number.format(stats.diceRolls)}
                 </p>
@@ -160,10 +158,14 @@ export function AdventureStatsDialog({
                     {interpolate(s.topTable, { name: stats.topTable.name, count: stats.topTable.count })}
                   </p>
                 )}
-              </section>
+              </StatsSection>
             )}
 
-            {dice.total > 0 && <DiceStatsSection stats={dice} />}
+            {dice.total > 0 && (
+              <StatsSection id="diceStats" title={s.diceHeading}>
+                <DiceStatsSection stats={dice} />
+              </StatsSection>
+            )}
           </>
         )}
       </DialogBody>

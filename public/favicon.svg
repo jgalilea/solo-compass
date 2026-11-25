@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="112" fill="#0b0c10"/>
+  <rect width="512" height="512" rx="112" fill="#000000"/>
   <g transform="translate(35.839999999999975 35.839999999999975) scale(18.346666666666668)">
-  <circle cx="12" cy="12" r="9.25" fill="none" stroke="#d7b26d" stroke-width="1.1"/>
-  <path d="M12 4.25L13.75 10.25L19.75 12L13.75 13.75L12 19.75L10.25 13.75L4.25 12L10.25 10.25Z" fill="none" stroke="#d7b26d" stroke-width="0.6050000000000001" stroke-linejoin="round"/>
-  <path d="M12 4.25L13.75 10.25L12 12ZM19.75 12L13.75 13.75L12 12ZM12 19.75L10.25 13.75L12 12ZM4.25 12L10.25 10.25L12 12Z" fill="#d7b26d" stroke="#d7b26d" stroke-width="0.6050000000000001" stroke-linejoin="round"/></g>
+  <circle cx="12" cy="12" r="9.25" fill="none" stroke="#e8e4da" stroke-width="1.1"/>
+  <path d="M12 4.25L13.75 10.25L19.75 12L13.75 13.75L12 19.75L10.25 13.75L4.25 12L10.25 10.25Z" fill="none" stroke="#e8e4da" stroke-width="0.6050000000000001" stroke-linejoin="round"/>
+  <path d="M12 4.25L13.75 10.25L12 12ZM19.75 12L13.75 13.75L12 12ZM12 19.75L10.25 13.75L12 12ZM4.25 12L10.25 10.25L12 12Z" fill="#e8e4da" stroke="#e8e4da" stroke-width="0.6050000000000001" stroke-linejoin="round"/></g>
 </svg>

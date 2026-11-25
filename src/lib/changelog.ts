@@ -25,6 +25,36 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.4.0",
+    date: "2026-11-25",
+    text: {
+      es: {
+        title: "Capítulo XXI · Hueso y tinta negra",
+        intro: "Mara cambia la capa de oro viejo por una negra y, ya puesta, pone en orden sus dados.",
+        items: [
+          "OSR es ahora la cara de Solo Compass: el icono y el tema de quien llega nuevo, en claro u oscuro según su dispositivo. Si ya jugabas, conservas el tuyo.",
+          "En el diario, «La suerte de tus dados» junta los de todas tus aventuras y dice cuál ha sido la bendita y cuál la maldita.",
+          "Las secciones de las estadísticas se pliegan, para ir al grano en el móvil.",
+          "Un d66 escrito como fórmula son por fin dos d6, decenas y unidades. Si quieres un dado de 66 caras, escribe d(66): la ayuda de los dados lo cuenta.",
+          "Las tiradas de un diario importado se reconocen mejor: las de tu sistema ya no pasan por tablas, y un sí o un no es del oráculo.",
+          "El historial dice de qué aventura son las tiradas que miras.",
+        ],
+      },
+      en: {
+        title: "Chapter XXI · Bone and black ink",
+        intro: "Mara trades the old gold cloak for a black one and, while at it, puts the dice in order.",
+        items: [
+          "OSR is now the face of Solo Compass: its icon, and the theme for whoever is new, light or dark as their device. If you already played, you keep yours.",
+          "In the journal, “The luck of your dice” brings together those of all your adventures and says which was the blessed one and which the cursed.",
+          "The statistics' sections fold, to get to the point on a phone.",
+          "A d66 typed as a formula is at last two d6, tens and units. For a die of 66 sides, write d(66): the dice help tells you.",
+          "An imported journal's rolls are told apart better: those of your system no longer pass for tables, and a yes or a no is the oracle's.",
+          "The history says which adventure the rolls you're looking at are from.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.3.3",
     date: "2026-11-25",
     text: {

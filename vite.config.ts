@@ -48,8 +48,8 @@ const manifest: Partial<ManifestOptions> = {
   start_url: base,
   scope: base,
   display: "standalone",
-  background_color: "#0b0c10",
-  theme_color: "#0b0c10",
+  background_color: "#000000",
+  theme_color: "#000000",
   lang: "es",
   icons: [
     {

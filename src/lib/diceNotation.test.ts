@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { rollFormula, withEdge } from "./diceNotation";
+import { fixOldD66, readRolledDice, rollFormula, withEdge } from "./diceNotation";
+import { normalizeHistoryEntry } from "./history";
+import { normalizeJournalEntry } from "./journal";
 import { LOCALES } from "./i18n";
 import { DICTIONARIES } from "./i18n/allDictionaries";
 
@@ -256,6 +258,9 @@ describe("dice help", () => {
       "(1d6+2)*3": [[4, 6]],
       "1d6*10": [[4, 6]],
       "{4d6,2d10}k1": [[5, 6], [4, 6], [3, 6], [1, 6], [7, 10], [4, 10]],
+      d66: [[16, 36]],
+      d7: [[5, 7]],
+      "d(66)": [[47, 66]],
       "{3d20+5}>=40": [[11, 20], [17, 20], [19, 20]],
     };
     for (const line of lines) {
@@ -290,5 +295,43 @@ describe("dice help", () => {
     expect(rollFormula("999d6")).not.toBeNull();
     expect(rollFormula("1000d6")).toBeNull();
     expect(rollFormula("3d10!>=8", dice(8, 1, 1, 1)(10))).toBe("3d10!>=8 -> 11 (8!+1+1+1)");
+  });
+});
+
+describe("d66", () => {
+  it("is two d6, tens and units, however many are rolled", () => {
+    const seen = new Set<number>();
+    for (let i = 0; i < 36; i++) seen.add(Number(rollFormula("d66", () => (i + 0.5) / 36)!.split(" -> ")[1]));
+    expect([...seen]).toEqual([1, 2, 3, 4, 5, 6].flatMap((t) => [1, 2, 3, 4, 5, 6].map((u) => t * 10 + u)));
+    expect(rollFormula("2d66kh1", () => 0.5)).toBe("2d66kh1 -> 41 (41, 41✗)");
+  });
+
+  it("is drawn as its two dice; one from when it had 66 faces, as it was", () => {
+    expect(readRolledDice("Loot d66 -> 34")).toEqual([{ sides: 6, value: 3 }, { sides: 6, value: 4 }]);
+    expect(readRolledDice("2d66kh1 -> 41 (41, 35✗)")).toEqual([
+      { sides: 6, value: 4 },
+      { sides: 6, value: 1 },
+      { sides: 6, value: 3, mark: "out" },
+      { sides: 6, value: 5, mark: "out" },
+    ]);
+    expect(readRolledDice("d66 -> 38")).toEqual([{ sides: 66, value: 38 }]);
+    expect(readRolledDice("d(66) -> 38")).toEqual([{ sides: 66, value: 38 }]);
+  });
+
+  it("says so in an old roll only a die of 66 faces can give", () => {
+    expect(fixOldD66("Loot d66 -> 38")).toBe("Loot d(66) -> 38");
+    expect(fixOldD66("d20 -> 5, d66 -> 60, d66 -> 61")).toBe("d20 -> 5, d(66) -> 60, d66 -> 61");
+    expect(fixOldD66("d66+2 -> 11 (9 + 2)")).toBe("d(66)+2 -> 11 (9 + 2)");
+    expect(fixOldD66("2d66kh1 -> 41 (41, 38✗)")).toBe("2d(66)kh1 -> 41 (41, 38✗)");
+    for (const text of ["d66 -> 34", "Theme d66=25 -> 3", "tbl: Loot d66=38 -> 7", "d(66) -> 38", "d66 -> 99", "d666 -> 38", "I rolled d66 -> 38 gold"])
+      expect(fixOldD66(text), text).toBe(text);
+    expect(fixOldD66(fixOldD66("d66 -> 38"))).toBe("d(66) -> 38");
+    expect(normalizeJournalEntry({ id: "e", adventureId: "a", timestamp: 1, kind: "roll", text: "d66 -> 38" })?.text).toBe("d(66) -> 38");
+    expect(normalizeJournalEntry({ id: "e", adventureId: "a", timestamp: 1, kind: "note", text: "d66 -> 38" })?.text).toBe("d66 -> 38");
+    expect(normalizeHistoryEntry({ id: "h", kind: "dados", timestamp: 1, text: "d66 -> 38", favorite: false })).toMatchObject({ text: "d(66) -> 38" });
+  });
+
+  it("leaves a die of 66 faces as d(66)", () => {
+    expect(rollFormula("d(66)", () => 0)).toBe("d(66) -> 1");
   });
 });

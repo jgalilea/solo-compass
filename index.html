@@ -7,10 +7,10 @@
       // primer pintado, para evitar un parpadeo con los valores por
       // defecto al cargar.
       try {
-        var t = localStorage.getItem("solo-compass:theme");
-        if (t) document.documentElement.setAttribute("data-theme", t);
+        var t = localStorage.getItem("solo-compass:theme") || "osr";
+        document.documentElement.setAttribute("data-theme", t);
 
-        var m = localStorage.getItem("solo-compass:mode") || "dark";
+        var m = localStorage.getItem("solo-compass:mode") || "auto";
         if (m === "auto") {
           m =
             window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -24,7 +24,7 @@
     <link rel="icon" type="image/svg+xml" href="/solo-compass/favicon.svg" />
     <link rel="apple-touch-icon" href="/solo-compass/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0c10" />
+    <meta name="theme-color" content="#000000" />
     <meta name="description" content="Oráculo de sí o no, más de 750 tablas, dados, cartas y un diario en Lonelog para jugar rol en solitario. Sin cuenta, sin conexión y todo en tu dispositivo." />
     <title>Solo Compass</title>
     <!-- The card shown when the link is shared (image: scripts/og-image.mjs).

@@ -4,6 +4,7 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
+import { AllDiceStatsDialog } from "./AllDiceStatsDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
@@ -15,6 +16,7 @@ import { normalizeForSearch } from "../lib/text";
 import { FilterChips } from "./FilterChips";
 import { SearchResultList } from "./journalShared";
 import {
+  IconChart,
   IconCheck,
   IconChevronRight,
   IconClose,
@@ -49,6 +51,7 @@ export function JournalListView() {
   const { t, locale } = useLocaleContext();
   const navigate = useNavigate();
 
+  const [statsOpen, setStatsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchType, setSearchType] = useState<EntryType | null>(null);
   const [newAdventureName, setNewAdventureName] = useState("");
@@ -203,7 +206,19 @@ export function JournalListView() {
           {t.journal.title}
         </h1>
         <p className="mt-2 text-sm text-parchment-dim">{t.journal.subtitle}</p>
+        {status === "ready" && hasAnyAdventures && (
+          <button
+            type="button"
+            onClick={() => setStatsOpen(true)}
+            className="mx-auto mt-3 flex items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+          >
+            <IconChart size={15} />
+            {t.journal.stats.allDiceButton}
+          </button>
+        )}
       </header>
+
+      {statsOpen && <AllDiceStatsDialog onClose={() => setStatsOpen(false)} />}
 
       {status === "loading" && <LoadingState label={t.journal.loading} />}
 

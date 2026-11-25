@@ -10,10 +10,9 @@ export type ThemeMode = "light" | "dark" | "auto";
 export const MODES: ThemeMode[] = ["light", "dark", "auto"];
 
 const STORAGE_KEY = "solo-compass:mode";
-// "dark" and not "auto": every theme was designed for dark from the
-// start, so anyone who doesn't touch the new picker keeps seeing
-// exactly the same as before.
-export const DEFAULT_MODE: ThemeMode = "dark";
+// The system's, until one is picked (index.html has the same default:
+// keep them in step).
+export const DEFAULT_MODE: ThemeMode = "auto";
 
 export function isThemeMode(value: string): value is ThemeMode {
   return (MODES as string[]).includes(value);

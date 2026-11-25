@@ -5,6 +5,8 @@
  *
  *   2d6+3, 1d8+1d6-2      dice and numbers added up: "2d6+3 -> 9 (4+2 + 3)"
  *   d%, 4dF, 4dF.1        d100, Fudge dice (standard, or four blanks)
+ *   d66                   two d6, tens and units (11 to 66), as Lonelog's
+ *                         own examples use it; a die of 66 faces is d(66)
  *   min3, max3            a die below/above it counts as it (3↑, 3↓)
  *   !, !!, !p, !>4        exploding (each reroll one more die, "6!"),
  *                         compounding (onto the same die, "6!+6!+2"),
@@ -34,7 +36,7 @@
  * A single die with nothing else is just "d20 -> 14", like the buttons.
  */
 
-import { canDrawDice, type RolledDie } from "./rolledDice";
+import { canDrawDice, tableDice, type RolledDie } from "./rolledDice";
 
 /** Dice per term (the spec's limit). */
 export const MAX_DICE = 999;
@@ -90,7 +92,7 @@ type Node =
   | { kind: "neg"; inner: Node }
   | { kind: "paren"; inner: Node }
   | { kind: "bin"; op: "+" | "-" | "*" | "/" | "%" | "^"; left: Node; right: Node }
-  | ({ kind: "dice"; fudge: boolean; sides: number; drops: boolean; compound: boolean; dice: Die[]; shown: Die[] } & Pool)
+  | ({ kind: "dice"; fudge: boolean; d66: boolean; sides: number; drops: boolean; compound: boolean; dice: Die[]; shown: Die[] } & Pool)
   | ({
       kind: "group";
       subs: Node[];
@@ -358,15 +360,19 @@ class Parser {
     this.eat("d");
     let fudge: false | 1 | 2 = false;
     let sides = 0;
+    let d66 = false;
     if (this.eat("%")) sides = 100;
     else if (this.eat("f")) fudge = this.eat(".1") ? 1 : (this.eat(".2"), 2);
     else if (this.eat("(")) {
       const inner = this.expr();
       if (!this.eat(")")) fail();
       sides = value(inner);
-    } else sides = this.int();
+    } else {
+      sides = this.int();
+      d66 = sides === 66;
+    }
     if (!fudge && (!Number.isInteger(sides) || sides < 1 || sides > Number.MAX_SAFE_INTEGER)) fail();
-    const low = fudge ? -1 : 1;
+    const low = fudge ? -1 : d66 ? 11 : 1;
     const high = fudge ? 1 : sides;
 
     // The modifiers, in any order (each at most once, drops aside).
@@ -424,7 +430,7 @@ class Parser {
     const roll = (): Face => {
       if (++this.rolls > MAX_ROLLS) fail();
       const r = this.random();
-      const v = fudge === 1 ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)] : fudge ? Math.floor(r * 3) - 1 : 1 + Math.floor(r * sides);
+      const v = fudge === 1 ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)] : fudge ? Math.floor(r * 3) - 1 : d66 ? 11 + 10 * Math.floor(r * 6) + Math.floor((r * 36) % 6) : 1 + Math.floor(r * sides);
       if (min !== null && v < min) return { v: min, mark: "↑" };
       if (max !== null && v > max) return { v: max, mark: "↓" };
       return { v, mark: "" };
@@ -506,7 +512,7 @@ class Parser {
     if (order) shown = [...dice].sort((a, b) => (order === "asc" ? 1 : -1) * (total(a) - total(b)));
     shown = [...shown.filter((d) => !d.dropped), ...shown.filter((d) => d.dropped)];
 
-    return { kind: "dice", fudge: !!fudge, sides, drops: keepDrop.length > 0, compound: !!explode?.compound, dice, shown, target, failure };
+    return { kind: "dice", fudge: !!fudge, d66, sides, drops: keepDrop.length > 0, compound: !!explode?.compound, dice, shown, target, failure };
   }
 }
 
@@ -591,6 +597,11 @@ function hasFudge(node: Node): boolean {
     case "group":
       return node.subs.some(hasFudge);
   }
+}
+
+/** What lay on the table: a d66 is its two d6 (one rolled with 66 faces, before it was, stays as it is). */
+function fallen(node: Extract<Node, { kind: "dice" }>, value: number): RolledDie[] {
+  return (node.d66 && tableDice("d66", value)) || [{ sides: node.sides, value }];
 }
 
 /**
@@ -709,7 +720,7 @@ class DetailReader {
     this.i += m[0].length;
     const number = (text: string) => (node.fudge ? { "+": 1, "−": -1, "0": 0 }[text]! : Number(text));
     const add = (text: string, mark?: RolledDie["mark"]) => {
-      this.dice.push({ sides: node.sides, value: number(text), ...(mark ? { mark } : {}) });
+      for (const die of fallen(node, number(text))) this.dice.push({ ...die, ...(mark ? { mark } : {}) });
     };
     for (const value of m[1].split("→").slice(0, -1)) add(value, "out");
     const crossed = m[3] === "✗" || m[5] === "✗";
@@ -746,14 +757,35 @@ export function readRolledDice(text: string, max?: number): RolledDie[] | null {
       // A sorted group doesn't say which part is which.
       if (/\}[^{}]*s/.test(formula) && new Set(dice.map((d) => d.sides)).size > 1) return null;
     } else {
-      if (node.kind !== "dice" || !/^1?d(\d+|%)/.test(formula)) return null;
-      dice = [{ sides: node.sides, value: Number(m[1]) }];
+      if (node.kind !== "dice" || !/^1?d(\d+|%|\(\d+\))/.test(formula)) return null;
+      dice = fallen(node, Number(m[1]));
     }
+    // Written by hand, or wrong: not a face of that die. (min, max and
+    // penetrating dice are written changed, a pool's compounded ones added up.)
+    const changed = /m(?:in|ax)\d|!/.test(formula);
+    if (!changed && !dice.every(({ sides, value }) => (sides ? value >= 1 && value <= sides : Math.abs(value) <= 1))) return null;
     return canDrawDice(dice, max) ? dice : null;
   } catch (e) {
     if (e instanceof Unreadable) return null;
     throw e;
   }
+}
+
+/**
+ * A typed d66 used to be a die of 66 faces: a roll only that die can
+ * give ("d66 -> 38") says so ("d(66) -> 38"). What came up stays.
+ */
+export function fixOldD66(text: string): string {
+  if (!/d66(?!\d)/i.test(text) || /^(?:tbl|gen):/.test(text)) return text;
+  return text.replace(
+    /(\S*d66(?!\d)\S*) -> (-?\d+(?:\.\d+)?(?: \((?:[^()]|\([^()]*\))*\))?)(?=\s*(?:,|$))/gi,
+    (roll: string, formula: string, result: string) => {
+      // "Theme d66=25 -> 3": a table's value.
+      if (/=\d+$/.test(formula)) return roll;
+      const old = readRolledDice(`${formula} -> ${result}`, Infinity)?.some((d) => d.sides === 66);
+      return old ? `${formula.replace(/d66(?!\d)/gi, "d(66)")} -> ${result}` : roll;
+    },
+  );
 }
 
 /** The same roll made again, by its text ("Attack d20+5 -> 19 (14 + 5)"), with what it was for; null if it can't be. */

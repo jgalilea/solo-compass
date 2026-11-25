@@ -3,7 +3,8 @@
  * cast takes less room: the lists of the notebook (characters, places,
  * threads, clocks…) and its whole blocks (the session index, pinned
  * notes, cast, threads, inventory), and the desktop game table's
- * tools (oracle, dice, tables), for whoever doesn't use one. Per device, the same for every
+ * tools (oracle, dice, tables), for whoever doesn't use one, and the
+ * blocks of its statistics. Per device, the same for every
  * adventure. Best-effort storage, like the Tables screen's blocks: if
  * localStorage fails, they just start unfolded.
  */
@@ -11,7 +12,8 @@
 export type NotebookSection = "characters" | "places" | "rooms" | "foes" | "threads" | "progress" | "items" | "wealth";
 export type NotebookBlock = "sessionsBlock" | "notesBlock" | "castBlock" | "threadsBlock" | "inventoryBlock";
 export type PlayToolBlock = "oracleTool" | "diceTool" | "tableTool";
-export type NotebookFold = NotebookSection | NotebookBlock | PlayToolBlock;
+export type StatsBlock = "activityStats" | "sessionStats" | "namedStats" | "oracleStats" | "rollStats" | "diceStats";
+export type NotebookFold = NotebookSection | NotebookBlock | PlayToolBlock | StatsBlock;
 
 const STORAGE_KEY = "solo-compass:notebook-sections-folded";
 
