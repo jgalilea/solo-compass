@@ -1,18 +1,21 @@
-import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
 import { definitionDraft, type CustomTableDraft } from "../lib/customTables";
 import { useJournalContext } from "../hooks/useJournalContext";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { isTypingTarget } from "../hooks/useHotkeys";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { revealElement, scrollBehaviorFor, smoothBehavior } from "../lib/scrolling";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
+import { sortedEntriesOf } from "../lib/journalOrder";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
 import { buildCast, castKey, combineSteps, findMember, mainPc, purseKey, renameInEntry } from "../lib/lonelogTags";
 import { withRollDrawings } from "./drawRolls";
+import { PAGE_WIDTH } from "../lib/pageLayout";
 import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
 import { copyText, shareTextFile } from "../lib/share";
@@ -65,7 +68,10 @@ const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => (
  * - Desktop (lg): the journal in the middle and the table always open
  *   on the right, no sheets. From xl, on the left, the session index
  *   to jump between them and the notebook (pinned notes, characters
- *   and places); below xl the notebook is a sheet from the header.
+ *   and places), each in its own column on an ultrawide screen (4xl);
+ *   below xl the notebook is a sheet from the adventure's bar.
+ *
+ * It opens at the end, where the game was left.
  *
  * Sessions are in chronological order, like the journal itself: the
  * earlier ones folded at the top; the current one (the last) open
@@ -102,10 +108,7 @@ export function AdventureDetailView() {
   const isActive = adventureId === activeAdventureId;
 
   const adventureEntries = useMemo(
-    () =>
-      entries
-        .filter((e) => e.adventureId === adventureId)
-        .sort((a, b) => a.timestamp - b.timestamp),
+    () => sortedEntriesOf(entries, adventureId),
     [entries, adventureId],
   );
   const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
@@ -317,6 +320,21 @@ export function AdventureDetailView() {
     handledTargetRef.current = targetEntryId;
     jumpToEntry(targetEntryId);
   }, [status, targetEntryId, jumpToEntry]);
+
+  // It opens at the end, where the game was left, with the composer right
+  // below: going to the oracle and back is the usual way to play on a
+  // phone. The sample is to be read, so it opens at its start.
+  const fromStart = (location.state as { fromStart?: boolean } | null)?.fromStart === true;
+  const ready = status === "ready" && !!adventure;
+  useLayoutEffect(() => {
+    if (!ready || targetEntryId) return;
+    window.scrollTo(0, fromStart ? 0 : document.documentElement.scrollHeight);
+    // Only on opening it: not when it's later opened at an entry.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, adventureId]);
+
+  // On an ultrawide screen the notebook has a column of its own.
+  const ultrawide = useMediaQuery("(min-width: 137.5rem)");
 
   // Tapping outside any entry clears the selection.
   useEffect(() => {
@@ -559,15 +577,22 @@ export function AdventureDetailView() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:max-w-[110rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem] 2xl:gap-12">
+    <div
+      className={`${PAGE_WIDTH} flex flex-1 flex-col px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_25rem] 2xl:gap-10 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)_32rem] 4xl:gap-12`}
+    >
       {/* Wide desktop: sessions and notebook in their own column. Padded on
           both sides: it scrolls, so a selected item's ring would be clipped. */}
-      <aside className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-8 overflow-y-auto overscroll-contain [scrollbar-gutter:stable] px-1 py-8 xl:flex">
+      <aside className={`${SIDE_COLUMN} hidden gap-8 px-1 xl:flex`}>
         {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />}
-        {notebook}
+        {!ultrawide && notebook}
       </aside>
+      {ultrawide && (
+        <aside aria-label={t.notebook.title} className={`${SIDE_COLUMN} flex gap-8 px-1`}>
+          {notebook}
+        </aside>
+      )}
 
-      <div className="flex flex-1 flex-col gap-4 pt-5 sm:pt-8 lg:col-start-1 lg:min-h-[calc(100dvh-3.5rem)] xl:col-start-2">
+      <div className="flex flex-1 flex-col gap-4 lg:col-start-1 lg:min-h-[calc(100dvh-var(--spacing-header))] lg:pt-2 xl:col-start-2 4xl:col-start-3">
         <AdventureHeader
           adventure={adventure}
           isActive={isActive}
@@ -577,6 +602,8 @@ export function AdventureDetailView() {
           groups={groups}
           onJumpToSession={jumpToSession}
           onJumpToEntry={jumpToEntry}
+          notebookOpen={notebookOpen}
+          onOpenNotebook={() => setNotebookOpen(true)}
           onStats={() => setStatsOpen(true)}
           onExport={handleExport}
           onCopy={() =>
@@ -590,17 +617,23 @@ export function AdventureDetailView() {
           onDelete={() => setDeleting(true)}
         />
 
+        {/* Over the journal, below the bar, wherever you are in it: opening
+            it doesn't move what you were reading. */}
         {searchOpen && (
-          <JournalSearchPanel
-            query={searchQuery}
-            onQueryChange={setSearchQuery}
-            type={searchType}
-            types={searchTypes}
-            onTypeChange={setSearchType}
-            matches={searchMatches}
-            onPick={(match) => jumpToEntry(match.entry.id)}
-            onClose={() => setSearchOpen(false)}
-          />
+          <div className="sticky top-(--pin-session) z-30 -mb-4 h-0">
+            <div className="absolute inset-x-0 top-1">
+              <JournalSearchPanel
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
+                type={searchType}
+                types={searchTypes}
+                onTypeChange={setSearchType}
+                matches={searchMatches}
+                onPick={(match) => jumpToEntry(match.entry.id)}
+                onClose={() => setSearchOpen(false)}
+              />
+            </div>
+          </div>
         )}
 
         {filterMember && filtered && (
@@ -631,7 +664,7 @@ export function AdventureDetailView() {
                 <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
                   {group.sessionEntry && (
                     <div className={SESSION_BAR}>
-                      <h2 className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
+                      <h2 className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
                         <IconSession size={16} className="shrink-0 text-gold" />
                         <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                           {group.sessionEntry.text}
@@ -650,13 +683,13 @@ export function AdventureDetailView() {
         )}
 
         {!filtered && previousGroups.length > 0 && (
-          <section id="session-previous" className="flex scroll-mt-16 flex-col gap-2">
+          <section id="session-previous" className="flex scroll-mt-(--pin-session) flex-col gap-2">
             <button
               type="button"
               onClick={() => setPreviousExpanded((v) => !v)}
               aria-expanded={previousExpanded}
               aria-label={t.journal.togglePreviousSessions}
-              className="flex items-center gap-2 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
+              className="flex items-center gap-2 py-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
             >
               <IconChevronRight
                 size={14}
@@ -704,7 +737,7 @@ export function AdventureDetailView() {
           />
         ) : (
           currentGroup && (
-            <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-16 flex-col gap-2">
+            <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-(--pin-session) flex-col gap-2">
               {currentGroup.sessionEntry &&
                 (editingEntryId === currentGroup.sessionEntry.id ? (
                   <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-ink-900 px-3 py-2">
@@ -732,13 +765,14 @@ export function AdventureDetailView() {
                     }
                     className={`group ${SESSION_BAR}`}
                   >
-                    <div className="relative flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
+                    <div className="relative flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
                       <IconSession size={16} className="shrink-0 text-gold" />
                       <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
                         {currentGroup.sessionEntry.text}
                       </h2>
                       <SessionDate session={currentGroup.sessionEntry} />
                       <LineButtons
+                        inline
                         visible={selectedEntryId === currentGroup.sessionEntry.id}
                         onEdit={() => {
                           setSessionTitleEditValue(currentGroup.sessionEntry!.text);
@@ -784,8 +818,6 @@ export function AdventureDetailView() {
           }}
           onLogged={handleLogged}
           onRolled={handleRolled}
-          notebookOpen={notebookOpen}
-          onOpenNotebook={() => setNotebookOpen(true)}
         />
       </div>
 
@@ -795,7 +827,7 @@ export function AdventureDetailView() {
           room for the keyboard focus ring of what sits at its edge. */}
       <aside
         aria-label={t.journal.playPanelLabel}
-        className="sticky top-14 hidden max-h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto overscroll-contain [scrollbar-gutter:stable] -ml-1.5 py-8 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3"
+        className={`${SIDE_COLUMN} -ml-1.5 hidden gap-6 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3 4xl:col-start-4`}
       >
         <PanelSection id="oracleTool" Icon={IconOracle} title={t.journal.toolOracleTitle}>
           <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
@@ -886,6 +918,10 @@ export function AdventureDetailView() {
     </div>
   );
 }
+
+/** A column beside the journal: pinned below the header, scrolling on its own. */
+const SIDE_COLUMN =
+  "sticky top-14 max-h-[calc(100dvh-var(--spacing-header))] flex-col overflow-y-auto overscroll-contain [scrollbar-gutter:stable] py-5";
 
 /** The last deletion or edit, while its "Undo" toast is up. */
 interface Undoable {

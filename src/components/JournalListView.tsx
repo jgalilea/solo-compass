@@ -11,10 +11,12 @@ import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
 import { parseTitleFromMarkdown, readLonelog } from "../lib/lonelog";
 import { loadMeaningTables } from "../lib/tableGames";
-import { INPUT_CLASS, PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
+import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
 import { ENTRY_TYPES, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
+import { PAGE_CLASS } from "../lib/pageLayout";
 import { normalizeForSearch } from "../lib/text";
 import { FilterChips } from "./FilterChips";
+import { PageHeader } from "./PageHeader";
 import { SearchResultList } from "./journalShared";
 import {
   IconChart,
@@ -191,7 +193,7 @@ export function JournalListView() {
       .then((tables) => {
         const { name, markdown } = buildSampleAdventure(t, tables);
         const adventure = importAdventure(name, readLonelog(markdown));
-        navigate(`/diario/${adventure.id}`);
+        navigate(`/diario/${adventure.id}`, { state: { fromStart: true } });
       })
       .catch(() => undefined);
   }
@@ -201,23 +203,23 @@ export function JournalListView() {
     pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0 || entryMatches.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-      <header className="text-center">
-        <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-          {t.journal.title}
-        </h1>
-        <p className="mt-2 text-sm text-parchment-dim">{t.journal.subtitle}</p>
-        {status === "ready" && hasAnyAdventures && (
-          <button
-            type="button"
-            onClick={() => setStatsOpen(true)}
-            className="mx-auto mt-3 flex items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-          >
-            <IconChart size={15} />
-            {t.journal.stats.allDiceButton}
-          </button>
-        )}
-      </header>
+    <div className={PAGE_CLASS}>
+      <PageHeader
+        title={t.journal.title}
+        subtitle={t.journal.subtitle}
+        actions={
+          status === "ready" && hasAnyAdventures && !showNewAdventureForm ? (
+            <button
+              type="button"
+              onClick={() => setShowNewAdventureForm(true)}
+              className="flex h-10 items-center gap-1.5 rounded-xl bg-gold px-3.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-95"
+            >
+              <IconPlus size={17} />
+              {t.journal.newAdventure}
+            </button>
+          ) : undefined
+        }
+      />
 
       {statsOpen && <AllDiceStatsDialog onClose={() => setStatsOpen(false)} />}
 
@@ -229,6 +231,33 @@ export function JournalListView() {
 
       {status === "ready" && (
         <>
+          {/* Where its button is, and in the empty journal's card. */}
+          {showNewAdventureForm && (
+            <form
+              className="flex flex-wrap items-center gap-2 sm:flex-nowrap"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateAdventure();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setShowNewAdventureForm(false);
+              }}
+            >
+              <input
+                autoFocus
+                value={newAdventureName}
+                onChange={(e) => setNewAdventureName(e.target.value)}
+                placeholder={t.journal.newAdventurePlaceholder}
+                className={`${INPUT_CLASS} basis-full sm:basis-auto`}
+              />
+              <button type="submit" disabled={!newAdventureName.trim()} className={`${PRIMARY_BUTTON_CLASS} flex-1 disabled:opacity-50 sm:flex-none`}>
+                {t.journal.createButton}
+              </button>
+              <button type="button" onClick={() => setShowNewAdventureForm(false)} className={`${SECONDARY_BUTTON_CLASS} flex-1 sm:flex-none`}>
+                {t.common.cancel}
+              </button>
+            </form>
+          )}
           <BackupNote />
           {hasAnyAdventures && (
             <div className="relative flex">
@@ -257,26 +286,14 @@ export function JournalListView() {
           )}
 
           <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
-                {t.journal.adventuresHeading}
-              </h2>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="-m-2 flex items-center gap-1.5 p-2 text-sm text-parchment-dim transition hover:text-gold"
-              >
-                <IconUpload size={16} />
-                {t.journal.importButton}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".md,.markdown,.txt,text/markdown,text/plain"
-                className="hidden"
-                onChange={handleImportFile}
-              />
-            </div>
+            <h2 className="sr-only">{t.journal.adventuresHeading}</h2>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.markdown,.txt,text/markdown,text/plain"
+              className="hidden"
+              onChange={handleImportFile}
+            />
 
             {importError && <p className="text-sm text-no">{importError}</p>}
 
@@ -286,14 +303,34 @@ export function JournalListView() {
                 title={t.journal.noAdventuresTitle}
                 description={t.journal.noAdventuresDescription}
                 action={
-                  // Only with an empty journal, and as a discreet link: never created on its own.
-                  <button
-                    type="button"
-                    onClick={handleOpenSample}
-                    className="mt-1 text-sm text-gold/80 underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:text-gold hover:decoration-gold"
-                  >
-                    {t.sample.offer}
-                  </button>
+                  <>
+                    <div className="mt-2 flex flex-wrap justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowNewAdventureForm(true)}
+                        className={`${PRIMARY_BUTTON_CLASS} flex items-center gap-1.5`}
+                      >
+                        <IconPlus size={16} />
+                        {t.journal.newAdventure}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`${SECONDARY_BUTTON_CLASS} flex items-center gap-1.5`}
+                      >
+                        <IconUpload size={16} />
+                        {t.journal.importButton}
+                      </button>
+                    </div>
+                    {/* Only with an empty journal, and as a discreet link: never created on its own. */}
+                    <button
+                      type="button"
+                      onClick={handleOpenSample}
+                      className="mt-2 p-2 text-sm text-gold/80 underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:text-gold hover:decoration-gold"
+                    >
+                      {t.sample.offer}
+                    </button>
+                  </>
                 }
                 compact
               />
@@ -309,7 +346,7 @@ export function JournalListView() {
             )}
 
             {(pinned.length > 0 || rest.length > 0) && (
-              <ul className="grid gap-2.5 lg:grid-cols-2">
+              <ul className={ADVENTURE_GRID}>
                 {[...pinned, ...rest].map((adventure) => (
                   <AdventureRow
                     key={adventure.id}
@@ -332,35 +369,24 @@ export function JournalListView() {
               </ul>
             )}
 
-            {showNewAdventureForm ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  value={newAdventureName}
-                  onChange={(e) => setNewAdventureName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCreateAdventure()}
-                  placeholder={t.journal.newAdventurePlaceholder}
-                  className={INPUT_CLASS}
-                />
-                <button type="button" onClick={handleCreateAdventure} className={PRIMARY_BUTTON_CLASS}>
-                  {t.journal.createButton}
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowNewAdventureForm(true)}
-                className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ink-border py-3 text-base text-parchment-dim transition hover:border-gold/50 hover:text-gold"
-              >
-                <IconPlus size={16} />
-                {t.journal.newAdventure}
-              </button>
-            )}
-
             {hasAnyAdventures && !activeAdventureId && (
               <p className="text-center text-sm text-parchment-faint">
                 {t.journal.noActiveAdventureNote}
               </p>
+            )}
+
+            {/* What's done once in a while, below the list. */}
+            {hasAnyAdventures && !query && (
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className={QUIET_BUTTON}>
+                  <IconUpload size={16} />
+                  {t.journal.importButton}
+                </button>
+                <button type="button" onClick={() => setStatsOpen(true)} className={QUIET_BUTTON}>
+                  <IconChart size={16} />
+                  {t.journal.stats.allDiceButton}
+                </button>
+              </div>
             )}
 
             <SafariStorageNote />
@@ -415,7 +441,7 @@ export function JournalListView() {
                 <span className="text-parchment-faint">{archivedAdventures.length}</span>
               </button>
               {showArchivedContents && (
-                <ul className="grid gap-2.5 lg:grid-cols-2">
+                <ul className={ADVENTURE_GRID}>
                   {archivedAdventures.map((adventure) => (
                     <li key={adventure.id}>
                       <Link
@@ -425,7 +451,9 @@ export function JournalListView() {
                         <span className="min-w-0 flex-1 truncate text-base font-medium text-parchment">
                           {adventure.name}
                         </span>
-                        <StatusBadge isArchived t={t} />
+                        <span className="shrink-0 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+                          {t.journal.statusArchived}
+                        </span>
                         <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40" />
                       </Link>
                     </li>
@@ -441,26 +469,9 @@ export function JournalListView() {
 }
 
 const ENTRY_RESULTS_LIMIT = 30;
-
-// "Paused" isn't a stored state: it's just how any ongoing adventure
-// that isn't the active one right now looks — hence this component
-// gets already-computed booleans, not the raw status.
-function StatusBadge({
-  isPaused = false,
-  isArchived = false,
-  t,
-}: {
-  isPaused?: boolean;
-  isArchived?: boolean;
-  t: { journal: { statusPaused: string; statusArchived: string } };
-}) {
-  if (!isPaused && !isArchived) return null;
-  return (
-    <span className="shrink-0 rounded-full border border-ink-border px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-      {isArchived ? t.journal.statusArchived : t.journal.statusPaused}
-    </span>
-  );
-}
+const ADVENTURE_GRID = "grid gap-2.5 lg:grid-cols-2 3xl:grid-cols-3";
+const QUIET_BUTTON =
+  "flex h-10 flex-auto items-center justify-center gap-1.5 rounded-xl border border-ink-border px-2.5 text-[13px] text-parchment-dim sm:flex-none sm:px-3 sm:text-sm transition hover:border-gold/50 hover:text-gold";
 
 function AdventureRow({
   adventure,
@@ -532,14 +543,15 @@ function AdventureRow({
             {new Date(adventure.updatedAt).toLocaleDateString(t.dateLocale, { day: "numeric", month: "short", year: "numeric" })}
           </span>
         </span>
-        <StatusBadge isPaused={!isActive} t={t} />
+        {/* Only the active one is marked: any other ongoing one is simply
+            waiting, and saying so on each took the width of its name. */}
         {isActive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold">
             <IconCheck size={12} />
             {t.journal.activeLabel}
           </span>
         )}
-        <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40 transition group-has-[a:hover]:translate-x-0.5 group-has-[a:hover]:text-gold" />
+        <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40 transition max-sm:hidden group-has-[a:hover]:translate-x-0.5 group-has-[a:hover]:text-gold" />
       </Link>
     </li>
   );

@@ -50,7 +50,7 @@ export function ActionMenu({ label, items, compact = false }: { label: string; i
         aria-haspopup="menu"
         aria-expanded={open}
         className={[
-          compact ? "p-2 transition" : "-m-1 rounded-full p-1.5 transition",
+          compact ? "p-2 transition pointer-coarse:px-3" : "flex size-10 items-center justify-center rounded-full transition",
           open ? (compact ? "text-gold" : "bg-ink-700 text-parchment") : "text-parchment-dim hover:text-gold",
         ].join(" ")}
       >

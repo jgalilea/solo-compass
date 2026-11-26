@@ -30,22 +30,7 @@ export function BackupNote() {
   }
 
   return (
-    <div role="note" className="relative flex items-start gap-2.5 rounded-2xl border border-no/50 bg-no/10 py-3 pl-3.5 pr-10">
-      <IconAlertTriangle size={18} className="mt-0.5 shrink-0 text-no" />
-      <div className="flex flex-col items-start gap-2 text-sm text-parchment">
-        <p>
-          <span className="font-semibold">{t.backupNote.title}</span> {t.backupNote.text}
-        </p>
-        <button
-          type="button"
-          onClick={() => void exportAll()}
-          className="flex items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment transition hover:border-gold/50 hover:text-gold"
-        >
-          <IconDownload size={15} />
-          {t.backupNote.button}
-        </button>
-        {failed && <p className="text-xs text-no">{t.backupNote.failed}</p>}
-      </div>
+    <div role="note" className="rounded-2xl border border-no/50 bg-no/10 px-3.5 py-3 text-sm text-parchment">
       <button
         type="button"
         onClick={() => {
@@ -53,10 +38,23 @@ export function BackupNote() {
           setHidden(true);
         }}
         aria-label={t.common.close}
-        className="absolute right-1.5 top-1.5 p-2 text-parchment-faint transition hover:text-parchment"
+        className="float-right -mr-2.5 -mt-2 flex size-10 items-center justify-center text-parchment-faint transition hover:text-parchment"
       >
-        <IconClose size={15} />
+        <IconClose size={16} />
       </button>
+      <p>
+        <IconAlertTriangle size={16} className="mr-1.5 inline align-[-0.15em] text-no" />
+        <span className="font-semibold">{t.backupNote.title}</span> {t.backupNote.text}
+      </p>
+      <button
+        type="button"
+        onClick={() => void exportAll()}
+        className="mt-2 flex h-10 items-center gap-1.5 rounded-xl border border-ink-border px-3 text-sm font-medium text-parchment transition hover:border-gold/50 hover:text-gold"
+      >
+        <IconDownload size={16} />
+        {t.backupNote.button}
+      </button>
+      {failed && <p className="mt-2 text-xs text-no">{t.backupNote.failed}</p>}
     </div>
   );
 }

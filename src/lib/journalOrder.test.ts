@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { insertEntryAfter, moveEntryIn, placeAfter, placeMoved } from "./journalOrder";
+import { appendEntry, compareEntries, insertEntryAfter, moveEntryIn, placeAfter, placeMoved } from "./journalOrder";
 import type { JournalEntry } from "./lonelog";
 
 function entry(id: string, timestamp: number): JournalEntry {
@@ -14,6 +14,32 @@ function order(sorted: JournalEntry[], id: string, placement: ReturnType<typeof 
     .sort((a, b) => a.timestamp - b.timestamp)
     .map((e) => e.id);
 }
+
+describe("appendEntry", () => {
+  it("never shares the timestamp of what it follows", () => {
+    // A question and its roll, logged in the same millisecond.
+    const journal = appendEntry(appendEntry([], entry("q", 100)), entry("roll", 100));
+    expect(journal.map((e) => e.timestamp)).toEqual([100, 101]);
+    // Nor goes before it (a device's clock set back).
+    expect(appendEntry(journal, entry("late", 50)).at(-1)!.timestamp).toBe(102);
+  });
+
+  it("leaves other adventures out of it", () => {
+    const other = { ...entry("x", 500), adventureId: "b" };
+    expect(appendEntry([other], entry("a", 100)).at(-1)!.timestamp).toBe(100);
+  });
+});
+
+describe("compareEntries", () => {
+  it("puts the question before its answer when they share a timestamp", () => {
+    const tied: JournalEntry[] = [
+      { ...entry("then", 100), kind: "consequence" },
+      { ...entry("roll", 100), kind: "roll" },
+      { ...entry("q", 100), kind: "question" },
+    ];
+    expect(tied.sort(compareEntries).map((e) => e.id)).toEqual(["q", "roll", "then"]);
+  });
+});
 
 describe("placeAfter", () => {
   const journal = [entry("a", 100), entry("b", 200), entry("c", 300)];

@@ -60,15 +60,23 @@
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
+  /* Beyond Tailwind's own: a big monitor (1920) and an ultrawide one
+     (2200 and up), where the adventure's notebook gets its own column. */
+  --breakpoint-3xl: 120rem;
+  --breakpoint-4xl: 137.5rem;
+
   /* Height of the phone/tablet bottom bar (without the safe area).
      Whatever rests on it (journal composer, toasts) is positioned with
      this same value: if they don't match, the composer slips under the
      bar and "changes size" when the scroll reaches the end. */
   --spacing-nav: 3.75rem;
 
-  /* Height of a session's bar in the journal, pinned at the top while
-     you read its entries; the scene you're in pins right below it. */
-  --spacing-session: 3.75rem;
+  /* Height of the app's header on desktop, of an adventure's bar (its
+     name and buttons) and of a session's, all pinned at the top while you
+     read; the scene you're in pins right below them. */
+  --spacing-header: 3.5rem;
+  --spacing-adventure: 3.25rem;
+  --spacing-session: 3rem;
 
   --color-ink-950: #0b0c10;
   --color-ink-900: #101218;
@@ -473,24 +481,39 @@ body {
   touch-action: pan-y;
 }
 
-/* The journal's scene headings pin below their session's bar (at the
-   top when there's no session), and below the desktop header (h-14).
-   Every scene of a session pins at the same place: the next one covers
-   the last, so it's always the one you're reading. */
-.scene-bar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-.session-entries .scene-bar {
-  top: var(--spacing-session);
+/* What's pinned at the top of an adventure, from the top down: the
+   app's header (desktop only), the adventure's bar, its session's and
+   the scene being read. Every scene of a session pins at the same place:
+   the next one covers the last, so it's always the one you're reading. */
+:root {
+  --pin-adventure: 0px;
+  --pin-session: var(--spacing-adventure);
 }
 @media (width >= 64rem) {
-  .scene-bar {
-    top: 3.5rem;
+  :root {
+    --pin-adventure: var(--spacing-header);
+    --pin-session: calc(var(--spacing-header) + var(--spacing-adventure));
   }
+}
+.scene-bar {
+  position: sticky;
+  top: var(--pin-session);
+  /* Over an entry's floating buttons (z-10), under its session's bar. */
+  z-index: 15;
+}
+.session-entries .scene-bar {
+  top: calc(var(--pin-session) + var(--spacing-session));
+}
+
+/* A phone on its side: hardly any height, so the bottom bar is a line
+   (icon and name side by side) and only the adventure's bar stays pinned. */
+@media (height < 30rem) and (width < 64rem) {
+  :root {
+    --spacing-nav: 2.75rem;
+  }
+  .session-bar,
   .session-entries .scene-bar {
-    top: calc(3.5rem + var(--spacing-session));
+    position: static;
   }
 }
 

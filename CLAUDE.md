@@ -105,9 +105,14 @@ writes what `usePlayActions` logs), and an adventure's menu opens it
 that way (`?aventura=<id>`). With one picked, the rolls an imported
 journal came with (the sample's) are listed too, read from its entries
 and never stored (`importedRolls.ts`). Theme, mode, language, backup and credits all
-live in one header button (`SettingsDialog`, opening `SettingsPanel`). Which adventure rolls are
+live in one header button (`SettingsDialog`, opening `SettingsPanel`;
+on phones a row at its top jumps to each part); inside an adventure on
+phone and tablet, where the app's header gives way to the adventure's
+bar, the same dialog opens from that bar's ⋯ menu (`settingsOpen.ts`,
+an open store like `guide.ts`, both on `openStore.ts`). Which adventure rolls are
 being logged to is shown in one place only: the header chip
-(`ActiveAdventureChip`), the same on every screen.
+(`ActiveAdventureChip`), the same on every screen (inside an
+adventure, its bar says whether it's the active one).
 Context providers are nested in a fixed order in `App.tsx`; `LocaleProvider`
 wraps `AppErrorBoundary` (not the other way round) so the error boundary can
 render its fallback in the right language even if something below it throws.
@@ -272,8 +277,10 @@ Everything else stays a note and is only *drawn* differently
 `[DUNGEON STATUS]`/`[RESOURCES]` markers and `Rd1` rounds; a
 consequence never joins a scene or a block marker). In the journal
 every open session's bar (`SESSION_BAR`) and the scene being read
-(`.scene-bar` in `index.css`) stay pinned at the top, so old entries
-always show where they belong. The front matter
+(`.scene-bar` in `index.css`) stay pinned below the adventure's bar
+(`--pin-adventure`, `--pin-session` in `index.css`; on a phone held
+sideways only the adventure's bar is), so old entries always show
+where they belong. The front matter
 carries the campaign header (`title`, `start_date`, `last_update`) and
 import names the adventure from it (`parseTitleFromMarkdown`). **Used**: the
 core and the Combat, Dungeon Crawling, Resource Tracking, Dice and Cards
@@ -378,8 +385,9 @@ visible journal or notebook feature, work it into the sample.
 ### Notebook: pinned notes, characters and places
 
 Each adventure has a notebook (`AdventureNotebook.tsx`): in the left
-column at `xl` (under the session index), a sheet from the composer
-(its notebook button, always in reach) below that.
+column at `xl` (under the session index; a column of its own at `4xl`),
+a sheet below that, opened from the adventure's bar (its notebook
+button, pinned with the bar beside the sessions, so always in reach).
 
 - **Pinned notes**: `notes` on `Adventure` (so they ride along in the
   backup). Edited in place, saved after a short pause; `- [ ]` lines
@@ -456,10 +464,15 @@ descriptions (`t.sample.descriptions`).
 Lonelog is the export format, not the on-screen view: entries render with
 an icon per kind, and `buildEntryBlocks` (`src/lib/journalUi.ts`) groups
 a question + its roll + the following consequences into one card.
-The journal's order is the entries' `timestamp` alone: "Write below"
+The journal's order is the entries' `timestamp`, and for the same
+millisecond their kind (`compareEntries`: question before its roll,
+roll before its consequence; storage hands back ties in id order). A new entry
+at the end is never older than the last (`appendEntry`). "Write below"
 (an insertion point in `useJournal` that every `addEntry` honours,
 tools included) and moving an entry up/down place it between its
 neighbours (`journalOrder.ts`), nudging later ones when there's no room.
+A lone entry that tells (note, action, dialogue) is drawn without a
+frame; blocks and rolls keep their card.
 Oracle answers are colored using the linked history entry, falling back to
 parsing the roll text (`splitRollText`) for imported journals. Character
 and place tags render as chips (`TaggedText`); tapping one opens it in
@@ -504,7 +517,11 @@ one with no published licence (MUNE).
 optional `game` attribution/link, favorites, and search. Built-in tables
 come one game at a time, one folding block per game on the Tables screen
 (which blocks are open is a per-device localStorage setting,
-`tableSections.ts`).
+`tableSections.ts`), listed under "Collections" after "Yours" (generators
+and own tables), each a bordered list (`SectionList`); from `2xl` the
+blocks are tiles and the open one spreads below them (`FoldingSection`).
+An open block's heading stays pinned while its tables scroll by.
+A table's row (`TableRow`) rolls with a button that names its die.
 
 **Each game's data is loaded on its own, never in the main bundle.**
 `src/lib/tableData/<game>.ts` holds its tables with both languages side
@@ -585,8 +602,12 @@ extra results are joined with "→" and "·", never "->" (the journal
 splits a roll's text at its last "->").
 
 The Dice screen (`DiceView`, `/dados`) is the same `DiceTool` with every
-die: the built-in ones (`BUILTIN_DICE`) and the player's own (a name and
-a formula, `savedRolls.ts`), where they're made and starred. The game
+die: the built-in ones (`BUILTIN_DICE`, large tiles with their outline,
+`DieOutline`) and the player's own (a name and
+a formula, `savedRolls.ts`), where they're made and starred (the
+built-in favourites as chips under "On your game table"). Wide enough
+(`@xl`), `DiceTool` puts the dice on the left and the tray on the right;
+on a phone "Log it" stays pinned above the nav while rolls wait. The game
 table's `DiceTool` shows only the favorite dice, built-in
 (`diceFavorites.ts`, localStorage, all of them until changed; in the
 backup's settings) or their own; a typed formula can be saved from it
@@ -720,9 +741,10 @@ the submit names the form) from `Dialog.tsx`. Don't style a panel by hand.
 ### Responsive
 
 Mobile-first; `md` widens content, `lg` (desktop) moves the nav into a
-sticky header (exactly `h-14`; sticky columns below it use `top-14`; a
+sticky header (exactly `h-14`, `--spacing-header`; sticky columns below it use `top-14`; a
 `1fr auto 1fr` grid so the tabs never shift when the adventure chip
-appears),
+appears; on phone and tablet it's hidden inside an adventure, whose
+own bar, `AdventureHeader`, is pinned at the top instead),
 hides the bottom bar and uses two columns where it helps (oracle
 form/result, tables list/result panel). An adventure becomes a workspace:
 journal + game table panel at `lg`, plus a session index on the left at
@@ -731,9 +753,19 @@ Every block of that left column (sessions, pinned notes, cast, threads,
 inventory) folds under its heading (`FoldingHeading`), and each
 session's scenes show only for the current one until opened.
 Every page uses the same content width as the header
-(`max-w-xl md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]`), so switching
-tabs doesn't make the content jump; `2xl` means more columns, not
-longer lines. The mobile bottom nav has a fixed height
+(`PAGE_WIDTH` in `pageLayout.ts`, up to `4xl:max-w-[152rem]`; a screen's
+frame is `PAGE_CLASS` and its title `PageHeader`: left-aligned, with
+its actions on the right), so switching
+tabs doesn't make the content jump; `2xl`, `3xl` (1920px) and `4xl`
+(2200px) mean more columns, not longer lines (journal text stops at
+48rem). An adventure opens at its end (the sample, opened with
+`state.fromStart`, at its beginning); `main.tsx` sets
+`history.scrollRestoration` to manual, since closing a dialog or menu
+goes back in history and the browser would otherwise put the page
+back where it was. Touch targets are 40px or more on a coarse pointer
+(`pointer-coarse:`); a phone held sideways (`height < 30rem`) gets a
+one-row nav. `useMediaQuery` is for the few things CSS can't do (a
+different tree, a menu item). The mobile bottom nav has a fixed height
 (`--spacing-nav` in `index.css`); anything resting on it (composer,
 toasts) offsets by that same variable. Keep the journal free of fixed chrome on phones (one-row composer,
 tools in sheets, entry buttons only on tap/hover). Components that live
@@ -834,13 +866,15 @@ import `locales/*` directly: tests get both through
 `i18n/allDictionaries.ts`, and the table themes' names (read in either
 language by `customTables.ts`) live in `i18n/tableThemeNames.ts`.
 
-### Active vs. paused adventure
+### Active adventure
 
 Only one adventure can be "active" at a time (tracked by id in
-`localStorage`, `activeAdventure.ts`). "Paused" is **not** a stored state —
-it's purely a derived display: any non-archived adventure that isn't the
-current active one renders as paused. Don't add a `paused` field to the
-adventure model; derive it the same way the existing views do.
+`localStorage`, `activeAdventure.ts`). Any other non-archived adventure
+is simply not active: "paused" is **not** a stored state, and no longer
+shown (every adventure but one was, so it said nothing). Don't add a
+`paused` field to the adventure model. Inside an adventure its bar
+shows the active one with a dot and offers "Activate" otherwise (only
+its icon on a narrow phone; the ⋯ menu says it in words).
 
 ## Roadmap
 

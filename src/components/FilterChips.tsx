@@ -21,7 +21,7 @@ export function FilterChips<T extends string>({
 }) {
   const chip = (selected: boolean) =>
     [
-      "shrink-0 rounded-full border px-3 py-1.5 text-sm transition",
+      "shrink-0 rounded-full border px-3 py-1.5 text-sm transition pointer-coarse:py-2",
       // Filled when selected: not colour alone (some themes' gold is near-white).
       selected
         ? "border-gold bg-gold font-medium text-ink-950"

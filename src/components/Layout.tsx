@@ -11,10 +11,13 @@ import { useTableDiceFill } from "../hooks/useTableDiceFill";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { focusHotkeyTarget, isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
 import { KOFI_URL } from "../lib/support";
+import { PAGE_WIDTH } from "../lib/pageLayout";
 import { preloadable, preloadAll } from "../lib/preloadable";
 import { watchKeepScreenOn } from "../lib/wakeLock";
 
 const GuideDialog = preloadable(() => import("./GuideDialog").then((m) => m.GuideDialog));
+
+const IN_ADVENTURE = /^\/diario\/./;
 
 export function Layout() {
   const { t } = useLocaleContext();
@@ -27,8 +30,9 @@ export function Layout() {
   // previous screen's scroll was inherited (e.g. history opened halfway
   // down the list). HashRouter doesn't support <ScrollRestoration>,
   // which is only for data routers.
+  // An adventure opens where it was left (AdventureDetailView).
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!IN_ADVENTURE.test(location.pathname)) window.scrollTo(0, 0);
   }, [location.pathname]);
 
   // Four sections: the full history has no tab of its own — it's
@@ -110,6 +114,11 @@ export function Layout() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Inside an adventure, on phone and tablet, its own bar (way back, name,
+  // search, menu) takes this header's place: two of them left little
+  // room to read, and Settings is one tab away.
+  const inAdventure = IN_ADVENTURE.test(location.pathname);
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
       {/* On desktop (lg+) the nav moves up into the header, which stays
@@ -124,8 +133,10 @@ export function Layout() {
       {/* Three columns on desktop (1fr · auto · 1fr): the tabs always stay
           centred and nothing moves when the adventure chip appears or
           disappears depending on the screen. */}
-      <header className="border-b border-ink-border/70 px-4 py-3 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0">
-        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 text-parchment sm:px-4 md:max-w-3xl lg:grid lg:max-w-7xl lg:grid-cols-[1fr_auto_1fr] lg:gap-6 2xl:max-w-[110rem]">
+      <header
+        className={`border-b border-ink-border/70 py-2 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0 ${inAdventure ? "max-lg:hidden" : ""}`}
+      >
+        <div className={`${PAGE_WIDTH} flex items-center justify-between gap-3 px-4 text-parchment lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-6`}>
           <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
             {/* On phones only the logo, so the adventure chip has room
@@ -154,7 +165,7 @@ export function Layout() {
               </Link>
             ))}
           </nav>
-          <div className="flex min-w-0 items-center justify-end gap-3 lg:gap-4">
+          <div className="flex min-w-0 items-center justify-end gap-1.5 lg:gap-2">
             <ActiveAdventureChip />
             {/* Ko-fi, as a quiet icon beside Settings and in the same
                 style, at every size: in sight on phones too without
@@ -165,7 +176,7 @@ export function Layout() {
               rel="noreferrer"
               aria-label={t.support.button}
               title={t.support.button}
-              className="-m-1.5 shrink-0 p-1.5 text-parchment-dim transition hover:text-gold"
+              className="ml-1 flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-gold"
             >
               <IconCoffee size={22} />
             </a>
@@ -192,14 +203,14 @@ export function Layout() {
 
       <nav className="sticky bottom-0 z-40 border-t lg:hidden border-ink-border bg-ink-950/90 backdrop-blur">
         {/* Fixed height (see --spacing-nav in index.css; -1px for the border). */}
-        <div className="mx-auto flex h-[calc(var(--spacing-nav)-1px)] max-w-xl md:max-w-3xl">
+        <div className="mx-auto flex h-[calc(var(--spacing-nav)-1px)] max-w-xl md:max-w-3xl [@media(height<30rem)]:max-w-none">
           {tabs.map(({ to, label, Icon, isActive }) => (
             <Link
               key={label}
               to={to}
               aria-current={isActive ? "page" : undefined}
               className={[
-                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition",
+                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition [@media(height<30rem)]:flex-row [@media(height<30rem)]:gap-1.5",
                 isActive ? "text-gold font-medium" : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
             >

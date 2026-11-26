@@ -26,7 +26,7 @@ export function ActiveAdventureChip() {
         to="/diario"
         title={t.journal.noActiveChipTitle}
         aria-label={t.journal.noActiveChipTitle}
-        className="flex min-w-0 items-center gap-1.5 rounded-full border border-dashed border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
+        className="flex min-w-0 items-center gap-1.5 rounded-full border border-dashed border-ink-border px-3 py-1.5 text-xs pointer-coarse:py-2 text-parchment-dim transition hover:border-gold/50 hover:text-gold"
       >
         <IconJournal size={14} className="shrink-0" />
         <span className="truncate">{t.journal.noActiveChip}</span>
@@ -40,7 +40,7 @@ export function ActiveAdventureChip() {
       to={`/diario/${active.id}`}
       title={interpolate(t.journal.activeAdventureNote, { name: active.name })}
       aria-label={t.journal.goToActiveAdventure}
-      className="flex min-w-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-medium text-gold transition hover:bg-gold/20"
+      className="flex min-w-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs pointer-coarse:py-2 font-medium text-gold transition hover:bg-gold/20"
     >
       <IconJournal size={14} className="shrink-0" />
       <span className="truncate">{active.name}</span>

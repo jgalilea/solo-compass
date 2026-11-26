@@ -5,10 +5,40 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-25 (Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-26 (repaso de diseño para móvil, tablet, escritorio y ultrawide, 1.6.0; Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Repaso de diseño de todas las pantallas (2026-11-26, 1.6.0; capturas antes y
+  después de 360 a 3440 px, los 5 temas en claro y oscuro):
+  - Dos fallos que ya estaban en `main`: una pregunta y su tirada del mismo
+    milisegundo salían al revés al recargar (y en el .md); ahora el orden
+    desempata por tipo (`compareEntries`) y una entrada al final nunca es más
+    antigua que la anterior (`appendEntry`). Y en el móvil, elegir una sesión
+    en su menú no llevaba a ella: cerrar el menú vuelve atrás en el historial y
+    el navegador restauraba el scroll (`history.scrollRestoration = "manual"`).
+  - Aventura: se abre por el final (la de ejemplo, por el principio); en móvil
+    y tablet su barra (volver, nombre, buscar, sesiones, cuaderno, ⋯) queda
+    fija y sustituye a la cabecera de la app; Ajustes pasa al ⋯. El cuaderno
+    vuelve arriba (bajó en la 1.5.1 porque la cabecera se perdía al bajar), y
+    «Activar» se queda en su icono en un móvil estrecho. Lo narrado va sin
+    recuadro; las tiradas y los bloques, en tarjeta. Buscar se abre encima.
+  - Dados: los dados primero, en fichas con su silueta (`DieOutline`);
+    «Apuntar» fijo sobre la barra del móvil; favoritos como fichas en «En tu
+    mesa de juego». Tablas: «Tuyas» y «Colecciones» como listas
+    (`SectionList`), filas compactas con el dado en el botón, el nombre de la
+    colección abierta fijo; desde `2xl`, colecciones en fichas. Lista de
+    aventuras: «Nueva aventura» arriba; fuera «Pausada». Historial y Ajustes
+    (saltos a cada parte en el móvil) más directos.
+  - Base común: `PageHeader`, `PAGE_WIDTH`/`PAGE_CLASS`, puntos `3xl` (1920) y
+    `4xl` (2200, el cuaderno con columna propia), barras fijas con
+    `--pin-adventure`/`--pin-session`, objetivos táctiles de 40 px o más
+    (`pointer-coarse:`), barra inferior en una fila con el móvil en horizontal.
+  - Pensado y descartado: devolver al móvil los tres botones de herramientas
+    (repetirían los iconos de la barra de navegación justo debajo y quitarían
+    un 25 % a la casilla; la pregunta ya va al oráculo desde la casilla) y que
+    el icono de «Tirar» sea el de la última herramienta (confunde a quien
+    quiere otra). Abierto: poner nombre a los tres botones de la tablet.
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

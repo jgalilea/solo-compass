@@ -83,7 +83,6 @@ export interface Dictionary {
   };
   dice: {
     title: string;
-    subtitle: string;
     loggingTo: string;
     noAdventure: string;
     loggedIn: string;
@@ -106,7 +105,6 @@ export interface Dictionary {
     trayHint: string;
     saveToHistory: string;
     builtinTitle: string;
-    customTitle: string;
     favoritesHint: string;
     noFavorites: string;
     toolLabel: string;
@@ -472,6 +470,8 @@ export interface Dictionary {
     resultColumn: string;
     authorLabel: string;
     licenseLabel: string;
+    ownHeading: string;
+    gamesHeading: string;
     generatorsHeading: string;
     generatorsIntro: string;
     generatorNew: string;
@@ -531,7 +531,6 @@ export interface Dictionary {
     /** With an adventure picked, or the free rolls. */
     subtitleAdventure: string;
     subtitleFree: string;
-    swipeHint: string;
     showMore: string;
     backToOracle: string;
     backToDice: string;
@@ -627,7 +626,6 @@ export interface Dictionary {
     searchMoreResults: string;
     searchEntriesHeading: string;
     backToList: string;
-    statusPaused: string;
     statusArchived: string;
     archiveAdventure: string;
     unarchiveAdventure: string;

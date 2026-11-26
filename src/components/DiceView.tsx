@@ -6,8 +6,10 @@ import { interpolate } from "../lib/i18n";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { isRollable, savedRollLabel, type SavedRoll } from "../lib/savedRolls";
 import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
+import { PAGE_CLASS } from "../lib/pageLayout";
 import { loadFavoriteDice, saveFavoriteDice } from "../lib/diceFavorites";
 import { DiceTool, type DiceToolHandle } from "./PlayTools";
+import { PageHeader } from "./PageHeader";
 import { RecentRolls } from "./RecentRolls";
 import { Toast } from "./Toast";
 import { IconCheck, IconDice, IconPencil, IconPlus, IconStar, IconTrash } from "./icons/Icons";
@@ -27,27 +29,28 @@ export function DiceView() {
   const [logged, setLogged] = useState(0);
   const dismissLogged = useCallback(() => setLogged(0), []);
 
-  // On desktop it fits the screen (tool, latest rolls, my dice): the
-  // usual bottom margin alone made it scroll a few pixels.
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 lg:pb-4 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-      <header className="text-center">
-        <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.dice.title}</h1>
-        <p className="mt-2 text-sm text-parchment-dim">{t.dice.subtitle}</p>
-      </header>
+    <div className={PAGE_CLASS}>
+      <PageHeader
+        title={t.dice.title}
+        subtitle={active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
+      />
 
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-12">
-        <div className="flex flex-col gap-6">
-          <section className="flex flex-col gap-3 rounded-3xl border border-ink-border bg-ink-800/70 p-5">
-            <p className="text-xs text-parchment-dim">
-              {active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
-            </p>
-            <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" handle={tool} />
-          </section>
-          {/* As on the Oracle screen: the latest dice rolls, and the full history. */}
-          <RecentRolls kind="dados" limit={5} onRepeat={(text) => tool.current?.repeat(text)} />
+      <div className="flex flex-col gap-5 md:gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] 3xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)_minmax(0,28rem)]">
+        <section className="rounded-3xl border border-ink-border bg-ink-800/50 p-4 sm:p-5">
+          <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" handle={tool} />
+        </section>
+        {/* As on the Oracle screen: the latest dice rolls, and the full history. */}
+        <RecentRolls
+          kind="dados"
+          limit={5}
+          wideLimit={9}
+          onRepeat={(text) => tool.current?.repeat(text)}
+          className="lg:col-start-1 3xl:col-start-2"
+        />
+        <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 3xl:col-start-3 3xl:row-span-1">
+          <SavedRollsPanel />
         </div>
-        <SavedRollsPanel />
       </div>
 
       {logged > 0 && active && (
@@ -78,28 +81,23 @@ function SavedRollsPanel() {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
-        <IconDice size={15} className="text-gold" />
-        {t.dice.savedTitle}
-      </h2>
-      <p className="text-xs text-parchment-dim">{t.dice.favoritesHint}</p>
-      {error && <p className="text-xs text-no">{error}</p>}
-
-      <h3 className="text-[0.7rem] font-medium text-parchment-faint">{t.dice.builtinTitle}</h3>
-      <BuiltinFavorites />
-      <div className="mt-1 flex items-center gap-2">
-        <h3 className="min-w-0 flex-1 text-[0.7rem] font-medium text-parchment-faint">{t.dice.customTitle}</h3>
+      <div className="flex items-center gap-2">
+        <h2 className="flex min-w-0 flex-1 items-center gap-2 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+          <IconDice size={15} className="text-gold" />
+          {t.dice.savedTitle}
+        </h2>
         {editing !== "new" && (
           <button
             type="button"
             onClick={() => setEditing("new")}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10"
+            className="-my-2 flex h-10 items-center gap-1 rounded-lg px-2 text-sm font-medium text-gold transition hover:bg-gold/10"
           >
-            <IconPlus size={14} />
+            <IconPlus size={15} />
             {t.dice.newRoll}
           </button>
         )}
       </div>
+      {error && <p className="text-xs text-no">{error}</p>}
 
       {editing === "new" && (
         <SavedRollForm
@@ -135,7 +133,7 @@ function SavedRollsPanel() {
                   aria-pressed={roll.favorite}
                   aria-label={interpolate(roll.favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, { name: savedRollLabel(roll) })}
                   title={roll.favorite ? t.dice.favoriteRemoveHint : t.dice.favoriteAddHint}
-                  className={`-m-1 shrink-0 p-1 transition ${roll.favorite ? "text-gold" : "text-parchment-faint hover:text-gold"}`}
+                  className={`-m-2 shrink-0 p-2.5 transition ${roll.favorite ? "text-gold" : "text-parchment-faint hover:text-gold"}`}
                 >
                   <IconStar size={16} filled={roll.favorite} />
                 </button>
@@ -154,7 +152,7 @@ function SavedRollsPanel() {
                   onClick={() => setEditing(roll.id)}
                   aria-label={interpolate(t.dice.edit, { name: savedRollLabel(roll) })}
                   title={interpolate(t.dice.edit, { name: savedRollLabel(roll) })}
-                  className="shrink-0 rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
+                  className="shrink-0 rounded-md p-2 text-parchment-dim transition hover:text-gold"
                 >
                   <IconPencil size={15} />
                 </button>
@@ -166,7 +164,7 @@ function SavedRollsPanel() {
                   }}
                   aria-label={interpolate(t.dice.delete, { name: savedRollLabel(roll) })}
                   title={interpolate(t.dice.delete, { name: savedRollLabel(roll) })}
-                  className="shrink-0 rounded-md p-1.5 text-parchment-dim transition hover:text-no"
+                  className="shrink-0 rounded-md p-2 text-parchment-dim transition hover:text-no"
                 >
                   <IconTrash size={15} />
                 </button>
@@ -175,6 +173,14 @@ function SavedRollsPanel() {
           )}
         </ul>
       )}
+
+      {/* Which dice the journal's game table shows: chips to tick, not
+          dice to roll, hence a place of their own. */}
+      <div className="mt-2 flex flex-col gap-2">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.dice.builtinTitle}</h3>
+        <p className="text-xs text-parchment-dim">{t.dice.favoritesHint}</p>
+        <BuiltinFavorites />
+      </div>
 
       {deleted && (
         <Toast
@@ -217,9 +223,9 @@ function BuiltinFavorites() {
             aria-label={interpolate(favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, { name: die })}
             title={favorite ? t.dice.favoriteRemoveHint : t.dice.favoriteAddHint}
             className={[
-              "flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition",
+              "flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium transition pointer-coarse:h-10",
               favorite
-                ? "border-gold/50 text-parchment hover:border-gold"
+                ? "border-gold/50 bg-gold/10 text-parchment hover:border-gold"
                 : "border-ink-border text-parchment-faint hover:border-gold/50 hover:text-parchment",
             ].join(" ")}
           >

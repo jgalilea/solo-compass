@@ -37,7 +37,7 @@ export function JournalSearchPanel({
   return (
     <section
       aria-label={t.journal.searchInJournal}
-      className="animate-fade-up flex flex-col gap-2.5 rounded-2xl border border-ink-border bg-ink-800/60 p-3"
+      className="animate-fade-up flex flex-col gap-2.5 rounded-2xl border border-ink-border bg-ink-800 p-3 shadow-2xl"
     >
       <div className="relative flex">
         <IconSearch

@@ -111,7 +111,7 @@ export function CardControls({
           type="button"
           onClick={draw}
           disabled={left === 0}
-          className="flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold transition hover:bg-gold/20 active:scale-95 disabled:border-ink-border disabled:bg-transparent disabled:text-parchment-dim/50"
+          className="flex h-10 items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-3.5 text-sm pointer-coarse:h-11 font-medium text-gold transition hover:bg-gold/20 active:scale-95 disabled:border-ink-border disabled:bg-transparent disabled:text-parchment-dim/50"
         >
           <IconCards size={16} />
           {t.dice.draw}

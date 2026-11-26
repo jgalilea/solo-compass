@@ -20,6 +20,12 @@ window.addEventListener('vite:preloadError', (event) => {
   window.location.reload()
 })
 
+// Where each screen opens is the app's to say (Layout, AdventureDetailView).
+// Left to the browser, closing a menu or a dialog, which goes back one
+// entry (modalHistory.ts), put the page back where it was when it opened:
+// picking a session in a phone's menu went nowhere.
+window.history.scrollRestoration = 'manual'
+
 // Only the language in use is downloaded; the screen waits for it.
 // Not a top-level await: the dictionary's chunk imports from this one,
 // which would never finish evaluating while waiting for it.

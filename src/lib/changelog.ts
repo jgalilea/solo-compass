@@ -25,6 +25,46 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.6.0",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXIII · Cada cosa a mano",
+        intro: "Mara despeja la mesa: el cuaderno junto al mapa, los dados al alcance del pulgar, y el diario abierto por la última página.",
+        items: [
+          "Una aventura se abre donde la dejaste: por la última entrada, con la casilla para escribir justo debajo. La de ejemplo, que es para leerla, se sigue abriendo por el principio.",
+          "En el móvil y la tableta, la barra de la aventura se queda arriba mientras lees: volver, buscar, las sesiones, el cuaderno y el menú (⋯), donde ahora también están los Ajustes. Así la barra de abajo deja más sitio para escribir.",
+          "El diario se lee como un diario: lo que cuentas va sin recuadro y las tiradas, en su tarjeta.",
+          "Una pregunta y su respuesta ya no se cambian de orden al volver a abrir el diario ni al exportarlo. Las que ya se habían cambiado vuelven a su sitio solas.",
+          "En el móvil, elegir una sesión en su menú lleva por fin hasta ella.",
+          "Los dados van primero, grandes y con su forma, y «Apuntar» se queda a la vista mientras haya tiradas esperando. Los favoritos de la mesa de juego están en «En tu mesa de juego».",
+          "Las tablas son una lista: las tuyas y las colecciones de cada juego, en filas compactas que dicen su dado. El nombre de una colección abierta te acompaña al bajar, para plegarla sin volver arriba. Y el título es ahora «Tablas», a secas.",
+          "La lista de aventuras tiene «Nueva aventura» arriba, siempre a la vista, y solo marca la activa.",
+          "El historial enseña antes las tiradas, y en el móvil los Ajustes llevan de un toque a cada parte.",
+          "Botones más grandes para el dedo en toda la app. Con el móvil en horizontal se ve más diario.",
+          "En las pantallas grandes cada pantalla gana una columna, sin alargar las líneas; en una ultrapanorámica, el cuaderno tiene la suya.",
+        ],
+      },
+      en: {
+        title: "Chapter XXIII · Everything within reach",
+        intro: "Mara clears the table: the notebook beside the map, the dice by her thumb, and the journal open at the last page.",
+        items: [
+          "An adventure opens where you left it: at the last entry, with the box to write in right below. The sample, which is there to be read, still opens at the beginning.",
+          "On phone and tablet, the adventure's bar stays at the top as you read: back, search, sessions, the notebook and the menu (⋯), where Settings now are too. That leaves the bottom bar more room to write.",
+          "The journal reads like a journal: what you tell goes without a frame, and rolls in their card.",
+          "A question and its answer no longer swap places when you open the journal again or export it. Those that had swapped go back by themselves.",
+          "On phones, picking a session from its menu finally takes you there.",
+          "The dice come first, large and in their shape, and “Log it” stays in sight while rolls are waiting. The game table's favourites are under “On your game table”.",
+          "Tables are a list: yours and each game's collections, in compact rows that name their die. An open collection's name follows you down, to fold it without going back up. And the title is now simply “Tables”.",
+          "The list of adventures has “New adventure” at the top, always in sight, and only marks the active one.",
+          "The history shows the rolls sooner, and on phones Settings take you to each part in one tap.",
+          "Bigger buttons for your finger across the app. With the phone sideways, more of the journal shows.",
+          "On large screens each screen gains a column, without longer lines; on an ultrawide, the notebook has its own.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.5.2",
     date: "2026-11-25",
     text: {

@@ -7,6 +7,7 @@ import { isCardDraw, showDraws } from "../lib/cards";
 import { CardControls } from "./CardControls";
 import { PlayingCard } from "./PlayingCard";
 import { rolledTotal, rolledWhat, type RolledDie } from "../lib/rolledDice";
+import { DieOutline } from "./Die";
 import { RolledDice } from "./RolledDice";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
@@ -271,6 +272,10 @@ export function DiceTool({
     setEdge(null);
     // The tray changes silently: say what came up.
     announce(spokenRoll(trayText(roll)));
+    // On the Dice screen of a small phone the tray can be below the fold.
+    if (dice === "all") {
+      requestAnimationFrame(() => trayRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" }));
+    }
   }
 
   const trayRef = useRef<HTMLDivElement>(null);
@@ -331,295 +336,341 @@ export function DiceTool({
   }
 
   return (
-    <div data-hotkey="dice" className="flex flex-col gap-3">
-      <div role="group" aria-label={t.dice.toolLabel} className="grid grid-cols-2 gap-1 rounded-xl border border-ink-border bg-ink-900/60 p-1">
-        {(
-          [
-            ["dice", t.dice.toolDice, IconDice],
-            ["cards", t.dice.toolCards, IconCards],
-          ] as const
-        ).map(([id, name, Icon]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={cards.tool === id}
-            onClick={() => changeCards({ ...cards, tool: id })}
+    // Dice first, big enough for a thumb; then what they gave, what they
+    // were for and logging it. With room (the Dice screen on desktop),
+    // what's rolled on the left and what came up on the right.
+    <div data-hotkey="dice" className="@container">
+      <div className="flex flex-col gap-3 @xl:grid @xl:grid-cols-2 @xl:gap-5">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div role="group" aria-label={t.dice.toolLabel} className="grid grid-cols-2 gap-1 rounded-xl border border-ink-border bg-ink-900/60 p-1">
+            {(
+              [
+                ["dice", t.dice.toolDice, IconDice],
+                ["cards", t.dice.toolCards, IconCards],
+              ] as const
+            ).map(([id, name, Icon]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={cards.tool === id}
+                onClick={() => changeCards({ ...cards, tool: id })}
+                className={[
+                  "flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-sm transition pointer-coarse:py-2.5",
+                  cards.tool === id ? "bg-gold font-medium text-ink-950" : "text-parchment-dim hover:text-parchment",
+                ].join(" ")}
+              >
+                <Icon size={16} />
+                {name}
+              </button>
+            ))}
+          </div>
+          {cards.tool === "cards" ? (
+            <CardControls
+              adventureId={adventureId}
+              settings={cards}
+              inTray={tray.flatMap((item) => (item.card ? [item.card] : []))}
+              onChange={changeCards}
+              onDraw={add}
+            />
+          ) : (
+            <>
+            {dice === "all" && (
+              <div role="group" aria-label={t.journal.diceRollerLabel} className="grid grid-cols-4 gap-1.5 @md:grid-cols-8 @xl:grid-cols-4">
+                {builtins.map((die) => (
+                  <button
+                    key={die}
+                    type="button"
+                    onClick={() => add(rollBuiltin(die, edge ?? undefined))}
+                    className="flex h-16 flex-col items-center justify-center gap-0.5 rounded-xl border border-ink-border bg-ink-900/50 text-sm font-medium text-parchment transition hover:border-gold/50 hover:text-gold active:scale-95"
+                  >
+                    <span className="text-gold">
+                      <DieOutline sides={DIE_SIDES[die]} />
+                    </span>
+                    {die}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div
+              role={dice === "all" ? undefined : "group"}
+              aria-label={dice === "all" ? undefined : t.journal.diceRollerLabel}
+              className={dice === "all" && own.length === 0 ? "hidden" : "flex flex-wrap gap-1.5"}
+            >
+              {dice === "favorites" && builtins.map((die) => (
+                <button
+                  key={die}
+                  type="button"
+                  onClick={() => add(rollBuiltin(die, edge ?? undefined))}
+                  className={`${DIE_CHIP} border-ink-border text-parchment hover:border-gold/50 hover:text-gold`}
+                >
+                  {die}
+                </button>
+              ))}
+              {/* The player's own dice: their name, in the accent colour. */}
+              {own.map((roll) => (
+                <button
+                  key={roll.id}
+                  type="button"
+                  onClick={() => add(rollSaved(roll, edge ?? undefined)!)}
+                  title={roll.formula}
+                  className={`${DIE_CHIP} border-gold/40 bg-gold/10 text-gold hover:bg-gold/20`}
+                >
+                  {savedRollLabel(roll)}
+                </button>
+              ))}
+              {builtins.length + own.length === 0 && (
+                <p className="text-xs text-parchment-dim">
+                  {t.dice.noFavorites}{" "}
+                  <Link to="/dados" className="font-medium text-gold underline decoration-dotted hover:text-gold-soft">
+                    {t.dice.title}
+                  </Link>
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(
+                [
+                  ["advantage", t.journal.diceAdvantage],
+                  ["disadvantage", t.journal.diceDisadvantage],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={edge === id}
+                  onClick={() => setEdge((current) => (current === id ? null : id))}
+                  className={[
+                    "h-8 rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11",
+                    edge === id
+                      ? "border-gold bg-gold text-ink-950"
+                      : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+                  ].join(" ")}
+                >
+                  {label}
+                </button>
+              ))}
+              <span className="ml-auto flex">
+                <DiceHelp />
+              </span>
+            </div>
+            {edge && (
+              <p aria-live="polite" className="-mt-1 text-xs text-gold">
+                {edge === "advantage" ? t.journal.diceAdvantageHint : t.journal.diceDisadvantageHint}
+              </p>
+            )}
+            <form
+              className="flex gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                rollTyped();
+              }}
+            >
+              <div className="relative flex min-w-0 flex-1">
+                <input
+                  ref={formulaRef}
+                  value={formula}
+                  onChange={(e) => {
+                    setFormula(e.target.value);
+                    setFormulaError(false);
+                  }}
+                  placeholder={t.journal.diceFormulaPlaceholder}
+                  aria-label={t.journal.diceFormulaLabel}
+                  aria-invalid={formulaError}
+                  enterKeyHint="go"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 pr-9 text-sm`}
+                />
+                {formula && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormula("");
+                      setFormulaError(false);
+                      formulaRef.current?.focus();
+                    }}
+                    aria-label={t.journal.diceFormulaClear}
+                    title={t.journal.diceFormulaClear}
+                    className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
+                  >
+                    <IconClose size={15} />
+                  </button>
+                )}
+              </div>
+              {canSave && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    addRoll({ name: label.trim(), formula }, true);
+                    setJustSaved(true);
+                    window.setTimeout(() => setJustSaved(false), 1500);
+                  }}
+                  aria-label={t.dice.saveFormula}
+                  title={t.dice.saveFormulaHint}
+                  className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+                >
+                  <IconStar size={16} />
+                </button>
+              )}
+              {justSaved && (
+                <span role="status" className="flex shrink-0 items-center px-1 text-gold" title={t.dice.saved}>
+                  <IconCheck size={16} />
+                </span>
+              )}
+              {/* Adds to the tray like a die button, so it looks like one. */}
+              <button
+                type="submit"
+                disabled={!formula.trim()}
+                aria-label={t.journal.diceFormulaRoll}
+                title={t.journal.diceFormulaRoll}
+                className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 disabled:text-parchment-dim/40 disabled:hover:border-ink-border"
+              >
+                <IconPlus size={16} />
+              </button>
+            </form>
+            {formulaError && (
+              <p role="alert" className="text-xs text-no">
+                {t.journal.diceFormulaError}
+              </p>
+            )}
+            </>
+          )}
+        </div>
+        <div className="flex min-w-0 flex-col gap-3">
+          {/* The tray: every roll waits here until it's logged as one entry.
+              It and its buttons are always there, a row high, so
+              rolling or clearing doesn't push what's below up and down. */}
+          <div
+            ref={trayRef}
+            aria-live="polite"
+            aria-label={t.journal.diceTrayLabel}
             className={[
-              "flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-sm transition",
-              cards.tool === id ? "bg-gold font-medium text-ink-950" : "text-parchment-dim hover:text-parchment",
+              // Clear of the phone's bar and header when scrolled to.
+              "scroll-mb-36 scroll-mt-20",
+              // As high as a row of cards, or of dice.
+              "flex items-center rounded-xl border p-2 @xl:flex-1",
+              cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-24",
+              rolls.length === 0 ? "border-dashed border-ink-border @xl:justify-center" : "border-ink-border bg-ink-900/50 @xl:items-start",
             ].join(" ")}
           >
-            <Icon size={16} />
-            {name}
-          </button>
-        ))}
-      </div>
-      <input
-        value={label}
-        onChange={(e) => setLabel(e.target.value)}
-        placeholder={t.journal.diceLabelPlaceholder}
-        className={`${INPUT_CLASS} flex-none bg-ink-900/70 text-sm`}
-      />
-      {cards.tool === "cards" ? (
-        <CardControls
-          adventureId={adventureId}
-          settings={cards}
-          inTray={tray.flatMap((item) => (item.card ? [item.card] : []))}
-          onChange={changeCards}
-          onDraw={add}
-        />
-      ) : (
-        <>
-        <div role="group" aria-label={t.journal.diceRollerLabel} className="flex flex-wrap gap-1.5">
-          {builtins.map((die) => (
-            <button
-              key={die}
-              type="button"
-              onClick={() => add(rollBuiltin(die, edge ?? undefined))}
-              className="rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
-            >
-              {die}
-            </button>
-          ))}
-          {/* The player's own dice: their name, in the accent colour. */}
-          {own.map((roll) => (
-            <button
-              key={roll.id}
-              type="button"
-              onClick={() => add(rollSaved(roll, edge ?? undefined)!)}
-              title={roll.formula}
-              className="rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1.5 text-xs font-medium text-gold transition hover:bg-gold/20 active:scale-95"
-            >
-              {savedRollLabel(roll)}
-            </button>
-          ))}
-          {builtins.length + own.length === 0 && (
-            <p className="text-xs text-parchment-dim">
-              {t.dice.noFavorites}{" "}
-              <Link to="/dados" className="font-medium text-gold underline decoration-dotted hover:text-gold-soft">
-                {t.dice.title}
-              </Link>
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {(
-            [
-              ["advantage", t.journal.diceAdvantage],
-              ["disadvantage", t.journal.diceDisadvantage],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={edge === id}
-              onClick={() => setEdge((current) => (current === id ? null : id))}
-              className={[
-                "rounded-lg border px-2.5 py-1.5 text-xs font-medium transition active:scale-95",
-                edge === id
-                  ? "border-gold bg-gold text-ink-950"
-                  : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
-              ].join(" ")}
-            >
-              {label}
-            </button>
-          ))}
-          <span className="ml-auto flex">
-            <DiceHelp />
-          </span>
-        </div>
-        {edge && (
-          <p aria-live="polite" className="-mt-1 text-xs text-gold">
-            {edge === "advantage" ? t.journal.diceAdvantageHint : t.journal.diceDisadvantageHint}
-          </p>
-        )}
-        <form
-          className="flex gap-1.5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            rollTyped();
-          }}
-        >
-          <div className="relative flex min-w-0 flex-1">
-            <input
-              ref={formulaRef}
-              value={formula}
-              onChange={(e) => {
-                setFormula(e.target.value);
-                setFormulaError(false);
-              }}
-              placeholder={t.journal.diceFormulaPlaceholder}
-              aria-label={t.journal.diceFormulaLabel}
-              aria-invalid={formulaError}
-              enterKeyHint="go"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 pr-9 text-sm`}
-            />
-            {formula && (
-              <button
-                type="button"
-                onClick={() => {
-                  setFormula("");
-                  setFormulaError(false);
-                  formulaRef.current?.focus();
-                }}
-                aria-label={t.journal.diceFormulaClear}
-                title={t.journal.diceFormulaClear}
-                className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
-              >
-                <IconClose size={15} />
-              </button>
+            {rolls.length === 0 ? (
+              <div className="flex min-w-0 flex-col items-start gap-2 px-1">
+              <p className="text-xs text-parchment-faint">
+                {cards.tool === "cards"
+                  ? adventureId
+                    ? t.dice.cardsHint
+                    : t.dice.cardsTrayHint
+                  : adventureId
+                    ? t.journal.diceHint
+                    : t.dice.trayHint}
+              </p>
+              {last && cards.tool === "dice" && (
+                <button
+                  type="button"
+                  onClick={repeatLast}
+                  title={interpolate(t.dice.repeat, { roll: lastText! })}
+                  className="flex max-w-full items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+                >
+                  <IconRepeat size={14} className="shrink-0" />
+                  <span className="truncate">{interpolate(t.dice.repeat, { roll: lastText! })}</span>
+                </button>
+              )}
+              </div>
+            ) : (
+              <ul className="flex w-full flex-wrap gap-1.5">
+                {tray.map((item, i) =>
+                  item.card ? (
+                    // A card lies face up with its name below it.
+                    <li
+                      key={i}
+                      className="relative flex w-[5.5rem] flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-1 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment"
+                    >
+                      <PlayingCard id={item.card.id} animate />
+                      <span aria-hidden className="min-h-[2lh]">{cardDrawName(item.text)}</span>
+                      <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                      <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                    </li>
+                  ) : item.dice ? (
+                    // Dice, with what was rolled below and, unless a lone die says it, the total.
+                    <li
+                      key={i}
+                      className="relative flex min-w-[5.5rem] max-w-full flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-6 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment-dim"
+                    >
+                      <RolledDice dice={item.dice} animate />
+                      <span aria-hidden title={item.text} className="max-w-full break-words">
+                        {rolledWhat(item.text)}
+                        {(item.text.endsWith(")") || item.dice.length > 1) && (
+                          <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">{rolledTotal(item.text)}</span>
+                        )}
+                      </span>
+                      <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                      <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                    </li>
+                  ) : (
+                    <li
+                      key={i}
+                      className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
+                    >
+                      <span aria-hidden className="break-all">{trayText(item.text)}</span>
+                      <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
+                      <TrayRemove item={item} onRemove={removeFromTray} className="shrink-0" />
+                    </li>
+                  ),
+                )}
+              </ul>
             )}
           </div>
-          {canSave && (
-            <button
-              type="button"
-              onClick={() => {
-                addRoll({ name: label.trim(), formula }, true);
-                setJustSaved(true);
-                window.setTimeout(() => setJustSaved(false), 1500);
-              }}
-              aria-label={t.dice.saveFormula}
-              title={t.dice.saveFormulaHint}
-              className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
-            >
-              <IconStar size={16} />
-            </button>
-          )}
-          {justSaved && (
-            <span role="status" className="flex shrink-0 items-center px-1 text-gold" title={t.dice.saved}>
-              <IconCheck size={16} />
-            </span>
-          )}
-          {/* Adds to the tray like a die button, so it looks like one. */}
-          <button
-            type="submit"
-            disabled={!formula.trim()}
-            aria-label={t.journal.diceFormulaRoll}
-            title={t.journal.diceFormulaRoll}
-            className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 disabled:text-parchment-dim/40 disabled:hover:border-ink-border"
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder={t.journal.diceLabelPlaceholder}
+            aria-label={t.journal.diceLabelPlaceholder}
+            className={`${INPUT_CLASS} flex-none bg-ink-900/70 py-2.5 text-sm pointer-coarse:text-base`}
+          />
+          {/* On the Dice screen of a phone, always in reach while something waits. */}
+          <div
+            className={[
+              "flex items-center gap-2",
+              dice === "all" && rolls.length > 0
+                ? "max-lg:sticky max-lg:bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] max-lg:z-10 max-lg:-mx-4 max-lg:bg-ink-900 max-lg:px-4 max-lg:py-2 sm:max-lg:mx-0 sm:max-lg:rounded-xl"
+                : "",
+            ].join(" ")}
           >
-            <IconPlus size={16} />
-          </button>
-        </form>
-        {formulaError && (
-          <p role="alert" className="text-xs text-no">
-            {t.journal.diceFormulaError}
-          </p>
-        )}
-        </>
-      )}
-      {/* The tray: every roll waits here until it's logged as one entry.
-          It and its buttons are always there, a row high, so
-          rolling or clearing doesn't push what's below up and down. */}
-      <div
-        ref={trayRef}
-        aria-live="polite"
-        aria-label={t.journal.diceTrayLabel}
-        className={[
-          // Clear of the phone's bar and header when scrolled to.
-          "scroll-mb-36 scroll-mt-20",
-          // As high as a row of cards, or of dice.
-          "flex items-center rounded-xl border p-2",
-          cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-24",
-          rolls.length === 0 ? "border-dashed border-ink-border" : "border-ink-border bg-ink-900/50",
-        ].join(" ")}
-      >
-        {rolls.length === 0 ? (
-          <div className="flex min-w-0 flex-col items-start gap-2 px-1">
-          <p className="text-xs text-parchment-faint">
-            {cards.tool === "cards"
-              ? adventureId
-                ? t.dice.cardsHint
-                : t.dice.cardsTrayHint
-              : adventureId
-                ? t.journal.diceHint
-                : t.dice.trayHint}
-          </p>
-          {last && cards.tool === "dice" && (
             <button
               type="button"
-              onClick={repeatLast}
-              title={interpolate(t.dice.repeat, { roll: lastText! })}
-              className="flex max-w-full items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+              onClick={() => removeFromTray(tray)}
+              disabled={rolls.length === 0}
+              className="h-10 rounded-xl px-3 text-sm text-parchment-dim transition hover:text-parchment disabled:opacity-40 disabled:hover:text-parchment-dim pointer-coarse:h-11"
             >
-              <IconRepeat size={14} className="shrink-0" />
-              <span className="truncate">{interpolate(t.dice.repeat, { roll: lastText! })}</span>
+              {t.journal.diceClear}
             </button>
-          )}
+            {/* With no adventure there's no journal: they go to the history only. */}
+            <button
+              type="button"
+              onClick={log}
+              disabled={rolls.length === 0}
+              className="h-10 flex-1 rounded-xl bg-gold text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99] pointer-coarse:h-11 disabled:bg-ink-800 disabled:font-medium disabled:text-parchment-faint disabled:active:scale-100"
+            >
+              {!adventureId
+                ? t.dice.saveToHistory
+                : rolls.length <= 1
+                  ? t.journal.diceLog
+                  : interpolate(t.journal.diceLogMany, { count: rolls.length })}
+            </button>
           </div>
-        ) : (
-          <ul className="flex w-full flex-wrap gap-1.5">
-            {tray.map((item, i) =>
-              item.card ? (
-                // A card lies face up with its name below it.
-                <li
-                  key={i}
-                  className="relative flex w-[5.5rem] flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-1 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment"
-                >
-                  <PlayingCard id={item.card.id} animate />
-                  <span aria-hidden className="min-h-[2lh]">{cardDrawName(item.text)}</span>
-                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                  <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
-                </li>
-              ) : item.dice ? (
-                // Dice, with what was rolled below and, unless a lone die says it, the total.
-                <li
-                  key={i}
-                  className="relative flex min-w-[5.5rem] max-w-full flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-6 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment-dim"
-                >
-                  <RolledDice dice={item.dice} animate />
-                  <span aria-hidden title={item.text} className="max-w-full break-words">
-                    {rolledWhat(item.text)}
-                    {(item.text.endsWith(")") || item.dice.length > 1) && (
-                      <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">{rolledTotal(item.text)}</span>
-                    )}
-                  </span>
-                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                  <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
-                </li>
-              ) : (
-                <li
-                  key={i}
-                  className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
-                >
-                  <span aria-hidden className="break-all">{trayText(item.text)}</span>
-                  <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                  <TrayRemove item={item} onRemove={removeFromTray} className="shrink-0" />
-                </li>
-              ),
-            )}
-          </ul>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => removeFromTray(tray)}
-          disabled={rolls.length === 0}
-          className="rounded-xl px-3 py-2 text-sm text-parchment-dim transition hover:text-parchment disabled:opacity-40 disabled:hover:text-parchment-dim"
-        >
-          {t.journal.diceClear}
-        </button>
-        {/* With no adventure there's no journal: they go to the history only. */}
-        <button
-          type="button"
-          onClick={log}
-          disabled={rolls.length === 0}
-          className="flex-1 rounded-xl bg-gold py-2 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-[0.99] disabled:bg-ink-800 disabled:font-medium disabled:text-parchment-faint disabled:active:scale-100"
-        >
-          {!adventureId
-            ? t.dice.saveToHistory
-            : rolls.length <= 1
-              ? t.journal.diceLog
-              : interpolate(t.journal.diceLogMany, { count: rolls.length })}
-        </button>
+        </div>
       </div>
     </div>
   );
 }
+
+/** A die's button on the game table: compact with a mouse, thumb-sized on touch. */
+const DIE_CHIP =
+  "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11 pointer-coarse:min-w-12";
+
+/** The silhouette each built-in die's button shows. */
+const DIE_SIDES: Record<BuiltinDie, number> = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12, d20: 20, "d%": 100, "4dF": 6 };
 
 /** A roll waiting in the tray (a card keeps which, so it's out of the deck meanwhile). */
 interface TrayItem {

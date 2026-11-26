@@ -1,4 +1,38 @@
-import type { JournalEntry } from "./lonelog";
+import type { JournalEntry, JournalLineKind } from "./lonelog";
+
+/** Which of two entries of the same instant comes first (see compareEntries). */
+const KIND_RANK: Record<JournalLineKind, number> = {
+  session: 0,
+  scene: 1,
+  question: 2,
+  action: 3,
+  note: 3,
+  roll: 4,
+  consequence: 5,
+};
+
+/**
+ * Journal order. Entries logged before 1.6.0 could share a timestamp (a
+ * question and its roll, saved in the same millisecond): IndexedDB gives
+ * them back by id, at random, so the tie is settled by what they are,
+ * the question before its answer.
+ */
+export function compareEntries(a: JournalEntry, b: JournalEntry): number {
+  return a.timestamp - b.timestamp || KIND_RANK[a.kind] - KIND_RANK[b.kind];
+}
+
+/**
+ * Every entry with `entry` at the end of its adventure: never at (or
+ * before) the timestamp of the one it follows, or they could swap places
+ * the next time they're read.
+ */
+export function appendEntry(entries: JournalEntry[], entry: JournalEntry): JournalEntry[] {
+  let timestamp = entry.timestamp;
+  for (const e of entries) {
+    if (e.adventureId === entry.adventureId && e.timestamp >= timestamp) timestamp = e.timestamp + 1;
+  }
+  return [...entries, timestamp === entry.timestamp ? entry : { ...entry, timestamp }];
+}
 
 /**
  * Where an entry goes when it's written below another one or moved.
@@ -6,8 +40,7 @@ import type { JournalEntry } from "./lonelog";
  * placing an entry means giving it a timestamp between its new
  * neighbours: halfway, fractions of a millisecond included.
  *
- * Neighbours can share a timestamp (a question and its roll are logged
- * in the same millisecond) or be too close to fit anything between;
+ * Neighbours can share a timestamp (see compareEntries) or be too close to fit anything between;
  * then the entries that follow are nudged forward a millisecond each,
  * just as far as needed. Those nudges are returned too, so the caller
  * saves them.
@@ -72,7 +105,7 @@ export function placeMoved(sorted: JournalEntry[], id: string, direction: "up" |
 
 /** One adventure's entries in journal order. */
 export function sortedEntriesOf(entries: JournalEntry[], adventureId: string): JournalEntry[] {
-  return entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp);
+  return entries.filter((e) => e.adventureId === adventureId).sort(compareEntries);
 }
 
 /** The entries nudged forward to make room (see placeAfter); a nudge counts as an edit. */
@@ -90,7 +123,7 @@ function applyPlacement(entries: JournalEntry[], placement: Placement, now: numb
  */
 export function insertEntryAfter(entries: JournalEntry[], entry: JournalEntry, afterId: string, now: number): JournalEntry[] {
   const sorted = sortedEntriesOf(entries, entry.adventureId);
-  if (!sorted.some((e) => e.id === afterId)) return [...entries, entry];
+  if (!sorted.some((e) => e.id === afterId)) return appendEntry(entries, entry);
   const placement = placeAfter(sorted, afterId, undefined, now);
   return [...applyPlacement(entries, placement, now), { ...entry, timestamp: placement.timestamp }];
 }

@@ -19,7 +19,7 @@ export function OracleSwitcher() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t.oracleSwitcher.triggerLabel}
-        className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20"
+        className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-gold transition hover:bg-gold/20 pointer-coarse:px-3 pointer-coarse:py-2"
       >
         {current.name}
         <IconSwap size={11} />

@@ -65,7 +65,7 @@ export function SessionMenu({ groups, onJump, onJumpToEntry, className }: IndexP
         aria-haspopup="true"
         aria-expanded={open}
         className={[
-          "-m-1 rounded-full p-1.5 transition",
+          "flex size-10 items-center justify-center rounded-full transition",
           open ? "bg-ink-700 text-parchment" : "text-parchment-dim hover:text-gold",
         ].join(" ")}
       >

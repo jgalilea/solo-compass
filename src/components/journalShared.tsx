@@ -159,7 +159,7 @@ const ANSWER_CHIP: Record<Answer, string> = {
  * reading), its height fixed so the scene below it pins just under it.
  */
 export const SESSION_BAR =
-  "sticky top-0 z-20 -mx-4 flex h-session items-center bg-ink-950 px-4 sm:mx-0 sm:px-0 lg:top-14";
+  "session-bar sticky top-(--pin-session) z-20 -mx-4 flex h-session items-center bg-ink-950 px-4 sm:mx-0 sm:px-0";
 /** The rail down the left that marks a session's entries (and pins its scenes below its bar). */
 export const SESSION_RAIL = "session-entries flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3";
 
@@ -226,16 +226,16 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
             <EntryLine entry={block[0]} actions={actions} />
           </li>
         ) : block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
-          <li
-            key={block[0].id}
-            className="rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-3"
-          >
+          // What's told (notes, actions, dialogue…) is text on the page;
+          // only what the dice and the oracle say is framed, so it stands
+          // out and the journal reads as one.
+          <li key={block[0].id} className="px-3 py-1">
             <EntryLine entry={block[0]} actions={actions} />
           </li>
         ) : (
           <li
             key={block[0].id}
-            className="flex flex-col gap-3 rounded-xl border border-ink-border bg-ink-800/50 px-4 py-3.5"
+            className="flex flex-col gap-2.5 rounded-xl border border-ink-border bg-ink-800/50 px-3 py-3"
           >
             {block.map((entry) => (
               <EntryLine key={entry.id} entry={entry} actions={actions} />
@@ -305,7 +305,7 @@ export function SessionGroupRow({
   }
 
   return (
-    <li id={`session-${session.id}`} className="flex scroll-mt-16 flex-col gap-2">
+    <li id={`session-${session.id}`} className="flex scroll-mt-(--pin-session) flex-col gap-2">
       {editing ? (
         <div className="flex items-center gap-2 rounded-xl border border-ink-border/70 bg-ink-900/40 px-4 py-2.5">
           <input
@@ -325,7 +325,7 @@ export function SessionGroupRow({
       ) : (
         // Pinned while it's open, like the current session's.
         <div className={expanded ? SESSION_BAR : "flex"}>
-          <div data-entry className="group relative flex h-12 min-w-0 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
+          <div data-entry className="group relative flex h-10 min-w-0 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
             {/* A heading to jump between sessions with a screen reader;
                 the button inside folds it (its name is the session's). */}
             <h2 className="flex min-w-0 flex-1">
@@ -353,6 +353,7 @@ export function SessionGroupRow({
             {/* Expanding it with a tap selects it: that way its
                 buttons are reachable on touch too. */}
             <LineButtons
+              inline
               visible={actions.selectedId === session.id}
               onEdit={() => {
                 setValue(session.text);
@@ -452,13 +453,14 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
       data-entry
       onClick={() => actions.onSelect(selected ? null : entry.id)}
       className={[
-        "group relative -mx-2 -my-1 flex scroll-mt-28 scroll-mb-32 lg:scroll-mt-40 items-start gap-2.5 rounded-lg px-2 py-1 transition-colors duration-700",
+        "group relative -mx-2 -my-1 flex scroll-mt-36 scroll-mb-32 lg:scroll-mt-52 items-start gap-2.5 rounded-lg px-2 py-1 transition-colors duration-700",
         selected ? "bg-ink-700/40" : "",
         actions.highlightedId === entry.id ? "bg-gold/15 ring-1 ring-gold/60" : "",
       ].join(" ")}
     >
       {icon}
-      <div className="min-w-0 flex-1">
+      {/* Never longer than a comfortable line, whatever the screen's width. */}
+      <div className="min-w-0 max-w-[48rem] flex-1">
         <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} cast={actions.cast} view={actions.viewOf?.(entry.id)} />
         {entry.kind === "roll" && actions.onSaveTable && isTableDefinition(entry.text) && (
           <button
@@ -475,6 +477,7 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
         )}
       </div>
       <LineButtons
+        inline={entry.kind === "scene"}
         visible={selected}
         onEdit={() => {
           setValue(editText);
@@ -753,8 +756,9 @@ function NoteContent({
       );
     case "block":
       return (
-        <p className="text-xs font-semibold uppercase tracking-wide text-parchment-dim">
+        <p className="flex items-center gap-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-parchment-dim">
           {form.closing ? t.journal.blocks[form.name].close : t.journal.blocks[form.name].open}
+          <span aria-hidden className="h-px flex-1 bg-ink-border" />
         </p>
       );
     case "round":
@@ -811,7 +815,8 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
     const long = name.length + details.join(" · ").length > LONG_TAG;
     const chipClass = [
       "mx-0.5 rounded-md border border-gold/30 bg-gold/[0.08] px-1.5 font-sans normal-case not-italic",
-      long ? "box-decoration-clone" : "inline-block max-w-full align-baseline leading-snug",
+      // Stacked, two chips don't touch.
+      long ? "box-decoration-clone" : "my-0.5 inline-block max-w-full align-baseline leading-snug",
     ].join(" ");
     const open = () => onTagClick?.(tagKey(part.tag));
     return onTagClick ? (
@@ -844,6 +849,8 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
 }
 
 interface LineButtonsProps {
+  /** In the middle of a one-line heading (a session, a scene) instead of on the entry's corner. */
+  inline?: boolean;
   /** Selected with a tap (touch); with a mouse they also show on hover. */
   visible: boolean;
   onEdit: () => void;
@@ -860,8 +867,9 @@ interface LineButtonsProps {
  * session or scene, move up or down, write below), so the buttons
  * don't cover half the line.
  */
-export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow, onCopy }: LineButtonsProps) {
+export function LineButtons({ inline = false, visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow, onCopy }: LineButtonsProps) {
   const { t } = useLocaleContext();
+  const size = inline ? "p-2 pointer-coarse:px-3" : "p-2 pointer-coarse:p-3";
   const more: ActionMenuItem[] = [];
   if (onCopy) more.push({ label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy });
   if (onInsertBelow) more.push({ label: t.journal.insertBelow, Icon: IconInsertBelow, onSelect: onInsertBelow });
@@ -872,7 +880,9 @@ export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, o
       onClick={(e) => e.stopPropagation()}
       className={[
         // Above the entries that follow, or they'd cover the "⋯" menu.
-        "absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
+        "absolute right-1 z-10 flex items-center rounded-lg border border-ink-border bg-ink-800 shadow-lg transition",
+        // On the corner, not over the words that are about to be edited.
+        inline ? "top-1/2 -translate-y-1/2" : "bottom-[calc(100%-0.75rem)]",
         visible
           ? "opacity-100"
           : "pointer-events-none opacity-0 pointer-fine:group-hover:pointer-events-auto pointer-fine:group-hover:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100",
@@ -882,7 +892,7 @@ export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, o
         type="button"
         onClick={onEdit}
         aria-label={t.journal.editEntry}
-        className="p-2 text-parchment-dim transition hover:text-gold"
+        className={`${size} text-parchment-dim transition hover:text-gold`}
       >
         <IconPencil size={15} />
       </button>
@@ -890,7 +900,7 @@ export function LineButtons({ visible, onEdit, onDelete, onMoveUp, onMoveDown, o
         type="button"
         onClick={onDelete}
         aria-label={t.journal.deleteEntry}
-        className="p-2 text-parchment-dim transition hover:text-no"
+        className={`${size} text-parchment-dim transition hover:text-no`}
       >
         <IconTrash size={15} />
       </button>

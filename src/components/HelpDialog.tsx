@@ -25,7 +25,7 @@ export function HelpDialog({
         onClick={() => setOpen(true)}
         aria-label={button}
         title={button}
-        className="-m-1 shrink-0 rounded-full p-1 text-parchment-dim transition hover:text-gold"
+        className="-m-2 shrink-0 rounded-full p-2 text-parchment-dim transition hover:text-gold"
       >
         <IconHelp size={20} />
       </button>

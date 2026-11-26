@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { PageHeader } from "./PageHeader";
 import { Select } from "./Select";
 import { HistoryEntryCard } from "./HistoryEntryCard";
 import { ImportedRollCard } from "./ImportedRollCard";
@@ -10,6 +11,7 @@ import { LogRollDialog } from "./LogRollDialog";
 import { rollJournalLines, searchHistory } from "../lib/rollLog";
 import { importedRolls, searchImportedRolls } from "../lib/importedRolls";
 import { interpolate } from "../lib/i18n";
+import { PAGE_CLASS } from "../lib/pageLayout";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Toast } from "./Toast";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
@@ -172,53 +174,45 @@ export function HistoryView() {
         : t.history.backToOracle;
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-      <header className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-1">
-            <Link
-              to={fromAdventure ? `/diario/${fromAdventure}` : origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
-              aria-label={backLabel}
-              title={backLabel}
-              className="-m-2 shrink-0 p-2 text-parchment-dim transition hover:text-gold"
-            >
-              <IconArrowLeft size={20} />
-            </Link>
-            <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-              {t.history.title}
-            </h1>
-          </div>
-          {entries.length > 0 && (
+    <div className={PAGE_CLASS}>
+      <PageHeader
+        title={t.history.title}
+        subtitle={subtitle}
+        before={
+          <Link
+            to={fromAdventure ? `/diario/${fromAdventure}` : origin === "tabla" ? "/tablas" : origin === "dados" ? "/dados" : "/"}
+            aria-label={backLabel}
+            title={backLabel}
+            className="-ml-2.5 -mr-1.5 flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-gold"
+          >
+            <IconArrowLeft size={20} />
+          </Link>
+        }
+        actions={
+          entries.length > 0 ? (
             <button
               type="button"
               onClick={() => setConfirmingClear(true)}
-              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 py-1.5 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
+              className="flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ink-border px-3 text-xs text-parchment-dim transition hover:border-no/50 hover:text-no"
             >
               <IconTrash size={14} />
               {t.history.clearAll}
             </button>
-          )}
-        </div>
-        {/* Below the title's row, across the whole width: beside the
-            button they wrapped into a narrow column on phones. */}
-        <p className="text-sm text-parchment-dim">{subtitle}</p>
-        {/* Gestures only exist on touch screens; with a mouse each roll
-            already has its star and trash icons. */}
-        <p className="hidden text-xs text-parchment-faint pointer-coarse:block">
-          {t.history.swipeHint}
-        </p>
-      </header>
+          ) : undefined
+        }
+      />
 
       {status === "ready" && anything && (
-        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
-          <div className="flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl md:flex-1">
+        // On a phone: the kinds, then adventure and search side by side.
+        <div className="grid grid-cols-2 gap-2.5 md:flex md:flex-wrap md:items-center md:gap-3">
+          <div className="col-span-2 flex gap-1 rounded-2xl border border-ink-border bg-ink-900/60 p-1 text-xs sm:text-sm md:max-w-xl md:flex-1">
             {filters.map(([key, label]) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => changeFilter(key)}
                 className={[
-                  "flex-1 rounded-xl px-1 py-1.5 transition",
+                  "flex-1 rounded-xl px-1 py-1.5 transition pointer-coarse:py-2",
                   filter === key
                     ? "bg-gold text-ink-950 font-medium"
                     : "text-parchment-dim hover:text-parchment",
@@ -229,7 +223,7 @@ export function HistoryView() {
             ))}
           </div>
           <label className="flex min-w-0 items-center gap-2 text-sm text-parchment-dim">
-            <IconJournal size={16} className="shrink-0 text-gold" />
+            <IconJournal size={16} className="shrink-0 text-gold max-md:hidden" />
             <span className="sr-only">{t.history.adventureFilterLabel}</span>
             <Select
               value={adventureFilter}
@@ -311,7 +305,7 @@ export function HistoryView() {
       )}
 
       {status === "ready" && total > 0 && (
-        <ul className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <ul className="grid grid-cols-1 items-start gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3 2xl:grid-cols-4 4xl:grid-cols-5">
           {filtered.slice(0, shown).map((entry) => (
             <li key={entry.id}>
               <HistoryEntryCard

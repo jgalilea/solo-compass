@@ -26,17 +26,20 @@ export function InspirationCard({
 
   return (
     <section className="rounded-2xl border border-gold/40 bg-gold/[0.06] p-4 sm:p-5">
-      <div className="flex items-start gap-3">
-        <IconSparkles size={20} className="mt-0.5 shrink-0 text-gold" />
-        <div className="min-w-0 flex-1">
-          <h2 className="font-display text-lg leading-snug text-parchment">{t.tables.inspirationTitle}</h2>
-          <p className="mt-0.5 text-sm text-parchment-dim">{t.tables.inspirationDescription}</p>
-        </div>
+      {/* On phones the description goes below, across the whole card. */}
+      <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2">
+        <h2 className="flex min-w-0 items-center gap-2.5 font-display text-lg leading-snug text-parchment">
+          <IconSparkles size={20} className="shrink-0 text-gold" />
+          {t.tables.inspirationTitle}
+        </h2>
+        <p className="max-sm:col-span-2 max-sm:row-start-2 text-sm leading-snug text-parchment-dim sm:row-start-2 sm:pl-7.5">
+          {t.tables.inspirationDescription}
+        </p>
         <button
           type="button"
           onClick={onRoll}
           disabled={rolling}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gold px-3.5 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-95 disabled:opacity-60"
+          className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-gold px-4 text-sm font-semibold text-ink-950 transition hover:bg-gold-soft active:scale-95 disabled:opacity-60 sm:row-span-2 max-sm:col-start-2 max-sm:row-start-1"
         >
           <IconDice size={17} className={rolling ? "animate-spin" : ""} />
           {t.tables.inspirationButton}

@@ -14,6 +14,8 @@ import { TwistCounter } from "./TwistCounter";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
 import { OracleWaiting } from "./OracleWaiting";
+import { PageHeader } from "./PageHeader";
+import { PAGE_CLASS } from "../lib/pageLayout";
 import { smoothBehavior } from "../lib/scrolling";
 
 export function OracleView() {
@@ -45,19 +47,23 @@ export function OracleView() {
   }
 
   return (
-    // On desktop (lg+) question and result go in two columns, so
-    // everything isn't stacked in a narrow strip with empty sides.
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-8 pt-8 md:max-w-3xl md:pt-12 lg:grid lg:max-w-7xl lg:grid-cols-2 2xl:max-w-[110rem] 2xl:gap-16 lg:items-start lg:gap-10 lg:pb-12">
-      <div className="flex flex-col gap-6 lg:sticky lg:top-24">
-        <header className="flex items-center justify-center gap-2.5">
-          <h1 className="font-display text-3xl text-parchment sm:text-4xl">{t.oracle.title}</h1>
-          <OracleSwitcher />
-          <TwistCounter adventureId={activeAdventureId} />
-          <OracleHelp />
-        </header>
+    <div className={PAGE_CLASS}>
+      <PageHeader
+        title={t.oracle.title}
+        after={
+          <>
+            <OracleSwitcher />
+            <TwistCounter adventureId={activeAdventureId} />
+            <OracleHelp />
+          </>
+        }
+      />
 
+      {/* On desktop (lg+) question and answer sit side by side; on a wide
+          one (3xl) the latest rolls get a column of their own. */}
+      <div className="flex flex-col gap-5 md:gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8 3xl:grid-cols-[minmax(0,36rem)_minmax(0,1fr)_minmax(0,26rem)] 3xl:gap-10 4xl:grid-cols-[minmax(0,40rem)_minmax(0,1fr)_minmax(0,36rem)]">
         <form
-          className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-5 sm:p-6"
+          className="flex flex-col gap-4 rounded-3xl border border-ink-border bg-ink-800/50 p-4 sm:p-6 lg:row-span-2 3xl:row-span-1"
           onSubmit={(e) => {
             e.preventDefault();
             handleRoll();
@@ -85,27 +91,27 @@ export function OracleView() {
             {t.oracle.enterHint}
           </p>
         </form>
-      </div>
 
-      <div ref={resultRef} className="flex scroll-mt-24 scroll-mb-24 flex-col gap-6">
-        {lastRoll ? (
-          <div className="flex flex-col gap-3">
-            <OracleResultCard key={animateKey} roll={lastRoll} animate />
-            {activeAdventure && (
-              <ConsequenceComposer
-                key={`${animateKey}-consequence`}
-                onSave={(text) => addConsequence(lastRoll.id, text)}
-                placeholder={t.oracle.consequencePlaceholder}
-                saveLabel={t.common.save}
-                savedLabel={interpolate(t.oracle.consequenceSaved, { name: activeAdventure.name })}
-              />
-            )}
-          </div>
-        ) : (
-          <OracleWaiting oracleId={oracleId} likelihood={level} />
-        )}
+        <div ref={resultRef} className="scroll-mt-24 scroll-mb-24">
+          {lastRoll ? (
+            <div className="flex flex-col gap-3">
+              <OracleResultCard key={animateKey} roll={lastRoll} animate />
+              {activeAdventure && (
+                <ConsequenceComposer
+                  key={`${animateKey}-consequence`}
+                  onSave={(text) => addConsequence(lastRoll.id, text)}
+                  placeholder={t.oracle.consequencePlaceholder}
+                  saveLabel={t.common.save}
+                  savedLabel={interpolate(t.oracle.consequenceSaved, { name: activeAdventure.name })}
+                />
+              )}
+            </div>
+          ) : (
+            <OracleWaiting oracleId={oracleId} likelihood={level} />
+          )}
+        </div>
 
-        <RecentRolls kind="oraculo" />
+        <RecentRolls kind="oraculo" wideLimit={9} />
       </div>
     </div>
   );

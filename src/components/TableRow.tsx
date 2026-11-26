@@ -16,6 +16,7 @@ import { smoothBehavior } from "../lib/scrolling";
 
 export function TableRow({
   table,
+  showGame,
   last,
   rolling,
   favorite,
@@ -26,6 +27,8 @@ export function TableRow({
   menu,
 }: {
   table: MeaningTable;
+  /** Among tables of several games: which one it's from. */
+  showGame: boolean;
   last: LastResult | null;
   rolling: boolean;
   favorite: boolean;
@@ -48,14 +51,13 @@ export function TableRow({
     <li
       className={[
         // min-w-0: a long word in the name breaks instead of widening the list.
-        "min-w-0 rounded-2xl border bg-ink-800/50 p-4 transition-colors sm:p-5",
+        "flex min-w-0 flex-col rounded-2xl border bg-ink-800/50 p-3 pl-4 transition-colors",
         last ? "border-gold/40" : "border-ink-border",
       ].join(" ")}
     >
-      {/* On the narrowest phones the button goes below the name. */}
-      <div className="flex flex-wrap items-start gap-3">
-        <div className="min-w-[8.25rem] flex-1">
-          <div className="flex items-start gap-1.5">
+      <div className="flex flex-1 items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-0.5">
             <h2 className="min-w-0 break-words font-display text-lg leading-snug text-parchment">{table.name}</h2>
             <button
               type="button"
@@ -63,31 +65,34 @@ export function TableRow({
               aria-pressed={favorite}
               aria-label={favorite ? t.tables.favoriteRemove : t.tables.favoriteAdd}
               className={[
-                "-m-1 mt-0 shrink-0 p-1 transition",
+                "-my-2 flex size-9 shrink-0 items-center justify-center transition",
                 favorite ? "text-gold" : "text-parchment-faint hover:text-gold",
               ].join(" ")}
             >
               <IconStar size={16} filled={favorite} />
             </button>
           </div>
-          {table.description && <p className="mt-0.5 text-sm text-parchment-dim">{table.description}</p>}
+          {table.description && <p className="text-sm leading-snug text-parchment-dim">{table.description}</p>}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+            {showGame && <GameBadge table={table} />}
+            <TableEntriesButton table={table} />
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onRoll}
-          disabled={rolling}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3.5 py-2.5 text-sm font-medium text-gold transition hover:bg-gold/20 active:scale-95 disabled:opacity-60"
-        >
-          <IconDice size={17} className={rolling ? "animate-spin" : ""} />
-          {interpolate(t.tables.rollButton, { dice: table.dice })}
-        </button>
-      </div>
-      {/* Across the card's full width, not under the description: otherwise
-          fitting on one line depended on how long the range was. */}
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-        <GameBadge table={table} />
-        <TableEntriesButton table={table} />
-        {menu && <div className="ml-auto">{menu}</div>}
+        {/* The die says what it rolls; "Roll" only where there's room. */}
+        <div className="flex shrink-0 items-center gap-2">
+          {menu}
+          <button
+            type="button"
+            onClick={onRoll}
+            disabled={rolling}
+            aria-label={interpolate(t.tables.rollButton, { dice: table.dice })}
+            title={interpolate(t.tables.rollButton, { dice: table.dice })}
+            className="flex h-11 min-w-20 items-center justify-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3 text-sm font-medium text-gold transition hover:bg-gold/20 active:scale-95 disabled:opacity-60"
+          >
+            <IconDice size={17} className={rolling ? "animate-spin" : ""} />
+            {table.dice}
+          </button>
+        </div>
       </div>
 
       {last && (
@@ -137,7 +142,7 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
         type="button"
         onClick={() => setOpen(true)}
         title={t.tables.viewResultsTitle}
-        className="-m-1 flex items-center gap-1 p-1 text-parchment-dim transition hover:text-gold"
+        className="-m-2 flex items-center gap-1 p-2 text-parchment-dim transition hover:text-gold"
       >
         <IconList size={14} />
         {t.tables.viewResultsHint}

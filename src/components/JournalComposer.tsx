@@ -41,7 +41,6 @@ import {
   IconExcerpt,
   IconInsertBelow,
   IconNote,
-  IconNotebook,
   IconOracle,
   IconPlus,
   IconSend,
@@ -79,7 +78,8 @@ function modeShortcut(mode: ComposerMode, alt: string, shift: string): string {
  * Composer pinned to the bottom of the journal, on a single row to
  * leave the screen to the journal: tools (oracle, dice, table; a single
  * "Roll" button on phones), the entry kind as a chip inside the field,
- * the text and send (on phones, once there's something to send), and the notebook.
+ * the text and send (on phones, once there's something to send). The
+ * notebook's button is in the adventure's bar, at the top.
  *
  * The text can span several lines and the field grows with it (up to
  * about six; then it scrolls inside). With a physical keyboard Enter
@@ -144,8 +144,6 @@ export function JournalComposer({
   onInsertDone,
   onLogged,
   onRolled,
-  notebookOpen,
-  onOpenNotebook,
 }: {
   /** The journal measures it so the newest entry isn't left under the composer. */
   ref?: Ref<HTMLDivElement>;
@@ -163,9 +161,6 @@ export function JournalComposer({
   onLogged: () => void;
   /** A tool was rolled (rollId to link the consequence). */
   onRolled: (rollId?: string) => void;
-  /** The notebook's sheet (where it isn't a column): always at hand, however long the journal is. */
-  notebookOpen: boolean;
-  onOpenNotebook: () => void;
 }) {
   const { t } = useLocaleContext();
   const { entries, addEntry } = useJournalContext();
@@ -418,8 +413,7 @@ export function JournalComposer({
       <div className="flex items-center gap-1.5">
         {/* A phone has room for one button: it opens the game table where
             it was left, and its tabs have the rest. While typing it folds
-            away, like the notebook's, to leave the width to the text (as
-            in a messaging app). */}
+            away to leave the width to the text (as in a messaging app). */}
         <button
           type="button"
           onClick={() => setTool(lastTool)}
@@ -446,17 +440,6 @@ export function JournalComposer({
           ))}
         </div>
 
-        {/* On this side, so "send" stays put when it comes back (a tap on it takes the focus off the text). */}
-        <button
-          type="button"
-          onClick={onOpenNotebook}
-          aria-label={t.notebook.openLabel}
-          title={t.notebook.openLabel}
-          aria-expanded={notebookOpen}
-          className="flex size-11 shrink-0 sm:size-10 items-center justify-center rounded-xl border border-ink-border text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 max-sm:group-has-[textarea:focus]/composer:hidden xl:hidden"
-        >
-          <IconNotebook size={20} />
-        </button>
         <form
           className="flex min-w-0 flex-1 items-end gap-1 rounded-xl border border-ink-border bg-ink-800/70 p-1 transition focus-within:border-gold"
           onSubmit={(e) => {

@@ -1,9 +1,10 @@
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
 import { IconSettings } from "./icons/Icons";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { markBackupNudgeSeen, shouldNudgeBackup } from "../lib/backupReminder";
 import { preloadable } from "../lib/preloadable";
+import { settingsOpen } from "../lib/settingsOpen";
 
 const SettingsPanel = preloadable(() => import("./SettingsPanel").then((m) => m.SettingsPanel));
 
@@ -17,13 +18,13 @@ const SettingsPanel = preloadable(() => import("./SettingsPanel").then((m) => m.
 export function SettingsDialog() {
   const { t } = useLocaleContext();
   const { entries } = useJournalContext();
-  const [open, setOpen] = useState(false);
+  const open = useSyncExternalStore(settingsOpen.subscribe, settingsOpen.isOpen);
   const [nudgeSeen, setNudgeSeen] = useState(false);
   const backupDue = useMemo(() => shouldNudgeBackup(entries.map((e) => e.timestamp)), [entries]);
   const nudge = backupDue && !nudgeSeen;
 
   function openSettings() {
-    setOpen(true);
+    settingsOpen.open();
     // Once the dot has been seen, don't insist for a while even if no backup is made.
     if (nudge) {
       markBackupNudgeSeen();
@@ -40,18 +41,18 @@ export function SettingsDialog() {
         onClick={() => openSettings()}
         aria-label={triggerLabel}
         title={triggerLabel}
-        className="relative -m-1.5 p-1.5 text-parchment-dim transition hover:text-gold"
+        className="relative -mr-2 flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-gold"
       >
         <IconSettings size={22} />
         {/* Backup due: just a dot, no text and no notice. */}
         {nudge && (
-          <span className="absolute right-1 top-1 size-2 rounded-full bg-gold ring-2 ring-ink-950" />
+          <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-gold ring-2 ring-ink-950" />
         )}
       </button>
 
       {open && (
         <Suspense fallback={null}>
-          <SettingsPanel onClose={() => setOpen(false)} />
+          <SettingsPanel onClose={settingsOpen.close} />
         </Suspense>
       )}
     </>

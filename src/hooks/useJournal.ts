@@ -15,7 +15,7 @@ import { isoDate } from "../lib/isoDate";
 import type { JournalEntry, JournalLineKind, LonelogImport } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { forgetDeletions, recordDeletions } from "../lib/deletions";
-import { insertEntryAfter, moveEntryIn } from "../lib/journalOrder";
+import { appendEntry, insertEntryAfter, moveEntryIn } from "../lib/journalOrder";
 import { announceChange, onExternalChange } from "../lib/sync";
 import { useLocaleContext } from "./useLocaleContext";
 import { useStoredList } from "./useStoredList";
@@ -300,7 +300,7 @@ export function useJournal(): UseJournalResult {
         updateEntries((prev) => insertEntryAfter(prev, entry, point.afterId, now));
         setInsertionPoint({ adventureId, afterId: entry.id });
       } else {
-        updateEntries((prev) => [...prev, entry]);
+        updateEntries((prev) => appendEntry(prev, entry));
       }
       updateAdventures((prev) =>
         prev.map((a) => (a.id === adventureId ? { ...a, updatedAt: now } : a)),

@@ -164,7 +164,7 @@ export function HistoryEntryCard({
       >
         <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-faint">
           <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? (entry.card ? t.history.kindCards : t.history.kindDice) : entry.tableName}</span>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-4">
             <span className="normal-case tracking-normal">
               {formatTime(t.dateLocale, entry.timestamp)}
             </span>
@@ -176,7 +176,7 @@ export function HistoryEntryCard({
                 entry.favorite ? t.history.favoriteRemove : t.history.favoriteAdd
               }
               className={[
-                "-m-1 p-1 transition",
+                "-m-2 p-2 transition",
                 entry.favorite
                   ? "text-gold"
                   : "text-parchment-faint hover:text-gold",
@@ -188,7 +188,7 @@ export function HistoryEntryCard({
               type="button"
               onClick={() => onRequestDelete(entry.id)}
               aria-label={t.history.deleteEntry}
-              className="-m-1 p-1 text-parchment-faint transition hover:text-no"
+              className="-m-2 p-2 text-parchment-faint transition hover:text-no"
             >
               <IconTrash size={15} />
             </button>

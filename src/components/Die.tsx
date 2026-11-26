@@ -122,6 +122,22 @@ export function BlankDie({ color, sides = 6, size = "md" }: { color: DieColor; s
   );
 }
 
+/** A die's silhouette, in the colour of the text beside it (a button that rolls it). */
+export function DieOutline({ sides, size = 28 }: { sides: number; size?: number }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden>
+      <Outline
+        sides={sides}
+        shape={SHAPES[sides] ?? SQUARE}
+        fill="currentColor"
+        fillOpacity={0.14}
+        stroke="currentColor"
+        strokeWidth="5"
+      />
+    </svg>
+  );
+}
+
 /** How a die counted, as a badge on its corner: shape and colour. */
 const BADGES: Record<"hit" | "miss" | "high" | "low", { color: string; d: string }> = {
   hit: { color: "var(--color-yes)", d: "M75 83L81 89L91 77" },

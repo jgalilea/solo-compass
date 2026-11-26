@@ -66,7 +66,13 @@ test("restores the full backup on a device that has nothing", async ({ page, bro
   await newAdventure(page, "La ciénaga");
   await write(page, "El barro me llega a las rodillas.");
 
-  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  // On a phone an adventure's bar takes the header's place: Settings is in its menu.
+  const settings = page.getByRole("button", { name: /^Ajustes/ });
+  if (await settings.isVisible()) await settings.click();
+  else {
+    await page.getByRole("button", { name: "Más opciones" }).click();
+    await page.getByRole("menuitem", { name: "Ajustes" }).click();
+  }
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Exportar todo" }).click();
   const backup = await (await download).path();

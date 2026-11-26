@@ -4,6 +4,7 @@ import { get, set } from "idb-keyval";
 import { createCollection, diffById } from "./collectionStore";
 import type { Dictionary } from "./i18n";
 import { makeId } from "./ids";
+import { compareEntries } from "./journalOrder";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 
 /**
@@ -192,7 +193,7 @@ export async function replaceAdventures(t: Dictionary, adventures: Adventure[]):
 export async function loadJournalEntries(t: Dictionary): Promise<JournalEntry[]> {
   if (typeof window === "undefined") return [];
   try {
-    return (await entryStore.load()).sort((a, b) => a.timestamp - b.timestamp);
+    return (await entryStore.load()).sort(compareEntries);
   } catch {
     throw new JournalStorageError(t.history.storageUnavailableError);
   }

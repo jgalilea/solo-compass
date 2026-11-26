@@ -18,6 +18,7 @@ import { readTableDice } from "../lib/rolledDice";
 import { interpolate } from "../lib/i18n";
 import { downloadTextFile, sanitizeFilename } from "../lib/journalUi";
 import { canShare, shareTextFile } from "../lib/share";
+import { PAGE_CLASS } from "../lib/pageLayout";
 import { normalizeForSearch } from "../lib/text";
 import { ActionMenu } from "./ActionMenu";
 import { EmptyState } from "./StateViews";
@@ -35,7 +36,8 @@ import {
   IconUpload,
 } from "./icons/Icons";
 import { InspirationCard } from "./InspirationCard";
-import { FoldingSection, TableSection, ThemeFilter } from "./TableSections";
+import { PageHeader } from "./PageHeader";
+import { FoldingSection, SectionList, TableSection, ThemeFilter } from "./TableSections";
 import { TableRow } from "./TableRow";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
 import { RecentRolls } from "./RecentRolls";
@@ -44,6 +46,9 @@ import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
 import { generatorGames, generatorTables, type Generator, type GeneratorDraft } from "../lib/generators";
 
 const INSPIRATION_ID = "inspiration";
+
+/** Tables side by side where each keeps room for its description. */
+const TABLE_GRID = "grid gap-2.5 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 4xl:grid-cols-3";
 
 // The editors load when opened: they're a good part of the main bundle otherwise.
 const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
@@ -271,6 +276,8 @@ export function TablesView() {
   );
   const otherCustom = custom.filter((x) => !favoriteIds.has(x.id) && matches(x));
   const otherBlocks = blocks.map((b) => ({ ...b, tables: b.tables.filter((x) => !favoriteIds.has(x.id) && matches(x)) }));
+  // While searching or filtering, a game without matches is left out once it's loaded.
+  const shownBlocks = otherBlocks.filter((block) => !filtering || block.status !== "ready" || block.tables.length > 0);
   // Only once every game has been searched: not while one is still loading.
   const nothingFound =
     filtering &&
@@ -279,31 +286,34 @@ export function TablesView() {
 
   // A block's tables, under a sub-heading per theme (when it has several
   // and no theme is chosen). Tables without one (the player's own) go last.
-  function renderTables(tables: MeaningTable[]) {
+  function renderTables(tables: MeaningTable[], sameGame = true) {
     const groups = [...TABLE_THEMES, undefined]
       .map((theme) => ({ theme, tables: tables.filter((x) => x.theme === theme) }))
       .filter((g) => g.tables.length > 0);
-    if (groups.length <= 1) return <ul className="grid gap-3 2xl:grid-cols-2">{tables.map(renderRow)}</ul>;
+    const rows = (list: MeaningTable[]) => <ul className={TABLE_GRID}>{list.map((table) => renderRow(table, !sameGame))}</ul>;
+    if (groups.length <= 1) return rows(tables);
     return (
       <div className="flex flex-col gap-5">
         {groups.map((g) => (
           <div key={g.theme ?? "none"} className="flex flex-col gap-3">
-            <h3 className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            <h4 className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wide text-parchment-dim">
               {g.theme ? t.tables.themes[g.theme] : t.tables.editor.themeNone}
               <span className="text-parchment-faint">{g.tables.length}</span>
-            </h3>
-            <ul className="grid gap-3 2xl:grid-cols-2">{g.tables.map(renderRow)}</ul>
+            </h4>
+            {rows(g.tables)}
           </div>
         ))}
       </div>
     );
   }
 
-  function renderRow(table: MeaningTable) {
+  // Which game a table is from is only said where they mix (favourites).
+  function renderRow(table: MeaningTable, showGame: boolean) {
     return (
       <TableRow
         key={table.id}
         table={table}
+        showGame={showGame}
         last={last?.sourceId === table.id ? last : null}
         rolling={rollingId === table.id}
         favorite={favoriteIds.has(table.id)}
@@ -368,16 +378,11 @@ export function TablesView() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12 md:max-w-3xl lg:max-w-7xl 2xl:max-w-[110rem]">
-      <header className="text-center">
-        <h1 className="font-display text-3xl text-parchment sm:text-4xl">
-          {t.tables.title}
-        </h1>
-        <p className="mt-2 text-sm text-parchment-dim">{t.tables.subtitle}</p>
-      </header>
+    <div className={PAGE_CLASS}>
+      <PageHeader title={t.tables.title} subtitle={t.tables.subtitle} />
 
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-12">
-        <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5 md:gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] 2xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] 2xl:gap-10">
+        <div className="flex min-w-0 flex-col gap-5 md:gap-6">
           <label className="relative block">
             <IconSearch
               size={16}
@@ -429,122 +434,128 @@ export function TablesView() {
                     </>
                   }
                 >
-                  <ul className="grid gap-3 2xl:grid-cols-2">{favoriteTables.map(renderRow)}</ul>
+                  <ul className={TABLE_GRID}>{favoriteTables.map((table) => renderRow(table, true))}</ul>
                 </TableSection>
               )}
 
               {/* Several tables in one roll. Like the player's tables: one
                   unfold away, and a line when folded. */}
-              {!filtering && (
-                <FoldingSection
-                  title={t.tables.generatorsHeading}
-                  count={generators.length}
-                  countText={interpolate(
-                    generators.length === 1 ? t.tables.generatorCountOne : t.tables.generatorCount,
-                    { count: generators.length },
-                  )}
-                  open={isOpen("generators")}
-                  onToggle={() => toggleSection("generators")}
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="min-w-0 flex-1 text-sm text-parchment-dim">{t.tables.generatorsIntro}</p>
-                      <button
-                        type="button"
-                        onClick={() => setGeneratorEditor({})}
-                        className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
-                      >
-                        <IconPlus size={16} />
-                        {t.tables.generatorNew}
-                      </button>
-                    </div>
-                    {generators.length === 0 ? (
-                      <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
-                        {t.tables.generatorsEmpty}
-                      </p>
-                    ) : (
-                      <ul className="grid gap-3 2xl:grid-cols-2">
-                        {generators.map((generator) => (
-                          <GeneratorRow
-                            key={generator.id}
-                            generator={generator}
-                            tables={generatorTables(generator, all)}
-                            loading={generator.tableIds.some((id) => {
-                              const game = gameOfTable(id);
-                              return !!game && blocks.find((b) => b.id === game)?.status !== "ready";
-                            })}
-                            last={last?.sourceId === generatorSource(generator) ? last : null}
-                            rolling={rollingId === generatorSource(generator)}
-                            activeAdventure={activeAdventure}
-                            onRoll={() => handleGenerator(generator)}
-                            onEdit={() =>
-                              setGeneratorEditor({ id: generator.id, draft: { name: generator.name, tableIds: generator.tableIds } })
-                            }
-                            onDelete={() => {
-                              removeGenerator(generator.id);
-                              setToast({ kind: "generatorDeleted", generator });
-                            }}
-                            onSaveConsequence={addConsequence}
-                          />
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </FoldingSection>
-              )}
-
-              {/* Always there (unless searching or filtering): creating or
-                  importing a table is one unfold away. Folded, it's just a line. */}
               {(!filtering || otherCustom.length > 0) && (
-                <FoldingSection
-                  title={t.tables.customHeading}
-                  count={filtering ? otherCustom.length : custom.length}
-                  open={isOpen("custom")}
-                  onToggle={() => toggleSection("custom")}
-                >
-                  <div className="flex flex-col gap-4">
-                    {customActions}
-                    {otherCustom.length > 0
-                      ? renderTables(otherCustom)
-                      : custom.length === 0 && (
-                          <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
-                            {t.tables.customEmpty}
-                          </p>
-                        )}
-                  </div>
-                </FoldingSection>
-              )}
-
-              {otherBlocks.map(
-                (block) =>
-                  // While searching or filtering, a game without matches is left out once it's loaded.
-                  (!filtering || block.status !== "ready" || block.tables.length > 0) && (
+                <SectionList title={t.tables.ownHeading}>
+                  {!filtering && (
                     <FoldingSection
-                      key={block.id}
-                      title={block.title}
-                      note={block.note}
-                      count={filtering ? block.tables.length : block.count}
-                      open={isOpen(block.id)}
-                      onToggle={() => toggleSection(block.id)}
+                      title={t.tables.generatorsHeading}
+                      count={generators.length}
+                      countText={interpolate(
+                        generators.length === 1 ? t.tables.generatorCountOne : t.tables.generatorCount,
+                        { count: generators.length },
+                      )}
+                      open={isOpen("generators")}
+                      onToggle={() => toggleSection("generators")}
                     >
-                      {block.status === "error" ? (
-                        <div className="flex flex-wrap items-center gap-3 px-1 text-sm text-parchment-dim">
-                          {t.tables.loadError}
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <p className="min-w-0 flex-1 text-sm text-parchment-dim">{t.tables.generatorsIntro}</p>
                           <button
                             type="button"
-                            onClick={() => retry(block.id)}
-                            className="rounded-xl border border-ink-border px-3 py-1.5 text-parchment transition hover:border-gold/50 hover:text-gold"
+                            onClick={() => setGeneratorEditor({})}
+                            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
                           >
-                            {t.common.retry}
+                            <IconPlus size={16} />
+                            {t.tables.generatorNew}
                           </button>
                         </div>
-                      ) : block.status === "ready" ? (
-                        block.tables.length > 0 && renderTables(block.tables)
-                      ) : (
-                        <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
-                      )}
+                        {generators.length === 0 ? (
+                          <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
+                            {t.tables.generatorsEmpty}
+                          </p>
+                        ) : (
+                          <ul className={TABLE_GRID}>
+                            {generators.map((generator) => (
+                              <GeneratorRow
+                                key={generator.id}
+                                generator={generator}
+                                tables={generatorTables(generator, all)}
+                                loading={generator.tableIds.some((id) => {
+                                  const game = gameOfTable(id);
+                                  return !!game && blocks.find((b) => b.id === game)?.status !== "ready";
+                                })}
+                                last={last?.sourceId === generatorSource(generator) ? last : null}
+                                rolling={rollingId === generatorSource(generator)}
+                                activeAdventure={activeAdventure}
+                                onRoll={() => handleGenerator(generator)}
+                                onEdit={() =>
+                                  setGeneratorEditor({ id: generator.id, draft: { name: generator.name, tableIds: generator.tableIds } })
+                                }
+                                onDelete={() => {
+                                  removeGenerator(generator.id);
+                                  setToast({ kind: "generatorDeleted", generator });
+                                }}
+                                onSaveConsequence={addConsequence}
+                              />
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </FoldingSection>
-                  ),
+                  )}
+
+                  {/* Always there (unless searching or filtering): creating or
+                      importing a table is one unfold away. Folded, it's just a line. */}
+                  {(!filtering || otherCustom.length > 0) && (
+                    <FoldingSection
+                      title={t.tables.customHeading}
+                      count={filtering ? otherCustom.length : custom.length}
+                      open={isOpen("custom")}
+                      onToggle={() => toggleSection("custom")}
+                    >
+                      <div className="flex flex-col gap-4">
+                        {customActions}
+                        {otherCustom.length > 0
+                          ? renderTables(otherCustom)
+                          : custom.length === 0 && (
+                              <p className="rounded-2xl border border-dashed border-ink-border px-4 py-3 text-sm text-parchment-dim">
+                                {t.tables.customEmpty}
+                              </p>
+                            )}
+                      </div>
+                    </FoldingSection>
+                  )}
+                </SectionList>
+              )}
+
+              {shownBlocks.length > 0 && (
+                <SectionList title={t.tables.gamesHeading}>
+                  {shownBlocks.map(
+                    (block) => (
+                        <FoldingSection
+                          key={block.id}
+                          title={block.title}
+                          note={block.note}
+                          count={filtering ? block.tables.length : block.count}
+                          open={isOpen(block.id)}
+                          onToggle={() => toggleSection(block.id)}
+                        >
+                          {block.status === "error" ? (
+                            <div className="flex flex-wrap items-center gap-3 px-1 text-sm text-parchment-dim">
+                              {t.tables.loadError}
+                              <button
+                                type="button"
+                                onClick={() => retry(block.id)}
+                                className="rounded-xl border border-ink-border px-3 py-1.5 text-parchment transition hover:border-gold/50 hover:text-gold"
+                              >
+                                {t.common.retry}
+                              </button>
+                            </div>
+                          ) : block.status === "ready" ? (
+                            block.tables.length > 0 && renderTables(block.tables)
+                          ) : (
+                            <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
+                          )}
+                        </FoldingSection>
+                      ),
+                  )}
+                </SectionList>
               )}
             </>
           )}

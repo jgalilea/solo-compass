@@ -57,6 +57,7 @@ import { Modal } from "./Modal";
 import { GITHUB_URL, KOFI_URL, feedbackUrl } from "../lib/support";
 import { versionLabel } from "../lib/appVersion";
 import { canKeepScreenOn, isKeepScreenOn, setKeepScreenOn, subscribeKeepScreenOn } from "../lib/wakeLock";
+import { smoothBehavior } from "../lib/scrolling";
 import { Switch } from "./Switch";
 
 /**
@@ -75,10 +76,32 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       size="lg"
     >
       <DialogHeader title={t.settings.title} onClose={onClose} />
+      {/* One column is a long way down: straight to each part. */}
+      <nav aria-label={t.settings.title} className="grid shrink-0 grid-cols-4 gap-1 border-b border-ink-border/70 px-3 py-1.5 sm:px-5 lg:hidden">
+        {PARTS.map((part) => (
+          <button
+            key={part}
+            type="button"
+            onClick={() =>
+              document.getElementById(`settings-${part}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" })
+            }
+            className="h-10 truncate rounded-lg px-1 text-[13px] text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
+          >
+            {
+              {
+                appearance: t.settings.appearanceHeading,
+                app: t.install.sectionTitle,
+                data: t.storage.sectionTitle,
+                about: t.settings.aboutHeading,
+              }[part]
+            }
+          </button>
+        ))}
+      </nav>
       <DialogBody className="block">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
             <div className="flex flex-col gap-6">
-              <Section title={t.settings.appearanceHeading}>
+              <Section part="appearance" title={t.settings.appearanceHeading}>
                 <AppearanceSettings />
               </Section>
               <Section title={t.settings.languageHeading}>
@@ -103,14 +126,14 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
               </Section>
             </div>
             <div className="flex flex-col gap-6">
-              <Section title={t.install.sectionTitle}>
+              <Section part="app" title={t.install.sectionTitle}>
                 <InstallAppSettings />
               </Section>
-              <Section title={t.storage.sectionTitle}>
+              <Section part="data" title={t.storage.sectionTitle}>
                 <StorageProtectionSettings />
                 <BackupSettings />
               </Section>
-              <Section title={t.settings.aboutHeading}>
+              <Section part="about" title={t.settings.aboutHeading}>
                 <AboutSettings />
               </Section>
             </div>
@@ -120,19 +143,12 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Section({
-  title,
-  className = "",
-  ref,
-  children,
-}: {
-  title: string;
-  className?: string;
-  ref?: React.Ref<HTMLElement>;
-  children: ReactNode;
-}) {
+/** The parts of Settings its top row jumps to. */
+const PARTS = ["appearance", "app", "data", "about"] as const;
+
+function Section({ title, part, children }: { title: string; part?: (typeof PARTS)[number]; children: ReactNode }) {
   return (
-    <section ref={ref} className={`flex flex-col gap-3 ${className}`}>
+    <section id={part && `settings-${part}`} className="flex scroll-mt-4 flex-col gap-3">
       <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{title}</h3>
       {children}
     </section>
@@ -171,7 +187,7 @@ function AppearanceSettings() {
         })}
       </div>
 
-      <div role="radiogroup" aria-label={t.themeSwitcher.dialogTitle} className="flex flex-col gap-2">
+      <div role="radiogroup" aria-label={t.themeSwitcher.dialogTitle} className="grid grid-cols-2 gap-2 lg:grid-cols-1">
         {THEMES.map((themeInfo) => {
           const active = themeInfo.id === theme;
           const label = t.theme[themeInfo.id];
@@ -184,7 +200,7 @@ function AppearanceSettings() {
               aria-checked={active}
               onClick={() => setTheme(themeInfo.id)}
               className={[
-                "flex items-center gap-3 rounded-2xl border p-3 text-left transition",
+                "flex min-w-0 items-center gap-2.5 rounded-2xl border p-3 text-left transition sm:gap-3",
                 active ? "border-gold/50 bg-gold/10" : "border-ink-border hover:border-ink-500",
               ].join(" ")}
             >
@@ -195,7 +211,7 @@ function AppearanceSettings() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-parchment">{label.name}</span>
-                <span className="block truncate text-xs text-parchment-dim">{label.tagline}</span>
+                <span className="block truncate text-xs text-parchment-dim max-sm:hidden">{label.tagline}</span>
               </span>
               {active && <IconCheck size={18} className="shrink-0 text-gold" />}
             </button>

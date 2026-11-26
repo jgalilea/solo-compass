@@ -240,3 +240,63 @@ test("an address that isn't a screen leads back to the oracle", async ({ page })
   await page.getByRole("link", { name: "Volver al oráculo" }).click();
   await expect(page.getByLabel("Pregunta para el oráculo")).toBeVisible();
 });
+
+/**
+ * A long journal opens where the game was left (its last entry, right
+ * above the composer), with its bar pinned, and each question stays
+ * with its answer after reloading.
+ */
+test("opens an adventure at its end, each question before its answer", async ({ page }) => {
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: "Nueva aventura" }).click();
+  await page.getByPlaceholder("Nombre de la aventura").fill("El paso");
+  await page.getByRole("button", { name: "Crear" }).click();
+  const composer = page.locator("[data-composer] textarea");
+  for (let i = 1; i <= 12; i++) {
+    await composer.fill(`Jornada ${i}.\nNieve.\nViento.\nMás nieve.`);
+    await page.getByRole("button", { name: "Añadir al diario" }).click();
+  }
+
+  // Several questions: one of them alone could come out in order by chance.
+  await page.getByRole("link", { name: "Oráculo", exact: true }).click();
+  for (let i = 1; i <= 8; i++) {
+    await page.getByLabel("Pregunta para el oráculo").fill(`¿Duda ${i}?`);
+    await page.getByRole("button", { name: "Lanzar los dados" }).click();
+  }
+  await page.getByRole("link", { name: "Diario", exact: true }).click();
+  const entries = page.locator("[id^=entry-]");
+  await expect(entries.last()).toBeInViewport();
+
+  await page.reload();
+  await expect(entries.last()).toBeInViewport();
+  await expect(page.getByRole("heading", { level: 1, name: "El paso" })).toBeInViewport();
+  const lines = (await entries.allInnerTexts()).slice(-16);
+  expect(lines.filter((_, i) => i % 2 === 0).map((line) => line.trim())).toEqual(
+    Array.from({ length: 8 }, (_, i) => `¿Duda ${i + 1}?`),
+  );
+});
+
+/** Picking a session goes to it and stays there (on a phone, from a menu that's a history entry). */
+test("jumps to a session from the index", async ({ page }) => {
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: "Nueva aventura" }).click();
+  await page.getByPlaceholder("Nombre de la aventura").fill("El río");
+  await page.getByRole("button", { name: "Crear" }).click();
+  const composer = page.locator("[data-composer] textarea");
+  for (const session of ["La orilla", "La barca", "El delta"]) {
+    await page.locator("[data-composer] button[aria-haspopup=menu]").click();
+    await page.getByRole("menuitemradio", { name: /Nueva sesión/ }).click();
+    await composer.fill(session);
+    await page.getByRole("button", { name: "Añadir al diario" }).click();
+    for (let i = 1; i <= 10; i++) {
+      await composer.fill(`${session}, ${i}.\nAgua.\nJuncos.\nMás agua.`);
+      await page.getByRole("button", { name: "Añadir al diario" }).click();
+    }
+  }
+  const menu = page.getByRole("button", { name: "Sesiones", exact: true }).and(page.locator("[aria-haspopup]"));
+  if (await menu.isVisible()) await menu.click();
+  await page.getByRole("navigation", { name: "Sesiones" }).getByRole("button", { name: /^La orilla/ }).filter({ visible: true }).click();
+  // Once the menu's history entry is gone too.
+  await page.waitForTimeout(500);
+  await expect(page.locator("[id^=entry-]").getByText("La orilla, 1.")).toBeInViewport();
+});

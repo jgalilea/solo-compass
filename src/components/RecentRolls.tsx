@@ -28,11 +28,14 @@ const ANSWER_COLOR: Record<string, string> = {
  */
 export function RecentRolls({
   limit = 3,
+  wideLimit = limit,
   kind,
   className = "",
   onRepeat,
 }: {
   limit?: number;
+  /** On a wide screen (2xl), where they have room of their own. */
+  wideLimit?: number;
   kind: "oraculo" | "tabla" | "dados";
   className?: string;
   /** The dice screen: rolls the same dice again (a card can't be). */
@@ -41,7 +44,7 @@ export function RecentRolls({
   const { status, entries } = useHistoryContext();
   const { t } = useLocaleContext();
 
-  const recent = entries.filter((e) => e.kind === kind).slice(0, limit);
+  const recent = entries.filter((e) => e.kind === kind).slice(0, Math.max(limit, wideLimit));
   if (status !== "ready" || recent.length === 0) return null;
 
   return (
@@ -59,8 +62,8 @@ export function RecentRolls({
         </Link>
       </div>
       <ul className="flex flex-col divide-y divide-ink-border/60 rounded-2xl border border-ink-border bg-ink-900/40">
-        {recent.map((entry) => (
-          <li key={entry.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+        {recent.map((entry, i) => (
+          <li key={entry.id} className={`${i < limit ? "flex" : "hidden 2xl:flex"} items-center gap-3 px-4 py-2.5 text-sm`}>
             {entry.kind === "oraculo" ? (
               <>
                 <span className="-mx-1.5 -my-1 flex shrink-0 gap-1">
