@@ -106,7 +106,7 @@ that way (`?aventura=<id>`). With one picked, the rolls an imported
 journal came with (the sample's) are listed too, read from its entries
 and never stored (`importedRolls.ts`). Theme, mode, language, backup and credits all
 live in one header button (`SettingsDialog`, opening `SettingsPanel`;
-on phones a row at its top jumps to each part); inside an adventure on
+on phones a row at its top jumps to each part and marks the one being read); inside an adventure on
 phone and tablet, where the app's header gives way to the adventure's
 bar, the same dialog opens from that bar's ⋯ menu (`settingsOpen.ts`,
 an open store like `guide.ts`, both on `openStore.ts`). Which adventure rolls are

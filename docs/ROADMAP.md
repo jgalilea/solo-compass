@@ -39,6 +39,9 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     un 25 % a la casilla; la pregunta ya va al oráculo desde la casilla) y que
     el icono de «Tirar» sea el de la última herramienta (confunde a quien
     quiere otra). Abierto: poner nombre a los tres botones de la tablet.
+  - 1.6.1: la fila de secciones de Ajustes (móvil) marca la parte que se lee
+    (`partInView`; al saltar, la elegida se queda marcada hasta que el scroll
+    para).
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

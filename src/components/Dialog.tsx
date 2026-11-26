@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, ReactNode, Ref } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { IconClose } from "./icons/Icons";
 
@@ -57,19 +57,23 @@ export function DialogHeader({
 /** The part of a dialog that scrolls. */
 /**
  * The dialog's scrolling content. `focusable` when there's nothing to
- * focus inside (only text): the keyboard can still scroll it.
+ * focus inside (only text): the keyboard can still scroll it. `ref` is
+ * the element that scrolls (Settings follows it to mark where you are).
  */
 export function DialogBody({
+  ref,
   className = "flex flex-col gap-4",
   focusable = false,
   children,
 }: {
+  ref?: Ref<HTMLDivElement>;
   className?: string;
   focusable?: boolean;
   children: ReactNode;
 }) {
   return (
     <div
+      ref={ref}
       tabIndex={focusable ? 0 : undefined}
       className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 ${className}`}
     >

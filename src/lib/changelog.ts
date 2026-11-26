@@ -25,6 +25,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.6.1",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXIII, al margen · El punto de lectura",
+        items: [
+          "En el móvil, la fila de arriba de los Ajustes marca la parte que estás leyendo, también al bajar con el dedo.",
+        ],
+      },
+      en: {
+        title: "Chapter XXIII, in the margin · The bookmark",
+        items: [
+          "On phones, the row at the top of Settings marks the part you're reading, as you scroll too.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.6.0",
     date: "2026-11-26",
     text: {

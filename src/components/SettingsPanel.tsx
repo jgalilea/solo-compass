@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
 import {
   IconAction,
   IconCast,
@@ -68,6 +68,47 @@ import { Switch } from "./Switch";
  */
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const { t } = useLocaleContext();
+  const bodyRef = useRef<HTMLDivElement>(null);
+  // The part being read, marked in the top row.
+  const [current, setCurrent] = useState<Part>(PARTS[0]);
+  // While a jump from the top row scrolls, the part picked stays marked
+  // (not each one it passes); then the mark follows the scroll again.
+  const jumping = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+    let frame = 0;
+    const follow = () => {
+      frame = 0;
+      setCurrent(partInView(body));
+    };
+    const onScroll = () => {
+      if (jumping.current !== undefined) {
+        clearTimeout(jumping.current);
+        jumping.current = window.setTimeout(() => {
+          jumping.current = undefined;
+          follow();
+        }, 150);
+        return;
+      }
+      if (!frame) frame = requestAnimationFrame(follow);
+    };
+    body.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      body.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+      clearTimeout(jumping.current);
+    };
+  }, []);
+
+  function jumpTo(part: Part) {
+    setCurrent(part);
+    clearTimeout(jumping.current);
+    // Cleared by the scroll it starts; this only covers a jump that doesn't move.
+    jumping.current = window.setTimeout(() => (jumping.current = undefined), 300);
+    document.getElementById(`settings-${part}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
+  }
 
   return (
     <Modal
@@ -76,29 +117,34 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       size="lg"
     >
       <DialogHeader title={t.settings.title} onClose={onClose} />
-      {/* One column is a long way down: straight to each part. */}
-      <nav aria-label={t.settings.title} className="grid shrink-0 grid-cols-4 gap-1 border-b border-ink-border/70 px-3 py-1.5 sm:px-5 lg:hidden">
-        {PARTS.map((part) => (
-          <button
-            key={part}
-            type="button"
-            onClick={() =>
-              document.getElementById(`settings-${part}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" })
-            }
-            className="h-10 truncate rounded-lg px-1 text-[13px] text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
-          >
-            {
+      {/* One column is a long way down: straight to each part, and the
+          one being read is marked (filled, like the game table's tabs). */}
+      <nav aria-label={t.settings.title} className="shrink-0 border-b border-ink-border/70 px-3 py-1.5 sm:px-5 lg:hidden">
+        <div className="grid grid-cols-4 gap-1 rounded-xl bg-ink-900/60 p-1">
+          {PARTS.map((part) => (
+            <button
+              key={part}
+              type="button"
+              onClick={() => jumpTo(part)}
+              aria-current={part === current ? "true" : undefined}
+              className={[
+                "h-9 truncate rounded-lg px-1 text-[13px] font-medium transition",
+                part === current ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
+              ].join(" ")}
+            >
               {
-                appearance: t.settings.appearanceHeading,
-                app: t.install.sectionTitle,
-                data: t.storage.sectionTitle,
-                about: t.settings.aboutHeading,
-              }[part]
-            }
-          </button>
-        ))}
+                {
+                  appearance: t.settings.appearanceHeading,
+                  app: t.install.sectionTitle,
+                  data: t.storage.sectionTitle,
+                  about: t.settings.aboutHeading,
+                }[part]
+              }
+            </button>
+          ))}
+        </div>
       </nav>
-      <DialogBody className="block">
+      <DialogBody ref={bodyRef} className="block">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
             <div className="flex flex-col gap-6">
               <Section part="appearance" title={t.settings.appearanceHeading}>
@@ -145,8 +191,24 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
 
 /** The parts of Settings its top row jumps to. */
 const PARTS = ["appearance", "app", "data", "about"] as const;
+type Part = (typeof PARTS)[number];
 
-function Section({ title, part, children }: { title: string; part?: (typeof PARTS)[number]; children: ReactNode }) {
+/**
+ * The part being read in the one column of a phone: the last whose
+ * heading has reached the top, or the last part once at the bottom.
+ */
+function partInView(body: HTMLElement): Part {
+  if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) return PARTS[PARTS.length - 1];
+  const line = body.getBoundingClientRect().top + 80;
+  let found: Part = PARTS[0];
+  for (const part of PARTS) {
+    const top = document.getElementById(`settings-${part}`)?.getBoundingClientRect().top;
+    if (top !== undefined && top <= line) found = part;
+  }
+  return found;
+}
+
+function Section({ title, part, children }: { title: string; part?: Part; children: ReactNode }) {
   return (
     <section id={part && `settings-${part}`} className="flex scroll-mt-4 flex-col gap-3">
       <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{title}</h3>
