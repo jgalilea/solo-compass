@@ -5,7 +5,7 @@ import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
 import { definitionDraft, type CustomTableDraft } from "../lib/customTables";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useMediaQuery } from "../hooks/useMediaQuery";
-import { isTypingTarget } from "../hooks/useHotkeys";
+import { isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
 import { useHistoryContext } from "../hooks/useHistoryContext";
 import { revealElement, scrollBehaviorFor, smoothBehavior } from "../lib/scrolling";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -14,6 +14,8 @@ import { sortedEntriesOf } from "../lib/journalOrder";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
 import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
 import { buildCast, castKey, combineSteps, findMember, mainPc, purseKey, renameInEntry } from "../lib/lonelogTags";
+import { isStoryEntry } from "../lib/zenMode";
+import { continuationOf } from "../lib/continueAdventure";
 import { withRollDrawings } from "./drawRolls";
 import { PAGE_WIDTH } from "../lib/pageLayout";
 import { exportAdventureToHtml } from "../lib/htmlExport";
@@ -24,6 +26,7 @@ import { AdventureOracleScope } from "../hooks/AdventureOracleScope";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { AdventureHeader } from "./AdventureHeader";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ContinueAdventureDialog } from "./ContinueAdventureDialog";
 import { JournalComposer } from "./JournalComposer";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -57,6 +60,7 @@ import {
   IconSession,
   IconTable,
   IconTrash,
+  IconZen,
 } from "./icons/Icons";
 
 const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
@@ -95,6 +99,10 @@ export function AdventureDetailView() {
     deleteAdventure,
     setAdventureNotes,
     setCastDescription,
+    setActiveAdventureId,
+    setAdventureOracle,
+    setAdventurePick,
+    importAdventure,
     addEntry,
     removeEntry,
     restoreEntry,
@@ -112,7 +120,12 @@ export function AdventureDetailView() {
     () => sortedEntriesOf(entries, adventureId),
     [entries, adventureId],
   );
-  const groups = useMemo(() => groupBySession(adventureEntries), [adventureEntries]);
+  // Zen mode: only what's told (zenMode.ts). Kept by adventure, so
+  // opening another one doesn't stay in it.
+  const [zenFor, setZenFor] = useState<string | null>(null);
+  const zen = zenFor === adventureId;
+  const shownEntries = useMemo(() => (zen ? adventureEntries.filter(isStoryEntry) : adventureEntries), [zen, adventureEntries]);
+  const groups = useMemo(() => groupBySession(shownEntries), [shownEntries]);
   const views = useMemo(() => storylineViews(groups), [groups]);
   const { load: loadTables, status: tablesStatus, addTables } = useCustomTablesContext();
   const [tableDraft, setTableDraft] = useState<CustomTableDraft | null>(null);
@@ -159,6 +172,7 @@ export function AdventureDetailView() {
   const [searchType, setSearchType] = useState<EntryType | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [notebookOpen, setNotebookOpen] = useState(false);
+  const [continuing, setContinuing] = useState(false);
   // The character/place chip last tapped in the journal; the tick makes
   // tapping the same one again scroll to it again.
   const [castFocus, setCastFocus] = useState<{ key: string | null; tick: number }>({ key: null, tick: 0 });
@@ -277,23 +291,36 @@ export function AdventureDetailView() {
       // From xl the notebook is always visible in the left column.
       if (!window.matchMedia("(min-width: 80rem)").matches) setNotebookOpen(true);
     },
+    // In zen mode an entry's neighbours may be hidden: moving it, or
+    // writing below it, would land among what can't be seen.
+    ...(zen ? { story: true, onMove: undefined, canMove: undefined, onInsertBelow: undefined } : {}),
   };
 
   const searchMatches = useMemo(
-    () => (searchOpen ? searchEntries(adventureEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1, searchType) : []),
-    [searchOpen, adventureEntries, searchQuery, searchType],
+    () => (searchOpen ? searchEntries(shownEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1, searchType) : []),
+    [searchOpen, shownEntries, searchQuery, searchType],
   );
-  const searchTypes = useMemo(() => new Set(searchOpen ? adventureEntries.map(entryType) : []), [searchOpen, adventureEntries]);
+  const searchTypes = useMemo(() => new Set(searchOpen ? shownEntries.map(entryType) : []), [searchOpen, shownEntries]);
 
   // Jumping to an entry (from the search): its session is unfolded
   // first, and the scroll happens once it's painted (next effect).
   const pendingJumpRef = useRef<string | null>(null);
+  // An entry to jump to once out of zen mode, which was hiding it.
+  const zenJumpRef = useRef<string | null>(null);
   const [jumpTick, setJumpTick] = useState(0);
   const highlightTimer = useRef<number | undefined>(undefined);
   const jumpToEntry = useCallback(
     (id: string) => {
       const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
-      if (index < 0) return;
+      if (index < 0) {
+        // Hidden by zen mode (a tag-only note, from the notebook): out of
+        // it, then there once the whole journal is drawn.
+        if (zen && adventureEntries.some((e) => e.id === id)) {
+          zenJumpRef.current = id;
+          setZenFor(null);
+        }
+        return;
+      }
       const group = groups[index];
       setJournalFilter(null);
       if (index < groups.length - 1) {
@@ -307,8 +334,34 @@ export function AdventureDetailView() {
       pendingJumpRef.current = id;
       setJumpTick((n) => n + 1);
     },
-    [groups],
+    [groups, zen, adventureEntries],
   );
+  useEffect(() => {
+    const id = zenJumpRef.current;
+    if (zen || !id) return;
+    zenJumpRef.current = null;
+    jumpToEntry(id);
+  }, [zen, jumpToEntry]);
+
+  // Going in or out of zen mode keeps in sight what was being read: the
+  // first entry on screen that's drawn either way.
+  const zenAnchorRef = useRef<string | null>(null);
+  const toggleZen = useCallback(() => {
+    const story = new Set(adventureEntries.filter(isStoryEntry).map((e) => `entry-${e.id}`));
+    // Below the pinned bars (the adventure's, the session's), roughly.
+    const covered = 120;
+    const onScreen = [...document.querySelectorAll<HTMLElement>("[id^=entry-]")].find(
+      (el) => story.has(el.id) && el.getBoundingClientRect().bottom > covered,
+    );
+    zenAnchorRef.current = onScreen?.id ?? null;
+    setZenFor((current) => (current === adventureId ? null : adventureId));
+  }, [adventureEntries, adventureId]);
+  useLayoutEffect(() => {
+    const id = zenAnchorRef.current;
+    zenAnchorRef.current = null;
+    if (id) document.getElementById(id)?.scrollIntoView({ block: "start" });
+  }, [zen]);
+  useHotkeys({ z: () => adventureEntries.length > 0 && toggleZen() });
   useEffect(() => {
     const id = pendingJumpRef.current;
     if (!id) return;
@@ -587,7 +640,12 @@ export function AdventureDetailView() {
     // and their switcher ask and change that one (AdventureOracleScope).
     <AdventureOracleScope adventureId={adventure.id}>
       <div
-        className={`${PAGE_WIDTH} flex flex-1 flex-col px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_25rem] 2xl:gap-10 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)_32rem] 4xl:gap-12`}
+        className={`${PAGE_WIDTH} flex flex-1 flex-col px-4 lg:grid lg:items-start lg:gap-8 2xl:gap-10 4xl:gap-12 ${
+          // Zen mode has no game table: its column goes.
+          zen
+            ? "lg:grid-cols-[minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)] 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)]"
+            : "lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_25rem] 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)_32rem]"
+        }`}
       >
         {/* Wide desktop: sessions and notebook in their own column. Padded on
             both sides: it scrolls, so a selected item's ring would be clipped. */}
@@ -601,7 +659,12 @@ export function AdventureDetailView() {
           </aside>
         )}
 
-        <div className="flex flex-1 flex-col gap-4 lg:col-start-1 lg:min-h-[calc(100dvh-var(--spacing-header))] lg:pt-2 xl:col-start-2 4xl:col-start-3">
+        <div
+          className={`flex flex-1 flex-col gap-4 lg:col-start-1 lg:min-h-[calc(100dvh-var(--spacing-header))] lg:pt-2 xl:col-start-2 4xl:col-start-3 ${
+            // Read like a page: one column of text in the middle.
+            zen ? "lg:mx-auto lg:w-full lg:max-w-[52rem]" : ""
+          }`}
+        >
           <AdventureHeader
             adventure={adventure}
             isActive={isActive}
@@ -633,6 +696,9 @@ export function AdventureDetailView() {
             onExportHtml={() => void handleExportHtml()}
             onShare={handleShare}
             onDelete={() => setDeleting(true)}
+            zen={zen}
+            onToggleZen={toggleZen}
+            onContinue={() => setContinuing(true)}
           />
 
           {/* Over the journal, below the bar, wherever you are in it: opening
@@ -651,6 +717,22 @@ export function AdventureDetailView() {
                   onClose={() => setSearchOpen(false)}
                 />
               </div>
+            </div>
+          )}
+
+          {zen && (
+            <div className="flex items-center gap-2 rounded-xl border border-ink-border bg-ink-900/60 px-3 py-2 text-sm text-parchment-dim">
+              <IconZen size={16} className="shrink-0 text-gold" />
+              <span className="min-w-0 flex-1">{t.journal.zenBar}</span>
+              <button
+                type="button"
+                onClick={toggleZen}
+                title={t.journal.zenOff}
+                className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10 pointer-coarse:min-h-10"
+              >
+                <IconClose size={14} />
+                {t.journal.zenLeave}
+              </button>
             </div>
           )}
 
@@ -706,7 +788,8 @@ export function AdventureDetailView() {
                 type="button"
                 onClick={() => setPreviousExpanded((v) => !v)}
                 aria-expanded={previousExpanded}
-                aria-label={t.journal.togglePreviousSessions}
+                // Named by what it shows ("Earlier sessions 3"), as seen.
+                title={t.journal.togglePreviousSessions}
                 className="flex items-center gap-2 py-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
               >
                 <IconChevronRight
@@ -746,7 +829,9 @@ export function AdventureDetailView() {
             </section>
           )}
 
-          {filtered ? null : adventureEntries.length === 0 ? (
+          {filtered ? null : zen && shownEntries.length === 0 ? (
+            <p className="px-1 text-sm text-parchment-dim">{t.journal.zenEmpty}</p>
+          ) : adventureEntries.length === 0 ? (
             <EmptyState
               icon={<IconJournal size={22} />}
               title={t.journal.noEntriesTitle}
@@ -798,12 +883,12 @@ export function AdventureDetailView() {
                           }}
                           onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
                           onMoveUp={
-                            adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
+                            !zen && adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
                           }
                           onMoveDown={
-                            adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
+                            !zen && adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
                           }
-                          onInsertBelow={() => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
+                          onInsertBelow={zen ? undefined : () => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
                           onCopy={() => entryActions.onCopy!(currentGroup.sessionEntry!.id)}
                         />
                       </div>
@@ -818,25 +903,28 @@ export function AdventureDetailView() {
           )}
           <div ref={listEndRef} className="-mt-4" />
 
-          <JournalComposer
-            key={adventure.id}
-            ref={composerRef}
-            inputRef={composerInputRef}
-            insertRef={composerInsertRef}
-            adventureId={adventure.id}
-            mode={composerMode}
-            onModeChange={setComposerMode}
-            linkedRollId={linkedRollId}
-            insertAfter={inserting ? insertAfter : undefined}
-            onInsertDone={() => {
-              setInsertionPoint(null);
-              setLinkedRollId(undefined);
-              scrollPendingRef.current = false;
-              revealElement(listEndRef.current, "end");
-            }}
-            onLogged={handleLogged}
-            onRolled={handleRolled}
-          />
+          {/* Zen mode is for reading: the composer waits, with its draft. */}
+          <div className={zen ? "hidden" : "contents"}>
+            <JournalComposer
+              key={adventure.id}
+              ref={composerRef}
+              inputRef={composerInputRef}
+              insertRef={composerInsertRef}
+              adventureId={adventure.id}
+              mode={composerMode}
+              onModeChange={setComposerMode}
+              linkedRollId={linkedRollId}
+              insertAfter={inserting ? insertAfter : undefined}
+              onInsertDone={() => {
+                setInsertionPoint(null);
+                setLinkedRollId(undefined);
+                scrollPendingRef.current = false;
+                revealElement(listEndRef.current, "end");
+              }}
+              onLogged={handleLogged}
+              onRolled={handleRolled}
+            />
+          </div>
         </div>
 
         {/* Desktop: the table always open, no sheets covering anything.
@@ -845,7 +933,7 @@ export function AdventureDetailView() {
             room for the keyboard focus ring of what sits at its edge. */}
         <aside
           aria-label={t.journal.playPanelLabel}
-          className={`${SIDE_COLUMN} -ml-1.5 hidden gap-6 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3 4xl:col-start-4`}
+          className={`${SIDE_COLUMN} -ml-1.5 hidden gap-6 pl-1.5 pr-1 lg:col-start-2 xl:col-start-3 4xl:col-start-4 ${zen ? "" : "lg:flex"}`}
         >
           <PanelSection id="oracleTool" Icon={IconOracle} title={t.journal.toolOracleTitle}>
             <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
@@ -872,6 +960,28 @@ export function AdventureDetailView() {
 
         {statsOpen && (
           <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
+        )}
+
+        {continuing && (
+          <ContinueAdventureDialog
+            name={adventure.name}
+            onClose={() => setContinuing(false)}
+            onContinue={(name) => {
+              const next = importAdventure(
+                name,
+                continuationOf(adventure, adventureEntries, interpolate(t.journal.continuedFrom, { name: adventure.name })),
+              );
+              // Played the same way: its oracle, and what its game table picked.
+              if (adventure.oracle) setAdventureOracle(next.id, adventure.oracle);
+              for (const which of ["gameDice", "gameTables"] as const) {
+                const ids = adventure[which]?.ids;
+                if (ids) setAdventurePick(next.id, which, ids);
+              }
+              setActiveAdventureId(next.id);
+              setContinuing(false);
+              navigate(`/diario/${next.id}`);
+            }}
+          />
         )}
 
         {deleting && (

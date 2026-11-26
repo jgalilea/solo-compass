@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { HistoryEntry } from "./history";
 import type { JournalEntry } from "./lonelog";
 import { buildCast } from "./lonelogTags";
-import { activityLevel, computeAdventureStats, lastYearByMonth, longestStreak, mostNamed } from "./journalStats";
+import { activityLevel, computeAdventureStats, lastYearByMonth, longestStreak, mostNamed, playTimeParts } from "./journalStats";
 
 let ts = Date.UTC(2026, 10, 1, 12);
 function entry(kind: JournalEntry["kind"], text: string, linkedRollId?: string): JournalEntry {
@@ -52,10 +52,46 @@ describe("adventure stats", () => {
       new Map(),
     );
     expect(stats.perSession).toEqual([
-      { title: null, entries: 1, words: 3 },
-      { title: "Uno", entries: 2, words: 2 },
-      { title: "Dos", entries: 0, words: 0 },
+      { title: null, entries: 1, words: 3, minutes: 0 },
+      // A minute between each entry written (the session's own included).
+      { title: "Uno", entries: 2, words: 2, minutes: 2 },
+      { title: "Dos", entries: 0, words: 0, minutes: 0 },
     ]);
+  });
+
+  it("tells roughly how long each session was played, without pauses or imports", () => {
+    const at = (minute: number, kind: JournalEntry["kind"], id = `e${minute}`): JournalEntry => ({
+      id,
+      adventureId: "a",
+      kind,
+      text: "x",
+      timestamp: Date.UTC(2026, 10, 1, 18) + minute * 60_000,
+    });
+    const stats = computeAdventureStats(
+      [
+        at(0, "session"),
+        at(10, "note"),
+        at(25, "roll"),
+        // Dinner: an hour and a half without writing isn't play.
+        at(115, "note"),
+        at(120, "consequence"),
+        at(2000, "session"),
+        // Imported: its time is the import's, not when it was played.
+        at(2001, "note", "1764000000000-3-ab12"),
+        at(2002, "note", "1764000000000-4-ab13"),
+      ],
+      new Map(),
+    );
+    expect(stats.perSession.map((x) => x.minutes)).toEqual([30, 0]);
+    expect(stats.playMinutes).toBe(30);
+  });
+
+  it("says a play time rounded to five minutes, or nothing", () => {
+    expect(playTimeParts(0)).toBeNull();
+    expect(playTimeParts(2)).toBeNull();
+    expect(playTimeParts(3)).toEqual({ hours: 0, minutes: 5 });
+    expect(playTimeParts(87)).toEqual({ hours: 1, minutes: 25 });
+    expect(playTimeParts(119)).toEqual({ hours: 2, minutes: 0 });
   });
 
   it("sets the oracle's yes against the chances of what was asked", () => {

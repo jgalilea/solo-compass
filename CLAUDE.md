@@ -35,7 +35,13 @@ console error: `smoke.e2e.ts` plays the main path (oracle, new
 adventure, an entry, a table roll, reload; two tabs at once; own dice
 and cards) and `lonelog.e2e.ts` Lonelog 1.7 in, changed and out; `data.e2e.ts` what would hurt most to lose (an
 adventure out as Lonelog and back in, the full backup restored on an
-empty browser, a table of one's own, the language picked). The deploy
+empty browser, a table of one's own, the language picked); `files.e2e.ts`
+files handed to the app (dropped on the window, shared through the
+service worker's share target, the wrong kind picked with a button, and
+refused ones); `a11y.e2e.ts` axe (WCAG 2.1 A and AA) on the main screens
+in every theme and mode on the desktop, OSR on the phone, and the
+dialogs, with reduced motion (a colour caught mid-fade isn't the one
+shown) and `meta-viewport` left out (zoom is blocked on purpose). The deploy
 workflow runs `npm test`, builds, then runs the smoke test, so a
 failure in either blocks the publish. Keep its selectors on visible
 text/roles in Spanish (the test runs with `locale: "es-ES"`).
@@ -164,6 +170,7 @@ No backend; persistence is split by access pattern, not by feature:
   language, selected oracle and favorite oracle (the device's: with no
   active adventure, and for an adventure that hasn't used one yet; the
   favorite first, `initialOracleId`, the last used otherwise), favorite tables, unfolded table blocks,
+  searching the tables' results too (`tableSearch.ts`),
   folded notebook lists and blocks (`notebookSections.ts`, also the
   session index), the composer's draft per adventure (`drafts.ts`:
   text, entry type and speaker, gone once sent), whether new scenes are tested, active-adventure
@@ -239,6 +246,37 @@ No backend; persistence is split by access pattern, not by feature:
   note (`BackupNote`: only in this browser, no cloud, with the export
   button) while anything has no backup; closed, it's back in 30 days.
   No toast or dialog, and nothing inside an adventure.
+- **Files handed to the app**: every file is looked at by
+  `fileImport.ts` (`inspectFile`) before anything is kept, and says what
+  it is (a Lonelog journal, tables of one's own, a backup) or why it's
+  refused: only text (.md/.markdown/.txt/.json, strict UTF-8 or UTF-16
+  with its mark, no control characters), at most `MAX_FILE_BYTES`
+  (read only below that) and `MAX_TEXT_IMPORT_BYTES` for a journal or
+  tables, a backup only if it's the app's and not from a newer
+  `schemaVersion` (`restoreBackup` refuses that too). The three import
+  buttons (journal, tables, Settings' restore) use it with what they
+  expect (`prefer`); the wrong kind goes to the same dialog as a file
+  from outside (`offerFiles`). From outside: dropped anywhere on the
+  window (`IncomingFiles`, in `Layout`: a hint while dragging, and the
+  browser no longer navigates away to the file), opened with the
+  installed app (manifest `file_handlers`, Chromium on a computer,
+  `launchQueue`) or shared to it (manifest `share_target`, Android:
+  `public/share-target.js`, loaded into the service worker by workbox's
+  `importScripts`, keeps the posted files in a cache of their own and
+  sends the app to `#/?compartido`, `takeSharedFiles`). They wait in
+  `incomingFiles.ts` (main bundle, small) for `IncomingFileDialog`
+  (preloadable, with what reads files): what it is, then import as a new
+  adventure, tables (handed to `TablesView` in the navigation state) or
+  the restore choice (`RestoreChoice`, shared with Settings); a text
+  that could be either a journal or a table offers the other reading.
+  What's inside is checked where it's read: backup records are
+  normalized, a table's die is at most `MAX_TABLE_SIDES` (a range of
+  hundreds of millions used to list every value and bring the tab
+  down), a table's link must be a web page (`webAddress`), and text
+  patterns stay linear on huge lines (`MAX_ROLL_TEXT` for rolls,
+  `MAX_MARKED_LINE` for a note's Markdown, runs of spaces matched only
+  from their start; `longText.test.ts`): a pattern run over imported
+  text must not take quadratic time.
 - **Full backup/restore** (`backup.ts`, wired into `SettingsPanel`): exports
   everything above into one `.json` (download, or "Send" through the
   share sheet, as `.txt` on Chromium), and restores it either by
@@ -471,6 +509,14 @@ descriptions (`t.sample.descriptions`).
   open threads) logs a `roll` entry and closes the sheet like any roll;
   its button and the roll's name say what it picks from (`tbl: PNJ d3=2
   -> Odile`: PCs and closed threads aren't in it).
+- **Carrying on in a new adventure** (`continueAdventure.ts`, the ⋯
+  menu, `ContinueAdventureDialog`): a blank journal whose first note
+  says where it comes from and holds every element's current state as
+  one tag (`snapshotTag`, which reads back to the same state: tested on
+  the sample in both languages), plus the pinned notes, descriptions,
+  oracle and game table picks. The old adventure isn't touched; the new
+  one becomes active. When a new kind of tag or state arrives, keep
+  `snapshotTag` round-tripping it.
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -486,6 +532,13 @@ tools included) and moving an entry up/down place it between its
 neighbours (`journalOrder.ts`), nudging later ones when there's no room.
 A lone entry that tells (note, action, dialogue) is drawn without a
 frame; blocks and rolls keep their card.
+**Zen mode** (⋯ menu or Z; `zenMode.ts`, `isStoryEntry`) shows only
+what's told: no questions, rolls, asides, block markers, rounds or
+tag-only notes; every entry frameless (`EntryActions.story`), no
+moving or writing below (hidden neighbours), the composer and the game
+table hidden and the text centred. A view only, per adventure and not
+saved; the search searches the story, and jumping to an entry it hides
+leaves it.
 Oracle answers are colored using the linked history entry, falling back to
 parsing the roll text (`splitRollText`) for imported journals. Character
 and place tags render as chips (`TaggedText`); tapping one opens it in
@@ -545,6 +598,10 @@ and own tables), each a bordered list (`SectionList`); from `2xl` the
 blocks are tiles and the open one spreads below them (`FoldingSection`).
 An open block's heading stays pinned while its tables scroll by.
 A table's row (`TableRow`) rolls with a button that names its die.
+"Search the results too" (a switch under the search, off by default,
+`tableSearch.ts`) also matches a table's results, each table's folded
+once per load (`matchingEntries`), and lists the first three that match
+under the table, marked.
 
 **Each game's data is loaded on its own, never in the main bundle.**
 `src/lib/tableData/<game>.ts` holds its tables with both languages side
@@ -743,6 +800,10 @@ heat map, search results, notebook mentions) is its day of play
 during it; before any session or in an undated one, the day it was
 written, and none for an imported one (`isImportedEntry`: an import's
 timestamps are the import's).
+Roughly how long it was played (`playMinutes`, each session's
+`minutes`): the time between consecutive entries written in the app,
+gaps over `PAUSE_MINUTES` left out, imported entries not counted. Only
+in the statistics, and always said to be approximate.
 Sharing (`share.ts`, Web Share API) is only offered where
 `navigator.share` exists and falls back to download on failure.
 
@@ -828,7 +889,7 @@ a counter shared by dialogs and menus), so a menu must fit on screen:
 itself if it's still too long.
 
 Desktop keyboard shortcuts (`src/hooks/useHotkeys.ts`): registered in
-`Layout` (screens, `/`, O/T/D, `?`). Their legend (`ShortcutsLegend`)
+`Layout` (screens, `/`, O/T/D, `?`; Z, zen mode, by `AdventureDetailView`). Their legend (`ShortcutsLegend`)
 is part of the quick guide (`GuideDialog`, drawn once by `Layout`,
 opened with `openGuide` from `guide.ts`: `?`, Settings and the
 adventure's ⋯ menu), which also explains writing in the journal, the
@@ -879,9 +940,13 @@ scenes h3. Animations and smooth scrolling stop under "reduce motion"
 (`index.css`, and `smoothBehavior`/`scrollBehaviorFor` in
 `scrolling.ts` for scrolling from code: use them instead of
 `behavior: "smooth"`; a trip of more than two screens is a jump).
-Contrast was checked with axe in every theme and mode (2026-11-11):
-keep text tokens at 4.5:1 on `ink-800`, and in light mode `gold-soft`
-(hover) darker than `gold`, not lighter.
+Contrast was checked with axe in every theme and mode (2026-11-11), and
+`a11y.e2e.ts` keeps checking it: keep text tokens at 4.5:1 on
+`ink-800`, and in light mode `gold-soft` (hover) darker than `gold`,
+not lighter. A colour token faded with an opacity for text (`text-no/90`)
+or `parchment-faint` on a tinted card falls under it. A control's
+accessible name starts with what it shows (WCAG 2.5.3): an `aria-label`
+that hides its visible text fails.
 `THEMES` in `theme.ts` must stay in sync with the color values actually
 defined in `index.css` (used for the theme-picker swatches). Because some
 themes (notably `osr`) map the "gold" accent to a near-white/near-monochrome

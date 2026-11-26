@@ -3,7 +3,7 @@ import { useHistoryContext } from "../hooks/useHistoryContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { computeDiceStats } from "../lib/diceStats";
-import { computeAdventureStats, mostNamed } from "../lib/journalStats";
+import { computeAdventureStats, formatPlayTime, mostNamed } from "../lib/journalStats";
 import { buildCast } from "../lib/lonelogTags";
 import type { JournalEntry } from "../lib/lonelog";
 import { ActivityHeatmap } from "./ActivityHeatmap";
@@ -55,6 +55,7 @@ export function AdventureStatsDialog({
   const longDay = (iso: string) => date.format(new Date(`${iso}T12:00`));
   const firstDay = stats.first !== null ? longDay(stats.first) : null;
   const lastDay = stats.last !== null ? longDay(stats.last) : null;
+  const playTime = formatPlayTime(s, stats.playMinutes);
 
   return (
     <Modal
@@ -89,6 +90,14 @@ export function AdventureStatsDialog({
                   ? interpolate(s.singleDate, { date: firstDay })
                   : interpolate(s.dateRange, { first: firstDay, last: lastDay })}
               </p>
+            )}
+
+            {/* Roughly, and only from what was written here (an import has no times). */}
+            {playTime && (
+              <div className="-mt-2 flex flex-col gap-0.5">
+                <p className="text-sm text-parchment">{interpolate(s.playTime, { time: playTime })}</p>
+                <p className="text-xs text-parchment-faint">{s.playTimeNote}</p>
+              </div>
             )}
 
             {/* Only what was written in the app: an imported journal has no days of its own. */}

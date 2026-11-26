@@ -214,6 +214,7 @@ export interface Dictionary {
     entryType: string;
     askOracle: string;
     undoDelete: string;
+    zen: string;
     heading: string;
     intro: string;
     navigationHeading: string;
@@ -421,6 +422,42 @@ export interface Dictionary {
     rulesHeading: string;
     rules: string[];
   };
+  /** A file dropped on the window, opened with the installed app or shared to it (fileImport.ts). */
+  files: {
+    dialogTitle: string;
+    dropHere: string;
+    dropHint: string;
+    reading: string;
+    nextFilesOne: string;
+    nextFiles: string;
+    journalKind: string;
+    entriesLabel: string;
+    journalAction: string;
+    journalNote: string;
+    asTables: string;
+    asJournal: string;
+    tablesKind: string;
+    tablesActionOne: string;
+    tablesAction: string;
+    tablesNote: string;
+    backupKind: string;
+    backupMadeOn: string;
+    adventuresLabel: string;
+    rollsLabel: string;
+    tablesLabel: string;
+    problemTitle: string;
+    problems: {
+      unsupported: string;
+      tooBig: string;
+      notText: string;
+      empty: string;
+      damaged: string;
+      newerBackup: string;
+      notOurs: string;
+      noJournal: string;
+      noTables: string;
+    };
+  };
   oracle: {
     title: string;
     questionLabel: string;
@@ -465,6 +502,10 @@ export interface Dictionary {
     subtitle: string;
     searchPlaceholder: string;
     searchLabel: string;
+    /** The switch under the search: look in the results too, not only the names. */
+    searchResults: string;
+    /** How many more results have the words, beyond those shown. */
+    moreMatches: string;
     noResultsTitle: string;
     noResultsDescription: string;
     favoritesHeading: string;
@@ -580,6 +621,7 @@ export interface Dictionary {
       errorRanges: string;
       errorMixed: string;
       errorD66Lines: string;
+      errorTooBig: string;
     };
   };
   history: {
@@ -749,6 +791,20 @@ export interface Dictionary {
     filterShowing: string;
     filterShowingOne: string;
     filterClear: string;
+    /** Zen mode: the journal as a story, without the dice (zenMode.ts). */
+    zenOn: string;
+    zenOff: string;
+    zenBar: string;
+    zenLeave: string;
+    zenEmpty: string;
+    /** Carrying on in a new adventure with this one's notebook (continueAdventure.ts). */
+    continueAdventure: string;
+    continueDescription: string;
+    continueNameLabel: string;
+    continueNameDefault: string;
+    continueButton: string;
+    /** The new adventure's first note, above its notebook's tags. */
+    continuedFrom: string;
     filterEmpty: string;
     dialogueAddToNotebook: string;
     dialogueAddToNotebookTitle: string;
@@ -891,6 +947,14 @@ export interface Dictionary {
       activityHintTap: string;
       dateRange: string;
       singleDate: string;
+      /** Roughly how long it was played (journalStats.ts, playMinutes): only here, in the statistics. */
+      playTime: string;
+      playTimeNote: string;
+      sessionsTime: string;
+      sessionsBarTime: string;
+      hoursMinutes: string;
+      hours: string;
+      minutes: string;
       activityHeading: string;
       activityHint: string;
       activityLess: string;

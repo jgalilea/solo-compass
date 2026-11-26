@@ -118,7 +118,7 @@ export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
 /** Only the outer shape: each record is checked on its own afterwards
  * (a bad one is dropped, the rest restored), and settings are
  * deliberately lenient (best-effort). */
-function isBackupPayload(value: unknown): value is BackupPayload {
+export function isBackupPayload(value: unknown): value is BackupPayload {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   if (v.app !== "solo-compass" || typeof v.schemaVersion !== "number") return false;
@@ -151,6 +151,11 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
   }
   if (!isBackupPayload(parsed)) {
     throw new BackupError(t.about.importAllError);
+  }
+  // Made by a newer version: restoring it here could drop what this one
+  // doesn't know yet (a "replace" would lose it for good).
+  if (parsed.schemaVersion > BACKUP_SCHEMA_VERSION) {
+    throw new BackupError(t.files.problems.newerBackup);
   }
 
   // Record by record, like on load: a damaged or hand-edited backup

@@ -7,10 +7,13 @@ import {
   diceChoiceFor,
   entriesToText,
   exportTableToMarkdown,
+  isCustomTable,
+  MAX_TABLE_SIDES,
   parseEntryLines,
   parseTablesFile,
   parseTheme,
   toMeaningTable,
+  webAddress,
 } from "./customTables";
 
 const t = DICTIONARIES.es;
@@ -172,5 +175,51 @@ describe("a table written out in a journal", () => {
     expect(definitionDraft(t, "tbl: Ánimo [Tenso, Sereno, Raro]").dice).toBe("d3");
     expect(definitionDraft(t, "tbl: Ánimo (d8) [Tenso, Sereno, Raro]").dice).toBe("d3");
     expect(definitionDraft(t, "tbl: Vacía [Uno]").entries).toHaveLength(1);
+  });
+});
+
+describe("custom tables: what a file can't do", () => {
+  it("refuses a die past the limit instead of listing every value of it", () => {
+    const started = performance.now();
+    const result = build("1-500000000 Todo\n500000001-999999999 Nada");
+    expect(result).toEqual({ ok: false, error: t.tables.editor.errorTooBig });
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(build("A\nB", "d999999" as Parameters<typeof buildEntries>[2])).toEqual({
+      ok: false,
+      error: t.tables.editor.errorTooBig,
+    });
+    // A file naming such a die in its header has no table to import.
+    expect(parseTablesFile(t, "# Tabla\n| d999999 | Resultado |\n|---|---|\n| 1 | A |\n| 2 | B |", "t.md")).toEqual([]);
+  });
+
+  it("still takes the biggest die allowed, quickly, with ranges", () => {
+    const half = MAX_TABLE_SIDES / 2;
+    const started = performance.now();
+    const result = build(`1-${half} Arriba\n${half + 1}-${MAX_TABLE_SIDES} Abajo`);
+    expect(result).toMatchObject({ ok: true, dice: `d${MAX_TABLE_SIDES}` });
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+
+  it("drops a stored or restored table with a die past the limit or ranges that aren't whole numbers", () => {
+    const table = { id: "x", name: "X", description: "", dice: "d6", entries: [{ range: [1, 6], text: "a" }] };
+    expect(isCustomTable(table)).toBe(true);
+    expect(isCustomTable({ ...table, dice: "d1000000000" })).toBe(false);
+    expect(isCustomTable({ ...table, dice: "d0" })).toBe(false);
+    expect(isCustomTable({ ...table, entries: [{ range: [1, 6.5], text: "a" }] })).toBe(false);
+    expect(isCustomTable({ ...table, entries: [{ range: ["1", "6"], text: "a" }] })).toBe(false);
+  });
+
+  it("keeps a table's link only if it's a web page", () => {
+    expect(webAddress("https://example.com/tabla")).toBe("https://example.com/tabla");
+    expect(webAddress("  http://example.com ")).toBe("http://example.com");
+    expect(webAddress("example.com/tabla")).toBe("https://example.com/tabla");
+    expect(webAddress("javascript:alert(1)")).toBeUndefined();
+    expect(webAddress("JavaScript:alert(1)")).toBeUndefined();
+    expect(webAddress("data:text/html,<script>alert(1)</script>")).toBeUndefined();
+    expect(webAddress("")).toBeUndefined();
+    const [draft] = parseTablesFile(t, "# Tabla\nEnlace: javascript:alert(1)\n\nA\nB", "t.md");
+    expect(draft.source?.url).toBeUndefined();
+    const saved = createCustomTable({ ...draft, source: { url: "javascript:alert(1)" } });
+    expect(toMeaningTable(saved, t).game.url).toBeUndefined();
   });
 });

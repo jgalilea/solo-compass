@@ -65,6 +65,21 @@ const LEGACY_STORAGE_KEY = "solo-compass:custom-tables";
 export class CustomTablesStorageError extends Error {}
 
 /**
+ * The biggest die a table of one's own can use (the built-in tables go
+ * up to a d600). Without a limit, a file with a range like "1-500000000"
+ * made the app list every value of that die, enough to bring the tab
+ * down, and once saved, again every time the tables were shown.
+ */
+export const MAX_TABLE_SIDES = 10_000;
+
+/** Whether a die can be a table's: a d66, or a dN up to MAX_TABLE_SIDES. */
+function isTableDie(dice: string): boolean {
+  if (dice === "d66") return true;
+  const sides = diceSides(dice);
+  return sides >= 1 && sides <= MAX_TABLE_SIDES;
+}
+
+/**
  * One record per table, listed by creation date (`createdAt`), which
  * is how they were kept in the old array too. The moved array's dates
  * are made strictly increasing so tables imported together (same
@@ -124,9 +139,15 @@ export function isCustomTable(value: unknown): value is CustomTable {
     typeof v.id === "string" &&
     typeof v.name === "string" &&
     typeof v.dice === "string" &&
+    isTableDie(v.dice) &&
     Array.isArray(v.entries) &&
     v.entries.every(
-      (e) => e && typeof e.text === "string" && Array.isArray(e.range) && e.range.length === 2,
+      (e) =>
+        e &&
+        typeof e.text === "string" &&
+        Array.isArray(e.range) &&
+        e.range.length === 2 &&
+        e.range.every((n: unknown) => Number.isInteger(n)),
     )
   );
 }
@@ -170,7 +191,8 @@ export function toMeaningTable(table: CustomTable, t: Dictionary): MeaningTable 
     dice: table.dice,
     game: {
       name: source.name || t.tables.customGame,
-      url: source.url || undefined,
+      // Checked again: a table saved before links were checked.
+      url: webAddress(source.url),
       author: source.author || undefined,
       license: source.license || undefined,
     },
@@ -296,9 +318,11 @@ export function buildEntries(
   if (!ranged) {
     if (choice === "auto") {
       if (lines.length === 66) return { ok: false, error: e.errorD66Lines };
+      if (lines.length > MAX_TABLE_SIDES) return { ok: false, error: e.errorTooBig };
       const dice = `d${lines.length}` as DiceType;
       return { ok: true, dice, entries: lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })) };
     }
+    if (!isTableDie(choice)) return { ok: false, error: e.errorTooBig };
     const values = diceValues(choice);
     if (values.length !== lines.length) {
       return {
@@ -320,19 +344,27 @@ export function buildEntries(
     dice = min === 11 && max === 66 ? "d66" : (`d${max}` as DiceType);
   }
 
+  if (!isTableDie(dice)) return { ok: false, error: e.errorTooBig };
+
   const values = diceValues(dice);
-  const valid = new Set(values);
-  const covered = new Map<number, number>();
+  // Where each value is in the die's list (d66: 11–16, 21–26…).
+  const position = new Map(values.map((v, i) => [v, i]));
+  // How many results cover each value, as differences: +1 where a range
+  // starts, -1 after it ends (a loop over every value of every range
+  // took far too long with big dice).
+  const steps = new Int32Array(values.length + 1);
   for (const entry of entries) {
     for (const end of entry.range) {
-      if (!valid.has(end)) return { ok: false, error: rangeError(t, values, end) };
+      if (!position.has(end)) return { ok: false, error: rangeError(t, values, end) };
     }
-    for (const v of values) {
-      if (v >= entry.range[0] && v <= entry.range[1]) covered.set(v, (covered.get(v) ?? 0) + 1);
-    }
+    steps[position.get(entry.range[0])!]++;
+    steps[position.get(entry.range[1])! + 1]--;
   }
-  const wrong = values.find((v) => covered.get(v) !== 1);
-  if (wrong !== undefined) return { ok: false, error: rangeError(t, values, wrong) };
+  let covered = 0;
+  for (let i = 0; i < values.length; i++) {
+    covered += steps[i];
+    if (covered !== 1) return { ok: false, error: rangeError(t, values, values[i]) };
+  }
   return { ok: true, dice, entries };
 }
 
@@ -492,10 +524,27 @@ function parseJsonTables(t: Dictionary, data: unknown, fallbackName: string): Cu
 export function cleanSource(source: TableSource): TableSource | undefined {
   const clean: TableSource = {};
   for (const key of ["name", "author", "license", "url"] as const) {
-    const value = source[key]?.trim();
+    const value = key === "url" ? webAddress(source.url) : source[key]?.trim();
     if (value) clean[key] = value;
   }
   return Object.keys(clean).length ? clean : undefined;
+}
+
+/**
+ * A table's link, only if it's a web page: it's shown as a link, and a
+ * file could bring any other kind ("javascript:…"). An address typed
+ * without "https://" gets it; anything else is left out.
+ */
+export function webAddress(url: string | undefined): string | undefined {
+  const value = url?.trim();
+  if (!value) return undefined;
+  const full = /^[a-z][a-z\d+.-]*:/i.test(value) ? value : `https://${value.replace(/^\/+/, "")}`;
+  try {
+    const parsed = new URL(full);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? full : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Markdown for sharing a table: readable as is, and importable back. */

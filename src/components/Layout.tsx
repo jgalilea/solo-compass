@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { IconCoffee, IconCompass, IconDice, IconJournal, IconOracle, IconTable } from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { Announcer } from "./Announcer";
+import { IncomingFiles } from "./IncomingFiles";
 import { isGuideOpen, openGuide, subscribeGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
@@ -192,6 +193,7 @@ export function Layout() {
         </Suspense>
       )}
       <Announcer />
+      <IncomingFiles />
 
       <main className="flex flex-1 flex-col">
         {/* Only seen if a screen's chunk isn't there yet (preloadAll

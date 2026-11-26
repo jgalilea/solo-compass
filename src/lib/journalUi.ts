@@ -1,7 +1,7 @@
 import { ANSWER_CODE, readAnswerCode } from "./answerCodes";
 import { isCardDraw } from "./cards";
 import { readOracleDice, tableDice } from "./rolledDice";
-import { loneRoll, OWN_ROLL, splitRollSeries, type OwnRolls } from "./rollLine";
+import { loneRoll, MAX_ROLL_TEXT, OWN_ROLL, splitRollSeries, type OwnRolls } from "./rollLine";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
 import { actorParts, noteForm, parseScene, splitActor, splitRollSymbol, type Speaker } from "./lonelogLines";
 import type { CastMember } from "./lonelogTags";
@@ -261,6 +261,8 @@ const YES_NO = /^(?:exceptional |extreme )?(yes|no|s[ií])(?:$|[.!…]|\s+\(|,?\
  * linked to the history (classifyRoll).
  */
 export function foreignRollKind(detail: string, result: string | null): "oracle" | "table" | "dice" {
+  // OLD_TABLE takes long on a long text, and no table roll is (MAX_ROLL_TEXT).
+  if (detail.length > MAX_ROLL_TEXT) return "dice";
   if (result !== null && (YES_NO.test(result) || ANSWER_CODE.test(result))) return "oracle";
   if (result === null || VERDICT.test(result) || /(?<!\p{L})vs\.?(?!\p{L})/iu.test(detail)) return "dice";
   const m = detail.match(OLD_TABLE);

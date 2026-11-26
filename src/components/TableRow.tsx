@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { formatRange, type MeaningTable } from "../lib/tables";
+import { formatRange, type MeaningTable, type TableEntry } from "../lib/tables";
+import { highlightParts } from "../lib/text";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
@@ -24,6 +25,8 @@ export function TableRow({
   onRoll,
   onToggleFavorite,
   onSaveConsequence,
+  found,
+  query = "",
   menu,
 }: {
   table: MeaningTable;
@@ -36,6 +39,10 @@ export function TableRow({
   onRoll: () => void;
   onToggleFavorite: () => void;
   onSaveConsequence: (rollId: string, text: string) => void;
+  /** Searching the results too: the ones with the words in them. */
+  found?: TableEntry[];
+  /** What's searched, to mark it in them. */
+  query?: string;
   /** Options of the player's own tables (edit, export…). */
   menu: ReactNode;
 }) {
@@ -74,6 +81,7 @@ export function TableRow({
             </button>
           </div>
           {table.description && <p className="text-sm leading-snug text-parchment-dim">{table.description}</p>}
+          {found && found.length > 0 && <FoundResults found={found} query={query} />}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
             {showGame && <GameBadge table={table} />}
             <TableEntriesButton table={table} />
@@ -108,6 +116,40 @@ export function TableRow({
         </div>
       )}
     </li>
+  );
+}
+
+/** How many of a table's results with the search in them are shown; the rest are counted. */
+const FOUND_SHOWN = 3;
+
+function FoundResults({ found, query }: { found: TableEntry[]; query: string }) {
+  const { t } = useLocaleContext();
+  return (
+    <ul className="mt-1.5 flex flex-col gap-0.5 text-sm leading-snug text-parchment-dim">
+      {found.slice(0, FOUND_SHOWN).map((entry, i) => (
+        <li key={i} className="flex gap-2">
+          <span className="w-9 shrink-0 text-right text-xs leading-5 tabular-nums text-parchment-faint">
+            {formatRange(entry.range)}
+          </span>
+          <span className="min-w-0 break-words">
+            {highlightParts(entry.text, query).map((part, j) =>
+              part.match ? (
+                <mark key={j} className="rounded-sm bg-gold/25 text-parchment">
+                  {part.text}
+                </mark>
+              ) : (
+                part.text
+              ),
+            )}
+          </span>
+        </li>
+      ))}
+      {found.length > FOUND_SHOWN && (
+        <li className="pl-11 text-xs text-parchment-faint">
+          {interpolate(t.tables.moreMatches, { count: found.length - FOUND_SHOWN })}
+        </li>
+      )}
+    </ul>
   );
 }
 

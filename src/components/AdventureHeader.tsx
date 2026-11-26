@@ -29,6 +29,8 @@ import {
   IconCopy,
   IconHistory,
   IconNotebook,
+  IconZen,
+  IconContinue,
 } from "./icons/Icons";
 
 /**
@@ -57,6 +59,9 @@ export function AdventureHeader({
   onExportHtml,
   onShare,
   onDelete,
+  zen,
+  onToggleZen,
+  onContinue,
 }: {
   adventure: Adventure;
   isActive: boolean;
@@ -77,6 +82,11 @@ export function AdventureHeader({
   onExportHtml: () => void;
   onShare: () => void;
   onDelete: () => void;
+  /** Zen mode: the journal without the dice (zenMode.ts). */
+  zen: boolean;
+  onToggleZen: () => void;
+  /** A new adventure with this one's notebook (continueAdventure.ts). */
+  onContinue: () => void;
 }) {
   const { t } = useLocaleContext();
   const navigate = useNavigate();
@@ -211,6 +221,7 @@ export function AdventureHeader({
                   ? { label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }
                   : { label: t.journal.setActive, Icon: IconPlay, onSelect: activate },
                 { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
+                ...(hasEntries ? [{ label: zen ? t.journal.zenOff : t.journal.zenOn, Icon: IconZen, onSelect: onToggleZen }] : []),
                 { label: t.journal.statsButton, Icon: IconChart, onSelect: onStats },
                 { label: t.history.showRolls, Icon: IconHistory, onSelect: () => navigate(`/historial?aventura=${adventure.id}`) },
                 { label: t.guide.title, Icon: IconHelp, onSelect: openGuide },
@@ -219,6 +230,7 @@ export function AdventureHeader({
                 { label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy },
                 { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: onExportHtml },
                 ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: onShare }] : []),
+                { label: t.journal.continueAdventure, Icon: IconContinue, onSelect: onContinue },
                 isArchived
                   ? {
                       label: t.journal.unarchiveAdventure,

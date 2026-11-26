@@ -77,7 +77,7 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 ### Meaning tables
 
-Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings over 750 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Ironsmith**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn**, the **Lazy GM's Resource Document** and the One Page Solo Engine's "How much?". Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
+Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings over 750 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Ironsmith**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn**, the **Lazy GM's Resource Document** and the One Page Solo Engine's "How much?". Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search by name, game or theme, or switch on searching the results too ("which table had a lighthouse?"). Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
 
 ### Journal
 
@@ -91,11 +91,12 @@ Create adventures, split them into sessions and scenes, and log actions, rolls, 
   - **Threads, clocks and events**: open plot threads (`[Thread:The sealed box|Open]`), threat clocks (`[Clock:Alarm 2/6]`), tracks (`[Track:Escape 3/8]`) and timers (`[Timer:Dawn 3]`), ticked up or down with a tap, and the turning points (`[E:The bridge falls]`). A die beside Characters, Places and Threads **rolls on the list** to pick one at random.
   - **Rooms, foes and inventory**, from Lonelog's official add-ons: dungeon rooms (`[R:4|status:cleared|library|exits:N R2]`), foes in a fight (`[F:Thug A|HP 6|pos:Close]`, struck through once dead or fled), items (`[Inv:Torch|×3]`) and money (`[Wealth:Mara|Gold 45]`), decks (`[Deck:Main|×52]`), with −/+ to use one up or gain one.
 - The journal reads all of **Lonelog 1.7** (and everything earlier versions wrote): scenes inside sessions (`S1 *Tavern, night*`, numbered for you from "New scene"; flashbacks `S5a`, montages `S7.1`, parallel storylines `T2-S1 *City* @(Jordan)`), tables and generators (`tbl:`), answers (`-> Yes, but…`, `-> Yb`), the compact one-line form (`@Sneak d:2<4 ->F => noise`), other characters acting (`@(Jonah) …`), dialogue, `(note: …)` asides, `\---` in-world text and the add-ons' `[COMBAT]` blocks with `Rd1` rounds. Each is drawn as what it is, and written back as it was; your own rolls come out in Lonelog's order (`d: Attack d20+5[14]=19`).
-- Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list.
+- Mark adventures as favourites to keep them at the top, archive the ones you've finished, and search the list. When a campaign turns a page, **carry on in a new adventure**: a blank journal with the notebook just as it was.
+- **Zen mode** reads an adventure as a story: only what's told, without the questions, the rolls or the game table.
 - **Search** the journal (or all of them) by words and by type of entry.
-- **Statistics**, for the fun of it: an adventure's sessions, its year in a heat map, who and where is named most, the oracle against its odds and the luck of your dice, with a chart per kind of die. The journal list tells the luck of your dice across all your adventures.
+- **Statistics**, for the fun of it: an adventure's sessions and roughly how long each was played, its year in a heat map, who and where is named most, the oracle against its odds and the luck of your dice, with a chart per kind of die. The journal list tells the luck of your dice across all your adventures.
 - Rolls are **drawn**: each die with its shape and what came up, and each card with its suit. What's stored and exported is still plain Lonelog text.
-- **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost.
+- **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost. A journal, a table or a backup can also be dropped onto the window, opened with the installed app ("Open with" on a computer) or shared to it (Android's share sheet); the app says what the file is and asks before keeping anything, and refuses what isn't its own.
 
 <p align="center">
   <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with a scene and the one-row composer; and the meaning tables, one folding block per game" width="860">
@@ -168,7 +169,7 @@ The browser tests need Playwright's Chromium once: `npx playwright install chrom
 | `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup) |
-| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport |
+| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
 | `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU. Not part of the deploy |
 | `npm run lint` | oxlint |
 

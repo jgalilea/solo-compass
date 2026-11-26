@@ -25,6 +25,38 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.9.0",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXVI · El segundo libro",
+        intro: "Mara cierra el primer cuaderno con la tormenta aún a medias. Abre otro en blanco, pero Odile, el faro y el reloj de la tormenta siguen ahí, tal como los dejó.",
+        items: [
+          "«Continuar en una aventura nueva», en el menú ⋯ de una aventura: empieza un diario en blanco y se lleva el cuaderno tal como está (notas fijas, personajes, lugares, hilos, relojes, inventario y descripciones), además del oráculo y la mesa de juego. La aventura de antes no cambia.",
+          "Modo zen, en el mismo menú (o con la tecla Z en el ordenador): el diario se lee como un relato, sin preguntas, tiradas ni apuntes del cuaderno, y sin la mesa de juego a la vista.",
+          "En Tablas, «Buscar también en los resultados» encuentra la tabla que tenía aquel faro, con el resultado resaltado debajo. Viene apagado, para que buscar por nombre siga siendo igual de limpio.",
+          "Las estadísticas de una aventura dicen cuánto tiempo has jugado, más o menos, y cuánto dura cada sesión. Es aproximado: sale de la hora de lo que escribes en la app, sin contar las pausas largas.",
+          "Para abrir un diario, una tabla o una copia de seguridad, en el ordenador basta con soltar el archivo encima de la app. Con la app instalada, también sale en «Abrir con» del ordenador y en «Compartir» de Android. Antes de guardar nada, la app dice qué es y pregunta.",
+          "La app ya no abre lo que no es suyo, y dice por qué: un archivo que no es de texto, uno demasiado grande o una copia hecha con una versión más nueva (primero hay que actualizar). Una tabla con un dado desmesurado o una línea interminable ya no pueden dejarla colgada.",
+          "El matiz de una respuesta del oráculo («…pero», «…y además») se lee mejor en el tema OSR oscuro, y quien usa lector de pantalla oye el nombre del oráculo al ir a cambiarlo.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVI · The second book",
+        intro: "Mara closes the first notebook with the storm still half-way. She opens a blank one, but Odile, the lighthouse and the storm's clock are all there, just as she left them.",
+        items: [
+          "“Carry on in a new adventure”, in an adventure's ⋯ menu: it starts a blank journal and takes the notebook as it is (pinned notes, characters, places, threads, clocks, inventory and descriptions), as well as the oracle and the game table. The adventure before stays as it was.",
+          "Zen mode, in the same menu (or the Z key on a computer): the journal reads as a story, without questions, rolls or the notebook's bookkeeping, and without the game table in sight.",
+          "In Tables, “Search the results too” finds the table that had that lighthouse, with the result highlighted below it. It's off to begin with, so searching by name stays as tidy as ever.",
+          "An adventure's statistics say roughly how long you've played, and how long each session lasts. It's an estimate: it comes from when you write in the app, leaving out long pauses.",
+          "To open a journal, a table or a backup on a computer, just drop the file on the app. With the app installed, it's also in the computer's “Open with” and in Android's “Share”. Before keeping anything, the app says what it is and asks.",
+          "The app no longer opens what isn't its own, and says why: a file that isn't text, one that's too big, or a backup made with a newer version (update first). A table with an outlandish die or an endless line can no longer freeze it.",
+          "The shade of an oracle answer (“…but”, “…and”) reads better in the dark OSR theme, and screen reader users hear the oracle's name when they go to change it.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.8.1",
     date: "2026-11-26",
     text: {

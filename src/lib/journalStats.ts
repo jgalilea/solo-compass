@@ -1,6 +1,7 @@
 import type { HistoryEntry } from "./history";
+import { interpolate } from "./i18n";
 import { isoDate } from "./isoDate";
-import { playDay, type JournalEntry } from "./lonelog";
+import { isImportedEntry, playDay, type JournalEntry } from "./lonelog";
 import { rollOracleId, type Answer, type OracleRoll } from "./oracle";
 import { oracleOdds, type OracleId } from "./oracleEngines";
 import type { CastMember } from "./lonelogTags";
@@ -24,8 +25,13 @@ export interface AdventureStats {
    * gives; null with too few to tell.
    */
   oracleChance: { total: number; yes: number; expected: number; mood: "generous" | "stubborn" | "fair" | null };
-  /** Every session, in order (and what comes before the first, if anything). */
-  perSession: { title: string | null; entries: number; words: number }[];
+  /**
+   * Every session, in order (and what comes before the first, if
+   * anything). `minutes`: roughly how long it was played (playedMinutes).
+   */
+  perSession: { title: string | null; entries: number; words: number; minutes: number }[];
+  /** Roughly how long the whole adventure was played, in minutes. */
+  playMinutes: number;
   tableRolls: number;
   /** The most rolled table (ties: the one rolled first). */
   topTable: { name: string; count: number } | null;
@@ -44,6 +50,29 @@ export interface AdventureStats {
   /** First and last day played ("2026-11-09"). */
   first: string | null;
   last: string | null;
+}
+
+/**
+ * A longer gap between two entries is a pause, not play: it isn't
+ * counted in a session's time.
+ */
+export const PAUSE_MINUTES = 30;
+
+/**
+ * A play time as said in the statistics, rounded to five minutes (it's
+ * an estimate): "1 h 25 min", "40 min". Null under that: nothing to say.
+ */
+export function playTimeParts(minutes: number): { hours: number; minutes: number } | null {
+  const rounded = Math.round(minutes / 5) * 5;
+  return rounded > 0 ? { hours: Math.floor(rounded / 60), minutes: rounded % 60 } : null;
+}
+
+/** A play time in words ("1 h 25 min"), or null when it's under five minutes. */
+export function formatPlayTime(words: { hoursMinutes: string; hours: string; minutes: string }, minutes: number): string | null {
+  const parts = playTimeParts(minutes);
+  if (!parts) return null;
+  if (!parts.hours) return interpolate(words.minutes, parts);
+  return interpolate(parts.minutes ? words.hoursMinutes : words.hours, parts);
 }
 
 /** Fewer answers than this say nothing about the oracle. */
@@ -117,6 +146,7 @@ export function computeAdventureStats(
     oracle: { total: 0, si: 0, no: 0, contradiccion: 0, and: 0, but: 0 },
     oracleChance: { total: 0, yes: 0, expected: 0, mood: null },
     perSession: [],
+    playMinutes: 0,
     tableRolls: 0,
     topTable: null,
     diceRolls: 0,
@@ -128,7 +158,13 @@ export function computeAdventureStats(
   };
   const tableCounts = new Map<string, number>();
   let session: JournalEntry | null = null;
-  let current: AdventureStats["perSession"][number] = { title: null, entries: 0, words: 0 };
+  let current: AdventureStats["perSession"][number] = { title: null, entries: 0, words: 0, minutes: 0 };
+  // How long a session was played, roughly: the time between one entry
+  // and the next, written in the app (an imported one's time is the
+  // import's), leaving out pauses. Only ever an estimate: an entry
+  // written below another, or moved, takes a time between its neighbours.
+  let lastWritten: number | null = null;
+  const pause = PAUSE_MINUTES * 60_000;
   let variance = 0;
   const odds = new Map<string, number>();
   const chanceOfYes = (roll: OracleRoll) => {
@@ -151,9 +187,15 @@ export function computeAdventureStats(
     if (entry.kind === "session") {
       stats.sessions++;
       if (current.title !== null || current.entries > 0) stats.perSession.push(current);
-      current = { title: entry.text, entries: 0, words: 0 };
-      continue;
+      current = { title: entry.text, entries: 0, words: 0, minutes: 0 };
+      lastWritten = null;
     }
+    if (!isImportedEntry(entry)) {
+      const gap = lastWritten === null ? Infinity : entry.timestamp - lastWritten;
+      if (gap <= pause) current.minutes += gap / 60_000;
+      lastWritten = entry.timestamp;
+    }
+    if (entry.kind === "session") continue;
     stats.entries++;
     current.entries++;
     if (entry.kind !== "roll") {
@@ -187,6 +229,7 @@ export function computeAdventureStats(
   }
 
   if (current.title !== null || current.entries > 0) stats.perSession.push(current);
+  stats.playMinutes = stats.perSession.reduce((sum, x) => sum + x.minutes, 0);
   const chance = stats.oracleChance;
   if (chance.total >= MIN_ORACLE_FOR_MOOD) {
     const z = (chance.yes - chance.expected) / Math.sqrt(variance);

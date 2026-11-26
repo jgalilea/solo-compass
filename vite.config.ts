@@ -39,6 +39,17 @@ const relatedApplications: ManifestOptions["related_applications"] = [
   "manifest.en.webmanifest",
 ].map((file) => ({ platform: "webapp", url: `https://jgalilea.github.io${base}${file}` }));
 
+/**
+ * The files the installed app opens: a Lonelog journal, tables of one's
+ * own or a backup. Everything it's handed is looked at before anything
+ * is kept (src/lib/fileImport.ts).
+ */
+const OPENED_FILES: Record<string, string[]> = {
+  "text/markdown": [".md", ".markdown"],
+  "text/plain": [".txt"],
+  "application/json": [".json"],
+};
+
 const manifest: Partial<ManifestOptions> = {
   id: base,
   name: "Solo Compass",
@@ -71,6 +82,19 @@ const manifest: Partial<ManifestOptions> = {
   ],
   shortcuts: shortcuts({ oraculo: "Oráculo", tablas: "Tablas", dados: "Dados", diario: "Diario" }),
   related_applications: relatedApplications,
+  // "Open with Solo Compass" (Chromium on a computer): the files come
+  // through window.launchQueue (src/lib/incomingFiles.ts).
+  file_handlers: [{ action: base, accept: OPENED_FILES }],
+  // In the share sheet (Android): the system posts the files to the
+  // service worker (public/share-target.js), which keeps them for the app.
+  share_target: {
+    action: `${base}share-target`,
+    method: "POST",
+    enctype: "multipart/form-data",
+    params: {
+      files: [{ name: "file", accept: [...Object.keys(OPENED_FILES), ...Object.values(OPENED_FILES).flat()] }],
+    },
+  },
 };
 
 const englishManifest: Partial<ManifestOptions> = {
@@ -170,6 +194,8 @@ export default defineConfig({
       manifest,
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        // Receives the files shared to the installed app (share_target above).
+        importScripts: ["share-target.js"],
         // Only for link previews (index.html): players never need it offline.
         globIgnores: ["og-image.png", "404.html"],
       },

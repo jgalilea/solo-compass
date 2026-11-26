@@ -92,6 +92,8 @@ export interface EntryActions {
   onCopy?: (id: string) => void;
   /** Where new entries are being written ("write below"): kept in view. */
   anchorId?: string | null;
+  /** Zen mode: only what's told, as text on the page, without cards. */
+  story?: boolean;
 }
 
 /**
@@ -225,13 +227,16 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
           <li key={block[0].id} className="scene-bar mt-2 bg-ink-950 px-1 py-1 first:mt-0">
             <EntryLine entry={block[0]} actions={actions} />
           </li>
-        ) : block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question" ? (
+        ) : actions.story || (block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question") ? (
           // What's told (notes, actions, dialogue…) is text on the page;
           // only what the dice and the oracle say is framed, so it stands
-          // out and the journal reads as one.
-          <li key={block[0].id} className="px-3 py-1">
-            <EntryLine entry={block[0]} actions={actions} />
-          </li>
+          // out and the journal reads as one. In zen mode there's nothing
+          // else: a consequence left without its roll reads on.
+          block.map((entry) => (
+            <li key={entry.id} className="px-3 py-1">
+              <EntryLine entry={entry} actions={actions} />
+            </li>
+          ))
         ) : (
           <li
             key={block[0].id}

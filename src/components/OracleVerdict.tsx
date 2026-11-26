@@ -22,7 +22,7 @@ export function OracleVerdict({ roll }: { roll: Verdict }) {
     <div className="text-center">
       <div className={`break-words font-display font-semibold ${style.sizeClass} ${style.className}`}>{t.answer[roll.answer]}</div>
       {roll.qualifier && (
-        <div className={`mt-1 text-lg font-medium ${roll.qualifier === "y" ? "text-yes/90" : "text-no/90"}`}>
+        <div className={`mt-1 text-lg font-medium ${roll.qualifier === "y" ? "text-yes" : "text-no"}`}>
           …{t.qualifier[roll.qualifier]}.
         </div>
       )}

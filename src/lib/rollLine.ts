@@ -33,6 +33,15 @@ const ROLL_SEGMENT = new RegExp(
   "g",
 );
 
+/**
+ * Longer than this, a text isn't read as a roll: no roll is anywhere
+ * near it (a tray of thirty dice is under a thousand characters), and
+ * the patterns below take a time that grows with the square of the
+ * length on some texts. An imported journal with a line of 300,000
+ * characters used to freeze the tab for most of a minute.
+ */
+export const MAX_ROLL_TEXT = 4000;
+
 export interface OwnRolls {
   label: string;
   rolls: { label: string; die: string; result: string }[];
@@ -47,6 +56,7 @@ export interface OwnRolls {
  * (splitRollText).
  */
 export function splitRollSeries(text: string): OwnRolls | null {
+  if (text.length > MAX_ROLL_TEXT) return null;
   const first = text.search(OWN_ROLL);
   if (first < 0) return null;
   const label = text.slice(0, first).trim().replace(/,$/, "");
@@ -66,6 +76,7 @@ export function splitRollSeries(text: string): OwnRolls | null {
  * barely") is shown as a normal roll.
  */
 export function loneRoll(text: string): OwnRolls | null {
+  if (text.length > MAX_ROLL_TEXT) return null;
   const m = text.match(LONE_ROLL);
   if (!m) return null;
   const [, label = "", die, result] = m;
@@ -144,7 +155,7 @@ function splitRolls(line: string): string[] {
  * or several), as the app writes its own; any other as it is.
  */
 export function fromRollLine(line: string): string {
-  if (line.includes("->") || line.includes("\n")) return line;
+  if (line.length > MAX_ROLL_TEXT || line.includes("->") || line.includes("\n")) return line;
   // A comma in what it's for ("Attack, with care d20=14") isn't between rolls.
   const segments: string[] = [];
   let pending = "";
@@ -168,6 +179,7 @@ export function fromRollLine(line: string): string {
 
 /** The dice in "2d6+2[4, 3]=9", a roll with its verdict after it, as the app writes them; null if it doesn't say. */
 export function diceInDetail(detail: string): string | null {
+  if (detail.length > MAX_ROLL_TEXT) return null;
   const m = detail.match(/(?:^|\s)(\S*d\S*?)\[([^\]]+)\]\s?=([+-]?\d+)/);
   return m && !m[1].includes("=>") && rollFormula(m[1], () => 0.5) ? `${m[1]} -> ${m[3]} (${longDice(m[1], m[2])})` : null;
 }

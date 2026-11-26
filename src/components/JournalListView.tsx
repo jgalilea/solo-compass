@@ -9,7 +9,9 @@ import { EmptyState, ErrorState, LoadingState } from "./StateViews";
 import { BackupNote } from "./BackupNote";
 import { SafariStorageNote } from "./SafariStorageNote";
 import { buildSampleAdventure } from "../lib/sampleAdventure";
-import { parseTitleFromMarkdown, readLonelog } from "../lib/lonelog";
+import { readLonelog } from "../lib/lonelog";
+import { fileProblemText, inspectFile } from "../lib/fileImport";
+import { offerFiles } from "../lib/incomingFiles";
 import { loadMeaningTables } from "../lib/tableGames";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
 import { ENTRY_TYPES, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
@@ -168,17 +170,20 @@ export function JournalListView() {
     navigate(`/diario/${adventure.id}`);
   }
 
+  // Looked at first (fileImport.ts): a backup or tables picked here by
+  // mistake go to the dialog that opens them as that.
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     try {
-      const text = await file.text();
-      const name = parseTitleFromMarkdown(text) || file.name.replace(/\.(md|markdown|txt)$/i, "");
-      const adventure = importAdventure(name, readLonelog(text));
+      const found = await inspectFile(t, file, "journal");
+      if (found.kind === "problem") return setImportError(fileProblemText(t, found.problem));
+      setImportError(null);
+      if (found.kind !== "journal") return offerFiles([file]);
+      const adventure = importAdventure(found.title, readLonelog(found.text));
       setActiveAdventureId(adventure.id);
       navigate(`/diario/${adventure.id}`);
-      setImportError(null);
     } catch {
       setImportError(t.journal.importError);
     }

@@ -25,8 +25,17 @@ export type InlineNode =
 const INLINE =
   /\\([\\`*_~[\]()#>!-])|`([^`\n]+)`|\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|\*\*(?=\S)(.+?)(?<=\S)\*\*(?!\*)|(?<![\p{L}\p{N}_])__(?=\S)(.+?)(?<=\S)__(?![\p{L}\p{N}_])|~~(?=\S)(.+?)(?<=\S)~~|\*(?=[^\s*])(.+?)(?<=[^\s*])\*|(?<![\p{L}\p{N}_])_(?=[^\s_])(.+?)(?<=[^\s_])_(?![\p{L}\p{N}_])|(https?:\/\/[^\s<>"'«»]*[^\s<>"'«».,;:!?)\]])/gu;
 
+/**
+ * Longer than this, a line is shown as it's written: some of the marks
+ * above take a time that grows with the square of the length on text
+ * no one writes ("[[[[…", "****…"), and a pasted note could freeze the
+ * screen that draws it. A paragraph of a whole page is under 4,000.
+ */
+const MAX_MARKED_LINE = 10_000;
+
 /** A line's text as runs of plain, bold, italic, struck, code and links. */
 export function parseInline(text: string): InlineNode[] {
+  if (text.length > MAX_MARKED_LINE) return text ? [{ kind: "text", text }] : [];
   const nodes: InlineNode[] = [];
   const push = (value: string) => {
     if (!value) return;

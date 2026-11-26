@@ -45,7 +45,8 @@ export function isTableDefinition(text: string): boolean {
 
 const SCENE = new RegExp(`^(${SCENE_ID})(?:\\s+([\\s\\S]*))?$`);
 const COMBAT_MARK = /\s*\[COMBAT\]\s*/i;
-const POV = /\s*@\(([^()\n]+)\)\s*$/;
+// From the start of a run of spaces only (see formatScene).
+const POV = /(?<!\s)\s*@\(([^()\n]+)\)\s*$/;
 
 /** "S1 *Tavern, evening*" → S1 and "Tavern, evening"; `[COMBAT]` says the scene is a fight, `@(Jordan)` whose point of view it is. */
 export function parseScene(text: string): { id: string; context: string; combat: boolean; pov?: string } {
@@ -73,7 +74,9 @@ export function nextSceneId(entries: readonly Pick<JournalEntry, "kind" | "text"
 
 /** A new scene line: "S3 *Tavern*", or just "S3"; a point of view at the end stays out of the context. */
 export function formatScene(id: string, context: string): string {
-  const line = context.replace(/\s*\n\s*/g, " ").replace(/\*/g, "");
+  // Each run of spaces is tried from its start only (the lookbehind):
+  // otherwise a long run without a line break took quadratic time.
+  const line = context.replace(/(?<!\s)\s*\n\s*/g, " ").replace(/\*/g, "");
   const pov = line.match(POV)?.[1].trim();
   const clean = line.replace(POV, "").trim();
   return [id, clean && `*${clean}*`, pov && `@(${pov})`].filter(Boolean).join(" ");
@@ -115,7 +118,8 @@ export function splitActor(text: string): { actor: string | null; text: string }
  */
 export function actorParts(actor: string): { name?: string; text: string }[] {
   return actor
-    .split(/(\s*>\s*|\s*\+\s*)/)
+    // From the start of a run of spaces only, as in formatScene.
+    .split(/((?<!\s)\s*[>+]\s*)/)
     .filter((part) => part !== "")
     .map((part, i) => (i % 2 === 0 ? { name: part.trim(), text: part } : { text: part }));
 }

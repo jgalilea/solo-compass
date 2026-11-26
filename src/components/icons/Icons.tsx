@@ -179,6 +179,18 @@ export function IconChart(props: IconProps) {
 export function IconUpload(props: IconProps) {
   return <TablerIcon icon={Tabler.IconUpload} {...props} />;
 }
+/** A file to open (dropped on the window, opened with the app or shared to it). */
+export function IconFileImport(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconFileImport} {...props} />;
+}
+/** Zen mode: only the story, without the dice. */
+export function IconZen(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconYoga} {...props} />;
+}
+/** Carrying an adventure's notebook over into a new one. */
+export function IconContinue(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconBooks} {...props} />;
+}
 export function IconPlus(props: IconProps) {
   return <TablerIcon icon={Tabler.IconPlus} {...props} />;
 }

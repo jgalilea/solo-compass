@@ -273,7 +273,10 @@ export function formatTag(kind: CastKind, name: string, details: string[] = [], 
 // "HP 8", "HP-2", "ATK +3", "Clock 3/6": a labelled number.
 const STAT = /^(\p{L}[\p{L}\s'.]*?)(\s*)([+-]?)\s*(\d+)(\/\d+)?$/u;
 // "status: wounded, alert": a category with its values.
-const CATEGORY = /^([^:]+?)\s*:\s*(.+)$/;
+// The name is taken whole up to the colon (the lookahead and its
+// backreference can't give anything back) and trimmed afterwards: a lazy
+// name followed by "\s*" took quadratic time on a long run of spaces.
+const CATEGORY = /^(?=([^:]+))\1:\s*(.+)$/;
 const REPLACE = /^(.+?)\s*(?:→|->|>)\s*(.+)$/;
 // "Torchlight depleted": a labelled value that ran out.
 const RAN_OUT = /^(.+\S)\s+(?:depleted|agotad[oa]s?|gastad[oa]s?)$/i;
@@ -312,10 +315,11 @@ export function showDetail(detail: string, words: CategoryWords): string {
 /** A category's name and what it holds; null for any other value. */
 function readCategory(tag: string): { key: string; label: string; values: string } | null {
   const m = tag.match(CATEGORY);
-  if (!m) return null;
-  const word = normalizeForSearch(m[1]);
+  const label = m?.[1].trimEnd();
+  if (!m || !label) return null;
+  const word = normalizeForSearch(label);
   const key = Object.hasOwn(KNOWN_CATEGORIES, word) ? KNOWN_CATEGORIES[word] : word;
-  return { key, label: m[1], values: m[2] };
+  return { key, label, values: m[2] };
 }
 
 /**
@@ -987,4 +991,18 @@ export function renameInEntry(
   if (entry.kind === "action") text = text.replace(/^\(([^()\n]+)\)/, (_, n: string) => `(${actors(n)})`);
   if (entry.kind === "scene") text = text.replace(/(@\()([^()\n]+)(\)\s*)$/, (_, a, n: string, b) => a + actors(n) + b);
   return text;
+}
+
+/**
+ * Where an element stands, as one tag that reads back to the same
+ * state: what carries an adventure's notebook over into a new one
+ * (continueAdventure.ts). Its name, its details as they are now, and its
+ * number (a clock's 3/6, how many torches, a purse's coins).
+ */
+export function snapshotTag(member: CastMember): string {
+  const { kind, name, tags, progress } = member;
+  if (PROGRESS_KINDS.has(kind) && progress) return formatProgressTag(kind, name, progress.value, progress.max);
+  if (kind === "wealth") return formatQuantity("wealth", name, String(progress?.value ?? 0), member.owner);
+  if (QUANTITY_KINDS.has(kind) && progress) return formatTag(kind, name, [`×${progress.value}`, ...tags]);
+  return formatTag(kind, name, tags);
 }

@@ -1,6 +1,6 @@
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import type { AdventureStats } from "../lib/journalStats";
+import { formatPlayTime, type AdventureStats } from "../lib/journalStats";
 import { ColumnChart } from "./ColumnChart";
 import { StatsSection } from "./StatsSection";
 
@@ -20,11 +20,15 @@ export function SessionStatsSection({ sessions }: { sessions: AdventureStats["pe
   const shown = sessions.slice(-MAX_SESSIONS);
   const firstReal = sessions.length - real.length;
   const offset = sessions.length - shown.length;
+  // Roughly, and only over the sessions written in the app (journalStats.ts).
+  const timed = real.filter((x) => formatPlayTime(s, x.minutes));
+  const averageTime = timed.length ? formatPlayTime(s, timed.reduce((sum, x) => sum + x.minutes, 0) / timed.length) : null;
   return (
     <StatsSection id="sessionStats" title={s.sessionsHeading}>
       <div className="flex flex-col gap-1 text-sm text-parchment">
         <p>{interpolate(s.sessionsAverage, { entries: average("entries"), words: average("words") })}</p>
         <p>{interpolate(s.sessionsLongest, { session: name(longest.title), words: number.format(longest.words) })}</p>
+        {averageTime && <p>{interpolate(s.sessionsTime, { time: averageTime })}</p>}
       </div>
       <div className="rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
         <ColumnChart
@@ -35,7 +39,12 @@ export function SessionStatsSection({ sessions }: { sessions: AdventureStats["pe
             return {
               label: n < 1 ? "" : shown.length <= 12 || n === 1 || n % 5 === 0 ? String(n) : "",
               value: x.entries,
-              said: interpolate(s.sessionsBar, { session: name(x.title), entries: x.entries, words: number.format(x.words) }),
+              said: [
+                interpolate(s.sessionsBar, { session: name(x.title), entries: x.entries, words: number.format(x.words) }),
+                formatPlayTime(s, x.minutes) && interpolate(s.sessionsBarTime, { time: formatPlayTime(s, x.minutes)! }),
+              ]
+                .filter(Boolean)
+                .join(" · "),
             };
           })}
         />

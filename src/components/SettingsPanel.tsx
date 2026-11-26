@@ -33,16 +33,11 @@ import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
 import { TABLE_CREDITS } from "../lib/tableGames";
-import {
-  backupFilename,
-  BackupError,
-  backupText,
-  buildBackup,
-  downloadBackupFile,
-  restoreBackup,
-  type RestoreMode,
-} from "../lib/backup";
+import { backupFilename, backupText, buildBackup, downloadBackupFile } from "../lib/backup";
 import { canShare, shareTextFile } from "../lib/share";
+import { fileProblemText, inspectFile } from "../lib/fileImport";
+import { offerFiles } from "../lib/incomingFiles";
+import { RestoreChoice } from "./RestoreChoice";
 import {
   formatSince,
   loadLastBackupAt,
@@ -345,7 +340,6 @@ function BackupSettings() {
   // The backup file just picked, waiting for "merge" or "replace".
   const [pendingRestore, setPendingRestore] = useState<{ text: string; date: string | null } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const [restoring, setRestoring] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function markBackedUp() {
@@ -378,44 +372,29 @@ function BackupSettings() {
     }
   }
 
+  // Looked at first (fileImport.ts): a journal or tables picked here by
+  // mistake go to the dialog that imports them as that.
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    const text = await file.text();
     setImportError(null);
-    let date: string | null = null;
-    try {
-      const exportedAt = Date.parse((JSON.parse(text) as { exportedAt?: string }).exportedAt ?? "");
-      if (Number.isFinite(exportedAt)) {
-        date = new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(exportedAt);
-      }
-    } catch {
-      // Not readable: restoreBackup says so when it's tried.
-    }
-    setPendingRestore({ text, date });
-  }
-
-  async function confirmRestore(mode: RestoreMode) {
-    if (!pendingRestore || restoring) return;
-    setRestoring(true);
-    try {
-      await restoreBackup(t, pendingRestore.text, mode);
-      // Full reload on purpose: history/journal/theme/locale… are
-      // spread across several React contexts that are already mounted,
-      // and the simplest, most reliable way for all of them to reflect
-      // the freshly restored data is to start from scratch.
-      window.location.reload();
-    } catch (err) {
-      setImportError(err instanceof BackupError ? err.message : t.about.importAllError);
-      setRestoring(false);
-      setPendingRestore(null);
+    const found = await inspectFile(t, file, "backup");
+    if (found.kind === "problem") setImportError(fileProblemText(t, found.problem));
+    else if (found.kind !== "backup") offerFiles([file]);
+    else {
+      const date =
+        found.exportedAt === null
+          ? null
+          : new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(found.exportedAt);
+      setPendingRestore({ text: found.text, date });
     }
   }
 
   return (
     <div className="rounded-2xl border border-gold/30 bg-gold/[0.05] p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">
+      {/* Dim, not faint: on this tinted card faint falls under 4.5:1 in light mode. */}
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
         {t.about.dataSectionTitle}
       </p>
       <p className="mt-1.5 text-sm text-parchment-dim">{t.about.dataSectionDescription}</p>
@@ -488,35 +467,14 @@ function BackupSettings() {
                 {interpolate(t.about.restoreChoiceDescription, { date: pendingRestore.date })}
               </p>
             )}
-            {restoring ? (
-              <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>
-            ) : (
-              <div className="mt-4 flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => void confirmRestore("merge")}
-                  className="rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-left transition hover:bg-gold/20"
-                >
-                  <span className="block text-sm font-semibold text-gold">{t.about.restoreMergeLabel}</span>
-                  <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreMergeDescription}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void confirmRestore("replace")}
-                  className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
-                >
-                  <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>
-                  <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreReplaceDescription}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingRestore(null)}
-                  className="self-end rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
-                >
-                  {t.common.cancel}
-                </button>
-              </div>
-            )}
+            <RestoreChoice
+              text={pendingRestore.text}
+              onCancel={() => setPendingRestore(null)}
+              onError={(message) => {
+                setImportError(message);
+                setPendingRestore(null);
+              }}
+            />
           </DialogBody>
         </Modal>
       )}

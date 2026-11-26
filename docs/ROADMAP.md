@@ -5,10 +5,42 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-26 (repaso de diseño para móvil, tablet, escritorio y ultrawide, 1.6.0; Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-26 (archivos de fuera, modo zen, continuar aventura, buscar en resultados, tiempo de juego y axe en el e2e, 1.9.0; repaso de diseño para móvil, tablet, escritorio y ultrawide, 1.6.0; Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Capítulo XXVI, 1.9.0 (2026-11-26), de una ronda de ideas con el autor:
+  - **Archivos de fuera**: soltarlos en la ventana, «Abrir con» la app
+    instalada (`file_handlers`, Chromium de escritorio) y «Compartir» en
+    Android (`share_target`, recibido por el service worker). Un solo
+    diálogo dice qué es cada archivo y pregunta antes de guardar nada.
+    Guardas (`fileImport.ts`): solo texto, límites de tamaño, copias de
+    una versión más nueva rechazadas, y lo de dentro revisado donde se
+    lee. Dos fallos reales encontrados por el camino: una tabla con un
+    rango de cientos de millones colgaba la pestaña (y, guardada, cada
+    vez que se abrían las tablas): ahora tope de d10000; y varias
+    expresiones regulares tardaban un tiempo cuadrático con líneas
+    enormes (una línea `d:` de 300.000 caracteres colgaba la importación
+    casi un minuto): ahora lineales, con `longText.test.ts`. En iOS no
+    hay ni lo uno ni lo otro: sigue el botón de restaurar.
+  - **Modo zen** (menú ⋯ o Z): el diario como relato, sin tiradas ni
+    preguntas, sin compositor ni mesa de juego. Solo vista, no se guarda.
+  - **Continuar en una aventura nueva**: diario en blanco con el cuaderno
+    tal como está (una nota con una etiqueta por elemento, que se lee
+    igual), notas fijas, descripciones, oráculo y mesa de juego.
+  - **Buscar también en los resultados** de las tablas, con interruptor
+    apagado por defecto.
+  - **Tiempo de juego aproximado** en las estadísticas (por sesión y en
+    total), solo de lo escrito en la app y sin pausas de más de media hora.
+  - **axe en el e2e** (`a11y.e2e.ts`): encontró el «…pero» del oráculo al
+    90 % de opacidad (4,46:1 en OSR oscuro), la etiqueta de la copia en
+    Ajustes (4,3:1 en OSR claro) y dos botones cuyo nombre accesible no
+    contenía su texto visible (el selector de oráculo y «Sesiones
+    anteriores»).
+  - Planteado y dejado fuera: un dado de nombre al azar en el formulario
+    del cuaderno (lo mismo que tirar en una tabla de nombres, solo ahorra
+    copiar) y una paleta de órdenes con Ctrl+K (los atajos ya cubren las
+    pantallas).
 - Repaso de diseño de todas las pantallas (2026-11-26, 1.6.0; capturas antes y
   después de 360 a 3440 px, los 5 temas en claro y oscuro):
   - Dos fallos que ya estaban en `main`: una pregunta y su tirada del mismo
@@ -853,6 +885,12 @@ explícita, sin cambiar la promesa de "todo en tu dispositivo" para
 quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth),
 [soporte de showDirectoryPicker](https://caniuse.com/mdn-api_window_showdirectorypicker),
 [límites de desarrollo de Dropbox](https://www.dropboxforum.com/discussions/101000014/does-a-dropbox-app-have-a-limit-on-development-users/846671).
+
+**Recibir archivos — HECHO (2026-11-26, 1.9.0).** «Enviar» desde un
+dispositivo y, en el otro (Android, o un ordenador con la app
+instalada), la app aparece en «Compartir» / «Abrir con» y lleva al
+diálogo de restaurar. Es el camino barato mientras no haya
+sincronización: en iOS no existe y sigue el botón de restaurar.
 
 **Pasar los datos por QR — descartado (2026-11-11).** Un diario no
 cabe en un QR (~1,5 kB útiles); haría falta una secuencia animada

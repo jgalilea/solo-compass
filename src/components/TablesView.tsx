@@ -1,14 +1,15 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { TABLE_THEMES, type MeaningTable, type TableTheme } from "../lib/tables";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import { loadOpenTableSections, saveOpenTableSections } from "../lib/tableSections";
 import { gameOfTable, TABLE_GAMES } from "../lib/tableGames";
-import {
-  exportTableToMarkdown,
-  parseTablesFile,
-  type CustomTable,
-  type CustomTableDraft,
-} from "../lib/customTables";
+import { exportTableToMarkdown, type CustomTable, type CustomTableDraft } from "../lib/customTables";
+import { fileProblemText, inspectFile } from "../lib/fileImport";
+import { offerFiles } from "../lib/incomingFiles";
+import { loadSearchResults, matchingEntries, saveSearchResults } from "../lib/tableSearch";
+import { Switch } from "./Switch";
+import type { ImportTablesState } from "./IncomingFileDialog";
 import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
@@ -84,7 +85,14 @@ export function TablesView() {
   } = useGeneratorsContext();
   useEffect(() => loadGenerators(), [loadGenerators]);
   const [generatorEditor, setGeneratorEditor] = useState<{ id?: string; draft?: GeneratorDraft } | null>(null);
-  const { tables: customTables, addTables, updateTable, removeTable, restoreTable } = useCustomTablesContext();
+  const {
+    status: customStatus,
+    tables: customTables,
+    addTables,
+    updateTable,
+    removeTable,
+    restoreTable,
+  } = useCustomTablesContext();
   const { t } = useLocaleContext();
   const [last, setLast] = useState<LastResult | null>(null);
   const [rollingId, setRollingId] = useState<string | null>(null);
@@ -94,6 +102,12 @@ export function TablesView() {
   );
   const [openSections, setOpenSections] = useState<Set<string>>(() => loadOpenTableSections());
   const [themeFilter, setThemeFilter] = useState<TableTheme | null>(null);
+  // Off until turned on: a word turns up in the results of many tables.
+  const [searchResults, setSearchResults] = useState(loadSearchResults);
+  function toggleSearchResults(on: boolean) {
+    setSearchResults(on);
+    saveSearchResults(on);
+  }
   const q = normalizeForSearch(query.trim());
   // Searching or filtering by theme looks through every game at once.
   const filtering = !!q || themeFilter !== null;
@@ -223,16 +237,36 @@ export function TablesView() {
     setEditor(null);
   }
 
+  // Looked at first (fileImport.ts): a backup picked here by mistake
+  // goes to the dialog that restores it.
   async function handleImportFile(file: File) {
-    const drafts = parseTablesFile(t, await file.text(), file.name);
-    if (drafts.length === 0) setToast({ kind: "message", title: t.tables.importError, error: true });
+    const found = await inspectFile(t, file, "tables");
+    if (found.kind === "tables") importDrafts(found.drafts);
+    else if (found.kind === "problem") setToast({ kind: "message", title: fileProblemText(t, found.problem), error: true });
+    else offerFiles([file]);
+  }
+
+  function importDrafts(drafts: CustomTableDraft[]) {
     // A single table opens in the editor, to review it before saving.
-    else if (drafts.length === 1) setEditor({ draft: drafts[0] });
+    if (drafts.length === 1) setEditor({ draft: drafts[0] });
     else {
       addTables(drafts);
       setToast({ kind: "message", title: interpolate(t.tables.importedCount, { count: drafts.length }) });
     }
   }
+
+  // Tables from a file dropped on the window or shared to the app
+  // (IncomingFileDialog), once the player's own are in.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const handed = (location.state as Partial<ImportTablesState> | null)?.importTables;
+  useEffect(() => {
+    if (!handed || customStatus !== "ready") return;
+    navigate(".", { replace: true, state: null });
+    importDrafts(handed.drafts);
+    // importDrafts is only ever this render's: nothing else to follow.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [handed, customStatus]);
 
   function deleteTable(id: string) {
     const index = customTables.findIndex((x) => x.id === id);
@@ -259,7 +293,8 @@ export function TablesView() {
   }
 
   // By name, description, game or theme ("ironsworn", "naves"…), and
-  // within the chosen theme (the player's own only if they gave it one).
+  // its results if asked; within the chosen theme (the player's own
+  // only if they gave it one).
   const matches = useCallback(
     (table: MeaningTable) =>
       (themeFilter === null || table.theme === themeFilter) &&
@@ -267,8 +302,9 @@ export function TablesView() {
         normalizeForSearch(table.name).includes(q) ||
         normalizeForSearch(table.description).includes(q) ||
         normalizeForSearch(table.game.name).includes(q) ||
-        (!!table.theme && normalizeForSearch(t.tables.themes[table.theme]).includes(q))),
-    [q, themeFilter, t],
+        (!!table.theme && normalizeForSearch(t.tables.themes[table.theme]).includes(q)) ||
+        (searchResults && matchingEntries(table, q, 1).length > 0)),
+    [q, themeFilter, t, searchResults],
   );
   const favoriteTables = useMemo(
     () => [...custom, ...builtIn].filter((x) => favoriteIds.has(x.id) && matches(x)),
@@ -321,6 +357,8 @@ export function TablesView() {
         onRoll={() => handleRoll(table)}
         onToggleFavorite={() => toggleFavorite(table.id)}
         onSaveConsequence={addConsequence}
+        found={searchResults && q ? matchingEntries(table, q, Infinity) : undefined}
+        query={query.trim()}
         menu={
           table.custom ? (
             <ActionMenu
@@ -398,6 +436,10 @@ export function TablesView() {
               className="w-full rounded-2xl border border-ink-border bg-ink-900/70 py-2.5 pl-10 pr-4 text-parchment placeholder:text-parchment-faint focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
             />
           </label>
+
+          <Switch checked={searchResults} onChange={toggleSearchResults} className="-mt-2 self-start md:-mt-3">
+            {t.tables.searchResults}
+          </Switch>
 
           <ThemeFilter value={themeFilter} onChange={setThemeFilter} />
 
