@@ -42,6 +42,13 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   - 1.6.1: la fila de secciones de Ajustes (móvil) marca la parte que se lee
     (`partInView`; al saltar, la elegida se queda marcada hasta que el scroll
     para).
+  - 1.6.2: repaso de los textos flotantes (`title`). Corregidos los que no eran
+    ciertos o se quedaban cortos (la aventura activa también recoge los Dados,
+    la fórmula va a la bandeja, el − de un mazo es una carta, las salas y los
+    personajes dicen su tipo); los botones de solo icono llevan el suyo. El
+    dado de las listas del cuaderno dice de dónde saca y se apunta así
+    (`PNJ d3`, `Hilos abiertos d2`): con dos PJ entre cinco personajes tiraba
+    un d3 sin decir por qué.
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

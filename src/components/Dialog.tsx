@@ -46,6 +46,7 @@ export function DialogHeader({
         type="button"
         onClick={onClose}
         aria-label={t.common.close}
+        title={t.common.close}
         className="-my-1 -mr-2.5 flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-parchment"
       >
         <IconClose size={20} />

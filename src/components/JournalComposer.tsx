@@ -418,7 +418,7 @@ export function JournalComposer({
           type="button"
           onClick={() => setTool(lastTool)}
           aria-label={t.journal.rollMenuLabel}
-          title={t.journal.rollMenuLabel}
+          title={t.journal.rollMenuTitle}
           className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 px-3 text-sm font-semibold text-gold transition hover:bg-gold/20 active:scale-95 group-has-[textarea:focus]/composer:hidden sm:hidden"
         >
           <IconDice size={18} />
@@ -645,7 +645,7 @@ function ModePicker({
         type="button"
         onClick={toggle}
         aria-label={interpolate(t.journal.kindMenuLabel, { kind: current.label })}
-        title={current.label}
+        title={interpolate(t.journal.kindMenuLabel, { kind: current.label })}
         aria-haspopup="menu"
         aria-expanded={open}
         // A tap doesn't take the focus from the text: on a narrow phone the

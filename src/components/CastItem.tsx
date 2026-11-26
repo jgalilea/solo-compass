@@ -97,6 +97,16 @@ export function CastItem({
   const progress = member.progress;
   const isProgress = PROGRESS_KINDS.has(member.kind);
   const isQuantity = QUANTITY_KINDS.has(member.kind);
+  // What −/+ do, in words: a deck counts cards, the rest of the
+  // quantities units, a clock or a track its steps.
+  const [less, more] =
+    member.kind === "deck"
+      ? [t.notebook.cardOut, t.notebook.cardBack]
+      : isQuantity
+        ? [t.notebook.useOne, t.notebook.addOne]
+        : [t.notebook.decrease, t.notebook.increase];
+  const lessLabel = interpolate(less, { name: member.name });
+  const moreLabel = interpolate(more, { name: member.name });
   // A full clock or a timer at zero: its number says so, quietly.
   const complete = isProgress && progressDone(member.kind, progress);
   // A closed thread or a foe out of the fight: dimmed and struck through.
@@ -190,8 +200,8 @@ export function CastItem({
             <button
               type="button"
               onClick={() => step(-1)}
-              aria-label={interpolate(isQuantity ? t.notebook.useOne : t.notebook.decrease, { name: member.name })}
-              title={interpolate(isQuantity ? t.notebook.useOne : t.notebook.decrease, { name: member.name })}
+              aria-label={lessLabel}
+              title={lessLabel}
               className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
             >
               <IconMinus size={14} />
@@ -199,8 +209,8 @@ export function CastItem({
             <button
               type="button"
               onClick={() => step(1)}
-              aria-label={interpolate(isQuantity ? t.notebook.addOne : t.notebook.increase, { name: member.name })}
-              title={interpolate(isQuantity ? t.notebook.addOne : t.notebook.increase, { name: member.name })}
+              aria-label={moreLabel}
+              title={moreLabel}
               className="rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
             >
               <IconPlus size={14} />

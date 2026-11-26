@@ -64,6 +64,7 @@ export function TableRow({
               onClick={onToggleFavorite}
               aria-pressed={favorite}
               aria-label={favorite ? t.tables.favoriteRemove : t.tables.favoriteAdd}
+              title={favorite ? t.tables.favoriteRemove : t.tables.favoriteAddHint}
               className={[
                 "-my-2 flex size-9 shrink-0 items-center justify-center transition",
                 favorite ? "text-gold" : "text-parchment-faint hover:text-gold",

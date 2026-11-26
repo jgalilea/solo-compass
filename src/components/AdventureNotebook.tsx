@@ -205,11 +205,21 @@ export function AdventureNotebook({
     );
   }
 
+  // What each list's die says it picks from (a list of five characters
+  // with two PCs rolls a d3: it has to say so), and the name its roll is
+  // logged with, which says it too.
+  const rollWords: Partial<Record<NotebookSection, { label: string; name: string }>> = {
+    characters: { label: t.notebook.rollListNpcs, name: t.notebook.rollNameNpcs },
+    places: { label: t.notebook.rollListPlaces, name: t.notebook.groupPlaces },
+    threads: { label: t.notebook.rollListThreads, name: t.notebook.rollNameThreads },
+  };
+
   function rollOn(id: NotebookSection) {
     const members = rollable[id];
-    if (members.length === 0) return;
+    const words = rollWords[id];
+    if (members.length === 0 || !words) return;
     const roll = rollDie(members.length);
-    onRoll(formatTableRoll(titles[id], `d${members.length}`, roll, members[roll - 1].name));
+    onRoll(formatTableRoll(words.name, `d${members.length}`, roll, members[roll - 1].name));
   }
 
   function group(id: NotebookSection) {
@@ -231,12 +241,12 @@ export function AdventureNotebook({
               <span className="text-parchment-faint">{members.length}</span>
             </button>
           </h3>
-          {rollable[id].length > 1 && (
+          {rollable[id].length > 1 && rollWords[id] && (
             <button
               type="button"
               onClick={() => rollOn(id)}
-              aria-label={interpolate(t.notebook.rollList, { list: titles[id] })}
-              title={interpolate(t.notebook.rollList, { list: titles[id] })}
+              aria-label={interpolate(rollWords[id].label, { count: rollable[id].length })}
+              title={interpolate(rollWords[id].label, { count: rollable[id].length })}
               className="shrink-0 rounded-md p-1 text-parchment-faint transition hover:text-gold"
             >
               <IconDice size={14} />

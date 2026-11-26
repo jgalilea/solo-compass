@@ -34,6 +34,7 @@ export function SafariStorageNote() {
           setVisible(false);
         }}
         aria-label={t.common.close}
+        title={t.common.close}
         className="absolute right-1.5 top-1.5 p-2 text-parchment-faint transition hover:text-parchment"
       >
         <IconClose size={15} />

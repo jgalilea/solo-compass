@@ -175,6 +175,7 @@ export function HistoryEntryCard({
               aria-label={
                 entry.favorite ? t.history.favoriteRemove : t.history.favoriteAdd
               }
+              title={entry.favorite ? t.history.favoriteRemove : t.history.favoriteAddHint}
               className={[
                 "-m-2 p-2 transition",
                 entry.favorite
@@ -188,6 +189,7 @@ export function HistoryEntryCard({
               type="button"
               onClick={() => onRequestDelete(entry.id)}
               aria-label={t.history.deleteEntry}
+              title={t.history.deleteEntry}
               className="-m-2 p-2 text-parchment-faint transition hover:text-no"
             >
               <IconTrash size={15} />

@@ -55,7 +55,7 @@ test("exports an adventure as Lonelog and imports it back", async ({ page }) => 
   // The actor's name still opens her in the notebook.
   await expect(page.getByRole("button", { name: "Odile", exact: true }).first()).toHaveAttribute(
     "title",
-    "Odile: ver en el cuaderno",
+    "PNJ Odile: ver en el cuaderno",
   );
 
   expect(errors).toEqual([]);

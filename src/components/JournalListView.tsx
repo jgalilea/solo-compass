@@ -276,7 +276,8 @@ export function JournalListView() {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  aria-label={t.common.close}
+                  aria-label={t.history.searchClear}
+                  title={t.history.searchClear}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-faint transition hover:text-parchment"
                 >
                   <IconClose size={15} />
@@ -510,6 +511,7 @@ function AdventureRow({
           onDragStart();
         }}
         aria-label={t.journal.dragHandle}
+        title={t.journal.dragHandle}
         style={{ touchAction: "none" }}
         className="-m-1 shrink-0 cursor-grab p-3 text-parchment-faint transition hover:text-parchment-dim active:cursor-grabbing"
       >
@@ -520,6 +522,7 @@ function AdventureRow({
         onClick={onToggleFavorite}
         aria-pressed={adventure.favorite}
         aria-label={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAdd}
+        title={adventure.favorite ? t.journal.favoriteRemove : t.journal.favoriteAddHint}
         className={[
           "-m-1 shrink-0 p-3 transition",
           adventure.favorite ? "text-gold" : "text-parchment-faint hover:text-gold",

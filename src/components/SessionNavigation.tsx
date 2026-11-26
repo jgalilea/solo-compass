@@ -61,7 +61,7 @@ export function SessionMenu({ groups, onJump, onJumpToEntry, className }: IndexP
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t.journal.sessionsHeading}
-        title={t.journal.sessionsHeading}
+        title={t.journal.sessionsMenuTitle}
         aria-haspopup="true"
         aria-expanded={open}
         className={[

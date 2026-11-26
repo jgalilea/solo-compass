@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, type EntryGroup } from "../lib/journalUi";
 import { canShare } from "../lib/share";
@@ -137,7 +136,7 @@ export function AdventureHeader({
               <span
                 role="img"
                 aria-label={t.journal.activeLabel}
-                title={interpolate(t.journal.activeAdventureNote, { name: adventure.name })}
+                title={t.journal.activeAdventureNote}
                 className="flex shrink-0 items-center gap-1.5 rounded-full border-gold/40 px-1 py-1 text-xs font-medium text-gold sm:border sm:bg-gold/10 sm:px-2.5"
               >
                 <span className="size-1.5 rounded-full bg-gold" />

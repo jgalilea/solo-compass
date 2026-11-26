@@ -25,6 +25,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.6.2",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXIII, al margen · Letra pequeña",
+        items: [
+          "El dado de una lista del cuaderno dice de dónde saca: entre los PNJ (los PJ no entran), los lugares o los hilos abiertos. Y en el diario se apunta así: «PNJ d3=2 → Odile».",
+          "Los textos que salen al pasar el ratón dicen la verdad: que la aventura activa recoge lo que tiras en Oráculo, Tablas y Dados, adónde va cada estrella, que la fórmula se tira a la bandeja o que el − de un mazo es una carta menos.",
+          "Los botones que solo tienen un icono explican qué hacen al pasar el ratón: el lápiz y la papelera, las estrellas, las X de cerrar…",
+        ],
+      },
+      en: {
+        title: "Chapter XXIII, in the margin · The small print",
+        items: [
+          "A notebook list's die says what it picks from: the NPCs (PCs aren't in it), the places or the open threads. And the journal logs it that way: “NPCs d3=2 → Odile”.",
+          "The text that shows when you hover tells the truth: that the active adventure gathers what you roll on Oracle, Tables and Dice, where each star sends things, that a formula rolls into the tray or that a deck's − is one card fewer.",
+          "Buttons that are only an icon say what they do when you hover: the pencil and the bin, the stars, the close Xs…",
+        ],
+      },
+    },
+  },
+  {
     version: "1.6.1",
     date: "2026-11-26",
     text: {

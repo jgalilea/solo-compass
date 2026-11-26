@@ -262,6 +262,7 @@ export function HistoryView() {
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label={t.history.searchClear}
+                title={t.history.searchClear}
                 className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
               >
                 <IconClose size={15} />

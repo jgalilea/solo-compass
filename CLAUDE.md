@@ -457,7 +457,9 @@ descriptions (`t.sample.descriptions`).
   "Show its entries" filters the journal to one element (`filterGroups`:
   its tags, and a character's dialogue and `@(Name)` actions, each with
   its block) until the filter is removed. "Roll on the list" (NPCs, places,
-  open threads) logs a `roll` entry and closes the sheet like any roll.
+  open threads) logs a `roll` entry and closes the sheet like any roll;
+  its button and the roll's name say what it picks from (`tbl: PNJ d3=2
+  -> Odile`: PCs and closed threads aren't in it).
 
 ### Journal rendering (`src/components/journalShared.tsx`)
 
@@ -717,7 +719,10 @@ Icons are Tabler Icons (`@tabler/icons-react`, MIT, outline, stroke 1.75), wrapp
 Tabler icon instead of drawing SVG or adding another icon set (only the
 compass logo is custom). Screens import only from `Icons.tsx`. Icons
 are decorative (`aria-hidden`) unless given an `aria-label`, which makes
-them an image with that name (an entry's kind is read that way). The
+them an image with that name (an entry's kind is read that way). A
+button that is only an icon carries a `title` too (the mouse's
+tooltip): its name, or more where what it does isn't obvious (a star
+says where favourites show up), and always true to what it does. The
 logo (`IconCompass`, a four-point compass rose) is the same drawing as
 `public/favicon.svg` and the PWA icons in `public/icons/`; change them
 together. Don't write symbols like "+"/"−" as text in UI controls: some

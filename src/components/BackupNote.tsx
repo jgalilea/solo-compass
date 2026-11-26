@@ -38,6 +38,7 @@ export function BackupNote() {
           setHidden(true);
         }}
         aria-label={t.common.close}
+        title={t.common.close}
         className="float-right -mr-2.5 -mt-2 flex size-10 items-center justify-center text-parchment-faint transition hover:text-parchment"
       >
         <IconClose size={16} />

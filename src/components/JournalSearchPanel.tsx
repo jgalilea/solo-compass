@@ -60,6 +60,7 @@ export function JournalSearchPanel({
           type="button"
           onClick={onClose}
           aria-label={t.common.close}
+          title={t.common.close}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-parchment-faint transition hover:text-parchment"
         >
           <IconClose size={15} />

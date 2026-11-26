@@ -417,6 +417,8 @@ export interface Dictionary {
     allHeading: string;
     favoriteAdd: string;
     favoriteRemove: string;
+    /** What a starred table is for. */
+    favoriteAddHint: string;
     rolling: string;
     rollButton: string;
     resultLabel: string;
@@ -567,6 +569,8 @@ export interface Dictionary {
     deletedAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;
+    /** What a starred roll is for. */
+    favoriteAddHint: string;
     deleteEntry: string;
     rollLabel: string;
     clearConfirmTitle: string;
@@ -597,11 +601,15 @@ export interface Dictionary {
     unsetActive: string;
     activeLabel: string;
     activeAdventureNote: string;
+    /** The header chip's tooltip: where it goes, and why it matters. */
+    activeChipTitle: string;
     noActiveAdventureNote: string;
     activateHint: string;
     goToActiveAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;
+    /** What a starred adventure is for. */
+    favoriteAddHint: string;
     dragHandle: string;
     /** After a session's entry count, for screen readers ("12" alone says nothing). */
     sessionEntryCount: string;
@@ -657,6 +665,8 @@ export interface Dictionary {
     /** Phones: the one button that opens the game table. */
     rollMenu: string;
     rollMenuLabel: string;
+    /** Its tooltip: says it opens where it was left. */
+    rollMenuTitle: string;
     toolOracle: string;
     toolTable: string;
     toolOracleTitle: string;
@@ -715,6 +725,8 @@ export interface Dictionary {
     entryDeleted: string;
     entryEdited: string;
     sessionsHeading: string;
+    /** The sessions menu button's tooltip. */
+    sessionsMenuTitle: string;
     showScenes: string;
     hideScenes: string;
     prologueLabel: string;
@@ -879,7 +891,13 @@ export interface Dictionary {
     decrease: string;
     segmentsLabel: string;
     timerStartLabel: string;
-    rollList: string;
+    /** The notebook lists' die: what each one picks from (NPCs only, open threads only). */
+    rollListNpcs: string;
+    rollListPlaces: string;
+    rollListThreads: string;
+    /** The name such a roll is logged with, saying what it picked from. */
+    rollNameNpcs: string;
+    rollNameThreads: string;
     groupCharacters: string;
     groupPlaces: string;
     groupRooms: string;
@@ -897,6 +915,9 @@ export interface Dictionary {
     /** "Use one {name}" / "One more {name}". */
     useOne: string;
     addOne: string;
+    /** A deck's −/+ count its cards. */
+    cardOut: string;
+    cardBack: string;
     quantityChangePlaceholder: string;
     quantityChangeHint: string;
     mentionCount: string;

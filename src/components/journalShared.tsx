@@ -704,7 +704,7 @@ function CharacterName({
         e.stopPropagation();
         onTagClick(castKey(member.kind, member.name));
       }}
-      title={interpolate(t.notebook.tagChipLabel, { name: member.name })}
+      title={interpolate(t.notebook.tagChipLabel, { name: `${t.notebook.kinds[member.kind]} ${member.name}` })}
       className={`${className ?? ""} underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:decoration-gold`}
     >
       {children}
@@ -835,7 +835,7 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
           e.stopPropagation();
           open();
         }}
-        title={interpolate(t.notebook.tagChipLabel, { name })}
+        title={interpolate(t.notebook.tagChipLabel, { name: `${t.notebook.kinds[kind]} ${name}` })}
         className={`${chipClass} transition hover:border-gold/60 hover:bg-gold/15`}
       >
         {content}
@@ -892,6 +892,7 @@ export function LineButtons({ inline = false, visible, onEdit, onDelete, onMoveU
         type="button"
         onClick={onEdit}
         aria-label={t.journal.editEntry}
+        title={t.journal.editEntry}
         className={`${size} text-parchment-dim transition hover:text-gold`}
       >
         <IconPencil size={15} />
@@ -900,6 +901,7 @@ export function LineButtons({ inline = false, visible, onEdit, onDelete, onMoveU
         type="button"
         onClick={onDelete}
         aria-label={t.journal.deleteEntry}
+        title={t.journal.deleteEntry}
         className={`${size} text-parchment-dim transition hover:text-no`}
       >
         <IconTrash size={15} />
