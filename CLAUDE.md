@@ -260,7 +260,9 @@ No backend; persistence is split by access pattern, not by feature:
   window (`IncomingFiles`, in `Layout`: a hint while dragging, and the
   browser no longer navigates away to the file), opened with the
   installed app (manifest `file_handlers`, Chromium on a computer,
-  `launchQueue`) or shared to it (manifest `share_target`, Android:
+  `launchQueue`) or shared to it (manifest `share_target`, Android, which
+  picks apps by the file's type alone: a .md or a .json often has no
+  type it knows, so `share_target` also takes `application/octet-stream`;
   `public/share-target.js`, loaded into the service worker by workbox's
   `importScripts`, keeps the posted files in a cache of their own and
   sends the app to `#/?compartido`, `takeSharedFiles`). They wait in

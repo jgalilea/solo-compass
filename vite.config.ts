@@ -92,7 +92,16 @@ const manifest: Partial<ManifestOptions> = {
     method: "POST",
     enctype: "multipart/form-data",
     params: {
-      files: [{ name: "file", accept: [...Object.keys(OPENED_FILES), ...Object.values(OPENED_FILES).flat()] }],
+      // Android's share sheet picks apps by the file's type alone, and a
+      // .md usually has none it knows (Files shows it as unknown): it's
+      // shared as application/octet-stream. So any text, and files of no
+      // known type; one that isn't text is refused by the dialog.
+      files: [
+        {
+          name: "file",
+          accept: ["text/*", "application/json", "application/octet-stream", ...Object.values(OPENED_FILES).flat()],
+        },
+      ],
     },
   },
 };

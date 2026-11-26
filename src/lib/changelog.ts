@@ -25,6 +25,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.9.1",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXVI, al margen · Lo que se comparte",
+        items: [
+          "En Android, Solo Compass sale en «Compartir» también con los diarios .md y las copias de seguridad, que el móvil suele tratar como archivos de tipo desconocido. Si aún no aparece, abre la app instalada: el móvil tarda hasta un día en renovarla.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVI, in the margin · What can be shared",
+        items: [
+          "On Android, Solo Compass shows up in “Share” for .md journals and backups too, which the phone often takes for files of an unknown type. If it isn't there yet, open the installed app: the phone takes up to a day to renew it.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.9.0",
     date: "2026-11-26",
     text: {
