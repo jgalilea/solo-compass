@@ -212,6 +212,13 @@ describe("pinned notes (front matter)", () => {
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
   });
 
+  it("keep their Markdown as written, a divider line too (it doesn't end the front matter)", () => {
+    const marked = "# Leads\n**Stag** seal, *house unknown*\n---\n> “Gold leaves no tracks.”\n1. Ask Odile";
+    const md = exportAdventureToMarkdown(es, "Mi aventura", [entry("note", "Hola", 1)], marked);
+    expect(parseNotesFromMarkdown(md)).toBe(marked);
+    expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
+  });
+
   it("without notes the front matter only has the campaign header", () => {
     const md = exportAdventureToMarkdown(es, "Mi aventura", [], "  \n");
     expect(md.startsWith('---\ntitle: "Mi aventura"\n---\n\n# Mi aventura')).toBe(true);

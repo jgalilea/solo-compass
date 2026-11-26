@@ -31,6 +31,7 @@ import {
 import type { Answer } from "./oracle";
 import { expandAnswer } from "./i18n/answerText";
 import { noteForm, parseScene, splitActor } from "./lonelogLines";
+import { parseInline, readNoteLine, type InlineNode } from "./noteMarkdown";
 
 /** The theme as exported: colour tokens and the display font. */
 export interface ExportTheme {
@@ -154,15 +155,54 @@ function entryHtml(t: Dictionary, entry: JournalEntry, answerFor: (rollId?: stri
   return `<div class="entry ${kind}">${symbol ? `<span class="sym">${escapeHtml(symbol)}</span>` : `<span class="sym"></span>`}<div>${body}</div></div>`;
 }
 
+/** A line's bold, italic, struck, code and links (noteMarkdown), as on screen. */
+function inlineHtml(nodes: InlineNode[]): string {
+  return nodes
+    .map((node) => {
+      switch (node.kind) {
+        case "text":
+          return escapeHtml(node.text);
+        case "code":
+          return `<code>${escapeHtml(node.text)}</code>`;
+        case "strong":
+          return `<strong>${inlineHtml(node.children)}</strong>`;
+        case "em":
+          return `<em>${inlineHtml(node.children)}</em>`;
+        case "del":
+          return `<del>${inlineHtml(node.children)}</del>`;
+        case "link":
+          return `<a href="${escapeHtml(node.href)}" rel="noreferrer">${inlineHtml(node.children)}</a>`;
+      }
+    })
+    .join("");
+}
+
+/** The notebook's own text (pinned notes, a description) with its Markdown drawn. */
 function notesHtml(notes: string): string {
   return notes
     .split("\n")
-    .map((line) => {
-      const box = line.match(/^\s*[-*] \[( |x|X)\] (.*)$/);
-      if (box) return `<p class="check${box[1] === " " ? "" : " done"}">${box[1] === " " ? "☐" : "☑"} ${escapeHtml(box[2])}</p>`;
-      const bullet = line.match(/^\s*[-*] (.*)$/);
-      if (bullet) return `<p class="bullet">• ${escapeHtml(bullet[1])}</p>`;
-      return line.trim() ? `<p>${escapeHtml(line)}</p>` : `<p class="gap"></p>`;
+    .map((raw) => {
+      const line = readNoteLine(raw);
+      const text = "text" in line ? inlineHtml(parseInline(line.text)) : "";
+      const indent = "depth" in line && line.depth ? ` style="margin-left:${line.depth}rem"` : "";
+      switch (line.kind) {
+        case "check":
+          return `<p class="check${line.checked ? " done" : ""}"${indent}>${line.checked ? "☑" : "☐"} ${text}</p>`;
+        case "bullet":
+          return `<p class="bullet"${indent}>• ${text}</p>`;
+        case "ordered":
+          return `<p class="bullet"${indent}>${escapeHtml(line.marker)} ${text}</p>`;
+        case "heading":
+          return `<p class="h${line.level}">${text}</p>`;
+        case "quote":
+          return `<p class="quote">${text}</p>`;
+        case "rule":
+          return "<hr>";
+        case "gap":
+          return `<p class="gap"></p>`;
+        case "text":
+          return `<p>${text}</p>`;
+      }
     })
     .join("");
 }
@@ -175,7 +215,7 @@ function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<str
       const description = descriptions[m.key]?.text.trim();
       return `<li${status && status !== "open" ? ' class="closed"' : ""}><small>${escapeHtml(t.notebook.kinds[m.kind])}</small> <b>${escapeHtml(m.name)}</b>${
         state.length ? ` <span>${escapeHtml(state.join(" · "))}</span>` : ""
-      }${description ? `<p class="desc">${escapeHtml(description).replace(/\n/g, "<br>")}</p>` : ""}</li>`;
+      }${description ? `<div class="desc">${notesHtml(description)}</div>` : ""}</li>`;
     })
     .join("")}</ul>`;
 }
@@ -316,6 +356,15 @@ aside { display: grid; gap: 1rem; }
 .box p { margin: 0; }
 .box .gap { height: .5rem; }
 .box .done { color: var(--color-parchment-dim); text-decoration: line-through; }
+.box .h1 { font-weight: 700; font-size: 1rem; margin-top: .3rem; }
+.box .h2 { font-weight: 700; margin-top: .3rem; }
+.box .h3 { font-weight: 700; font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; color: var(--color-parchment-dim); margin-top: .3rem; }
+.box .h1:first-child, .box .h2:first-child, .box .h3:first-child { margin-top: 0; }
+.box .quote { border-left: 2px solid color-mix(in srgb, var(--color-gold) 40%, transparent); padding-left: .6rem; font-style: italic; color: var(--color-parchment-dim); }
+.box hr { border: 0; border-top: 1px solid var(--color-ink-border); margin: .4rem 0; }
+.box code { font: .85em ui-monospace, monospace; border: 1px solid var(--color-ink-border); border-radius: .25rem; padding: 0 .2rem; }
+.box del { color: var(--color-parchment-dim); }
+.box a { color: var(--color-gold); overflow-wrap: anywhere; }
 .cast { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
 .cast small { color: var(--color-gold); font-size: .7rem; text-transform: uppercase; }
 .cast span { color: var(--color-parchment-dim); }

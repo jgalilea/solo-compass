@@ -321,9 +321,12 @@ test("each adventure keeps its own oracle", async ({ page }) => {
 
   await create("La saga");
   await (await switcher()).click();
-  const dialog = page.getByRole("dialog", { name: "Oráculo" });
-  await expect(dialog.getByText("Lo eliges para «La saga»")).toBeVisible();
+  // On phones the game table's sheet is a dialog too: the switcher opens over it.
+  const dialog = page.getByRole("dialog", { name: "Oráculo" }).last();
+  await expect(dialog.getByText("El oráculo que elijas aquí es solo para «La saga»")).toBeVisible();
   await dialog.getByRole("button", { name: /^Ironsworn/ }).click();
+  // Picked, it's the adventure's own, and the note says so.
+  await expect(dialog.getByText("De esta aventura", { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(await switcher()).toContainText("Ironsworn");
 
@@ -339,6 +342,7 @@ test("each adventure keeps its own oracle", async ({ page }) => {
   await page.getByRole("button", { name: "Activar" }).click();
   await page.goto("./#/");
   await expect(page.getByRole("button", { name: "Cambiar oráculo" })).toContainText("Ironsworn");
+  await expect(page.getByText("De la aventura activa")).toBeVisible();
 });
 
 /** The dice and tables on an adventure's game table, picked for it, there and only there. */
@@ -366,12 +370,15 @@ test("each adventure keeps its own dice and tables at hand", async ({ page }) =>
   await create("Los dados");
   let dice = await tool("Dados", "dice");
   await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeVisible();
+  // It says where they come from: the favourites, until it picks its own.
+  await expect(dice.getByText("Tus favoritos")).toBeVisible();
   await dice.getByRole("button", { name: "Elegir dados" }).click();
   const diceDialog = page.getByRole("dialog", { name: "Dados de esta aventura" });
   await diceDialog.getByRole("button", { name: "d4", exact: true }).click();
   await diceDialog.getByRole("button", { name: "Hecho", exact: true }).click();
   await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeHidden();
   await expect(dice.getByRole("button", { name: "d20", exact: true })).toBeVisible();
+  await expect(dice.getByText("De esta aventura")).toBeVisible();
 
   const tables = await tool("Tabla", "table");
   await tables.getByRole("button", { name: "Elegir tablas" }).click();
@@ -380,10 +387,12 @@ test("each adventure keeps its own dice and tables at hand", async ({ page }) =>
   await tablesDialog.getByRole("button", { name: "Añadir Nombre de asentamiento", exact: true }).first().click();
   await tablesDialog.getByRole("button", { name: "Hecho", exact: true }).click();
   await expect(tables.getByRole("button", { name: /^Nombre de asentamiento/ }).first()).toBeVisible();
+  await expect(tables.getByText("De esta aventura")).toBeVisible();
 
   // Another adventure keeps the usual ones.
   await create("Otra");
   dice = await tool("Dados", "dice");
   await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeVisible();
+  await expect(dice.getByText("Tus favoritos")).toBeVisible();
   await expect((await tool("Tabla", "table")).getByRole("button", { name: /^Nombre de asentamiento/ })).toHaveCount(0);
 });

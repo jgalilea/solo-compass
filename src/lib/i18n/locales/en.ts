@@ -45,8 +45,24 @@ export const en: Dictionary = {
     pickTables: "Pick tables",
     diceTitle: "This adventure's dice",
     tablesTitle: "This adventure's tables",
-    note: "The ones on “{name}”'s game table. Your other adventures don't change.",
-    following: "Right now they're your favorites: as soon as you change one, they'll be this adventure's own.",
+    fromFavoriteDice: "Your favorites",
+    fromFavoriteTables: "Your favorites",
+    fromFavoriteOracle: "Your favorite",
+    fromLastOracle: "The last one you used",
+    fromAdventure: "This adventure's",
+    fromActiveAdventure: "The active adventure's",
+    diceRule: "The dice you pick here show up on “{name}”'s game table only: your other adventures don't change.",
+    tablesRule: "The tables you pick here show up on “{name}”'s game table only: your other adventures don't change.",
+    oracleRule: "The oracle you pick here is for “{name}” only: your other adventures don't change.",
+    oracleScreenRule:
+      "It's the one of “{name}”, the active adventure: the one you pick here changes only its own. With no active adventure, the Oracle goes back to your favorite (or, if you have none, the last one you used without an adventure).",
+    diceFollowing: "Right now these are your favorites, the starred ones on Dice. As soon as you change one, they'll be this adventure's.",
+    tablesFollowing: "Right now these are your favorites, the starred ones on Tables. As soon as you change one, they'll be this adventure's.",
+    oracleFollowing: "Right now it's your favorite, the starred one. As soon as you pick another or ask it something, it'll be this adventure's.",
+    oracleFollowingLast: "Right now it's the last one you used. As soon as you pick one or ask it something, it'll be this adventure's.",
+    diceOwn: "They're this adventure's now: the stars on Dice don't change it. “Back to my favorites” undoes it.",
+    tablesOwn: "They're this adventure's now: the stars on Tables don't change it. “Back to my favorites” undoes it.",
+    oracleOwn: "It's this adventure's now: changing your favorite doesn't change it. To use another, pick it.",
     builtin: "Built-in",
     own: "Yours",
     noOwn: "Your own dice are made on the Dice screen.",
@@ -57,7 +73,8 @@ export const en: Dictionary = {
     add: "Add {name}",
     remove: "Remove {name}",
     more: "And {count} more: narrow the search.",
-    reset: "Back to my favorites",
+    resetDice: "Back to my favorites",
+    resetTables: "Back to my favorites",
     done: "Done",
   },
   dice: {
@@ -108,8 +125,9 @@ export const en: Dictionary = {
   },
   guide: {
     title: "Quick guide",
-    intro: "How to write in the journal, the Lonelog notation it understands and the keyboard shortcuts.",
-    settingsText: "How to write in the journal, the Lonelog notation with its tags and the keyboard shortcuts, on a single page.",
+    intro: "How to write in the journal, each adventure's game table, the Lonelog notation it understands and the keyboard shortcuts.",
+    settingsText:
+      "How to write in the journal, each adventure's game table, the Lonelog notation with its tags and the keyboard shortcuts, on a single page.",
     settingsButton: "Open the guide",
     writingHeading: "Writing in the journal",
     writing: [
@@ -120,6 +138,17 @@ export const en: Dictionary = {
       "Type “[” to name a character, a place, a thread or an item: the ones that exist show up and you can create a new one. With “@(” (what someone else does) or “N (” (what they say), the list offers the characters.",
       "Tap an entry to see its buttons: edit or delete it (both with “Undo”), move it or write below it.",
       "Tap a highlighted name (also whoever acts or speaks, if they're in the notebook) to see it in the notebook; there, “Show its entries” leaves only what's about it in the journal, until you remove the filter. After any roll, the box switches to “Consequence” so you can tell what happens.",
+      "The notebook's pinned notes and descriptions take Markdown: **bold**, *italic*, ~~struck~~, `code`, links, “# heading”, “> quote”, “---” to divide, lists and “- [ ]” checkboxes you tick with a tap.",
+    ],
+    gameTableHeading: "Each adventure's game table",
+    gameTableIntro:
+      "The oracle, dice and tables you keep at hand inside an adventure: beside the box you write in or, on wide screens, to the right of the journal.",
+    gameTable: [
+      "It starts with your favorites: the ones you star on Oracle, Dice and Tables.",
+      "What you change on it is that adventure's alone: the oracle you pick or ask with, and the dice and tables from “Pick dice” and “Pick tables”. Your other adventures don't change.",
+      "From then on, your stars don't change it. When picking dice or tables, “Back to my favorites” undoes it; the oracle changes by picking another.",
+      "Beside each tool it says where what you see comes from: “Your favorites” or “This adventure's”.",
+      "While an adventure is the active one, the Oracle screen asks with its oracle; with none active, with your favorite.",
     ],
     notationHeading: "Lonelog notation",
     notationIntro:
@@ -383,7 +412,6 @@ export const en: Dictionary = {
     favorite: "Favorite",
     markFavorite: "Mark as favorite",
     favoriteHint: "Your favorite is the one every new adventure starts with, and the one the Oracle opens with when no adventure is active.",
-    adventureNote: "You're picking it for “{name}”: each adventure remembers its own.",
   },
   oracleHelp: {
     button: "How the oracle works",
@@ -1134,11 +1162,11 @@ export const en: Dictionary = {
     openLabel: "Notebook: pinned notes, characters and places, threads and clocks, inventory",
     notesTitle: "Pinned notes",
     notesEmpty: "Anything you want at hand: inventory, clues, loose ends… Tap to write.",
-    notesPlaceholder: "Write here. “- [ ] something” makes a checkbox you can tick.",
+    notesPlaceholder: "Write here, in Markdown if you like: **bold**, *italic*, “# heading”, “- list” and “- [ ] checkbox” you tick with a tap.",
     notesEdit: "Edit the notes",
     notesDone: "Done",
     descriptionAdd: "Add a description",
-    descriptionPlaceholder: "What they look like, who they are, what you know… Not logged in the journal.",
+    descriptionPlaceholder: "What they look like, who they are, what you know… Not logged in the journal. **Bold**, *italic* and links work.",
     descriptionLabel: "Description of {name}",
     castTitle: "Characters and places",
     castEmpty:
@@ -1259,7 +1287,7 @@ export const en: Dictionary = {
     offer: "First time? Take a look at a sample adventure",
     name: "Sample: The Crossroads Inn",
     notes:
-      "To do:\n- [x] Pay Tobias's bill\n- [x] Find Tobias\n- [ ] Find out who pays Grey Cloak\n- [ ] Reach the barge before it sails\n\nThe innkeeper doesn't trust the guild. The box's seal bears a stag: which house uses that emblem?",
+      "## To do\n- [x] Pay Tobias's bill\n- [x] Find Tobias\n- [ ] Find out who pays **Grey Cloak**\n- [ ] Reach the barge *before it sails*\n\n## Leads\nThe innkeeper doesn't trust the guild. The box's seal bears a **stag**: which house uses that emblem?\n> “Gold leaves no tracks.”",
     descriptions:
       "[PC:Mara] Guild courier, quick and stubborn. Never leaves a job half done.\n[N:Odile] Keeper of the crossroads inn. Hasn't trusted the guild since one of its couriers left her a debt.\n[N:Grey Cloak] Tall, well-spoken, fine leather gloves. Pays in gold and leaves no tracks… almost never.\n[L:Mill] A water mill by the river, idle since the spring flood.",
     script: [

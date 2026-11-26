@@ -91,8 +91,33 @@ export interface Dictionary {
     pickTables: string;
     diceTitle: string;
     tablesTitle: string;
-    note: string;
-    following: string;
+    /**
+     * Where what's on a game table comes from, said beside each tool and
+     * on top of its dialog: the favourites, the device's last oracle
+     * (no favourite oracle yet), or the adventure's own pick.
+     */
+    fromFavoriteDice: string;
+    fromFavoriteTables: string;
+    fromFavoriteOracle: string;
+    fromLastOracle: string;
+    fromAdventure: string;
+    /** The Oracle screen, while an adventure is active and has its own. */
+    fromActiveAdventure: string;
+    /** The same rule for the three: what's picked here is the adventure's alone. */
+    diceRule: string;
+    tablesRule: string;
+    oracleRule: string;
+    /** The Oracle screen while an adventure is active: it asks with that one's. */
+    oracleScreenRule: string;
+    /** Still the favourites: when that changes. */
+    diceFollowing: string;
+    tablesFollowing: string;
+    oracleFollowing: string;
+    oracleFollowingLast: string;
+    /** Its own: the stars no longer change it, and how to undo it. */
+    diceOwn: string;
+    tablesOwn: string;
+    oracleOwn: string;
     builtin: string;
     own: string;
     noOwn: string;
@@ -103,7 +128,8 @@ export interface Dictionary {
     add: string;
     remove: string;
     more: string;
-    reset: string;
+    resetDice: string;
+    resetTables: string;
     done: string;
   };
   dice: {
@@ -159,6 +185,10 @@ export interface Dictionary {
     settingsButton: string;
     writingHeading: string;
     writing: string[];
+    /** Each adventure's oracle, dice and tables, and the favourites. */
+    gameTableHeading: string;
+    gameTableIntro: string;
+    gameTable: string[];
     notationHeading: string;
     notationIntro: string;
     notation: GuideRow[];
@@ -342,8 +372,6 @@ export interface Dictionary {
     favorite: string;
     markFavorite: string;
     favoriteHint: string;
-    /** Inside an adventure (or with one active): whose oracle is being picked. */
-    adventureNote: string;
   };
   /** Short guide to the oracle (not its full rules: those are in the original). */
   oracleHelp: {

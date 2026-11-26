@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readNoteLine } from "./noteMarkdown";
 import { DICTIONARIES } from "./i18n/allDictionaries";
 import type { SampleLine } from "./i18n/types";
 import { loadMeaningTables } from "./tableGames";
@@ -146,6 +147,10 @@ describe("sample adventure notebook", () => {
       expect(cast.filter((c) => c.kind === "thread").map((c) => threadStatus(c))).toEqual(["closed", "open"]);
 
       expect(parseNotesFromMarkdown(markdown)).toBe(t.sample.notes);
+      // The notes show what they can draw: headings, checkboxes, a quote, bold.
+      const noteKinds = new Set(t.sample.notes.split("\n").map((line) => readNoteLine(line).kind));
+      for (const kind of ["heading", "check", "quote"] as const) expect(noteKinds).toContain(kind);
+      expect(t.sample.notes).toMatch(/\*\*\S[^*]*\S\*\*/);
       const descriptions = parseDescriptionsFromMarkdown(markdown);
       expect(Object.keys(descriptions)).toHaveLength(4);
       // Each description belongs to someone in the journal.

@@ -23,7 +23,9 @@ import {
 import { INPUT_CLASS, formatIsoDay } from "../lib/journalUi";
 import { titleIfCut } from "../lib/truncation";
 import { smoothBehavior } from "../lib/scrolling";
+import { toggleNoteCheckbox } from "../lib/noteMarkdown";
 import { CastIcon } from "./CastIcon";
+import { NoteText } from "./NoteText";
 import {
   IconChevronRight,
   IconFilter,
@@ -434,29 +436,41 @@ function DescriptionField({ name, text, onChange }: { name: string; text: string
     );
   }
 
+  function startEditing() {
+    setDraft(text);
+    setEditing(true);
+  }
+
+  if (!text.trim()) {
+    return (
+      <button
+        type="button"
+        onClick={startEditing}
+        className="flex items-center gap-1 self-start rounded-md py-0.5 text-xs text-parchment-dim transition hover:text-gold"
+      >
+        <IconPlus size={12} />
+        {t.notebook.descriptionAdd}
+      </button>
+    );
+  }
+
+  // Its Markdown drawn like the pinned notes' (links and checkboxes work
+  // in it), so the field opens by tapping the text or with the pencil.
   return (
-    <button
-      type="button"
-      onClick={() => {
-        setDraft(text);
-        setEditing(true);
-      }}
-      aria-label={text.trim() ? label : undefined}
-      className={
-        text.trim()
-          ? "-mx-1.5 whitespace-pre-wrap rounded-md px-1.5 py-1 text-left text-sm text-parchment/90 transition hover:bg-ink-700/50"
-          : "flex items-center gap-1 self-start rounded-md py-0.5 text-xs text-parchment-dim transition hover:text-gold"
-      }
-    >
-      {text.trim() ? (
-        text
-      ) : (
-        <>
-          <IconPlus size={12} />
-          {t.notebook.descriptionAdd}
-        </>
-      )}
-    </button>
+    <div className="relative -mx-1.5 rounded-md py-1 pl-1.5 pr-8 text-sm text-parchment/90 transition hover:bg-ink-700/50">
+      <div onClick={startEditing} className="flex cursor-text flex-col gap-0.5">
+        <NoteText text={text} onToggle={(line) => onChange(toggleNoteCheckbox(text, line))} />
+      </div>
+      <button
+        type="button"
+        onClick={startEditing}
+        aria-label={label}
+        title={label}
+        className="absolute right-0.5 top-0.5 rounded-md p-1.5 text-parchment-dim transition hover:text-gold"
+      >
+        <IconPencil size={14} />
+      </button>
+    </div>
   );
 }
 

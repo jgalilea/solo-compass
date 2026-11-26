@@ -397,8 +397,12 @@ a sheet below that, opened from the adventure's bar (its notebook
 button, pinned with the bar beside the sessions, so always in reach).
 
 - **Pinned notes**: `notes` on `Adventure` (so they ride along in the
-  backup). Edited in place, saved after a short pause; `- [ ]` lines
-  are tickable checkboxes. Not entries: no date, editing them doesn't
+  backup). Edited in place, saved after a short pause. They (and the
+  descriptions) take a light Markdown, read by `noteMarkdown.ts` and
+  drawn by `NoteText` (and the HTML export): headings, bullets,
+  numbered items, quotes, a divider, **bold**, *italic*, ~~struck~~,
+  `code`, links and bare web addresses; `- [ ]` lines are tickable
+  checkboxes. Stored and exported as typed. Not entries: no date, editing them doesn't
   touch `updatedAt`. In the .md they're the YAML front matter's
   `notes` field (Lonelog §5.1), written and read back by `lonelog.ts`.
 - **Descriptions**: free text per character/place/thread,
@@ -637,6 +641,13 @@ it picks, the favorites (`gameTablePicks.ts`): built-in dice
 backup's settings), the player's starred dice and the starred tables
 (`tableFavorites.ts`). A typed formula can be saved from it as a
 favorite die of one's own, which joins that adventure's pick too.
+Beside each tool (and the Oracle screen's switcher while an adventure
+is active) a quiet `SourceTag` says where it comes from ("Your
+favorites" or "This adventure's"; the oracle's from `oracleSource` in
+`OracleContext`), and the three dialogs (`OracleSwitcher`,
+`GameTablePickers`) open with the same `SourceNote`: where it comes
+from, the rule, what it means now. The quick guide has a part on it:
+keep the four in step.
 The tray is a preview: nothing is kept until "Log it" (the journal
 entry, and one history roll per die, kind `"dados"`, its text as the
 journal writes it; starred and filtered there like the oracle's and

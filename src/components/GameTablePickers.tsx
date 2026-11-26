@@ -15,6 +15,7 @@ import type { MeaningTable } from "../lib/tables";
 import { normalizeForSearch } from "../lib/text";
 import { DialogBody, DialogFooter, DialogHeader } from "./Dialog";
 import { DieOutline } from "./Die";
+import { SourceNote } from "./GameTableSource";
 import { IconCheck, IconClose, IconDice, IconPlus, IconSearch, IconTable } from "./icons/Icons";
 import { Modal } from "./Modal";
 
@@ -43,7 +44,7 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
     <Modal onClose={onClose} label={t.gameTable.diceTitle} size="lg">
       <DialogHeader title={t.gameTable.diceTitle} Icon={IconDice} onClose={onClose} />
       <DialogBody>
-        <PickerNote name={adventure?.name ?? ""} following={following} />
+        <SourceNote tool="dice" source={following ? "favorite" : "adventure"} name={adventure?.name ?? ""} />
         <section className="flex flex-col gap-2">
           <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.gameTable.builtin}</h3>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
@@ -91,7 +92,12 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
           )}
         </section>
       </DialogBody>
-      <PickerFooter following={following} onReset={() => setAdventurePick(adventureId, "gameDice", null)} onClose={onClose} />
+      <PickerFooter
+        following={following}
+        resetLabel={t.gameTable.resetDice}
+        onReset={() => setAdventurePick(adventureId, "gameDice", null)}
+        onClose={onClose}
+      />
     </Modal>
   );
 }
@@ -134,7 +140,7 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
     <Modal onClose={onClose} label={t.gameTable.tablesTitle} size="lg">
       <DialogHeader title={t.gameTable.tablesTitle} Icon={IconTable} onClose={onClose} />
       <DialogBody>
-        <PickerNote name={adventure?.name ?? ""} following={following} />
+        <SourceNote tool="tables" source={following ? "favorite" : "adventure"} name={adventure?.name ?? ""} />
         <section className="flex flex-col gap-1.5">
           <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
             {interpolate(t.gameTable.onTable, { count: on.size })}
@@ -204,28 +210,33 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
             ))}
         </section>
       </DialogBody>
-      <PickerFooter following={following} onReset={() => setAdventurePick(adventureId, "gameTables", null)} onClose={onClose} />
+      <PickerFooter
+        following={following}
+        resetLabel={t.gameTable.resetTables}
+        onReset={() => setAdventurePick(adventureId, "gameTables", null)}
+        onClose={onClose}
+      />
     </Modal>
   );
 }
 
-/** Whose game table this is, and whether it still goes with the favourites. */
-function PickerNote({ name, following }: { name: string; following: boolean }) {
-  const { t } = useLocaleContext();
-  return (
-    <p className="text-sm text-parchment-dim">
-      {interpolate(t.gameTable.note, { name })} {following && <span className="text-parchment">{t.gameTable.following}</span>}
-    </p>
-  );
-}
-
-function PickerFooter({ following, onReset, onClose }: { following: boolean; onReset: () => void; onClose: () => void }) {
+function PickerFooter({
+  following,
+  resetLabel,
+  onReset,
+  onClose,
+}: {
+  following: boolean;
+  resetLabel: string;
+  onReset: () => void;
+  onClose: () => void;
+}) {
   const { t } = useLocaleContext();
   return (
     <DialogFooter>
       {!following && (
         <button type="button" onClick={onReset} className={SECONDARY_BUTTON_CLASS}>
-          {t.gameTable.reset}
+          {resetLabel}
         </button>
       )}
       <button type="button" onClick={onClose} className={PRIMARY_BUTTON_CLASS}>

@@ -10,6 +10,7 @@ import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleResultCard } from "./OracleResultCard";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
+import { SourceTag } from "./GameTableSource";
 import { TwistCounter } from "./TwistCounter";
 import { ConsequenceComposer } from "./ConsequenceComposer";
 import { RecentRolls } from "./RecentRolls";
@@ -34,7 +35,7 @@ function OracleScreen() {
   const { adventures, activeAdventureId } = useJournalContext();
   const { askOracle, addConsequence } = usePlayActions();
   const [question, setQuestion] = useState("");
-  const { oracleId, likelihood, setLikelihood } = useOracleContext();
+  const { oracleId, likelihood, setLikelihood, oracleSource } = useOracleContext();
   // Kept as picked: going back to an oracle with five levels restores it.
   const level = fitLikelihood(oracleId, likelihood);
   const [lastRoll, setLastRoll] = useState<OracleRoll | null>(null);
@@ -63,9 +64,11 @@ function OracleScreen() {
         title={t.oracle.title}
         after={
           <>
-            <OracleSwitcher />
+            <OracleSwitcher onOracleScreen />
             <TwistCounter adventureId={activeAdventureId} />
             <OracleHelp />
+            {/* With an adventure active, it asks with that one's oracle: said here. */}
+            {oracleSource && <SourceTag tool="oracle" source={oracleSource} onOracleScreen />}
           </>
         }
       />

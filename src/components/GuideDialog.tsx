@@ -9,9 +9,10 @@ import { ShortcutsLegend } from "./ShortcutsLegend";
 import { IconHelp } from "./icons/Icons";
 
 /**
- * The quick guide: writing in the journal, the Lonelog notation and its
- * tags, and the keyboard shortcuts. Drawn once, by Layout; opened from
- * anywhere with openGuide ("?", Settings, an adventure's menu).
+ * The quick guide: writing in the journal, each adventure's game table,
+ * the Lonelog notation and its tags, and the keyboard shortcuts. Drawn
+ * once, by Layout; opened from anywhere with openGuide ("?", Settings,
+ * an adventure's menu).
  */
 export function GuideDialog() {
   const { t } = useLocaleContext();
@@ -31,6 +32,16 @@ export function GuideDialog() {
               <HelpHeading>{g.writingHeading}</HelpHeading>
               <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-parchment">
                 {g.writing.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </section>
+            {/* Each adventure's oracle, dice and tables, and the favourites. */}
+            <section className="flex flex-col gap-2">
+              <HelpHeading>{g.gameTableHeading}</HelpHeading>
+              <p className="text-sm text-parchment-dim">{g.gameTableIntro}</p>
+              <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-parchment">
+                {g.gameTable.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
               </ul>

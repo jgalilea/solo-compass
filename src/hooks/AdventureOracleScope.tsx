@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import type { OracleId } from "../lib/oracleEngines";
-import { OracleContext } from "./oracleContextInstance";
+import { OracleContext, type OracleContextValue } from "./oracleContextInstance";
 import { useJournalContext } from "./useJournalContext";
 import { useOracleContext } from "./useOracleContext";
 
@@ -18,13 +18,24 @@ export function AdventureOracleScope({ adventureId, children }: { adventureId: s
   const id = adventure?.id;
   const name = adventure?.name;
   const oracleId: OracleId = adventure?.oracle ?? parent.favoriteOracleId ?? parent.oracleId;
+  const oracleSource: OracleContextValue["oracleSource"] = adventure?.oracle
+    ? "adventure"
+    : parent.favoriteOracleId
+      ? "favorite"
+      : "last";
 
   const value = useMemo(
     () =>
       id === undefined
         ? parent
-        : { ...parent, oracleId, setOracleId: (next: OracleId) => setAdventureOracle(id, next), adventureName: name },
-    [parent, id, name, oracleId, setAdventureOracle],
+        : {
+            ...parent,
+            oracleId,
+            setOracleId: (next: OracleId) => setAdventureOracle(id, next),
+            adventureName: name,
+            oracleSource,
+          },
+    [parent, id, name, oracleId, oracleSource, setAdventureOracle],
   );
   return <OracleContext.Provider value={value}>{children}</OracleContext.Provider>;
 }

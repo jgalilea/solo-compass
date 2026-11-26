@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { INPUT_CLASS } from "../lib/journalUi";
-import { IconCheckbox, IconCheckboxChecked, IconPencil } from "./icons/Icons";
-
-const CHECKBOX_LINE = /^(\s*[-*] )\[( |x|X)\] (.*)$/;
-const BULLET_LINE = /^\s*[-*] (.*)$/;
+import { toggleNoteCheckbox } from "../lib/noteMarkdown";
+import { IconPencil } from "./icons/Icons";
+import { NoteText } from "./NoteText";
 
 /**
- * The notes as text you read, ticking checkboxes in place; tapping
- * anywhere else (or the pencil) turns it into a field. While writing
+ * The notes as text you read (their Markdown drawn, NoteText), ticking
+ * checkboxes in place; tapping anywhere else (or the pencil) turns it
+ * into a field. While writing
  * it's saved after a short pause, and when leaving the field.
  */
 export function PinnedNotes({ notes, onChange }: { notes: string; onChange: (notes: string) => void }) {
@@ -45,14 +45,6 @@ export function PinnedNotes({ notes, onChange }: { notes: string; onChange: (not
   function stopEditing() {
     flush();
     setEditing(false);
-  }
-
-  function toggle(index: number) {
-    const lines = notes.split("\n");
-    lines[index] = lines[index].replace(CHECKBOX_LINE, (_, lead: string, mark: string, rest: string) =>
-      `${lead}[${mark === " " ? "x" : " "}] ${rest}`,
-    );
-    onChange(lines.join("\n"));
   }
 
   if (editing) {
@@ -102,44 +94,7 @@ export function PinnedNotes({ notes, onChange }: { notes: string; onChange: (not
   return (
     <div className="group relative rounded-xl border border-ink-border/70 bg-ink-900/40 py-2.5 pl-3.5 pr-9 text-sm text-parchment/90">
       <div onClick={startEditing} className="flex cursor-text flex-col gap-0.5">
-        {notes.split("\n").map((line, i) => {
-          const box = line.match(CHECKBOX_LINE);
-          if (box) {
-            const checked = box[2] !== " ";
-            const Icon = checked ? IconCheckboxChecked : IconCheckbox;
-            return (
-              <button
-                key={i}
-                type="button"
-                role="checkbox"
-                aria-checked={checked}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggle(i);
-                }}
-                className="-mx-1 flex items-start gap-2 rounded-md px-1 py-0.5 text-left transition hover:bg-ink-700/50"
-              >
-                <Icon size={16} className={`mt-0.5 shrink-0 ${checked ? "text-gold" : "text-parchment-dim"}`} />
-                <span className={checked ? "text-parchment-dim line-through" : ""}>{box[3]}</span>
-              </button>
-            );
-          }
-          const bullet = line.match(BULLET_LINE);
-          if (bullet) {
-            return (
-              <p key={i} className="relative pl-4 before:absolute before:left-1 before:text-gold before:content-['•']">
-                {bullet[1]}
-              </p>
-            );
-          }
-          return line.trim() ? (
-            <p key={i} className="whitespace-pre-wrap">
-              {line}
-            </p>
-          ) : (
-            <div key={i} className="h-2" />
-          );
-        })}
+        <NoteText text={notes} onToggle={(line) => onChange(toggleNoteCheckbox(notes, line))} />
       </div>
       <button
         type="button"

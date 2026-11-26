@@ -5,10 +5,16 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { IconCheck, IconExternalLink, IconStar, IconSwap } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
+import { SourceNote } from "./GameTableSource";
 import { Modal } from "./Modal";
 
-export function OracleSwitcher() {
-  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, adventureName } = useOracleContext();
+/**
+ * The oracle's name, which opens the four to pick from. With an
+ * adventure (its game table, or the Oracle screen while it's active,
+ * `onOracleScreen`) it picks that one's and says so on top.
+ */
+export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: boolean }) {
+  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, adventureName, oracleSource } = useOracleContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const current = ORACLES.find((o) => o.id === oracleId) ?? ORACLES[0];
@@ -33,8 +39,8 @@ export function OracleSwitcher() {
         >
           <DialogHeader title={t.oracleSwitcher.dialogTitle} onClose={() => setOpen(false)} />
           <DialogBody>
-            {adventureName && (
-              <p className="text-sm text-parchment">{interpolate(t.oracleSwitcher.adventureNote, { name: adventureName })}</p>
+            {adventureName && oracleSource && (
+              <SourceNote tool="oracle" source={oracleSource} name={adventureName} onOracleScreen={onOracleScreen} />
             )}
             <div className="grid gap-2 md:grid-cols-2 md:gap-3">
               {ORACLES.map((oracleInfo) => {

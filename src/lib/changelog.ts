@@ -25,6 +25,30 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.8.1",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXV, al margen · De quién es cada cosa",
+        items: [
+          "En la mesa de juego, junto al oráculo, los dados y las tablas pone de dónde salen: «Tus favoritos» o «De esta aventura». En la pantalla del Oráculo, si es el de la aventura activa.",
+          "Al elegir oráculo, dados o tablas para una aventura, la ventana lo explica igual en los tres: qué cambia, que tus otras aventuras no, y cómo volver a tus favoritos.",
+          "La guía rápida tiene una parte nueva: la mesa de juego de cada aventura.",
+          "Las notas fijas y las descripciones del cuaderno admiten formato, como en Markdown: negrita entre dobles asteriscos, cursiva, tachado, títulos, listas numeradas, citas, separadores y enlaces que se abren con un toque. En la página web exportada se ven igual.",
+        ],
+      },
+      en: {
+        title: "Chapter XXV, in the margin · Whose is what",
+        items: [
+          "On the game table, beside the oracle, the dice and the tables, it says where they come from: “Your favorites” or “This adventure's”. On the Oracle screen, whether it's the active adventure's.",
+          "When picking an oracle, dice or tables for an adventure, the window explains it the same way in all three: what changes, that your other adventures don't, and how to go back to your favorites.",
+          "The quick guide has a new part: each adventure's game table.",
+          "The notebook's pinned notes and descriptions take formatting, as in Markdown: bold between double asterisks, italic, strikethrough, headings, numbered lists, quotes, dividers and links that open with a tap. The exported web page shows them the same.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.8.0",
     date: "2026-11-26",
     text: {

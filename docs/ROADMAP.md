@@ -67,6 +67,14 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   favoritos). «Elegir dados» y «Elegir tablas» en su mesa de juego abren
   `GameTablePickers`; hasta que se elige algo, salen los favoritos de siempre
   (`gameTablePicks.ts`). Un dado guardado desde esa mesa entra en lo elegido.
+- De quién es cada cosa (2026-11-26, 1.8.1): junto a cada herramienta de la mesa
+  (y en la pantalla del Oráculo con aventura activa) pone si es «Tus favoritos» o
+  «De esta aventura» (`SourceTag`); las ventanas del oráculo, los dados y las
+  tablas lo explican con las mismas tres líneas (`SourceNote`), y la guía rápida
+  tiene su parte. Las notas fijas y las descripciones admiten Markdown ligero
+  (`noteMarkdown.ts`, `NoteText`, también en la exportación HTML): títulos,
+  listas, citas, separador, negrita, cursiva, tachado, código y enlaces. En las
+  entradas del diario, de momento no (Lonelog usa `*` en las escenas).
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

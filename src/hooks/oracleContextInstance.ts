@@ -12,6 +12,11 @@ export interface OracleContextValue {
   setOracleId: (id: OracleId) => void;
   /** The adventure whose oracle this is, if any: the switcher says so. */
   adventureName?: string;
+  /**
+   * With an adventure: whether the oracle is its own (picked in it or
+   * asked from it) or, until then, the favourite or the device's last.
+   */
+  oracleSource?: "adventure" | "favorite" | "last";
   /** The one the app opens with (Settings-free: a star in the switcher). */
   favoriteOracleId: OracleId | null;
   setFavoriteOracleId: (id: OracleId | null) => void;

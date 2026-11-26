@@ -32,6 +32,7 @@ import { useSavedRollsContext } from "../hooks/useSavedRollsContext";
 import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
+import { SourceTag } from "./GameTableSource";
 import { TwistCounter } from "./TwistCounter";
 import { IconAdjust, IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconRepeat, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
 import { gameTableDice, gameTableIds, pickedIds } from "../lib/gameTablePicks";
@@ -58,7 +59,7 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
   const { t } = useLocaleContext();
   const { askOracle } = usePlayActions();
   const [question, setQuestion] = useState("");
-  const { oracleId, likelihood, setLikelihood } = useOracleContext();
+  const { oracleId, likelihood, setLikelihood, oracleSource } = useOracleContext();
   const level = fitLikelihood(oracleId, likelihood);
 
   return (
@@ -71,11 +72,13 @@ export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolPro
         setQuestion("");
       }}
     >
-      {/* Which oracle answers, switchable here too, with its rules and odds. */}
+      {/* Which oracle answers, switchable here too, with its rules and
+          odds, and whether it's this adventure's or still the favourite. */}
       <div className="flex items-center gap-2.5">
         <OracleSwitcher />
         <TwistCounter adventureId={adventureId} />
         <OracleHelp />
+        {oracleSource && <SourceTag tool="oracle" source={oracleSource} className="ml-auto" />}
       </div>
       <input
         autoFocus={autoFocus}
@@ -215,16 +218,20 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
           </li>
         ))}
       </ul>
-      {/* Which tables this adventure keeps at hand (not while searching all of them). */}
+      {/* Which tables this adventure keeps at hand (not while searching
+          all of them), and whether they're its own or the favourites. */}
       {!q && (
-        <button
-          type="button"
-          onClick={() => setPicking(true)}
-          className="flex items-center gap-1.5 self-start rounded-xl border border-dashed border-ink-border px-3 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold pointer-coarse:py-2.5"
-        >
-          <IconAdjust size={15} />
-          {t.gameTable.pickTables}
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-dashed border-ink-border px-3 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold pointer-coarse:py-2.5"
+          >
+            <IconAdjust size={15} />
+            {t.gameTable.pickTables}
+          </button>
+          <SourceTag tool="tables" source={pickedIds(pick) === null ? "favorite" : "adventure"} />
+        </div>
       )}
       {picking && <GameTablesPicker adventureId={adventureId} onClose={() => setPicking(false)} />}
     </div>
@@ -451,16 +458,20 @@ export function DiceTool({
                   </Link>
                 </p>
               )}
-              {/* Which dice this adventure keeps at hand. */}
+              {/* Which dice this adventure keeps at hand, on a line of its
+                  own with whether they're its own or the favourites. */}
               {canPick && (
-                <button
-                  type="button"
-                  onClick={() => setPicking(true)}
-                  className={`${DIE_CHIP} gap-1.5 border-dashed border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold`}
-                >
-                  <IconAdjust size={15} />
-                  {t.gameTable.pickDice}
-                </button>
+                <div className="flex basis-full items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setPicking(true)}
+                    className={`${DIE_CHIP} shrink-0 gap-1.5 border-dashed border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold`}
+                  >
+                    <IconAdjust size={15} />
+                    {t.gameTable.pickDice}
+                  </button>
+                  <SourceTag tool="dice" source={pickedIds(dicePick) === null ? "favorite" : "adventure"} />
+                </div>
               )}
               {picking && adventureId && <GameDicePicker adventureId={adventureId} onClose={() => setPicking(false)} />}
             </div>

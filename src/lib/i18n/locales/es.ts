@@ -45,8 +45,24 @@ export const es: Dictionary = {
     pickTables: "Elegir tablas",
     diceTitle: "Dados de esta aventura",
     tablesTitle: "Tablas de esta aventura",
-    note: "Los que salen en la mesa de juego de «{name}». Tus otras aventuras no cambian.",
-    following: "Ahora son tus favoritos: en cuanto cambies uno, serán solo de esta aventura.",
+    fromFavoriteDice: "Tus favoritos",
+    fromFavoriteTables: "Tus favoritas",
+    fromFavoriteOracle: "Tu favorito",
+    fromLastOracle: "El último que usaste",
+    fromAdventure: "De esta aventura",
+    fromActiveAdventure: "De la aventura activa",
+    diceRule: "Los dados que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
+    tablesRule: "Las tablas que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
+    oracleRule: "El oráculo que elijas aquí es solo para «{name}»: tus otras aventuras no cambian.",
+    oracleScreenRule:
+      "Es el de «{name}», la aventura activa: el que elijas aquí cambia solo el suyo. Sin aventura activa, el Oráculo vuelve a tu favorito (o, si no tienes, al último que usaste sin aventura).",
+    diceFollowing: "Ahora salen tus favoritos, los que tienen estrella en Dados. En cuanto cambies uno, serán los de esta aventura.",
+    tablesFollowing: "Ahora salen tus favoritas, las que tienen estrella en Tablas. En cuanto cambies una, serán las de esta aventura.",
+    oracleFollowing: "Ahora es tu favorito, el de la estrella. En cuanto elijas otro o le preguntes algo, será el de esta aventura.",
+    oracleFollowingLast: "Ahora es el último que usaste. En cuanto elijas uno o le preguntes algo, será el de esta aventura.",
+    diceOwn: "Ya son los de esta aventura: las estrellas de Dados no la cambian. «Volver a mis favoritos» lo deshace.",
+    tablesOwn: "Ya son las de esta aventura: las estrellas de Tablas no la cambian. «Volver a mis favoritas» lo deshace.",
+    oracleOwn: "Ya es el de esta aventura: cambiar tu favorito no la cambia. Para usar otro, elígelo.",
     builtin: "De serie",
     own: "Tuyos",
     noOwn: "Tus propios dados se crean en la pantalla Dados.",
@@ -57,7 +73,8 @@ export const es: Dictionary = {
     add: "Añadir {name}",
     remove: "Quitar {name}",
     more: "Y {count} más: afina la búsqueda.",
-    reset: "Volver a mis favoritos",
+    resetDice: "Volver a mis favoritos",
+    resetTables: "Volver a mis favoritas",
     done: "Hecho",
   },
   dice: {
@@ -108,8 +125,9 @@ export const es: Dictionary = {
   },
   guide: {
     title: "Guía rápida",
-    intro: "Cómo escribir en el diario, la notación Lonelog que entiende y los atajos de teclado.",
-    settingsText: "Cómo escribir en el diario, la notación Lonelog con sus etiquetas y los atajos de teclado, en una sola página.",
+    intro: "Cómo escribir en el diario, la mesa de juego de cada aventura, la notación Lonelog que entiende y los atajos de teclado.",
+    settingsText:
+      "Cómo escribir en el diario, la mesa de juego de cada aventura, la notación Lonelog con sus etiquetas y los atajos de teclado, en una sola página.",
     settingsButton: "Abrir la guía",
     writingHeading: "Escribir en el diario",
     writing: [
@@ -120,6 +138,17 @@ export const es: Dictionary = {
       "Escribe «[» para nombrar a un personaje, un lugar, un hilo o un objeto: aparecen los que ya existen y puedes crear uno nuevo. Con «@(» (lo que hace otro) o «N (» (lo que dice), la lista ofrece los personajes.",
       "Toca una entrada para ver sus botones: editarla o borrarla (las dos con «Deshacer»), moverla o escribir debajo de ella.",
       "Toca un nombre resaltado (también quien actúa o habla, si está en el cuaderno) para verlo en el cuaderno; allí, «Ver sus entradas» deja en el diario solo lo que trata de él, hasta que quitas el filtro. Después de cualquier tirada, la casilla pasa a «Consecuencia» para contar qué ocurre.",
+      "Las notas fijas y las descripciones del cuaderno admiten Markdown: **negrita**, *cursiva*, ~~tachado~~, `código`, enlaces, «# título», «> cita», «---» para separar, listas y casillas «- [ ]» que se marcan con un toque.",
+    ],
+    gameTableHeading: "La mesa de juego de cada aventura",
+    gameTableIntro:
+      "El oráculo, los dados y las tablas que tienes a mano dentro de una aventura: junto a la casilla de escribir o, en pantallas anchas, a la derecha del diario.",
+    gameTable: [
+      "Empieza con tus favoritos: los que marcas con la estrella en Oráculo, Dados y Tablas.",
+      "Lo que cambies en ella es solo de esa aventura: el oráculo que elijas o con el que preguntes, y los dados y las tablas de «Elegir dados» y «Elegir tablas». Las demás aventuras no cambian.",
+      "Desde entonces, tus estrellas ya no la cambian. Al elegir dados o tablas, «Volver a mis favoritos» lo deshace; el oráculo se cambia eligiendo otro.",
+      "Junto a cada herramienta pone de dónde sale lo que ves: «Tus favoritos» o «De esta aventura».",
+      "Mientras una aventura es la activa, la pantalla Oráculo pregunta con el suyo; sin aventura activa, con tu favorito.",
     ],
     notationHeading: "Notación Lonelog",
     notationIntro:
@@ -383,7 +412,6 @@ export const es: Dictionary = {
     favorite: "Favorito",
     markFavorite: "Marcar como favorito",
     favoriteHint: "Tu favorito es con el que empieza cada aventura nueva, y con el que se abre el Oráculo sin aventura activa.",
-    adventureNote: "Lo eliges para «{name}»: cada aventura recuerda el suyo.",
   },
   oracleHelp: {
     button: "Cómo funciona el oráculo",
@@ -1138,11 +1166,11 @@ export const es: Dictionary = {
     openLabel: "Cuaderno: notas fijas, personajes y lugares, hilos y relojes, inventario",
     notesTitle: "Notas fijas",
     notesEmpty: "Lo que quieras tener a mano: inventario, pistas, cabos sueltos… Toca para escribir.",
-    notesPlaceholder: "Escribe aquí. «- [ ] algo» crea una casilla que puedes marcar.",
+    notesPlaceholder: "Escribe aquí, en Markdown si quieres: **negrita**, *cursiva*, «# título», «- lista» y «- [ ] casilla» que se marca con un toque.",
     notesEdit: "Editar las notas",
     notesDone: "Hecho",
     descriptionAdd: "Añadir descripción",
-    descriptionPlaceholder: "Cómo es, quién es, qué sabes… No se apunta en el diario.",
+    descriptionPlaceholder: "Cómo es, quién es, qué sabes… No se apunta en el diario. Admite **negrita**, *cursiva* y enlaces.",
     descriptionLabel: "Descripción de {name}",
     castTitle: "Personajes y lugares",
     castEmpty:
@@ -1263,7 +1291,7 @@ export const es: Dictionary = {
     offer: "¿Primera vez? Echa un vistazo a una aventura de ejemplo",
     name: "Ejemplo: La posada del cruce",
     notes:
-      "Pendiente:\n- [x] Pagar la cuenta de Tobías\n- [x] Encontrar a Tobías\n- [ ] Averiguar quién paga a Capa Gris\n- [ ] Alcanzar la barcaza antes de que zarpe\n\nLa posadera no se fía del gremio. El sello de la caja lleva un ciervo: ¿qué casa usa ese emblema?",
+      "## Pendiente\n- [x] Pagar la cuenta de Tobías\n- [x] Encontrar a Tobías\n- [ ] Averiguar quién paga a **Capa Gris**\n- [ ] Alcanzar la barcaza *antes de que zarpe*\n\n## Pistas\nLa posadera no se fía del gremio. El sello de la caja lleva un **ciervo**: ¿qué casa usa ese emblema?\n> «El oro no deja huellas.»",
     descriptions:
       "[PC:Mara] Mensajera del gremio, rápida y testaruda. Nunca deja un encargo a medias.\n[N:Odile] Posadera del cruce. No se fía del gremio desde que uno de sus mensajeros le dejó una deuda.\n[N:Capa Gris] Alto, voz educada, guantes de cuero fino. Paga en oro y no deja huellas… casi nunca.\n[L:Molino] Molino de agua junto al río, parado desde la crecida de primavera.",
     script: [
