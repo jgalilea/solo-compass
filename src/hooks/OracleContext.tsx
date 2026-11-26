@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { initialOracleId, loadFavoriteOracleId, saveFavoriteOracleId, saveOracleId } from "../lib/oracles";
 import type { Likelihood } from "../lib/oracle";
 import type { OracleId } from "../lib/oracleEngines";
@@ -18,11 +18,9 @@ export function OracleProvider({ children }: { children: ReactNode }) {
     saveFavoriteOracleId(id);
   }, []);
 
-  return (
-    <OracleContext.Provider
-      value={{ oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, likelihood, setLikelihood }}
-    >
-      {children}
-    </OracleContext.Provider>
+  const value = useMemo(
+    () => ({ oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, likelihood, setLikelihood }),
+    [oracleId, favoriteOracleId, setFavoriteOracleId, likelihood],
   );
+  return <OracleContext.Provider value={value}>{children}</OracleContext.Provider>;
 }

@@ -6,6 +6,8 @@ import type { Dictionary } from "./i18n";
 import { makeId } from "./ids";
 import { compareEntries } from "./journalOrder";
 import type { JournalEntry, JournalLineKind } from "./lonelog";
+import type { OracleId } from "./oracleEngines";
+import { isOracleId } from "./oracles";
 
 /**
  * "ongoing": in progress, shown in the main list — "paused" isn't a
@@ -37,6 +39,14 @@ export interface Adventure {
    * it leaves no trace). In the .md, the front matter's `descriptions`.
    */
   descriptions?: Record<string, CastDescription>;
+  /**
+   * The oracle this adventure is played with: the last one picked in it
+   * or asked from it. None yet: the favourite, else the last used
+   * (AdventureOracleScope). Not in the .md: Lonelog has no place for it.
+   */
+  oracle?: OracleId;
+  /** When it was set (ms): the newer wins on a merge, like the notes. */
+  oracleUpdatedAt?: number;
 }
 
 /** Each one carries its date: the newer wins on a merge, one by one. */
@@ -89,7 +99,7 @@ export function normalizeAdventure(value: unknown): Adventure | null {
     const d = entry[1] as Record<string, unknown> | null;
     return !!d && typeof d.text === "string" && isNumber(d.updatedAt);
   });
-  const { notes, notesUpdatedAt, descriptions: _descriptions, ...rest } = v;
+  const { notes, notesUpdatedAt, descriptions: _descriptions, oracle, oracleUpdatedAt, ...rest } = v;
   return {
     ...rest,
     id: v.id,
@@ -101,6 +111,10 @@ export function normalizeAdventure(value: unknown): Adventure | null {
     ...(typeof notes === "string" ? { notes } : {}),
     ...(isNumber(notesUpdatedAt) ? { notesUpdatedAt } : {}),
     ...(descriptions.length ? { descriptions: Object.fromEntries(descriptions) } : {}),
+    // An oracle this copy of the app doesn't know: as if none was picked.
+    ...(typeof oracle === "string" && isOracleId(oracle)
+      ? { oracle, ...(isNumber(oracleUpdatedAt) ? { oracleUpdatedAt } : {}) }
+      : {}),
   };
 }
 

@@ -20,6 +20,7 @@ import { exportAdventureToHtml } from "../lib/htmlExport";
 import { readExportTheme } from "../lib/htmlExportTheme";
 import { copyText, shareTextFile } from "../lib/share";
 import { AdventureNotebook } from "./AdventureNotebook";
+import { AdventureOracleScope } from "../hooks/AdventureOracleScope";
 import { AdventureStatsDialog } from "./AdventureStatsDialog";
 import { AdventureHeader } from "./AdventureHeader";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -582,355 +583,359 @@ export function AdventureDetailView() {
   );
 
   return (
-    <div
-      className={`${PAGE_WIDTH} flex flex-1 flex-col px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_25rem] 2xl:gap-10 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)_32rem] 4xl:gap-12`}
-    >
-      {/* Wide desktop: sessions and notebook in their own column. Padded on
-          both sides: it scrolls, so a selected item's ring would be clipped. */}
-      <aside className={`${SIDE_COLUMN} hidden gap-8 px-1 xl:flex`}>
-        {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />}
-        {!ultrawide && notebook}
-      </aside>
-      {ultrawide && (
-        <aside aria-label={t.notebook.title} className={`${SIDE_COLUMN} flex gap-8 px-1`}>
-          {notebook}
+    // Its oracle is this adventure's own: the game table, the composer
+    // and their switcher ask and change that one (AdventureOracleScope).
+    <AdventureOracleScope adventureId={adventure.id}>
+      <div
+        className={`${PAGE_WIDTH} flex flex-1 flex-col px-4 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[18rem_minmax(0,1fr)_25rem] 2xl:gap-10 4xl:grid-cols-[16rem_26rem_minmax(0,1fr)_32rem] 4xl:gap-12`}
+      >
+        {/* Wide desktop: sessions and notebook in their own column. Padded on
+            both sides: it scrolls, so a selected item's ring would be clipped. */}
+        <aside className={`${SIDE_COLUMN} hidden gap-8 px-1 xl:flex`}>
+          {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />}
+          {!ultrawide && notebook}
         </aside>
-      )}
-
-      <div className="flex flex-1 flex-col gap-4 lg:col-start-1 lg:min-h-[calc(100dvh-var(--spacing-header))] lg:pt-2 xl:col-start-2 4xl:col-start-3">
-        <AdventureHeader
-          adventure={adventure}
-          isActive={isActive}
-          hasEntries={adventureEntries.length > 0}
-          searchOpen={searchOpen}
-          onToggleSearch={() => setSearchOpen((v) => !v)}
-          groups={groups}
-          onJumpToSession={jumpToSession}
-          onJumpToEntry={jumpToEntry}
-          // Said once, when it happens: on a phone there's no tooltip to tell it.
-          onActivated={() =>
-            setNotice({
-              key: Date.now(),
-              // Short: a toast's title is one line, and the name is in the bar above.
-              title: t.journal.activatedTitle,
-              description: t.journal.activatedDescription,
-            })
-          }
-          notebookOpen={notebookOpen}
-          onOpenNotebook={() => setNotebookOpen(true)}
-          onStats={() => setStatsOpen(true)}
-          onExport={handleExport}
-          onCopy={() =>
-            copyToClipboard(
-              exportAdventureToMarkdown(t, adventure.name, adventureEntries, adventure.notes, adventure.descriptions, adventure),
-              t.journal.copiedAdventure,
-            )
-          }
-          onExportHtml={() => void handleExportHtml()}
-          onShare={handleShare}
-          onDelete={() => setDeleting(true)}
-        />
-
-        {/* Over the journal, below the bar, wherever you are in it: opening
-            it doesn't move what you were reading. */}
-        {searchOpen && (
-          <div className="sticky top-(--pin-session) z-30 -mb-4 h-0">
-            <div className="absolute inset-x-0 top-1">
-              <JournalSearchPanel
-                query={searchQuery}
-                onQueryChange={setSearchQuery}
-                type={searchType}
-                types={searchTypes}
-                onTypeChange={setSearchType}
-                matches={searchMatches}
-                onPick={(match) => jumpToEntry(match.entry.id)}
-                onClose={() => setSearchOpen(false)}
-              />
-            </div>
-          </div>
+        {ultrawide && (
+          <aside aria-label={t.notebook.title} className={`${SIDE_COLUMN} flex gap-8 px-1`}>
+            {notebook}
+          </aside>
         )}
 
-        {filterMember && filtered && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-parchment">
-              <IconFilter size={16} className="shrink-0 text-gold" />
-              <span className="min-w-0 flex-1">
-                {interpolate(filtered.count === 1 ? t.journal.filterShowingOne : t.journal.filterShowing, {
-                  name: filterMember.name,
-                  count: filtered.count,
-                })}
-              </span>
+        <div className="flex flex-1 flex-col gap-4 lg:col-start-1 lg:min-h-[calc(100dvh-var(--spacing-header))] lg:pt-2 xl:col-start-2 4xl:col-start-3">
+          <AdventureHeader
+            adventure={adventure}
+            isActive={isActive}
+            hasEntries={adventureEntries.length > 0}
+            searchOpen={searchOpen}
+            onToggleSearch={() => setSearchOpen((v) => !v)}
+            groups={groups}
+            onJumpToSession={jumpToSession}
+            onJumpToEntry={jumpToEntry}
+            // Said once, when it happens: on a phone there's no tooltip to tell it.
+            onActivated={() =>
+              setNotice({
+                key: Date.now(),
+                // Short: a toast's title is one line, and the name is in the bar above.
+                title: t.journal.activatedTitle,
+                description: t.journal.activatedDescription,
+              })
+            }
+            notebookOpen={notebookOpen}
+            onOpenNotebook={() => setNotebookOpen(true)}
+            onStats={() => setStatsOpen(true)}
+            onExport={handleExport}
+            onCopy={() =>
+              copyToClipboard(
+                exportAdventureToMarkdown(t, adventure.name, adventureEntries, adventure.notes, adventure.descriptions, adventure),
+                t.journal.copiedAdventure,
+              )
+            }
+            onExportHtml={() => void handleExportHtml()}
+            onShare={handleShare}
+            onDelete={() => setDeleting(true)}
+          />
+
+          {/* Over the journal, below the bar, wherever you are in it: opening
+              it doesn't move what you were reading. */}
+          {searchOpen && (
+            <div className="sticky top-(--pin-session) z-30 -mb-4 h-0">
+              <div className="absolute inset-x-0 top-1">
+                <JournalSearchPanel
+                  query={searchQuery}
+                  onQueryChange={setSearchQuery}
+                  type={searchType}
+                  types={searchTypes}
+                  onTypeChange={setSearchType}
+                  matches={searchMatches}
+                  onPick={(match) => jumpToEntry(match.entry.id)}
+                  onClose={() => setSearchOpen(false)}
+                />
+              </div>
+            </div>
+          )}
+
+          {filterMember && filtered && (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-parchment">
+                <IconFilter size={16} className="shrink-0 text-gold" />
+                <span className="min-w-0 flex-1">
+                  {interpolate(filtered.count === 1 ? t.journal.filterShowingOne : t.journal.filterShowing, {
+                    name: filterMember.name,
+                    count: filtered.count,
+                  })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setJournalFilter(null)}
+                  aria-label={t.journal.filterClear}
+                  title={t.journal.filterClear}
+                  className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10"
+                >
+                  <IconClose size={14} />
+                  <span className="max-sm:hidden">{t.journal.filterClear}</span>
+                </button>
+              </div>
+              {filtered.groups.length === 0 ? (
+                <p className="px-1 text-sm text-parchment-dim">{interpolate(t.journal.filterEmpty, { name: filterMember.name })}</p>
+              ) : (
+                filtered.groups.map((group, i) => (
+                  <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
+                    {group.sessionEntry && (
+                      <div className={SESSION_BAR}>
+                        <h2 className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
+                          <IconSession size={16} className="shrink-0 text-gold" />
+                          <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                            {group.sessionEntry.text}
+                          </span>
+                          <SessionDate session={group.sessionEntry} />
+                        </h2>
+                      </div>
+                    )}
+                    <ul className={group.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
+                      <EntryList items={group.items} actions={entryActions} />
+                    </ul>
+                  </section>
+                ))
+              )}
+            </div>
+          )}
+
+          {!filtered && previousGroups.length > 0 && (
+            <section id="session-previous" className="flex scroll-mt-(--pin-session) flex-col gap-2">
               <button
                 type="button"
-                onClick={() => setJournalFilter(null)}
-                aria-label={t.journal.filterClear}
-                title={t.journal.filterClear}
-                className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10"
+                onClick={() => setPreviousExpanded((v) => !v)}
+                aria-expanded={previousExpanded}
+                aria-label={t.journal.togglePreviousSessions}
+                className="flex items-center gap-2 py-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
               >
-                <IconClose size={14} />
-                <span className="max-sm:hidden">{t.journal.filterClear}</span>
+                <IconChevronRight
+                  size={14}
+                  className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
+                />
+                {t.journal.previousSessionsHeading}
+                <span className="text-parchment-faint">{previousGroups.length}</span>
               </button>
-            </div>
-            {filtered.groups.length === 0 ? (
-              <p className="px-1 text-sm text-parchment-dim">{interpolate(t.journal.filterEmpty, { name: filterMember.name })}</p>
-            ) : (
-              filtered.groups.map((group, i) => (
-                <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
-                  {group.sessionEntry && (
-                    <div className={SESSION_BAR}>
-                      <h2 className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
-                        <IconSession size={16} className="shrink-0 text-gold" />
-                        <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
-                          {group.sessionEntry.text}
-                        </span>
-                        <SessionDate session={group.sessionEntry} />
-                      </h2>
-                    </div>
+              {previousExpanded && (
+                <ul className="flex flex-col gap-2">
+                  {previousGroups.map((group, i) =>
+                    group.sessionEntry ? (
+                      <SessionGroupRow
+                        key={group.sessionEntry.id}
+                        group={group}
+                        expanded={expandedSessions.has(group.sessionEntry.id)}
+                        onToggle={() =>
+                          setExpandedSessions((prev) => {
+                            const next = new Set(prev);
+                            const id = group.sessionEntry!.id;
+                            if (next.has(id)) next.delete(id);
+                            else next.add(id);
+                            return next;
+                          })
+                        }
+                        actions={entryActions}
+                      />
+                    ) : (
+                      <Fragment key={`prologue-${i}`}>
+                        <EntryList items={group.items} actions={entryActions} />
+                      </Fragment>
+                    ),
                   )}
-                  <ul className={group.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
-                    <EntryList items={group.items} actions={entryActions} />
-                  </ul>
-                </section>
-              ))
-            )}
-          </div>
-        )}
+                </ul>
+              )}
+            </section>
+          )}
 
-        {!filtered && previousGroups.length > 0 && (
-          <section id="session-previous" className="flex scroll-mt-(--pin-session) flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => setPreviousExpanded((v) => !v)}
-              aria-expanded={previousExpanded}
-              aria-label={t.journal.togglePreviousSessions}
-              className="flex items-center gap-2 py-2 text-xs font-medium uppercase tracking-wide text-parchment-dim transition hover:text-parchment"
-            >
-              <IconChevronRight
-                size={14}
-                className={`shrink-0 transition-transform ${previousExpanded ? "rotate-90" : ""}`}
-              />
-              {t.journal.previousSessionsHeading}
-              <span className="text-parchment-faint">{previousGroups.length}</span>
-            </button>
-            {previousExpanded && (
-              <ul className="flex flex-col gap-2">
-                {previousGroups.map((group, i) =>
-                  group.sessionEntry ? (
-                    <SessionGroupRow
-                      key={group.sessionEntry.id}
-                      group={group}
-                      expanded={expandedSessions.has(group.sessionEntry.id)}
-                      onToggle={() =>
-                        setExpandedSessions((prev) => {
-                          const next = new Set(prev);
-                          const id = group.sessionEntry!.id;
-                          if (next.has(id)) next.delete(id);
-                          else next.add(id);
-                          return next;
-                        })
-                      }
-                      actions={entryActions}
-                    />
+          {filtered ? null : adventureEntries.length === 0 ? (
+            <EmptyState
+              icon={<IconJournal size={22} />}
+              title={t.journal.noEntriesTitle}
+              description={t.journal.noEntriesDescription}
+              compact
+            />
+          ) : (
+            currentGroup && (
+              <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-(--pin-session) flex-col gap-2">
+                {currentGroup.sessionEntry &&
+                  (editingEntryId === currentGroup.sessionEntry.id ? (
+                    <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-ink-900 px-3 py-2">
+                      <input
+                        autoFocus
+                        value={sessionTitleEditValue}
+                        onChange={(e) => setSessionTitleEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitSessionTitleEdit();
+                          if (e.key === "Escape") setEditingEntryId(null);
+                        }}
+                        className={`${INPUT_CLASS} bg-ink-800/70`}
+                      />
+                      <button type="button" onClick={commitSessionTitleEdit} className={PRIMARY_BUTTON_CLASS}>
+                        {t.common.save}
+                      </button>
+                    </div>
                   ) : (
-                    <Fragment key={`prologue-${i}`}>
-                      <EntryList items={group.items} actions={entryActions} />
-                    </Fragment>
-                  ),
-                )}
-              </ul>
-            )}
-          </section>
+                    // Pinned at the top while scrolling, like every
+                    // session's bar: you always know which one you're in.
+                    <div
+                      data-entry
+                      onClick={() =>
+                        setSelectedEntryId((id) => (id === currentGroup.sessionEntry!.id ? null : currentGroup.sessionEntry!.id))
+                      }
+                      className={`group ${SESSION_BAR}`}
+                    >
+                      <div className="relative flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
+                        <IconSession size={16} className="shrink-0 text-gold" />
+                        <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
+                          {currentGroup.sessionEntry.text}
+                        </h2>
+                        <SessionDate session={currentGroup.sessionEntry} />
+                        <LineButtons
+                          inline
+                          visible={selectedEntryId === currentGroup.sessionEntry.id}
+                          onEdit={() => {
+                            setSessionTitleEditValue(currentGroup.sessionEntry!.text);
+                            entryActions.onStartEdit(currentGroup.sessionEntry!.id);
+                          }}
+                          onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
+                          onMoveUp={
+                            adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
+                          }
+                          onMoveDown={
+                            adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
+                          }
+                          onInsertBelow={() => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
+                          onCopy={() => entryActions.onCopy!(currentGroup.sessionEntry!.id)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                {/* The same rail as an unfolded earlier session. */}
+                <ul className={currentGroup.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
+                  <EntryList items={currentGroup.items} actions={entryActions} />
+                </ul>
+              </section>
+            )
+          )}
+          <div ref={listEndRef} className="-mt-4" />
+
+          <JournalComposer
+            key={adventure.id}
+            ref={composerRef}
+            inputRef={composerInputRef}
+            insertRef={composerInsertRef}
+            adventureId={adventure.id}
+            mode={composerMode}
+            onModeChange={setComposerMode}
+            linkedRollId={linkedRollId}
+            insertAfter={inserting ? insertAfter : undefined}
+            onInsertDone={() => {
+              setInsertionPoint(null);
+              setLinkedRollId(undefined);
+              scrollPendingRef.current = false;
+              revealElement(listEndRef.current, "end");
+            }}
+            onLogged={handleLogged}
+            onRolled={handleRolled}
+          />
+        </div>
+
+        {/* Desktop: the table always open, no sheets covering anything.
+            It scrolls on its own, which clips what pokes out of it: the
+            padding on the left (taken back by the negative margin) leaves
+            room for the keyboard focus ring of what sits at its edge. */}
+        <aside
+          aria-label={t.journal.playPanelLabel}
+          className={`${SIDE_COLUMN} -ml-1.5 hidden gap-6 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3 4xl:col-start-4`}
+        >
+          <PanelSection id="oracleTool" Icon={IconOracle} title={t.journal.toolOracleTitle}>
+            <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
+          </PanelSection>
+          <PanelSection id="diceTool" Icon={IconDice} title={t.journal.toolDiceTitle}>
+            <DiceTool adventureId={adventure.id} onRolled={handleRolled} />
+          </PanelSection>
+          <PanelSection id="tableTool" Icon={IconTable} title={t.journal.toolTableTitle}>
+            <TableTool adventureId={adventure.id} onRolled={handleRolled} />
+          </PanelSection>
+        </aside>
+
+        {notebookOpen && (
+          <Modal
+            sheet
+            onClose={() => setNotebookOpen(false)}
+            label={t.notebook.title}
+            size="lg"
+          >
+            <DialogHeader title={t.notebook.title} Icon={IconNotebook} onClose={() => setNotebookOpen(false)} />
+            <DialogBody>{notebook}</DialogBody>
+          </Modal>
         )}
 
-        {filtered ? null : adventureEntries.length === 0 ? (
-          <EmptyState
-            icon={<IconJournal size={22} />}
-            title={t.journal.noEntriesTitle}
-            description={t.journal.noEntriesDescription}
-            compact
+        {statsOpen && (
+          <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
+        )}
+
+        {deleting && (
+          <ConfirmDialog
+            title={interpolate(t.journal.deleteAdventureConfirmTitle, { name: adventure.name })}
+            description={t.journal.deleteAdventureConfirmDescription}
+            confirmLabel={t.journal.deleteAdventureConfirmButton}
+            onConfirm={() => {
+              deleteAdventure(adventure.id);
+              setDeleting(false);
+              navigate("/diario");
+            }}
+            onCancel={() => setDeleting(false)}
+          />
+        )}
+
+        {tableDraft && tablesStatus === "ready" && (
+          <Suspense fallback={null}>
+            <TableEditorDialog
+              initial={tableDraft}
+              editing={false}
+              onSave={(draft) => {
+                addTables([draft]);
+                setTableDraft(null);
+                setNotice({ key: Date.now(), title: interpolate(t.journal.tableSaved, { name: draft.name }) });
+              }}
+              onClose={() => setTableDraft(null)}
+            />
+          </Suspense>
+        )}
+
+        {undoable ? (
+          <Toast
+            key={undoable.key}
+            Icon={undoable.kind === "deleted" ? IconTrash : IconPencil}
+            title={undoable.kind === "deleted" ? t.journal.entryDeleted : t.journal.entryEdited}
+            closeLabel={t.common.close}
+            action={{ label: t.common.undo, onClick: undoable.undo }}
+            duration={undoable.kind === "deleted" ? 6000 : 4000}
+            onDismiss={dismissUndo}
+          />
+        ) : notice ? (
+          <Toast
+            key={notice.key}
+            Icon={IconCheck}
+            title={notice.title}
+            description={notice.description}
+            closeLabel={t.common.close}
+            action={notice.action}
+            duration={notice.action || notice.description ? 6000 : 3000}
+            onDismiss={dismissNotice}
           />
         ) : (
-          currentGroup && (
-            <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-(--pin-session) flex-col gap-2">
-              {currentGroup.sessionEntry &&
-                (editingEntryId === currentGroup.sessionEntry.id ? (
-                  <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-ink-900 px-3 py-2">
-                    <input
-                      autoFocus
-                      value={sessionTitleEditValue}
-                      onChange={(e) => setSessionTitleEditValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitSessionTitleEdit();
-                        if (e.key === "Escape") setEditingEntryId(null);
-                      }}
-                      className={`${INPUT_CLASS} bg-ink-800/70`}
-                    />
-                    <button type="button" onClick={commitSessionTitleEdit} className={PRIMARY_BUTTON_CLASS}>
-                      {t.common.save}
-                    </button>
-                  </div>
-                ) : (
-                  // Pinned at the top while scrolling, like every
-                  // session's bar: you always know which one you're in.
-                  <div
-                    data-entry
-                    onClick={() =>
-                      setSelectedEntryId((id) => (id === currentGroup.sessionEntry!.id ? null : currentGroup.sessionEntry!.id))
-                    }
-                    className={`group ${SESSION_BAR}`}
-                  >
-                    <div className="relative flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-4">
-                      <IconSession size={16} className="shrink-0 text-gold" />
-                      <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-wide text-parchment">
-                        {currentGroup.sessionEntry.text}
-                      </h2>
-                      <SessionDate session={currentGroup.sessionEntry} />
-                      <LineButtons
-                        inline
-                        visible={selectedEntryId === currentGroup.sessionEntry.id}
-                        onEdit={() => {
-                          setSessionTitleEditValue(currentGroup.sessionEntry!.text);
-                          entryActions.onStartEdit(currentGroup.sessionEntry!.id);
-                        }}
-                        onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
-                        onMoveUp={
-                          adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
-                        }
-                        onMoveDown={
-                          adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
-                        }
-                        onInsertBelow={() => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
-                        onCopy={() => entryActions.onCopy!(currentGroup.sessionEntry!.id)}
-                      />
-                    </div>
-                  </div>
-                ))}
-              {/* The same rail as an unfolded earlier session. */}
-              <ul className={currentGroup.sessionEntry ? SESSION_RAIL : "flex flex-col gap-2"}>
-                <EntryList items={currentGroup.items} actions={entryActions} />
-              </ul>
-            </section>
+          exportedFilename && (
+            <Toast
+              title={interpolate(t.journal.exportedToastTitle, { filename: exportedFilename })}
+              description={t.journal.exportedToastDescription}
+              closeLabel={t.common.close}
+              onDismiss={dismissExported}
+            />
           )
         )}
-        <div ref={listEndRef} className="-mt-4" />
-
-        <JournalComposer
-          key={adventure.id}
-          ref={composerRef}
-          inputRef={composerInputRef}
-          insertRef={composerInsertRef}
-          adventureId={adventure.id}
-          mode={composerMode}
-          onModeChange={setComposerMode}
-          linkedRollId={linkedRollId}
-          insertAfter={inserting ? insertAfter : undefined}
-          onInsertDone={() => {
-            setInsertionPoint(null);
-            setLinkedRollId(undefined);
-            scrollPendingRef.current = false;
-            revealElement(listEndRef.current, "end");
-          }}
-          onLogged={handleLogged}
-          onRolled={handleRolled}
-        />
       </div>
-
-      {/* Desktop: the table always open, no sheets covering anything.
-          It scrolls on its own, which clips what pokes out of it: the
-          padding on the left (taken back by the negative margin) leaves
-          room for the keyboard focus ring of what sits at its edge. */}
-      <aside
-        aria-label={t.journal.playPanelLabel}
-        className={`${SIDE_COLUMN} -ml-1.5 hidden gap-6 pl-1.5 pr-1 lg:col-start-2 lg:flex xl:col-start-3 4xl:col-start-4`}
-      >
-        <PanelSection id="oracleTool" Icon={IconOracle} title={t.journal.toolOracleTitle}>
-          <OracleTool adventureId={adventure.id} onRolled={handleRolled} />
-        </PanelSection>
-        <PanelSection id="diceTool" Icon={IconDice} title={t.journal.toolDiceTitle}>
-          <DiceTool adventureId={adventure.id} onRolled={handleRolled} />
-        </PanelSection>
-        <PanelSection id="tableTool" Icon={IconTable} title={t.journal.toolTableTitle}>
-          <TableTool adventureId={adventure.id} onRolled={handleRolled} />
-        </PanelSection>
-      </aside>
-
-      {notebookOpen && (
-        <Modal
-          sheet
-          onClose={() => setNotebookOpen(false)}
-          label={t.notebook.title}
-          size="lg"
-        >
-          <DialogHeader title={t.notebook.title} Icon={IconNotebook} onClose={() => setNotebookOpen(false)} />
-          <DialogBody>{notebook}</DialogBody>
-        </Modal>
-      )}
-
-      {statsOpen && (
-        <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
-      )}
-
-      {deleting && (
-        <ConfirmDialog
-          title={interpolate(t.journal.deleteAdventureConfirmTitle, { name: adventure.name })}
-          description={t.journal.deleteAdventureConfirmDescription}
-          confirmLabel={t.journal.deleteAdventureConfirmButton}
-          onConfirm={() => {
-            deleteAdventure(adventure.id);
-            setDeleting(false);
-            navigate("/diario");
-          }}
-          onCancel={() => setDeleting(false)}
-        />
-      )}
-
-      {tableDraft && tablesStatus === "ready" && (
-        <Suspense fallback={null}>
-          <TableEditorDialog
-            initial={tableDraft}
-            editing={false}
-            onSave={(draft) => {
-              addTables([draft]);
-              setTableDraft(null);
-              setNotice({ key: Date.now(), title: interpolate(t.journal.tableSaved, { name: draft.name }) });
-            }}
-            onClose={() => setTableDraft(null)}
-          />
-        </Suspense>
-      )}
-
-      {undoable ? (
-        <Toast
-          key={undoable.key}
-          Icon={undoable.kind === "deleted" ? IconTrash : IconPencil}
-          title={undoable.kind === "deleted" ? t.journal.entryDeleted : t.journal.entryEdited}
-          closeLabel={t.common.close}
-          action={{ label: t.common.undo, onClick: undoable.undo }}
-          duration={undoable.kind === "deleted" ? 6000 : 4000}
-          onDismiss={dismissUndo}
-        />
-      ) : notice ? (
-        <Toast
-          key={notice.key}
-          Icon={IconCheck}
-          title={notice.title}
-          description={notice.description}
-          closeLabel={t.common.close}
-          action={notice.action}
-          duration={notice.action || notice.description ? 6000 : 3000}
-          onDismiss={dismissNotice}
-        />
-      ) : (
-        exportedFilename && (
-          <Toast
-            title={interpolate(t.journal.exportedToastTitle, { filename: exportedFilename })}
-            description={t.journal.exportedToastDescription}
-            closeLabel={t.common.close}
-            onDismiss={dismissExported}
-          />
-        )
-      )}
-    </div>
+    </AdventureOracleScope>
   );
 }
 

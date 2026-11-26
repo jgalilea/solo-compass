@@ -56,9 +56,14 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
     activar una aventura; la tableta en vertical usa todo el ancho y nombra
     las herramientas; la aventura de ejemplo, con todos sus dados; los e2e en
     su propio puerto (4174), sin reutilizar un `vite preview` abierto.
-  - Siguiente (1.7.0): el oráculo de cada aventura (se queda el último usado
-    en ella; la estrella es el de siempre: aventuras nuevas y tiradas sin
-    aventura), y después los dados y las tablas de su mesa de juego.
+- El oráculo de cada aventura (2026-11-26, 1.7.0): `oracle` en `Adventure`, el
+  último elegido o usado en ella (`setAdventureOracle`, también al preguntar);
+  `AdventureOracleScope` se lo da a su pantalla y a la del Oráculo mientras es la
+  activa. La estrella es el de siempre: el de las aventuras que aún no han usado
+  ninguno y el del Oráculo sin aventura activa. Viaja en la copia y se fusiona por
+  `oracleUpdatedAt`; no va en el `.md` (Lonelog no tiene sitio). **Siguiente (P2):**
+  los dados y las tablas de la mesa de juego de cada aventura (empiezan con tus
+  favoritos; «Ajustar» en su mesa para elegir los suyos).
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

@@ -8,7 +8,7 @@ import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 
 export function OracleSwitcher() {
-  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId } = useOracleContext();
+  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, adventureName } = useOracleContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const current = ORACLES.find((o) => o.id === oracleId) ?? ORACLES[0];
@@ -33,6 +33,9 @@ export function OracleSwitcher() {
         >
           <DialogHeader title={t.oracleSwitcher.dialogTitle} onClose={() => setOpen(false)} />
           <DialogBody>
+            {adventureName && (
+              <p className="text-sm text-parchment">{interpolate(t.oracleSwitcher.adventureNote, { name: adventureName })}</p>
+            )}
             <div className="grid gap-2 md:grid-cols-2 md:gap-3">
               {ORACLES.map((oracleInfo) => {
                 const active = oracleInfo.id === oracleId;

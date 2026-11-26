@@ -12,6 +12,7 @@ import {
   type AdventureStatus,
 } from "../lib/journal";
 import { isoDate } from "../lib/isoDate";
+import type { OracleId } from "../lib/oracleEngines";
 import type { JournalEntry, JournalLineKind, LonelogImport } from "../lib/lonelog";
 import { loadActiveAdventureId, saveActiveAdventureId } from "../lib/activeAdventure";
 import { forgetDeletions, recordDeletions } from "../lib/deletions";
@@ -43,6 +44,8 @@ interface UseJournalResult {
   toggleAdventureFavorite: (id: string) => void;
   setAdventureStatus: (id: string, status: AdventureStatus) => void;
   setAdventureNotes: (id: string, notes: string) => void;
+  /** The oracle it's played with (AdventureOracleScope). */
+  setAdventureOracle: (id: string, oracle: OracleId) => void;
   setCastDescription: (adventureId: string, key: string, text: string) => void;
   /** Returns the new entry's id. */
   addEntry: (
@@ -258,6 +261,19 @@ export function useJournal(): UseJournalResult {
     [updateAdventures],
   );
 
+  // Like the notes, no trace and no jump in the list; nothing to save
+  // when it's the one it already has.
+  const setAdventureOracle = useCallback(
+    (id: string, oracle: OracleId) => {
+      updateAdventures((prev) =>
+        prev.some((a) => a.id === id && a.oracle !== oracle)
+          ? prev.map((a) => (a.id === id ? { ...a, oracle, oracleUpdatedAt: Date.now() } : a))
+          : prev,
+      );
+    },
+    [updateAdventures],
+  );
+
   // Writing below an entry: every new entry of that adventure (typed,
   // or from the oracle, tables and dice) goes there, each one after the
   // previous. Kept in a ref as well as in state because a single event
@@ -373,6 +389,7 @@ export function useJournal(): UseJournalResult {
     toggleAdventureFavorite,
     setAdventureStatus,
     setAdventureNotes,
+    setAdventureOracle,
     setCastDescription,
     addEntry,
     removeEntry,

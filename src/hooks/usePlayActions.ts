@@ -39,7 +39,7 @@ export interface Inspiration {
  */
 export function usePlayActions() {
   const { entries: historyEntries, addEntry: addHistoryEntry } = useHistoryContext();
-  const { activeAdventureId, addEntry: addJournalEntry } = useJournalContext();
+  const { activeAdventureId, addEntry: addJournalEntry, setAdventureOracle } = useJournalContext();
   const { oracleId } = useOracleContext();
   const { t, locale } = useLocaleContext();
 
@@ -93,13 +93,16 @@ export function usePlayActions() {
         if (twistRolls.length) roll.twist.result = twistRolls.map((r) => r.resultText).join(" · ");
       }
       record(roll, adventureId);
+      // The adventure keeps the oracle it was asked with: the last used
+      // in it (until now it may have been the favourite's by default).
+      if (adventureId) setAdventureOracle(adventureId, oracleId);
       announce(formatOracleResult(t, roll));
       if (adventureId) {
         for (const line of rollJournalLines(t, roll)) addJournalEntry(adventureId, line.kind, line.text, roll.id);
       }
       return roll;
     },
-    [activeAdventureId, record, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, t],
+    [activeAdventureId, record, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, setAdventureOracle, t],
   );
 
   const rollTable = useCallback(

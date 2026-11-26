@@ -161,8 +161,9 @@ No backend; persistence is split by access pattern, not by feature:
   again. New stored data should follow the same pattern.
 - **localStorage**, for small settings read synchronously before first
   paint (theme/mode need this to avoid a flash): theme, light/dark mode,
-  language, selected oracle and favorite oracle (the app opens with the
-  favorite, `initialOracleId`; the last used otherwise), favorite tables, unfolded table blocks,
+  language, selected oracle and favorite oracle (the device's: with no
+  active adventure, and for an adventure that hasn't used one yet; the
+  favorite first, `initialOracleId`, the last used otherwise), favorite tables, unfolded table blocks,
   folded notebook lists and blocks (`notebookSections.ts`, also the
   session index), the composer's draft per adventure (`drafts.ts`:
   text, entry type and speaker, gone once sent), whether new scenes are tested, active-adventure
@@ -242,7 +243,8 @@ No backend; persistence is split by access pattern, not by feature:
   everything above into one `.json` (download, or "Send" through the
   share sheet, as `.txt` on Chromium), and restores it either by
   **merging** with this device's data (`backupMerge.ts`: union by id,
-  newer edit wins via `editedAt`/`updatedAt`/`notesUpdatedAt`) or by
+  newer edit wins via `editedAt`/`updatedAt`/`notesUpdatedAt`/
+  `oracleUpdatedAt`) or by
   replacing it; then reloads so every context picks up the result.
   Deletions are recorded by id (`deletions.ts`, also in the backup) so a
   merge doesn't bring back what was deleted on either device: anything
@@ -490,9 +492,16 @@ the notebook. A short chip never breaks; one past `LONG_TAG` characters
 ### Oracles (`src/lib/oracles.ts`, `oracleEngines.ts`)
 
 Four yes/no oracles, picked from the name next to the Oracle title
-(`OracleSwitcher`, saved per device; a star marks the favorite, the
-one the app opens with; the game table's `OracleTool` carries the same
-switcher and help, so it changes from the journal too): **Recluse** (the default, the
+(`OracleSwitcher`; the game table's `OracleTool` carries the same
+switcher and help, so it changes from the journal too). Each adventure
+is played with its own (`oracle` on `Adventure`: the last one picked in
+it or asked from it, `setAdventureOracle`, also by `usePlayActions` on
+every question): `AdventureOracleScope` hands it, through the same
+`OracleContext`, to everything on the adventure's screen and to the
+Oracle screen while it's the active one, and the switcher then says
+whose it is. A star marks the favorite: an adventure that hasn't used
+one yet starts with it, and so does the Oracle screen with no active
+adventure (else the device's last used, saved per device): **Recluse** (the default, the
 author's favourite; mechanic in `oracle.ts`), **Loner**, **Ironsworn**'s
 "Ask the Oracle" and **One Page Solo Engine** v1.6. `oracles.ts` holds
 each one's credit and verbatim attribution (all listed in Settings →

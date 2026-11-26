@@ -63,7 +63,7 @@ Type a yes/no question, pick how likely it is, and roll. The **Recluse** rules (
 
 *Likely* and *Unlikely* add a second die of the favoured colour, and *Very likely* and *Very unlikely* add two. Only the highest die of each colour counts.
 
-The oracle's name next to the title switches to another one (and a star marks your favorite, the one the app always opens with):
+The oracle's name next to the title switches to another one. Each adventure remembers the one you play it with, and a star marks your favorite, which new adventures start with:
 
 | Oracle | How it answers |
 |---|---|

@@ -321,6 +321,8 @@ export interface Dictionary {
     favorite: string;
     markFavorite: string;
     favoriteHint: string;
+    /** Inside an adventure (or with one active): whose oracle is being picked. */
+    adventureNote: string;
   };
   /** Short guide to the oracle (not its full rules: those are in the original). */
   oracleHelp: {

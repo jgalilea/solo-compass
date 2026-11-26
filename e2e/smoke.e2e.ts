@@ -300,3 +300,43 @@ test("jumps to a session from the index", async ({ page }) => {
   await page.waitForTimeout(500);
   await expect(page.locator("[id^=entry-]").getByText("La orilla, 1.")).toBeInViewport();
 });
+
+/** Each adventure is played with its own oracle: picked in it, it stays there and only there. */
+test("each adventure keeps its own oracle", async ({ page }) => {
+  const create = async (name: string) => {
+    await page.goto("./#/diario");
+    await page.getByRole("button", { name: "Nueva aventura" }).click();
+    await page.getByPlaceholder("Nombre de la aventura").fill(name);
+    await page.getByRole("button", { name: "Crear" }).click();
+    await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+  };
+  // The game table's oracle: a sheet on phones, a panel on desktop.
+  const switcher = async () => {
+    const button = page.getByRole("button", { name: "Cambiar oráculo" }).filter({ visible: true }).first();
+    const opener = page.getByRole("button", { name: "Tirar: oráculo, dados o tablas" });
+    await expect(button.or(opener).first()).toBeVisible();
+    if (!(await button.isVisible())) await opener.click();
+    return button;
+  };
+
+  await create("La saga");
+  await (await switcher()).click();
+  const dialog = page.getByRole("dialog", { name: "Oráculo" });
+  await expect(dialog.getByText("Lo eliges para «La saga»")).toBeVisible();
+  await dialog.getByRole("button", { name: /^Ironsworn/ }).click();
+  await page.keyboard.press("Escape");
+  await expect(await switcher()).toContainText("Ironsworn");
+
+  // Another adventure starts with the usual one.
+  await create("La cripta");
+  await expect(await switcher()).toContainText("Recluse");
+
+  // Back in the first, and on the Oracle screen while it's the active one.
+  await page.goto("./#/diario");
+  await page.getByRole("link", { name: /La saga/ }).click();
+  await expect(await switcher()).toContainText("Ironsworn");
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Activar" }).click();
+  await page.goto("./#/");
+  await expect(page.getByRole("button", { name: "Cambiar oráculo" })).toContainText("Ironsworn");
+});

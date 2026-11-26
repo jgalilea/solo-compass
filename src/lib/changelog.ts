@@ -25,6 +25,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.7.0",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXIV · Cada mesa con su oráculo",
+        intro: "Mara lleva dos campañas a la vez y ya no cambia de oráculo cada vez que pasa de una a otra: cada cuaderno guarda el suyo entre las páginas.",
+        items: [
+          "Cada aventura recuerda su oráculo: el último que elegiste o usaste en ella. Entras en tu campaña de Ironsworn y está Ironsworn; en la otra, el suyo.",
+          "La pantalla del Oráculo usa el de la aventura activa, y al cambiarlo allí cambias el de esa aventura. Al elegir, la ventana te dice para qué aventura es.",
+          "La estrella marca tu oráculo de siempre: con él empieza cada aventura nueva, y con él se abre el Oráculo sin aventura activa.",
+          "El oráculo de cada aventura viaja en la copia de seguridad; al juntar copias, gana el último que elegiste.",
+        ],
+      },
+      en: {
+        title: "Chapter XXIV · Each table its oracle",
+        intro: "Mara plays two campaigns at once and no longer switches oracles every time she moves between them: each notebook keeps its own between the pages.",
+        items: [
+          "Each adventure remembers its oracle: the last one you picked or used in it. Open your Ironsworn campaign and Ironsworn is there; in the other one, its own.",
+          "The Oracle screen uses the active adventure's, and changing it there changes that adventure's. When you pick, the window says which adventure it's for.",
+          "The star marks your usual oracle: every new adventure starts with it, and the Oracle opens with it when no adventure is active.",
+          "Each adventure's oracle travels in the backup; when merging copies, the one picked last wins.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.6.3",
     date: "2026-11-26",
     text: {

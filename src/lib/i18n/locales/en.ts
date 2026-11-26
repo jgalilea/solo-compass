@@ -362,7 +362,8 @@ export const en: Dictionary = {
     },
     favorite: "Favorite",
     markFavorite: "Mark as favorite",
-    favoriteHint: "The app always opens with your favorite oracle, even if you used another one last time.",
+    favoriteHint: "Your favorite is the one every new adventure starts with, and the one the Oracle opens with when no adventure is active.",
+    adventureNote: "You're picking it for “{name}”: each adventure remembers its own.",
   },
   oracleHelp: {
     button: "How the oracle works",

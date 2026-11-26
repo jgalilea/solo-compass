@@ -59,11 +59,14 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     for (const [key, d] of Object.entries(theirs.descriptions ?? {})) {
       if (d.updatedAt > (descriptions[key]?.updatedAt ?? -1)) descriptions[key] = d;
     }
+    // The oracle picked last, on either device.
+    const oracle = (theirs.oracleUpdatedAt ?? 0) > (mine.oracleUpdatedAt ?? 0) ? theirs : mine;
     return {
       ...base,
       notes: notes.notes,
       notesUpdatedAt: notes.notesUpdatedAt,
       ...(Object.keys(descriptions).length ? { descriptions } : {}),
+      ...(oracle.oracle ? { oracle: oracle.oracle, oracleUpdatedAt: oracle.oracleUpdatedAt } : {}),
     };
   }).filter((a) => !gone.has(a.id));
   const kept = new Set(adventures.map((a) => a.id));

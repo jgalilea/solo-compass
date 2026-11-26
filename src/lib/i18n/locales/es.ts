@@ -362,7 +362,8 @@ export const es: Dictionary = {
     },
     favorite: "Favorito",
     markFavorite: "Marcar como favorito",
-    favoriteHint: "La app se abre siempre con tu oráculo favorito, aunque la última vez usaras otro.",
+    favoriteHint: "Tu favorito es con el que empieza cada aventura nueva, y con el que se abre el Oráculo sin aventura activa.",
+    adventureNote: "Lo eliges para «{name}»: cada aventura recuerda el suyo.",
   },
   oracleHelp: {
     button: "Cómo funciona el oráculo",

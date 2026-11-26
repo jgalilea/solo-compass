@@ -59,6 +59,17 @@ describe("mergeData", () => {
     expect(merged.entries[0].text).toBe("edited here");
   });
 
+  it("the oracle picked last wins, whichever side was edited later", () => {
+    const merged = mergeData(
+      data({ adventures: [adventure("a", { name: "Renamed", updatedAt: 40, oracle: "loner", oracleUpdatedAt: 5 })] }),
+      data({ adventures: [adventure("a", { name: "Old", updatedAt: 1, oracle: "ironsworn", oracleUpdatedAt: 9 })] }),
+    );
+    expect(merged.adventures[0]).toMatchObject({ name: "Renamed", oracle: "ironsworn", oracleUpdatedAt: 9 });
+    // Only one side has picked one: it stays.
+    const one = mergeData(data({ adventures: [adventure("a", { updatedAt: 9 })] }), data({ adventures: [adventure("a", { oracle: "opse", oracleUpdatedAt: 2 })] }));
+    expect(one.adventures[0].oracle).toBe("opse");
+  });
+
   it("each description apart: the newer wins, and what's only on one side stays", () => {
     const merged = mergeData(
       data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "new", updatedAt: 9 }, "npc:odile": { text: "mine", updatedAt: 1 } } })] }),

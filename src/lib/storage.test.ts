@@ -43,6 +43,13 @@ describe("normalizeAdventure", () => {
     });
   });
 
+  it("keeps the oracle it's played with, if this copy of the app knows it", () => {
+    expect(normalizeAdventure({ id: "a", name: "A", oracle: "ironsworn", oracleUpdatedAt: 3 })).toMatchObject({ oracle: "ironsworn", oracleUpdatedAt: 3 });
+    const unknown = normalizeAdventure({ id: "a", name: "A", oracle: "mythic", oracleUpdatedAt: 3 });
+    expect(unknown).not.toHaveProperty("oracle");
+    expect(unknown).not.toHaveProperty("oracleUpdatedAt");
+  });
+
   it("rejects what has no id or name, and drops broken descriptions", () => {
     expect(normalizeAdventure({ name: "A" })).toBeNull();
     expect(normalizeAdventure(null)).toBeNull();

@@ -17,8 +17,19 @@ import { OracleWaiting } from "./OracleWaiting";
 import { PageHeader } from "./PageHeader";
 import { PAGE_CLASS } from "../lib/pageLayout";
 import { smoothBehavior } from "../lib/scrolling";
+import { AdventureOracleScope } from "../hooks/AdventureOracleScope";
 
+/** The Oracle screen asks the active adventure's oracle (none: the device's). */
 export function OracleView() {
+  const { activeAdventureId } = useJournalContext();
+  return (
+    <AdventureOracleScope adventureId={activeAdventureId}>
+      <OracleScreen />
+    </AdventureOracleScope>
+  );
+}
+
+function OracleScreen() {
   const { t } = useLocaleContext();
   const { adventures, activeAdventureId } = useJournalContext();
   const { askOracle, addConsequence } = usePlayActions();
