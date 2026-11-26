@@ -5,7 +5,7 @@ import { en } from "./i18n/locales/en";
 import { es } from "./i18n/locales/es";
 import { oracleDice } from "./oracle";
 import { ORACLES } from "./oracles";
-import { rollOracleWith } from "./oracleEngines";
+import { oracleLevels, rollOracleWith } from "./oracleEngines";
 import { MAX_DRAWN_DICE, readOracleDice, rolledTotal, rolledWhat, fixOldOracle } from "./rolledDice";
 
 const d6 = (value: number, mark?: string) => ({ sides: 6, value, ...(mark ? { mark } : {}) });
@@ -80,15 +80,32 @@ describe("the dice of a roll, read from its text", () => {
 });
 
 describe("an oracle's dice, read from the journal", () => {
-  it("are the ones that counted, in either language", () => {
+  it("are every die thrown at every likelihood, the ones that didn't count left out, in either language", () => {
     for (const t of [es, en]) {
       for (const { id } of ORACLES) {
-        const roll = rollOracleWith(id, "Is it?", "equilibrado");
-        expect(readOracleDice(`Name: ${formatOracleDice(t, roll)}`)).toEqual(
-          oracleDice(roll).map((g) => ({ role: g.role, sides: g.sides, value: g.kept })),
-        );
+        for (const level of oracleLevels(id)) {
+          const roll = rollOracleWith(id, "Is it?", level);
+          expect(readOracleDice(`Name: ${formatOracleDice(t, roll)}`), `${id} ${level}`).toEqual(
+            oracleDice(roll).flatMap((g) =>
+              g.rolls.map((value) => ({ role: g.role, sides: g.sides, value, ...(g.rolls.length > 1 && value !== g.kept ? { out: true } : {}) })),
+            ),
+          );
+        }
       }
     }
+    // Recluse at "Very likely": three white dice, the highest counts.
+    expect(readOracleDice("Recluse: blanco 5 (2, 5, 1) / negro 3")).toEqual([
+      { role: "white", sides: 6, value: 2, out: true },
+      { role: "white", sides: 6, value: 5 },
+      { role: "white", sides: 6, value: 1, out: true },
+      { role: "black", sides: 6, value: 3 },
+    ]);
+    // Before 1.6.3 only the ones that counted were written: still read.
+    expect(readOracleDice("Recluse: blanco 5 / negro 3")).toEqual([
+      { role: "white", sides: 6, value: 5 },
+      { role: "black", sides: 6, value: 3 },
+    ]);
+    expect(readOracleDice("Recluse: blanco 5 (2, 3) / negro 3")).toBeNull();
     expect(readOracleDice("Attack d20")).toBeNull();
     expect(readOracleDice("Name: something else")).toBeNull();
   });

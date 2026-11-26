@@ -218,7 +218,12 @@ export function AdventureDetailView() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [undoable]);
   // Any other short notice (renamed, copied), maybe with an action.
-  const [notice, setNotice] = useState<{ key: number; title: string; action?: { label: string; onClick: () => void } } | null>(null);
+  const [notice, setNotice] = useState<{
+    key: number;
+    title: string;
+    description?: string;
+    action?: { label: string; onClick: () => void };
+  } | null>(null);
   const dismissNotice = useCallback(() => setNotice(null), [setNotice]);
 
   // A session, a scene or the whole adventure as Lonelog, to paste elsewhere.
@@ -602,6 +607,15 @@ export function AdventureDetailView() {
           groups={groups}
           onJumpToSession={jumpToSession}
           onJumpToEntry={jumpToEntry}
+          // Said once, when it happens: on a phone there's no tooltip to tell it.
+          onActivated={() =>
+            setNotice({
+              key: Date.now(),
+              // Short: a toast's title is one line, and the name is in the bar above.
+              title: t.journal.activatedTitle,
+              description: t.journal.activatedDescription,
+            })
+          }
           notebookOpen={notebookOpen}
           onOpenNotebook={() => setNotebookOpen(true)}
           onStats={() => setStatsOpen(true)}
@@ -900,9 +914,10 @@ export function AdventureDetailView() {
           key={notice.key}
           Icon={IconCheck}
           title={notice.title}
+          description={notice.description}
           closeLabel={t.common.close}
           action={notice.action}
-          duration={notice.action ? 6000 : 3000}
+          duration={notice.action || notice.description ? 6000 : 3000}
           onDismiss={dismissNotice}
         />
       ) : (

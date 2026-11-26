@@ -46,18 +46,31 @@ export interface OracleDieRead {
   role: OracleDiceGroup["role"];
   sides: number;
   value: number;
+  /** One of several of its colour that didn't count. */
+  out?: boolean;
 }
 
-/** The dice of an oracle's roll in the journal ("Recluse: blanco 3 / negro 5", with a "—" before 1.5.1); null if it isn't one. */
+/**
+ * The dice of an oracle's roll in the journal ("Recluse: blanco 3 / negro
+ * 5", with a "—" before 1.5.1); null if it isn't one. A colour rolled
+ * several times (a likelihood's dice) lists them all after the one that
+ * counted, "blanco 5 (2, 5)"; before 1.6.3 only that one was written.
+ */
 export function readOracleDice(detail: string): OracleDieRead[] | null {
   const after = detail.match(/^\S.*?(?:\s—|:)\s+(.+)$/)?.[1];
   if (!after) return null;
   const dice: OracleDieRead[] = [];
   for (const part of after.split(" / ")) {
-    const m = part.match(/^(\S+) (\d+)(?: vs \d+\+)?$/);
+    const m = part.match(/^(\S+) (\d+)(?: vs \d+\+)?(?: \((\d+(?:, \d+)+)\))?$/);
     const role = m && ORACLE_DICE[m[1].toLowerCase()];
     if (!role) return null;
-    dice.push({ role, sides: role === "percentile" ? 100 : 6, value: Number(m[2]) });
+    const sides = role === "percentile" ? 100 : 6;
+    const kept = Number(m[2]);
+    const all = m[3]?.split(", ").map(Number);
+    if (!all) dice.push({ role, sides, value: kept });
+    // The one that counted is among them, or it isn't this.
+    else if (!all.includes(kept)) return null;
+    else for (const value of all) dice.push({ role, sides, value, ...(value !== kept ? { out: true } : {}) });
   }
   return dice;
 }

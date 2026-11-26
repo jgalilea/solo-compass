@@ -25,6 +25,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.6.3",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXIII, al margen · Los dados que no contaban",
+        items: [
+          "El diario apunta y dibuja todos los dados del oráculo: con una pregunta probable o improbable se ven los tres o cuatro que se tiraron, y los que no cuentan, atenuados. Las tiradas ya apuntadas guardan solo el dado que contaba.",
+          "Al escribir una pregunta en la casilla del diario ves con qué probabilidad irá al oráculo, y la cambias con un toque. También se puede preguntar desde «Consecuencia».",
+          "Activar una aventura dice qué significa: lo que tires en Oráculo, Tablas y Dados se apuntará en ella.",
+          "En la tableta en vertical las pantallas usan todo el ancho, y los botones del oráculo, los dados y las tablas del diario llevan su nombre.",
+          "La aventura de ejemplo tira todos los dados que pide cada pregunta.",
+        ],
+      },
+      en: {
+        title: "Chapter XXIII, in the margin · The dice that didn't count",
+        items: [
+          "The journal logs and draws every one of the oracle's dice: with a likely or unlikely question you see the three or four thrown, and the ones that don't count, faded. Rolls already logged keep only the die that counted.",
+          "Typing a question in the journal's box shows the likelihood it'll go to the oracle with, and one tap changes it. You can ask from “Consequence” too.",
+          "Activating an adventure says what it means: what you roll on Oracle, Tables and Dice will be logged in it.",
+          "On a tablet held upright the screens use the whole width, and the journal's oracle, dice and tables buttons carry their names.",
+          "The sample adventure throws every die each question asks for.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.6.2",
     date: "2026-11-26",
     text: {

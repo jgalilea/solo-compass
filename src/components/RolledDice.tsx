@@ -33,12 +33,12 @@ export function TableDiceRow({ groups, size = "xs", animate = false }: { groups:
   );
 }
 
-/** An oracle roll's dice as the journal keeps them (the ones that counted). Decorative too. */
+/** An oracle roll's dice as the journal keeps them, faded the ones that didn't count (as in the history). Decorative too. */
 export function OracleDiceRow({ dice }: { dice: OracleDieRead[] }) {
   return (
     <span aria-hidden className="flex select-none gap-1">
-      {dice.map(({ role, sides, value }, i) => (
-        <Die key={i} sides={sides} value={value} color={ROLE_COLOR[role]} size="xs" />
+      {dice.map(({ role, sides, value, out }, i) => (
+        <Die key={i} sides={sides} value={value} color={ROLE_COLOR[role]} size="xs" faded={out} />
       ))}
     </span>
   );

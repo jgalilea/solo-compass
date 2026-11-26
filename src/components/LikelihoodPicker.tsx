@@ -25,10 +25,10 @@ const SHORT: Record<Likelihood, { Icon: typeof IconPlus; count: number }> = {
   "muy-probable": { Icon: IconPlus, count: 2 },
 };
 
-function ShortScale({ option }: { option: Likelihood }) {
+function ShortScale({ option, always = false }: { option: Likelihood; always?: boolean }) {
   const { Icon, count } = SHORT[option];
   return (
-    <span aria-hidden className="flex items-center justify-center -space-x-0.5 @md:hidden">
+    <span aria-hidden className={`flex items-center justify-center -space-x-0.5 ${always ? "" : "@md:hidden"}`}>
       {Array.from({ length: count }, (_, i) => (
         <Icon key={i} size={15} strokeWidth={2.25} />
       ))}
@@ -40,13 +40,46 @@ export function LikelihoodPicker({
   value,
   onChange,
   levels = ORDER,
+  inline = false,
 }: {
   value: Likelihood;
   onChange: (v: Likelihood) => void;
   /** The ones the oracle offers (oracleLevels): three for Loner and OPSE. */
   levels?: Likelihood[];
+  /** One short row, the chosen option named beside it: the composer's, for a question typed there. */
+  inline?: boolean;
 }) {
   const { t } = useLocaleContext();
+
+  if (inline) {
+    return (
+      <div className="flex min-w-0 items-center gap-2">
+        <div role="radiogroup" aria-label={t.likelihoodGroupLabel} className="flex shrink-0 gap-0.5 rounded-xl border border-ink-border bg-ink-900/60 p-0.5">
+          {levels.map((option) => {
+            const active = option === value;
+            return (
+              <button
+                key={option}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={t.likelihood[option]}
+                title={t.likelihood[option]}
+                onClick={() => onChange(option)}
+                className={[
+                  "flex h-8 min-w-9 items-center justify-center rounded-lg px-1.5 transition pointer-coarse:h-10",
+                  active ? "bg-gold text-ink-950 shadow-sm" : "text-parchment-dim hover:text-parchment",
+                ].join(" ")}
+              >
+                <ShortScale option={option} always />
+              </button>
+            );
+          })}
+        </div>
+        <span className="min-w-0 truncate text-xs font-medium text-parchment">{t.likelihood[value]}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="@container flex flex-col gap-1.5">

@@ -29,7 +29,11 @@ export type SampleLine =
   | { kind: "note" | "action" | "question" | "consequence" | "scene" | "roll"; text: string }
   /** A session with its day of play ("2025-09-03"). */
   | { kind: "session"; text: string; date?: string }
-  | { oracle: [white: number, black: number] }
+  /**
+   * Recluse's dice: one of each colour, or every die of a colour the
+   * question's likelihood throws ("Likely": two white); the highest counts.
+   */
+  | { oracle: [white: number | number[], black: number | number[]] }
   | { table: SoloCompassTableId; roll: number[] }
   /** Quick inspiration: the Action and Theme rolls, as d66 digits. */
   | { inspiration: [action: number[], theme: number[]] };
@@ -605,6 +609,9 @@ export interface Dictionary {
     activeChipTitle: string;
     noActiveAdventureNote: string;
     activateHint: string;
+    /** The notice once an adventure is made the active one. */
+    activatedTitle: string;
+    activatedDescription: string;
     goToActiveAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;

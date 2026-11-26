@@ -40,15 +40,21 @@ export function formatOracleResult(t: Dictionary, roll: OracleRoll): string {
 /**
  * A roll's dice for the journal, after the oracle's name and a colon
  * (readOracleDice tells them from other rolls):
- * "white 4 / black 2", "d100 67 vs 26+", "answer 5 vs 4+ / modifier 1".
+ * "white 4 / black 2", "d100 67 vs 26+", "answer 5 vs 4+ / modifier 1";
+ * several dice of a colour, all of them after the one that counted:
+ * "white 5 (2, 5, 1) / black 3".
  */
 export function formatOracleDice(t: Dictionary, roll: OracleRoll): string {
   const target = oracleTarget(rollOracleId(roll), roll.likelihood);
   return oracleDice(roll)
-    .map((g, i) =>
-      i === 0 && target !== undefined
-        ? `${t.oracleDice[g.role]} ${interpolate(t.oracle.targetSuffix, { value: g.kept, target })}`
-        : `${t.oracleDice[g.role]} ${g.kept}`,
-    )
+    .map((g, i) => {
+      const kept =
+        i === 0 && target !== undefined
+          ? `${t.oracleDice[g.role]} ${interpolate(t.oracle.targetSuffix, { value: g.kept, target })}`
+          : `${t.oracleDice[g.role]} ${g.kept}`;
+      // Several dice of a colour (a likelihood's): all of them after the
+      // one that counts, or the journal tells only two dice of four.
+      return g.rolls.length > 1 ? `${kept} (${g.rolls.join(", ")})` : kept;
+    })
     .join(" / ");
 }

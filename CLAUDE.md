@@ -29,7 +29,8 @@ Tests are Vitest unit tests next to the module they cover
 (`src/lib/*.test.ts`): oracle mechanics, Lonelog export/import, journal
 grouping and table data integrity. No component/DOM tests; instead
 Playwright tests (`e2e/*.e2e.ts`, config in `playwright.config.ts`) on a
-phone and a desktop viewport against `vite preview`, failing on any
+phone and a desktop viewport against `vite preview` (on its own port,
+4174, always a fresh build: a preview left open is never reused), failing on any
 console error: `smoke.e2e.ts` plays the main path (oracle, new
 adventure, an entry, a table roll, reload; two tabs at once; own dice
 and cards) and `lonelog.e2e.ts` Lonelog 1.7 in, changed and out; `data.e2e.ts` what would hurt most to lose (an
@@ -345,7 +346,8 @@ Lonelog entries. Don't duplicate that logic in a view.
 
 The game table tools are the same components in two places: a bottom
 sheet with tabs opened from the one-row composer (`JournalComposer`,
-mobile, a single "Roll" button that reopens the last tab, and tablet; `Modal` with `sheet`, so it stays a bottom sheet on
+mobile, a single "Roll" button that reopens the last tab, and tablet,
+the three named; `Modal` with `sheet`, so it stays a bottom sheet on
 tablet too) and a fixed right-hand panel (desktop, where the composer
 has no tool buttons; each tool folds under its heading there, kept in
 `notebookSections.ts`, and stays mounted so the tray survives). The composer's text is an auto-growing textarea:
@@ -356,8 +358,10 @@ Lonelog's dialogue form (`formatDialogue`: `N (Odile): "…"`); "In-world
 text" is typed as is and logged as a narrative block (`formatExcerpt`).
 Lonelog typed at the start ("@ ", "=> ", "N (Odile): ", "\--- ", "=== ")
 switches the type by itself (`composerShortcut`); a typed question (ends
-in "?") can optionally go to the oracle (a button beside send, or
-Ctrl+Enter), and Alt+Shift+1…7 pick the type (plain Alt+number/letter
+in "?", in a note, an action or a consequence; not dialogue) can
+optionally go to the oracle (a button beside send, or Ctrl+Enter),
+with the likelihood it'll be asked with shown above the field, one tap
+to change (`LikelihoodPicker` `inline`), and Alt+Shift+1…7 pick the type (plain Alt+number/letter
 belongs to the browser). The likelihood picked is shared by the Oracle
 screen, the game table and that question (`OracleContext`, not saved).
 A session or a scene (their "⋯") and the whole adventure (its menu)
@@ -373,7 +377,8 @@ Offered only as a discreet link in the empty-journal state (never
 created on its own, and opened without making it active). The script
 lives in the dictionaries (`t.sample.script`); rolls are given as dice
 and written with the same format as `usePlayActions` (oracle verdict via
-`judgeDice` in `oracle.ts`, table results from the real tables, loaded
+`judgeDice` in `oracle.ts`, every die its question's likelihood
+throws, which a test checks; table results from the real tables, loaded
 first with `loadMeaningTables`; quick inspiration as the same `tbl:`;
 dice formulas written as `rollFormula` writes them), then imported as
 Lonelog, with session dates, pinned notes and notebook descriptions
@@ -508,7 +513,10 @@ rolls apart (`lonerTwistCounter`), never stored, and shown beside the oracle's
 name while Loner is picked (`TwistCounter`); the third double rolls its
 two twist tables, preloaded while Loner is selected. In the journal an
 oracle roll is "Name: dice -> answer" (`formatOracleDice`/
-`formatOracleResult`), told from any other roll by its dice's names
+`formatOracleResult`; a colour thrown several times, a likelihood's
+dice, lists them all after the one that counted, "blanco 5 (2, 5, 1)",
+and the journal draws the others faded; before 1.6.3 only that one was
+written, still read), told from any other roll by its dice's names
 (`readOracleDice`); before 1.5.1 it was "Name — dice", still read
 (`fixOldOracle`). Licences checked: never add an NC one (Mythic, Juice) or
 one with no published licence (MUNE).
@@ -745,7 +753,8 @@ the submit names the form) from `Dialog.tsx`. Don't style a panel by hand.
 
 ### Responsive
 
-Mobile-first; `md` widens content, `lg` (desktop) moves the nav into a
+Mobile-first; content takes the whole width up to `lg` (a tablet held
+upright too), `lg` (desktop) moves the nav into a
 sticky header (exactly `h-14`, `--spacing-header`; sticky columns below it use `top-14`; a
 `1fr auto 1fr` grid so the tabs never shift when the adventure chip
 appears; on phone and tablet it's hidden inside an adventure, whose
@@ -758,7 +767,7 @@ Every block of that left column (sessions, pinned notes, cast, threads,
 inventory) folds under its heading (`FoldingHeading`), and each
 session's scenes show only for the current one until opened.
 Every page uses the same content width as the header
-(`PAGE_WIDTH` in `pageLayout.ts`, up to `4xl:max-w-[152rem]`; a screen's
+(`PAGE_WIDTH` in `pageLayout.ts`: all of it below `lg`, then up to `4xl:max-w-[152rem]`; a screen's
 frame is `PAGE_CLASS` and its title `PageHeader`: left-aligned, with
 its actions on the right), so switching
 tabs doesn't make the content jump; `2xl`, `3xl` (1920px) and `4xl`
@@ -879,7 +888,8 @@ is simply not active: "paused" is **not** a stored state, and no longer
 shown (every adventure but one was, so it said nothing). Don't add a
 `paused` field to the adventure model. Inside an adventure its bar
 shows the active one with a dot and offers "Activate" otherwise (only
-its icon on a narrow phone; the ⋯ menu says it in words).
+its icon on a narrow phone; the ⋯ menu says it in words); activating
+it there says, in a notice, what that means (no tooltip on a phone).
 
 ## Roadmap
 

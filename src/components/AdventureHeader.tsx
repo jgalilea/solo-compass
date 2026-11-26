@@ -48,6 +48,7 @@ export function AdventureHeader({
   groups,
   onJumpToSession,
   onJumpToEntry,
+  onActivated,
   notebookOpen,
   onOpenNotebook,
   onStats,
@@ -65,6 +66,8 @@ export function AdventureHeader({
   groups: EntryGroup[];
   onJumpToSession: (index: number) => void;
   onJumpToEntry: (id: string) => void;
+  /** After it's made the active one: the view says what that means. */
+  onActivated: () => void;
   notebookOpen: boolean;
   onOpenNotebook: () => void;
   onStats: () => void;
@@ -83,6 +86,11 @@ export function AdventureHeader({
   const isArchived = adventure.status === "archived";
   // Phone and tablet: the app's header, with Settings, isn't here.
   const noHeader = !useMediaQuery("(min-width: 64rem)");
+
+  function activate() {
+    setActiveAdventureId(adventure.id);
+    onActivated();
+  }
 
   function startRename() {
     setRenameValue(adventure.name);
@@ -145,7 +153,7 @@ export function AdventureHeader({
             ) : (
               <button
                 type="button"
-                onClick={() => setActiveAdventureId(adventure.id)}
+                onClick={activate}
                 aria-label={t.journal.setActive}
                 title={t.journal.activateHint}
                 className="flex h-9 shrink-0 items-center justify-center gap-1 rounded-full border border-ink-border px-3 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold max-[26rem]:w-9 max-[26rem]:px-0"
@@ -201,7 +209,7 @@ export function AdventureHeader({
                 },
                 isActive
                   ? { label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }
-                  : { label: t.journal.setActive, Icon: IconPlay, onSelect: () => setActiveAdventureId(adventure.id) },
+                  : { label: t.journal.setActive, Icon: IconPlay, onSelect: activate },
                 { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
                 { label: t.journal.statsButton, Icon: IconChart, onSelect: onStats },
                 { label: t.history.showRolls, Icon: IconHistory, onSelect: () => navigate(`/historial?aventura=${adventure.id}`) },

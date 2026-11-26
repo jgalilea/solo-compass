@@ -7,6 +7,7 @@ import { exportAdventureToMarkdown, parseDescriptionsFromMarkdown, parseMarkdown
 import { splitOwnRolls, splitRollText } from "./journalUi";
 import { buildCast, foeIsOut, threadStatus } from "./lonelogTags";
 import { askedQuestion } from "./rollLog";
+import { LIKELIHOOD_DICE, type Likelihood } from "./oracle";
 import { SCENE_CHECK_LIKELIHOOD } from "./sceneCheck";
 import { isGenerator, isTableDefinition, noteForm, parseScene, splitActor, splitRollSymbol } from "./lonelogLines";
 import { rollFormula } from "./diceNotation";
@@ -45,6 +46,18 @@ describe("sample adventure", () => {
         .filter((_, i) => "oracle" in t.sample.script[i])
         .map((e) => splitRollText(e.text).answer);
       expect(answers).toEqual(["si", "si", "no", "contradiccion", "no", "si"]);
+      // Each roll throws the dice its question's likelihood asks for
+      // (written as askedQuestion writes it), as a real game would.
+      t.sample.script.forEach((line, i) => {
+        if (!("oracle" in line)) return;
+        const question = t.sample.script[i - 1];
+        const likelihood =
+          (Object.keys(LIKELIHOOD_DICE) as Likelihood[])
+            .filter((l) => l !== "equilibrado")
+            .find((l) => "kind" in question && question.text.endsWith(askedQuestion(t, "", l).trim())) ?? "equilibrado";
+        const [white, black] = line.oracle.map((d) => (Array.isArray(d) ? d.length : 1));
+        expect({ white, black }, `${"kind" in question ? question.text : ""}`).toEqual(LIKELIHOOD_DICE[likelihood]);
+      });
       // Word for word: nothing in it is split or read as something else.
       expect(entries.filter((_, i) => "kind" in t.sample.script[i]).map((e) => e.text)).toEqual(
         t.sample.script.flatMap((l) => ("kind" in l ? [l.text] : [])),

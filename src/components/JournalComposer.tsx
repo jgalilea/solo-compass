@@ -16,6 +16,7 @@ import { useOracleContext } from "../hooks/useOracleContext";
 import { usePlayActions } from "../hooks/usePlayActions";
 import { showDraws } from "../lib/cards";
 import { Switch } from "./Switch";
+import { LikelihoodPicker } from "./LikelihoodPicker";
 import { interpolate } from "../lib/i18n";
 import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/journalUi";
 import { loadDraft, saveDraft } from "../lib/drafts";
@@ -24,7 +25,7 @@ import { toRollLine } from "../lib/rollLine";
 import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
 import { buildCast, formatTag, type CastMember } from "../lib/lonelogTags";
 import { normalizeForSearch } from "../lib/text";
-import { fitLikelihood } from "../lib/oracleEngines";
+import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
 import { getOracle } from "../lib/oracles";
 import { SCENE_CHECK_LIKELIHOOD, loadSceneCheck, saveSceneCheck, sceneVerdict, type SceneVerdict } from "../lib/sceneCheck";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
@@ -165,7 +166,7 @@ export function JournalComposer({
   const { t } = useLocaleContext();
   const { entries, addEntry } = useJournalContext();
   const { askOracle } = usePlayActions();
-  const { oracleId, likelihood } = useOracleContext();
+  const { oracleId, likelihood, setLikelihood } = useOracleContext();
   const [sceneCheck, setSceneCheck] = useState(loadSceneCheck);
   // The last scene test, so its consequence asks what the answer means.
   const [verdict, setVerdict] = useState<{ rollId: string; verdict: SceneVerdict } | null>(null);
@@ -258,7 +259,10 @@ export function JournalComposer({
   const pcs = cast.filter((c) => c.kind === "pc");
   // "PC: " is the only one there is, or the first of several.
   const pc = pcs.find((c) => speaker.pc && c.name === speaker.name) ?? pcs[0];
-  const isQuestion = (mode === "note" || mode === "action") && text.trim().endsWith("?");
+  // A question can go to the oracle from a note, an action or a
+  // consequence (where the composer lands after every roll); not from
+  // dialogue, where it's someone speaking.
+  const isQuestion = (mode === "note" || mode === "action" || mode === "consequence") && text.trim().endsWith("?");
 
   function askFromComposer() {
     const roll = askOracle(text.trim(), fitLikelihood(oracleId, likelihood), adventureId);
@@ -349,6 +353,15 @@ export function JournalComposer({
       className="group/composer sticky bottom-[calc(var(--spacing-nav)+env(safe-area-inset-bottom))] z-30 -mx-4 mt-auto border-t border-ink-border bg-ink-900/95 px-3 py-2.5 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border lg:bottom-0 lg:mb-0 lg:rounded-b-none lg:border-b-0 lg:px-3 lg:py-3"
     >
       <TagSuggestions state={tags.suggestions} placement="above" />
+      {isQuestion && (
+        // The likelihood the oracle will be asked with, in sight and one
+        // tap to change, before asking (it's the oracle's own, shared).
+        // A tap on it keeps the text focused: the keyboard stays up.
+        <div onPointerDown={keepTextFocus} className="mb-2 flex min-w-0 items-center gap-2 px-1">
+          <IconOracle size={14} className="shrink-0 text-gold" />
+          <LikelihoodPicker inline value={fitLikelihood(oracleId, likelihood)} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
+        </div>
+      )}
       {insertAfter ? (
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconInsertBelow size={14} className="shrink-0 text-gold" />
@@ -433,9 +446,12 @@ export function JournalComposer({
               aria-label={label}
               title={label}
               data-hotkey-open={id}
-              className="flex size-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold transition hover:bg-gold/20 active:scale-95"
+              className="flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 px-2.5 text-sm font-semibold text-gold transition hover:bg-gold/20 active:scale-95"
             >
               <Icon size={19} />
+              {/* With a tablet's width, named: just icons, above the nav's
+                  tabs with the same icons, read as a second nav. */}
+              <span aria-hidden className="max-md:hidden">{label}</span>
             </button>
           ))}
         </div>

@@ -14,7 +14,7 @@
  */
 
 import type { Dictionary } from "./i18n";
-import { formatAnswer } from "./i18n/answerText";
+import { formatAnswer, formatOracleDice } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
 import { formatFrontMatter, formatLine } from "./lonelog";
@@ -29,10 +29,21 @@ export function buildSampleAdventure(
 
   const lines = t.sample.script.map((line) => {
     if ("oracle" in line) {
-      const [white, black] = line.oracle;
-      const answer = formatAnswer(t, judgeDice(white, black));
-      const text = `${oracleName}: ${t.die.color.blanco} ${white} / ${t.die.color.negro} ${black} -> ${answer}`;
-      return formatLine({ kind: "roll", text });
+      const [white, black] = line.oracle.map((dice) => (Array.isArray(dice) ? dice : [dice]));
+      const verdict = judgeDice(Math.max(...white), Math.max(...black));
+      // Written as usePlayActions writes a Recluse roll, every die thrown.
+      const dice = formatOracleDice(t, {
+        kind: "oraculo",
+        id: "",
+        timestamp: 0,
+        question: "",
+        likelihood: "equilibrado",
+        white: { color: "blanco", rolls: white, kept: Math.max(...white) },
+        black: { color: "negro", rolls: black, kept: Math.max(...black) },
+        ...verdict,
+        favorite: false,
+      });
+      return formatLine({ kind: "roll", text: `${oracleName}: ${dice} -> ${formatAnswer(t, verdict)}` });
     }
     if ("table" in line) {
       const { table, total, result } = roll(line.table, line.roll);

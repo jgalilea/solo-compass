@@ -6,7 +6,9 @@ import { defineConfig, devices } from "@playwright/test";
  * served by `vite preview`. The deploy workflow runs it after the unit
  * tests, so a blank screen never goes live.
  */
-const port = 4173;
+// Not vite preview's own (4173): a preview left open there was taken for
+// this one, and the tests ran against an old build without a word.
+const port = 4174;
 
 export default defineConfig({
   testDir: "e2e",
@@ -28,6 +30,7 @@ export default defineConfig({
     // In CI the build is already there (the workflow builds before).
     command: `${process.env.CI ? "" : "npm run build && "}npx vite preview --port ${port} --strictPort`,
     port,
-    reuseExistingServer: !process.env.CI,
+    // Always this build: never a server that happens to be up.
+    reuseExistingServer: false,
   },
 });
