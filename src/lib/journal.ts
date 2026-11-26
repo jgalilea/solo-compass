@@ -47,6 +47,29 @@ export interface Adventure {
   oracle?: OracleId;
   /** When it was set (ms): the newer wins on a merge, like the notes. */
   oracleUpdatedAt?: number;
+  /**
+   * The dice on its game table, picked for it: built-in ones by name
+   * ("d20") and the player's own by id. None (or `ids` null, after going
+   * back to them): the favourites (diceFavorites.ts, savedRolls.ts).
+   */
+  gameDice?: AdventurePick;
+  /** Likewise the tables on its game table, by id; none: the favourite tables. */
+  gameTables?: AdventurePick;
+}
+
+/** What an adventure picked for itself; `ids` null: back to the favourites. Dated for a merge. */
+export interface AdventurePick {
+  ids: string[] | null;
+  updatedAt: number;
+}
+
+function normalizePick(value: unknown): AdventurePick | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (!isNumber(v.updatedAt)) return null;
+  if (v.ids === null) return { ids: null, updatedAt: v.updatedAt };
+  if (!Array.isArray(v.ids)) return null;
+  return { ids: v.ids.filter((id): id is string => typeof id === "string"), updatedAt: v.updatedAt };
 }
 
 /** Each one carries its date: the newer wins on a merge, one by one. */
@@ -99,7 +122,9 @@ export function normalizeAdventure(value: unknown): Adventure | null {
     const d = entry[1] as Record<string, unknown> | null;
     return !!d && typeof d.text === "string" && isNumber(d.updatedAt);
   });
-  const { notes, notesUpdatedAt, descriptions: _descriptions, oracle, oracleUpdatedAt, ...rest } = v;
+  const { notes, notesUpdatedAt, descriptions: _descriptions, oracle, oracleUpdatedAt, gameDice, gameTables, ...rest } = v;
+  const dicePick = normalizePick(gameDice);
+  const tablesPick = normalizePick(gameTables);
   return {
     ...rest,
     id: v.id,
@@ -115,6 +140,8 @@ export function normalizeAdventure(value: unknown): Adventure | null {
     ...(typeof oracle === "string" && isOracleId(oracle)
       ? { oracle, ...(isNumber(oracleUpdatedAt) ? { oracleUpdatedAt } : {}) }
       : {}),
+    ...(dicePick ? { gameDice: dicePick } : {}),
+    ...(tablesPick ? { gameTables: tablesPick } : {}),
   };
 }
 

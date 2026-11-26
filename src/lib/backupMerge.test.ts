@@ -70,6 +70,14 @@ describe("mergeData", () => {
     expect(one.adventures[0].oracle).toBe("opse");
   });
 
+  it("the game table's dice and tables: each the one picked last", () => {
+    const merged = mergeData(
+      data({ adventures: [adventure("a", { gameDice: { ids: ["d20"], updatedAt: 9 }, gameTables: { ids: ["x"], updatedAt: 1 } })] }),
+      data({ adventures: [adventure("a", { gameDice: { ids: ["d6"], updatedAt: 3 }, gameTables: { ids: null, updatedAt: 7 } })] }),
+    );
+    expect(merged.adventures[0]).toMatchObject({ gameDice: { ids: ["d20"] }, gameTables: { ids: null } });
+  });
+
   it("each description apart: the newer wins, and what's only on one side stays", () => {
     const merged = mergeData(
       data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "new", updatedAt: 9 }, "npc:odile": { text: "mine", updatedAt: 1 } } })] }),

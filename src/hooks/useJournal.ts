@@ -46,6 +46,8 @@ interface UseJournalResult {
   setAdventureNotes: (id: string, notes: string) => void;
   /** The oracle it's played with (AdventureOracleScope). */
   setAdventureOracle: (id: string, oracle: OracleId) => void;
+  /** The dice or tables on its game table; null: back to the favourites. */
+  setAdventurePick: (id: string, which: "gameDice" | "gameTables", ids: string[] | null) => void;
   setCastDescription: (adventureId: string, key: string, text: string) => void;
   /** Returns the new entry's id. */
   addEntry: (
@@ -274,6 +276,14 @@ export function useJournal(): UseJournalResult {
     [updateAdventures],
   );
 
+  // Like the oracle: no trace and no jump in the list.
+  const setAdventurePick = useCallback(
+    (id: string, which: "gameDice" | "gameTables", ids: string[] | null) => {
+      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, [which]: { ids, updatedAt: Date.now() } } : a)));
+    },
+    [updateAdventures],
+  );
+
   // Writing below an entry: every new entry of that adventure (typed,
   // or from the oracle, tables and dice) goes there, each one after the
   // previous. Kept in a ref as well as in state because a single event
@@ -390,6 +400,7 @@ export function useJournal(): UseJournalResult {
     setAdventureStatus,
     setAdventureNotes,
     setAdventureOracle,
+    setAdventurePick,
     setCastDescription,
     addEntry,
     removeEntry,

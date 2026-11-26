@@ -59,14 +59,18 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     for (const [key, d] of Object.entries(theirs.descriptions ?? {})) {
       if (d.updatedAt > (descriptions[key]?.updatedAt ?? -1)) descriptions[key] = d;
     }
-    // The oracle picked last, on either device.
+    // The oracle picked last, on either device; the game table's dice and tables, each the same way.
     const oracle = (theirs.oracleUpdatedAt ?? 0) > (mine.oracleUpdatedAt ?? 0) ? theirs : mine;
+    const gameDice = (theirs.gameDice?.updatedAt ?? 0) > (mine.gameDice?.updatedAt ?? 0) ? theirs.gameDice : mine.gameDice;
+    const gameTables = (theirs.gameTables?.updatedAt ?? 0) > (mine.gameTables?.updatedAt ?? 0) ? theirs.gameTables : mine.gameTables;
     return {
       ...base,
       notes: notes.notes,
       notesUpdatedAt: notes.notesUpdatedAt,
       ...(Object.keys(descriptions).length ? { descriptions } : {}),
       ...(oracle.oracle ? { oracle: oracle.oracle, oracleUpdatedAt: oracle.oracleUpdatedAt } : {}),
+      ...(gameDice ? { gameDice } : {}),
+      ...(gameTables ? { gameTables } : {}),
     };
   }).filter((a) => !gone.has(a.id));
   const kept = new Set(adventures.map((a) => a.id));

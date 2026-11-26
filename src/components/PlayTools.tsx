@@ -25,7 +25,7 @@ import { announce } from "../lib/announce";
 import { DiceHelp } from "./DiceHelp";
 import { readRolledDice, rollAgain, rollFormula, withEdge, type Edge } from "../lib/diceNotation";
 import { isRollable, rollSaved, savedRollLabel } from "../lib/savedRolls";
-import { BUILTIN_DICE, type BuiltinDie } from "../lib/dice";
+import { BUILTIN_DICE, BUILTIN_DIE_SIDES, type BuiltinDie } from "../lib/dice";
 import { loadFavoriteDice } from "../lib/diceFavorites";
 import { Link } from "react-router-dom";
 import { useSavedRollsContext } from "../hooks/useSavedRollsContext";
@@ -33,7 +33,9 @@ import { LikelihoodPicker } from "./LikelihoodPicker";
 import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
 import { TwistCounter } from "./TwistCounter";
-import { IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconRepeat, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import { IconAdjust, IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconRepeat, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import { gameTableDice, gameTableIds, pickedIds } from "../lib/gameTablePicks";
+import { GameDicePicker, GameTablesPicker } from "./GameTablePickers";
 import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
 import { generatorGames, generatorTables } from "../lib/generators";
 
@@ -99,23 +101,29 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
   const { t } = useLocaleContext();
   const { rollTable, rollInspiration, rollGenerator } = usePlayActions();
   const { generators, load: loadGenerators } = useGeneratorsContext();
+  const { adventures } = useJournalContext();
   useEffect(() => loadGenerators(), [loadGenerators]);
   const [query, setQuery] = useState("");
+  const [picking, setPicking] = useState(false);
   const favorites = useMemo(() => loadFavoriteTableIds(), []);
-  // Only the favourites are listed; the rest are reached by searching,
-  // so a long list of tables doesn't push everything else out of sight.
-  // Likewise, only the favourites' games are loaded until you search.
+  // The adventure's own tables, or, until it picks them, the favourites.
+  const pick = adventures.find((a) => a.id === adventureId)?.gameTables;
+  const onTableKey = [...gameTableIds(pick, favorites)].join(" ");
+  const onTable = useMemo(() => new Set(onTableKey ? onTableKey.split(" ") : []), [onTableKey]);
+  // Only those are listed; the rest are reached by searching, so a long
+  // list of tables doesn't push everything else out of sight. Likewise,
+  // only their games are loaded until you search.
   const q = normalizeForSearch(query.trim());
-  const favoriteGames = useMemo(
+  const tableGames = useMemo(
     () => [
       "solo-compass" as const,
-      ...[...favorites].map(gameOfTable).filter((id) => id !== undefined),
+      ...[...onTable].map(gameOfTable).filter((id) => id !== undefined),
       // What the player's generators roll on.
       ...generatorGames(generators),
     ],
-    [favorites, generators],
+    [onTable, generators],
   );
-  const { all, blocks, inspiration } = useMeaningTables(q ? "all" : favoriteGames);
+  const { all, blocks, inspiration } = useMeaningTables(q ? "all" : tableGames);
   const loading = blocks.some((b) => b.status === "loading");
   const visible = q
     ? all.filter(
@@ -124,7 +132,7 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
           normalizeForSearch(table.game.name).includes(q) ||
           (!!table.theme && normalizeForSearch(t.tables.themes[table.theme]).includes(q)),
       )
-    : all.filter((table) => favorites.has(table.id));
+    : all.filter((table) => onTable.has(table.id));
 
   function roll(table: MeaningTable) {
     onRolled(rollTable(table, adventureId, all).id);
@@ -207,6 +215,18 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
           </li>
         ))}
       </ul>
+      {/* Which tables this adventure keeps at hand (not while searching all of them). */}
+      {!q && (
+        <button
+          type="button"
+          onClick={() => setPicking(true)}
+          className="flex items-center gap-1.5 self-start rounded-xl border border-dashed border-ink-border px-3 py-2 text-sm text-parchment-dim transition hover:border-gold/50 hover:text-gold pointer-coarse:py-2.5"
+        >
+          <IconAdjust size={15} />
+          {t.gameTable.pickTables}
+        </button>
+      )}
+      {picking && <GameTablesPicker adventureId={adventureId} onClose={() => setPicking(false)} />}
     </div>
   );
 }
@@ -240,13 +260,18 @@ export function DiceTool({
   handle,
 }: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all"; handle?: Ref<DiceToolHandle> }) {
   const { t } = useLocaleContext();
-  const { addEntry, entries: journalEntries } = useJournalContext();
+  const { addEntry, entries: journalEntries, adventures, setAdventurePick } = useJournalContext();
   const { rolls: savedRolls, load: loadSavedRolls, addRoll } = useSavedRollsContext();
   const { addEntry: addHistoryEntry } = useHistoryContext();
   useEffect(() => loadSavedRolls(), [loadSavedRolls]);
   const [favoriteDice] = useState(loadFavoriteDice);
-  const builtins = dice === "all" ? BUILTIN_DICE : BUILTIN_DICE.filter((d) => favoriteDice.has(d));
-  const own = dice === "all" ? savedRolls : savedRolls.filter((r) => r.favorite);
+  // On the game table, the adventure's own dice, or, until it picks them, the favourites.
+  const dicePick = adventureId ? adventures.find((a) => a.id === adventureId)?.gameDice : undefined;
+  const onTable = gameTableDice(dicePick, favoriteDice, savedRolls);
+  const builtins = dice === "all" ? BUILTIN_DICE : onTable.builtins;
+  const own = dice === "all" ? savedRolls : onTable.own;
+  const canPick = dice === "favorites" && !!adventureId;
+  const [picking, setPicking] = useState(false);
   const [label, setLabel] = useState("");
   const [tray, setTray] = useState<TrayItem[]>([]);
   const rolls = tray.map((item) => item.text);
@@ -384,7 +409,7 @@ export function DiceTool({
                     className="flex h-16 flex-col items-center justify-center gap-0.5 rounded-xl border border-ink-border bg-ink-900/50 text-sm font-medium text-parchment transition hover:border-gold/50 hover:text-gold active:scale-95"
                   >
                     <span className="text-gold">
-                      <DieOutline sides={DIE_SIDES[die]} />
+                      <DieOutline sides={BUILTIN_DIE_SIDES[die]} />
                     </span>
                     {die}
                   </button>
@@ -418,7 +443,7 @@ export function DiceTool({
                   {savedRollLabel(roll)}
                 </button>
               ))}
-              {builtins.length + own.length === 0 && (
+              {builtins.length + own.length === 0 && pickedIds(dicePick) === null && (
                 <p className="text-xs text-parchment-dim">
                   {t.dice.noFavorites}{" "}
                   <Link to="/dados" className="font-medium text-gold underline decoration-dotted hover:text-gold-soft">
@@ -426,6 +451,18 @@ export function DiceTool({
                   </Link>
                 </p>
               )}
+              {/* Which dice this adventure keeps at hand. */}
+              {canPick && (
+                <button
+                  type="button"
+                  onClick={() => setPicking(true)}
+                  className={`${DIE_CHIP} gap-1.5 border-dashed border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold`}
+                >
+                  <IconAdjust size={15} />
+                  {t.gameTable.pickDice}
+                </button>
+              )}
+              {picking && adventureId && <GameDicePicker adventureId={adventureId} onClose={() => setPicking(false)} />}
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {(
@@ -502,7 +539,10 @@ export function DiceTool({
                 <button
                   type="button"
                   onClick={() => {
-                    addRoll({ name: label.trim(), formula }, true);
+                    const saved = addRoll({ name: label.trim(), formula }, true);
+                    // Saved here, it's on this table even if the adventure picked its own dice.
+                    const picked = pickedIds(dicePick);
+                    if (adventureId && picked) setAdventurePick(adventureId, "gameDice", [...picked, saved.id]);
                     setJustSaved(true);
                     window.setTimeout(() => setJustSaved(false), 1500);
                   }}
@@ -669,8 +709,6 @@ export function DiceTool({
 const DIE_CHIP =
   "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11 pointer-coarse:min-w-12";
 
-/** The silhouette each built-in die's button shows. */
-const DIE_SIDES: Record<BuiltinDie, number> = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12, d20: 20, "d%": 100, "4dF": 6 };
 
 /** A roll waiting in the tray (a card keeps which, so it's out of the deck meanwhile). */
 interface TrayItem {

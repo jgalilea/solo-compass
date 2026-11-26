@@ -85,6 +85,27 @@ export interface Dictionary {
     keepScreenOnLabel: string;
     keepScreenOnHint: string;
   };
+  /** Picking the dice and tables on an adventure's game table (GameTablePickers). */
+  gameTable: {
+    pickDice: string;
+    pickTables: string;
+    diceTitle: string;
+    tablesTitle: string;
+    note: string;
+    following: string;
+    builtin: string;
+    own: string;
+    noOwn: string;
+    onTable: string;
+    noneOnTable: string;
+    searchLabel: string;
+    searchPlaceholder: string;
+    add: string;
+    remove: string;
+    more: string;
+    reset: string;
+    done: string;
+  };
   dice: {
     title: string;
     loggingTo: string;

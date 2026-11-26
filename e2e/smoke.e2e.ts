@@ -340,3 +340,50 @@ test("each adventure keeps its own oracle", async ({ page }) => {
   await page.goto("./#/");
   await expect(page.getByRole("button", { name: "Cambiar oráculo" })).toContainText("Ironsworn");
 });
+
+/** The dice and tables on an adventure's game table, picked for it, there and only there. */
+test("each adventure keeps its own dice and tables at hand", async ({ page }) => {
+  const create = async (name: string) => {
+    await page.goto("./#/diario");
+    await page.getByRole("button", { name: "Nueva aventura" }).click();
+    await page.getByPlaceholder("Nombre de la aventura").fill(name);
+    await page.getByRole("button", { name: "Crear" }).click();
+    await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+  };
+  // A tool of the game table: a tab of the sheet on phones, a panel on desktop.
+  const tool = async (tab: "Dados" | "Tabla", hotkey: "dice" | "table") => {
+    const panel = page.locator(`[data-hotkey="${hotkey}"]`).filter({ visible: true });
+    const opener = page.getByRole("button", { name: "Tirar: oráculo, dados o tablas" });
+    const tabButton = page.getByRole("tab", { name: tab });
+    await expect(panel.or(tabButton).or(opener).first()).toBeVisible();
+    if (await panel.isVisible()) return panel;
+    // The sheet open on another tab, or closed.
+    if (!(await tabButton.isVisible())) await opener.click();
+    await tabButton.click();
+    return panel;
+  };
+
+  await create("Los dados");
+  let dice = await tool("Dados", "dice");
+  await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeVisible();
+  await dice.getByRole("button", { name: "Elegir dados" }).click();
+  const diceDialog = page.getByRole("dialog", { name: "Dados de esta aventura" });
+  await diceDialog.getByRole("button", { name: "d4", exact: true }).click();
+  await diceDialog.getByRole("button", { name: "Hecho", exact: true }).click();
+  await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeHidden();
+  await expect(dice.getByRole("button", { name: "d20", exact: true })).toBeVisible();
+
+  const tables = await tool("Tabla", "table");
+  await tables.getByRole("button", { name: "Elegir tablas" }).click();
+  const tablesDialog = page.getByRole("dialog", { name: "Tablas de esta aventura" });
+  await tablesDialog.getByRole("searchbox").fill("Nombre de asentamiento");
+  await tablesDialog.getByRole("button", { name: "Añadir Nombre de asentamiento", exact: true }).first().click();
+  await tablesDialog.getByRole("button", { name: "Hecho", exact: true }).click();
+  await expect(tables.getByRole("button", { name: /^Nombre de asentamiento/ }).first()).toBeVisible();
+
+  // Another adventure keeps the usual ones.
+  await create("Otra");
+  dice = await tool("Dados", "dice");
+  await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeVisible();
+  await expect((await tool("Tabla", "table")).getByRole("button", { name: /^Nombre de asentamiento/ })).toHaveCount(0);
+});

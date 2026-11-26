@@ -61,9 +61,12 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
   `AdventureOracleScope` se lo da a su pantalla y a la del Oráculo mientras es la
   activa. La estrella es el de siempre: el de las aventuras que aún no han usado
   ninguno y el del Oráculo sin aventura activa. Viaja en la copia y se fusiona por
-  `oracleUpdatedAt`; no va en el `.md` (Lonelog no tiene sitio). **Siguiente (P2):**
-  los dados y las tablas de la mesa de juego de cada aventura (empiezan con tus
-  favoritos; «Ajustar» en su mesa para elegir los suyos).
+  `oracleUpdatedAt`; no va en el `.md` (Lonelog no tiene sitio).
+- Los dados y las tablas de cada aventura (2026-11-26, 1.8.0): `gameDice` y
+  `gameTables` en `Adventure` (ids, con fecha para la fusión; `null` vuelve a los
+  favoritos). «Elegir dados» y «Elegir tablas» en su mesa de juego abren
+  `GameTablePickers`; hasta que se elige algo, salen los favoritos de siempre
+  (`gameTablePicks.ts`). Un dado guardado desde esa mesa entra en lo elegido.
 - Lonelog 1.7 y sus complementos (2026-11-25, 1.5.0): reglas de etiquetas
   (`a>b`, categorías, `×N`, bloque multilínea que reinicia, `#` que no cambia
   nada), sucesos `[E:]`, mazos `[Deck:]`, bolsas con dueño, salas y enemigos con

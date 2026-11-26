@@ -25,6 +25,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.8.0",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXV · Lo que hay en cada mesa",
+        intro: "En la mesa de Ironsworn, los d10 y las tablas de asentamientos; en la del castillo, el d20 y los nombres de nobles. Mara ya no recoge los dados al cambiar de partida.",
+        items: [
+          "Cada aventura tiene sus dados y sus tablas a mano en la mesa de juego: «Elegir dados» y «Elegir tablas» abren la lista para quitar y poner los que quieras.",
+          "Mientras no elijas nada, salen tus favoritos de siempre, como hasta ahora. En cuanto cambias uno, son solo de esa aventura; «Volver a mis favoritos» lo deshace.",
+          "Un dado que guardas desde la mesa de juego de una aventura sale también en ella.",
+          "Lo que eliges para cada aventura viaja en la copia de seguridad.",
+        ],
+      },
+      en: {
+        title: "Chapter XXV · What's on each table",
+        intro: "On the Ironsworn table, the d10s and the settlement tables; on the castle's, the d20 and the nobles' names. Mara no longer packs the dice away when she switches games.",
+        items: [
+          "Each adventure keeps its own dice and tables at hand on the game table: “Pick dice” and “Pick tables” open the list to take out and put in whichever you like.",
+          "Until you pick anything, your usual favorites are there, as before. As soon as you change one, they're that adventure's own; “Back to my favorites” undoes it.",
+          "A die you save from an adventure's game table is on that table too.",
+          "What you pick for each adventure travels in the backup.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.7.0",
     date: "2026-11-26",
     text: {

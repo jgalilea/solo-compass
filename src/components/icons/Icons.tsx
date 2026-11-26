@@ -74,6 +74,11 @@ export function IconJournal(props: IconProps) {
 export function IconHistory(props: IconProps) {
   return <TablerIcon icon={Tabler.IconHistory} {...props} />;
 }
+/** Choosing what's on a game table (its dice, its tables). */
+export function IconAdjust(props: IconProps) {
+  return <TablerIcon icon={Tabler.IconAdjustmentsHorizontal} {...props} />;
+}
+
 export function IconSettings(props: IconProps) {
   return <TablerIcon icon={Tabler.IconSettings} {...props} />;
 }

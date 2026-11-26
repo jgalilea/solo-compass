@@ -50,6 +50,19 @@ describe("normalizeAdventure", () => {
     expect(unknown).not.toHaveProperty("oracleUpdatedAt");
   });
 
+  it("keeps the dice and tables picked for its game table, dropping what isn't an id", () => {
+    const a = normalizeAdventure({
+      id: "a",
+      name: "A",
+      gameDice: { ids: ["d20", 3, "attack"], updatedAt: 2 },
+      gameTables: { ids: null, updatedAt: 4 },
+    });
+    expect(a).toMatchObject({ gameDice: { ids: ["d20", "attack"], updatedAt: 2 }, gameTables: { ids: null, updatedAt: 4 } });
+    const broken = normalizeAdventure({ id: "a", name: "A", gameDice: { ids: "d20" }, gameTables: ["x"] });
+    expect(broken).not.toHaveProperty("gameDice");
+    expect(broken).not.toHaveProperty("gameTables");
+  });
+
   it("rejects what has no id or name, and drops broken descriptions", () => {
     expect(normalizeAdventure({ name: "A" })).toBeNull();
     expect(normalizeAdventure(null)).toBeNull();

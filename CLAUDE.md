@@ -244,7 +244,7 @@ No backend; persistence is split by access pattern, not by feature:
   share sheet, as `.txt` on Chromium), and restores it either by
   **merging** with this device's data (`backupMerge.ts`: union by id,
   newer edit wins via `editedAt`/`updatedAt`/`notesUpdatedAt`/
-  `oracleUpdatedAt`) or by
+  `oracleUpdatedAt`, and the game table's picks by their own date) or by
   replacing it; then reloads so every context picks up the result.
   Deletions are recorded by id (`deletions.ts`, also in the backup) so a
   merge doesn't bring back what was deleted on either device: anything
@@ -554,7 +554,7 @@ the session in a tiny external store (`loadGame`, read with
 works offline. Screens say which games they need through
 `useMeaningTables(games)`: the Tables screen asks for Solo Compass's
 (quick inspiration), unfolded blocks and the favourites' games, and
-`"all"` while searching; the game table, the favourites' games until
+`"all"` while searching; the game table, its tables' games until
 you search. Never import a data file statically (that pulls it back into
 the main bundle); outside React use `loadMeaningTables`. A test keeps
 each game's `count` and ids in step with its data. Adding a game: a data
@@ -627,10 +627,16 @@ a formula, `savedRolls.ts`), where they're made and starred (the
 built-in favourites as chips under "On your game table"). Wide enough
 (`@xl`), `DiceTool` puts the dice on the left and the tray on the right;
 on a phone "Log it" stays pinned above the nav while rolls wait. The game
-table's `DiceTool` shows only the favorite dice, built-in
+table's `DiceTool` shows only the dice on that adventure's table, and
+its `TableTool` only its tables (the rest by searching): what the
+adventure picked for itself (`gameDice`/`gameTables` on `Adventure`,
+ids, dated for a merge; "Pick dice"/"Pick tables" open
+`GameTablePickers`, "Back to my favorites" sets them to null) or, until
+it picks, the favorites (`gameTablePicks.ts`): built-in dice
 (`diceFavorites.ts`, localStorage, all of them until changed; in the
-backup's settings) or their own; a typed formula can be saved from it
-as a favorite die of one's own.
+backup's settings), the player's starred dice and the starred tables
+(`tableFavorites.ts`). A typed formula can be saved from it as a
+favorite die of one's own, which joins that adventure's pick too.
 The tray is a preview: nothing is kept until "Log it" (the journal
 entry, and one history roll per die, kind `"dados"`, its text as the
 journal writes it; starred and filtered there like the oracle's and
