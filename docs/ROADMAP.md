@@ -9,6 +9,32 @@ Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
 
 ## Hecho recientemente
 
+- Análisis de rendimiento, optimización y seguridad (2026-11-26, 1.10.0):
+  - **Rendimiento**: sin cuellos de botella. Primera visita ~1,37 s en
+    4G lento simulado, repetida 0,14 s; con 11.000 entradas y 10.000
+    tiradas todo por dentro de los límites (abrir la aventura grande
+    ~0,5 s). Contextos, listas por tramos y fuentes, bien.
+  - **Optimización**: lo que se descarga antes del primer pintado, de
+    154 a 134 kB comprimidos. Los textos largos (guion del ejemplo,
+    ayuda de dados y oráculo, guía) fuera del diccionario (`LongTexts`,
+    eran el 43 %); un módulo por icono (35 en la primera carga en vez de
+    99); el formato de texto de las tablas propias y los créditos,
+    aparte. El tiempo de primer pintado simulado no cambió: lo marca la
+    latencia, no el tamaño.
+  - **Seguridad**: cualquier web puede mandar un archivo al
+    `share_target` (no se distingue del menú «Compartir»): ahora lo
+    compartido avisa, «Sustituir todo» pide confirmación y el service
+    worker limita el tamaño total. CSP como `<meta>` con huellas de los
+    scripts incrustados. Sin `eval` ni HTML sin escapar; enlaces externos
+    con `noreferrer`; CI con permisos mínimos; `npm audit` a 0.
+  - Dejado como está: fijar las acciones de GitHub por hash (solo son
+    las oficiales y Dependabot las actualiza), cambiar React por Preact o
+    quitar React Router (mucho cambio para ~12–45 kB). El origen
+    `jgalilea.github.io` es compartido con los demás proyectos del
+    usuario en Pages: no alojar ahí código de terceros.
+  - También en 1.10.0: «Exportar el relato» desde el modo zen y la
+    aclaración de que las consecuencias se quedan.
+
 - Capítulo XXVI, 1.9.0 (2026-11-26), de una ronda de ideas con el autor:
   - **Archivos de fuera**: soltarlos en la ventana, «Abrir con» la app
     instalada (`file_handlers`, Chromium de escritorio) y «Compartir» en

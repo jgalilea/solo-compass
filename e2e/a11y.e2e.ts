@@ -110,4 +110,20 @@ test("dialogs pass axe", async ({ page }) => {
   await page.getByRole("menuitem", { name: "Continuar en una aventura nueva" }).click();
   await expect(page.getByRole("dialog", { name: "Continuar en una aventura nueva" })).toBeVisible();
   await expectNoViolations(page, "continue");
+  await page.keyboard.press("Escape");
+
+  // A backup dropped on the window, and "Replace everything" asking again.
+  const transfer = await page.evaluateHandle((text) => {
+    const page = globalThis as unknown as {
+      DataTransfer: new () => { items: { add(file: object): void } };
+      File: new (parts: unknown[], name: string, options: { type: string }) => object;
+    };
+    const t = new page.DataTransfer();
+    t.items.add(new page.File([text], "copia.json", { type: "application/json" }));
+    return t;
+  }, JSON.stringify({ app: "solo-compass", schemaVersion: 6, exportedAt: "", history: [], journal: { adventures: [], entries: [] } }));
+  await page.dispatchEvent("main", "drop", { dataTransfer: transfer });
+  await page.getByRole("button", { name: /Sustituir todo/ }).click();
+  await expect(page.getByText(/No se puede deshacer/)).toBeVisible();
+  await expectNoViolations(page, "restore");
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readNoteLine } from "./noteMarkdown";
-import { DICTIONARIES } from "./i18n/allDictionaries";
+import { DICTIONARIES, LONG_TEXTS } from "./i18n/allDictionaries";
 import type { SampleLine } from "./i18n/types";
 import { loadMeaningTables } from "./tableGames";
 import { buildSampleAdventure } from "./sampleAdventure";
@@ -25,33 +25,33 @@ const shapeOf = (l: SampleLine) =>
 
 async function build(lang: "es" | "en") {
   const t = DICTIONARIES[lang];
-  const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
+  const { markdown } = buildSampleAdventure(t, LONG_TEXTS[lang].sample, await loadMeaningTables("solo-compass", t, lang));
   return { t, markdown, entries: parseMarkdownToEntries(markdown, "a", 0) };
 }
 
 describe("sample adventure", () => {
   it("has the same script (kinds, dice and dates) in every language", () => {
-    expect(DICTIONARIES.en.sample.script.map(shapeOf)).toEqual(DICTIONARIES.es.sample.script.map(shapeOf));
+    expect(LONG_TEXTS.en.sample.script.map(shapeOf)).toEqual(LONG_TEXTS.es.sample.script.map(shapeOf));
   });
 
   for (const lang of ["es", "en"] as const) {
     it(`imports in full with the oracle answers recognised (${lang})`, async () => {
       const { t, markdown, entries } = await build(lang);
       expect(markdown).not.toMatch(/undefined|\{\w+\}/);
-      expect(entries).toHaveLength(t.sample.script.length);
+      expect(entries).toHaveLength(LONG_TEXTS[lang].sample.script.length);
       expect(entries.map((e) => e.kind)).toEqual(
-        t.sample.script.map((l) => ("kind" in l ? l.kind : "roll")),
+        LONG_TEXTS[lang].sample.script.map((l) => ("kind" in l ? l.kind : "roll")),
       );
 
       const answers = entries
-        .filter((_, i) => "oracle" in t.sample.script[i])
+        .filter((_, i) => "oracle" in LONG_TEXTS[lang].sample.script[i])
         .map((e) => splitRollText(e.text).answer);
       expect(answers).toEqual(["si", "si", "no", "contradiccion", "no", "si"]);
       // Each roll throws the dice its question's likelihood asks for
       // (written as askedQuestion writes it), as a real game would.
-      t.sample.script.forEach((line, i) => {
+      LONG_TEXTS[lang].sample.script.forEach((line, i) => {
         if (!("oracle" in line)) return;
-        const question = t.sample.script[i - 1];
+        const question = LONG_TEXTS[lang].sample.script[i - 1];
         const likelihood =
           (Object.keys(LIKELIHOOD_DICE) as Likelihood[])
             .filter((l) => l !== "equilibrado")
@@ -60,8 +60,8 @@ describe("sample adventure", () => {
         expect({ white, black }, `${"kind" in question ? question.text : ""}`).toEqual(LIKELIHOOD_DICE[likelihood]);
       });
       // Word for word: nothing in it is split or read as something else.
-      expect(entries.filter((_, i) => "kind" in t.sample.script[i]).map((e) => e.text)).toEqual(
-        t.sample.script.flatMap((l) => ("kind" in l ? [l.text] : [])),
+      expect(entries.filter((_, i) => "kind" in LONG_TEXTS[lang].sample.script[i]).map((e) => e.text)).toEqual(
+        LONG_TEXTS[lang].sample.script.flatMap((l) => ("kind" in l ? [l.text] : [])),
       );
       const again = parseMarkdownToEntries(exportAdventureToMarkdown(t, "A", entries), "a", 0);
       expect(again.map((e) => [e.kind, e.text, e.date])).toEqual(entries.map((e) => [e.kind, e.text, e.date]));
@@ -130,7 +130,7 @@ describe("sample adventure", () => {
 describe("sample adventure notebook", () => {
   for (const lang of ["es", "en"] as const) {
     it(`fills every section of the notebook (${lang})`, async () => {
-      const { t, markdown, entries } = await build(lang);
+      const { markdown, entries } = await build(lang);
       const cast = buildCast(entries);
       expect(new Set(cast.map((c) => c.kind))).toEqual(
         new Set(["pc", "npc", "place", "thread", "clock", "track", "timer", "event", "room", "foe", "item", "wealth", "deck"]),
@@ -146,11 +146,11 @@ describe("sample adventure notebook", () => {
       expect(one("track").progress).toEqual({ value: 4, max: 4 });
       expect(cast.filter((c) => c.kind === "thread").map((c) => threadStatus(c))).toEqual(["closed", "open"]);
 
-      expect(parseNotesFromMarkdown(markdown)).toBe(t.sample.notes);
+      expect(parseNotesFromMarkdown(markdown)).toBe(LONG_TEXTS[lang].sample.notes);
       // The notes show what they can draw: headings, checkboxes, a quote, bold.
-      const noteKinds = new Set(t.sample.notes.split("\n").map((line) => readNoteLine(line).kind));
+      const noteKinds = new Set(LONG_TEXTS[lang].sample.notes.split("\n").map((line) => readNoteLine(line).kind));
       for (const kind of ["heading", "check", "quote"] as const) expect(noteKinds).toContain(kind);
-      expect(t.sample.notes).toMatch(/\*\*\S[^*]*\S\*\*/);
+      expect(LONG_TEXTS[lang].sample.notes).toMatch(/\*\*\S[^*]*\S\*\*/);
       const descriptions = parseDescriptionsFromMarkdown(markdown);
       expect(Object.keys(descriptions)).toHaveLength(4);
       // Each description belongs to someone in the journal.

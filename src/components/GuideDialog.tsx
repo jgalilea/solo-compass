@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { useLongTexts } from "../hooks/useLongTexts";
 import type { GuideRow } from "../lib/i18n/types";
 import { closeGuide, isGuideOpen, subscribeGuide } from "../lib/guide";
 import { DialogBody, DialogHeader } from "./Dialog";
@@ -17,8 +18,11 @@ import { IconHelp } from "./icons/Icons";
 export function GuideDialog() {
   const { t } = useLocaleContext();
   const open = useSyncExternalStore(subscribeGuide, isGuideOpen);
+  // Layout draws it only once it's opened, under a <Suspense>: its texts
+  // (LongTexts) are loaded apart.
+  const long = useLongTexts();
   if (!open) return null;
-  const g = t.guide;
+  const g = { ...t.guide, ...long.guide };
 
   return (
     <Modal onClose={closeGuide} label={g.title} size="lg">

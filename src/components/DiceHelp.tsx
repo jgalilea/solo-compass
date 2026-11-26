@@ -1,5 +1,7 @@
 import { toRollLine } from "../lib/rollLine";
+import { Suspense } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { useLongTexts } from "../hooks/useLongTexts";
 import { HelpDialog, HelpHeading } from "./HelpDialog";
 
 /**
@@ -10,10 +12,21 @@ import { HelpDialog, HelpHeading } from "./HelpDialog";
  */
 export function DiceHelp() {
   const { t } = useLocaleContext();
-  const help = t.diceHelp;
+  return (
+    <HelpDialog button={t.diceHelp.button} title={t.diceHelp.title}>
+      {/* Its texts are loaded apart (LongTexts), when it's opened. */}
+      <Suspense fallback={null}>
+        <DiceHelpContent />
+      </Suspense>
+    </HelpDialog>
+  );
+}
+
+function DiceHelpContent() {
+  const help = useLongTexts().diceHelp;
 
   return (
-    <HelpDialog button={help.button} title={help.title}>
+    <>
       <p className="text-sm text-parchment">{help.intro}</p>
 
       <div className="grid gap-5 md:grid-cols-2 md:gap-6">
@@ -119,6 +132,6 @@ export function DiceHelp() {
           </li>
         </ul>
       </section>
-    </HelpDialog>
+    </>
   );
 }

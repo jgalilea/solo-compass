@@ -9,13 +9,18 @@
  * Loaded into the service worker by workbox's `importScripts`
  * (vite.config.ts). Nothing leaves the device: the files go from the
  * form straight into this origin's cache.
+ *
+ * Any web page can post a form here, not only the system's share
+ * sheet (they can't be told apart): what comes is never imported by
+ * itself, the app shows it and asks, and says it came shared. Here it
+ * only has limits, so it can't fill the device.
  */
 
 const SHARED_CACHE = "solo-compass-shared-files";
-// Never more than the app will open, nor anything near this big
-// (fileImport.ts refuses past 64 MB anyway).
+// Never more than the app will open, nor anything near this big, in
+// all (fileImport.ts refuses a file past 64 MB anyway).
 const MAX_FILES = 10;
-const MAX_BYTES = 64 * 1024 * 1024;
+const MAX_TOTAL_BYTES = 64 * 1024 * 1024;
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -34,8 +39,10 @@ self.addEventListener("fetch", (event) => {
         await caches.delete(SHARED_CACHE);
         const cache = await caches.open(SHARED_CACHE);
         let index = 0;
+        let total = 0;
         for (const file of files) {
-          if (file.size > MAX_BYTES) continue;
+          if (total + file.size > MAX_TOTAL_BYTES) continue;
+          total += file.size;
           await cache.put(
             new Request(new URL(`shared-file/${index++}`, self.registration.scope)),
             new Response(file, {

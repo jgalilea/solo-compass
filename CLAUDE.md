@@ -220,6 +220,15 @@ No backend; persistence is split by access pattern, not by feature:
   browser. The app makes no request outside its own origin (the only
   `fetch` is its own fonts, for the HTML export); everything external
   is a link the player opens. Keep it that way, or change the note.
+- **Content Security Policy** (`contentSecurityPolicyPlugin` in
+  `vite.config.ts`): a `<meta>` first in `<head>` (Pages can't send
+  headers), built pages only. Scripts only from the app and the two
+  inline ones in `index.html` (theme, language preload), allowed by a
+  hash worked out at build; every request on the app's own origin
+  (`connect-src 'self'`, the privacy note in code); styles keep
+  `'unsafe-inline'`. A blocked script is a console error, so the e2e
+  catch it; `smoke.e2e.ts` checks the policy is there. Something new
+  that needs another origin or an inline script means changing it.
 - **Ideas and bugs** (Settings → About, `FeedbackCard`): a link to a
   Tally form, one per language (`FEEDBACK_FORMS` in `support.ts`),
   opened in a new tab (an embedded form would load Tally inside the
@@ -265,7 +274,11 @@ No backend; persistence is split by access pattern, not by feature:
   type it knows, so `share_target` also takes `application/octet-stream`;
   `public/share-target.js`, loaded into the service worker by workbox's
   `importScripts`, keeps the posted files in a cache of their own and
-  sends the app to `#/?compartido`, `takeSharedFiles`). They wait in
+  sends the app to `#/?compartido`, `takeSharedFiles`; any web page can
+  post a form there too, and the two can't be told apart, so a shared
+  file is never imported by itself, the dialog says it came shared and
+  to close it if it wasn't you, and the worker caps what it keeps). Each
+  waits with how it came (`FileSource`) in
   `incomingFiles.ts` (main bundle, small) for `IncomingFileDialog`
   (preloadable, with what reads files): what it is, then import as a new
   adventure, tables (handed to `TablesView` in the navigation state) or
@@ -285,7 +298,8 @@ No backend; persistence is split by access pattern, not by feature:
   **merging** with this device's data (`backupMerge.ts`: union by id,
   newer edit wins via `editedAt`/`updatedAt`/`notesUpdatedAt`/
   `oracleUpdatedAt`, and the game table's picks by their own date) or by
-  replacing it; then reloads so every context picks up the result.
+  replacing it ("Replace everything" asks again in `RestoreChoice`: it
+  wipes the device, and a file can arrive unasked); then reloads so every context picks up the result.
   Deletions are recorded by id (`deletions.ts`, also in the backup) so a
   merge doesn't bring back what was deleted on either device: anything
   new that deletes data must call `recordDeletions` (and its undo
@@ -417,14 +431,14 @@ any roll the composer switches to "Consecuencia").
 
 Offered only as a discreet link in the empty-journal state (never
 created on its own, and opened without making it active). The script
-lives in the dictionaries (`t.sample.script`); rolls are given as dice
+lives in the long texts (`LongTexts.sample.script`, see i18n); rolls are given as dice
 and written with the same format as `usePlayActions` (oracle verdict via
 `judgeDice` in `oracle.ts`, every die its question's likelihood
 throws, which a test checks; table results from the real tables, loaded
 first with `loadMeaningTables`; quick inspiration as the same `tbl:`;
 dice formulas written as `rollFormula` writes them), then imported as
 Lonelog, with session dates, pinned notes and notebook descriptions
-(`t.sample.descriptions`). It's the showcase: it uses every kind of
+(`sample.descriptions`). It's the showcase: it uses every kind of
 entry, note form, roll and notebook section, and a test checks it
 still does (and keeps both languages' scripts in step). When adding a
 visible journal or notebook feature, work it into the sample.
@@ -478,8 +492,8 @@ button, pinned with the bar beside the sessions, so always in reach).
   with no space, `N (Name): ` with one, and `PC: `; a dialogue line in
   any other shape is just a note. (Actions are stored without their
   symbol, so an action's text starting "(Name)" is that character's.) The sample
-  adventure uses tags and has pinned notes (`t.sample.notes`) and
-descriptions (`t.sample.descriptions`).
+  adventure uses tags and has pinned notes (`sample.notes`) and
+descriptions (`sample.descriptions`).
 - **The official add-ons' tags** (derived the same way): rooms
   `[R:4|status:cleared|description|exits:N R2]` (`exits:+E R7` adds;
   Spanish `estado:`/`salidas:` too, and `pos:`, `owner:`, `where:`, the same
@@ -633,7 +647,7 @@ file plus its `TABLE_GAMES` entry.
   Resource Document and One Page Solo Engine's "How much?" (its
   yes/no oracle is one of the four), with our own Spanish
   translation (a translation of a BY-SA text is BY-SA too). Each table
-  carries its `game` credit; `TABLE_CREDITS` (Settings → About, and the
+  carries its `game` credit; `TABLE_CREDITS` (`tableCredits.ts`, only Settings loads it; Settings → About, and the
   README) holds each source's attribution wording verbatim. Never add
   text that is only CC BY-NC-SA (Starforged's full rulebook, Sundered
   Isles' tables): check each table's licence in Datasworn.
@@ -661,7 +675,8 @@ shape (`custom: true`); they're read from IndexedDB only when a table
 screen asks (`load`, called by `useMeaningTables`), not at start-up.
 `useMeaningTables` returns built-in + custom, so screens never read
 either list on their own. Their text format
-(editor, import, export) is deliberately permissive: one result per
+(editor, import, export; `customTableText.ts`, apart from the storage
+the first screen loads) is deliberately permissive: one result per
 line, optional leading ranges, list markers, Markdown tables; the .md
 export is read back by the same parser (tested). "Quick inspiration"
 (`rollInspiration` in `usePlayActions`, given the tables by
@@ -811,10 +826,16 @@ Sharing (`share.ts`, Web Share API) is only offered where
 
 ### Icons and dialogs
 
-Icons are Tabler Icons (`@tabler/icons-react`, MIT, outline, stroke 1.75), wrapped in
-`src/components/icons/Icons.tsx` with a `size` prop; pick the closest
-Tabler icon instead of drawing SVG or adding another icon set (only the
-compass logo is custom). Screens import only from `Icons.tsx`. Icons
+Icons are Tabler Icons (`@tabler/icons-react`, MIT, outline, stroke 1.75), wrapped
+with a `size` prop (`TablerIcon`); pick the closest Tabler icon instead
+of drawing SVG or adding another icon set (only the compass logo is
+custom). Screens import only from `src/components/icons/Icons.tsx`, an
+index re-exporting one module per icon (`icons/set/IconX.tsx`; a new
+icon is a file there and a line in the index). That's so each icon
+travels with the screens that draw it: `vite.config.ts` marks those
+modules side-effect free (`treeshake.moduleSideEffects`) and puts the
+ones the first screen doesn't draw in one `icons` chunk; in a single
+module, all 99 went into the first screen's bundle. Icons
 are decorative (`aria-hidden`) unless given an `aria-label`, which makes
 them an image with that name (an entry's kind is read that way). A
 button that is only an icon carries a `title` too (the mouse's
@@ -971,7 +992,16 @@ the language the way `loadLocale` does: keep both in step). Switching
 language loads the other one first. So nothing in the main bundle may
 import `locales/*` directly: tests get both through
 `i18n/allDictionaries.ts`, and the table themes' names (read in either
-language by `customTables.ts`) live in `i18n/tableThemeNames.ts`.
+language by `customTableText.ts`) live in `i18n/tableThemeNames.ts`.
+The long texts (`LongTexts`: the sample adventure's script, notes and
+descriptions, and the content of the dice help, the oracle help and the
+quick guide) aren't in the Dictionary: `locales/es.long.ts` and
+`en.long.ts`, a chunk each, loaded when opened (`loadLongTexts`, read
+with `useLongTexts`, which suspends: only in a component drawn once
+what it shows is open, under a `<Suspense>`) and in the background once
+the first screen is up (`preloadAll`). What shows before opening (a
+help's button and title, the sample's link) stays in the Dictionary.
+They were 43% of each dictionary; keep big texts there.
 
 ### Active adventure
 

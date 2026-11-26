@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
@@ -167,6 +168,48 @@ function localeModulePreloadPlugin(): Plugin {
   };
 }
 
+/**
+ * A Content Security Policy, as a <meta> first thing in <head> (GitHub
+ * Pages can't send headers): scripts only from the app itself plus the
+ * two small inline ones in index.html (the theme before the first paint,
+ * the language's chunk preloaded), allowed by their hash, worked out here
+ * from the page as built. A safety net if text ever got drawn as HTML:
+ * nothing injected could run or send anything anywhere. Styles keep
+ * 'unsafe-inline' (a style can't run code, and some are set inline);
+ * every request stays on the app's own origin, as the privacy note says.
+ * Built pages only: the dev server injects scripts of its own. The e2e
+ * fail on any console error, so a blocked script shows up there.
+ */
+function contentSecurityPolicyPlugin(): Plugin {
+  return {
+    name: "solo-compass:content-security-policy",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(html) {
+        const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(
+          ([, body]) => `'sha256-${createHash("sha256").update(body).digest("base64")}'`,
+        );
+        if (inline.length === 0) throw new Error("No inline scripts found for the Content Security Policy");
+        const policy = [
+          "default-src 'self'",
+          `script-src 'self' ${inline.join(" ")}`,
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob:",
+          "font-src 'self'",
+          "connect-src 'self'",
+          "worker-src 'self'",
+          "manifest-src 'self'",
+          "object-src 'none'",
+          "base-uri 'none'",
+          "form-action 'self'",
+        ].join("; ");
+        return html.replace(/<head>/, `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`);
+      },
+    },
+  };
+}
+
 /** package.json's version: the app's, shown in Settings → About and in the changelog. */
 const version: string = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
 
@@ -223,6 +266,8 @@ export default defineConfig({
     }),
     englishManifestPlugin(),
     localeModulePreloadPlugin(),
+    // Last: it hashes the inline scripts the others have put in.
+    contentSecurityPolicyPlugin(),
   ],
   build: {
     // Each game's tables are their own chunk, loaded only when needed
@@ -230,6 +275,13 @@ export default defineConfig({
     // main bundle must stay well below this: keep an eye on its size.
     chunkSizeWarningLimit: 700,
     rolldownOptions: {
+      // An icon's module (src/components/icons/set/) only defines it: said
+      // so, the index that re-exports them all doesn't pull every icon into
+      // the first screen's bundle, and each one goes with what draws it.
+      // Everything else keeps the default (undefined: as its package says).
+      treeshake: {
+        moduleSideEffects: (id) => (/[\\/]src[\\/]components[\\/]icons[\\/]set[\\/]/.test(id) ? false : undefined),
+      },
       output: {
         codeSplitting: {
           // What the first screen needs ($initial) in two chunks instead
@@ -239,6 +291,9 @@ export default defineConfig({
           groups: [
             { name: "vendor", test: /node_modules[\\/]/, tags: ["$initial"], priority: 2 },
             { name: "app", tags: ["$initial"], priority: 1 },
+            // The icons the first screen doesn't draw, together: one by one
+            // they were a handful of chunks of a few hundred bytes each.
+            { name: "icons", test: /[\\/]icons[\\/]set[\\/]|@tabler[\\/]icons-react/, priority: 0 },
           ],
         },
       },

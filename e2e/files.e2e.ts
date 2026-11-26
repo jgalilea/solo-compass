@@ -152,9 +152,43 @@ test("a file shared to the installed app opens in the same dialog", async ({ pag
   const dialog = page.getByRole("dialog", { name: "Abrir archivo" });
   await expect(dialog.getByText("Diario de Lonelog")).toBeVisible();
   await expect(dialog.getByText("pozo.md")).toBeVisible();
+  // Any web page can post to the share target: it says so.
+  await expect(dialog.getByText(/Si no lo has compartido tú, ciérralo/)).toBeVisible();
   // The address it came back to is the app's own again.
   await expect(page).not.toHaveURL(/compartido/);
   await dialog.getByRole("button", { name: "Importar como aventura nueva" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "El pozo" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("replacing everything from a dropped backup asks again, and going back keeps all", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: "Nueva aventura" }).click();
+  await page.getByPlaceholder("Nombre de la aventura").fill("Lo mío");
+  await page.getByRole("button", { name: "Crear" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Lo mío" })).toBeVisible();
+
+  const backup = JSON.stringify({
+    app: "solo-compass",
+    schemaVersion: 6,
+    exportedAt: "2026-11-20T18:30:00.000Z",
+    history: [],
+    journal: { adventures: [{ id: "x", name: "Lo de otro", createdAt: 1, updatedAt: 1 }], entries: [] },
+    settings: {},
+  });
+  await dropFile(page, "copia.json", backup, "application/json");
+  const dialog = page.getByRole("dialog", { name: "Abrir archivo" });
+  // Dropped by the player: no "if you didn't share it" note.
+  await expect(dialog.getByText(/Si no lo has compartido tú/)).toHaveCount(0);
+  await dialog.getByRole("button", { name: /Sustituir todo/ }).click();
+  await expect(dialog.getByText(/No se puede deshacer/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Mejor no" }).click();
+  await expect(dialog.getByRole("button", { name: /Juntar/ })).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancelar" }).click();
+
+  await page.goto("./#/diario");
+  await expect(page.getByRole("link", { name: /^Lo mío/ })).toBeVisible();
+  await expect(page.getByText("Lo de otro")).toHaveCount(0);
   expect(errors).toEqual([]);
 });

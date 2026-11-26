@@ -87,6 +87,8 @@ test("restores the full backup on a device that has nothing", async ({ page, bro
   await other.getByRole("button", { name: /^Ajustes/ }).click();
   await other.locator('input[type=file][accept*="json"]').setInputFiles(backup);
   await other.getByRole("button", { name: /Sustituir todo/ }).click();
+  // It asks again: it can't be undone.
+  await other.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
   // It reloads with everything in place.
   await other.getByText("La ciénaga").first().click();
   await expect(other.locator("[id^=entry-]").getByText("El barro me llega a las rodillas.")).toBeVisible();
@@ -146,6 +148,8 @@ test("draws the dice of table rolls from before the history kept them", async ({
   writeFileSync(path, JSON.stringify(backup));
   await page.locator('input[type=file][accept*="json"]').setInputFiles(path);
   await page.getByRole("button", { name: /Sustituir todo/ }).click();
+  // It asks again: it can't be undone.
+  await page.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.goto("./#/historial");
   await expect(page.getByText(/Tirada: d6 → \d/)).toBeVisible();

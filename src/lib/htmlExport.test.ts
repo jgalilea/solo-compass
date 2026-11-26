@@ -60,3 +60,35 @@ describe("exportAdventureToHtml", () => {
     expect(page).toContain('<p class="quote">«Oro»</p><hr><p class="bullet">1. Ir</p>');
   });
 });
+
+describe("exportAdventureToHtml, only the story", () => {
+  const html = exportAdventureToHtml({
+    t: es,
+    name: "La posada",
+    notes: "Pagar a Odile",
+    theme,
+    story: true,
+    entries: [
+      entry("session", "Sesión 1", 1),
+      entry("question", "¿Hay alguien?", 2),
+      entry("roll", "Recluse: blanco 5 / negro 2 -> Sí", 3),
+      entry("consequence", "La posadera, [N:Odile|desconfiada], seca jarras.", 4),
+      entry("note", "[Clock:Alerta 1/4]", 5),
+    ],
+  });
+
+  it("keeps what's told, without the question, the roll or the cards", () => {
+    expect(html).toContain(es.journal.htmlStoryNote);
+    expect(html).toContain("seca jarras.");
+    expect(html).not.toContain("¿Hay alguien?");
+    expect(html).not.toContain("Recluse");
+    expect(html).not.toContain('class="card"');
+  });
+
+  it("keeps the pinned notes and who's in it, not the clocks", () => {
+    expect(html).toContain("Pagar a Odile");
+    expect(html).toContain(es.notebook.castTitle);
+    expect(html).not.toContain(es.notebook.threadsTitle);
+    expect(html).not.toContain("Alerta");
+  });
+});

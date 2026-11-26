@@ -25,6 +25,36 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.10.0",
+    date: "2026-11-26",
+    text: {
+      es: {
+        title: "Capítulo XXVII · El relato en limpio",
+        intro: "Mara pasa a limpio la historia del faro: solo lo que ocurrió, sin dados ni preguntas, para leérsela a quien quiera escucharla.",
+        items: [
+          "En el modo zen, «Exportar el relato» guarda una página web con solo lo que se cuenta, junto a las notas fijas y quién y dónde aparece.",
+          "La barra del modo zen aclara que las consecuencias sí se quedan: lo que respondió el oráculo se entiende si lo cuentas en ellas.",
+          "La app descarga un 13 % menos al abrirse por primera vez: la ayuda, la guía rápida, la aventura de ejemplo y los iconos de otras pantallas llegan después, sin que se note.",
+          "«Sustituir todo» al restaurar una copia pregunta otra vez antes de borrar nada, porque no se puede deshacer.",
+          "Un archivo que llega compartido avisa de que, si no lo has compartido tú, lo cierres sin importar nada.",
+          "La app solo ejecuta su propio código: aunque algún día un texto se colara como si fuera código, no podría hacer nada ni mandar nada fuera de tu dispositivo.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVII · The story, written up",
+        intro: "Mara writes up the lighthouse story: only what happened, without dice or questions, to read it to whoever wants to listen.",
+        items: [
+          "In zen mode, “Export the story” saves a web page with only what's told, beside the pinned notes and who and where appear.",
+          "The zen mode bar makes it clear that consequences stay: what the oracle answered reads well if you tell it in them.",
+          "The app downloads 13% less the first time it opens: the help, the quick guide, the sample adventure and the icons of other screens arrive afterwards, unnoticed.",
+          "“Replace everything”, when restoring a backup, asks again before deleting anything, since it can't be undone.",
+          "A file that arrives shared reminds you to close it without importing anything if you didn't share it yourself.",
+          "The app only runs its own code: even if some text ever slipped in as code, it couldn't do anything or send anything off your device.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.9.1",
     date: "2026-11-26",
     text: {

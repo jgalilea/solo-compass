@@ -3,7 +3,8 @@
  * the journal for the first time. Only offered with an empty journal
  * and never created on its own (see JournalListView).
  *
- * The script lives in the dictionaries (`t.sample.script`), but rolls
+ * The script lives in the long texts (`LongTexts.sample.script`, loaded
+ * apart: loadLongTexts), but rolls
  * are given as dice and written here in the same format as
  * `usePlayActions` (oracle with its answer, table with its result), so
  * the sample looks exactly like a real game; quick inspiration too
@@ -13,7 +14,7 @@
  * Compass's own tables, already loaded (they aren't in the main bundle).
  */
 
-import type { Dictionary } from "./i18n";
+import type { Dictionary, LongTexts } from "./i18n";
 import { formatAnswer, formatOracleDice } from "./i18n/answerText";
 import { judgeDice } from "./oracle";
 import { DEFAULT_ORACLE_ID, getOracle } from "./oracles";
@@ -23,11 +24,12 @@ import { INSPIRATION_TABLE_IDS } from "./tableGames";
 
 export function buildSampleAdventure(
   t: Dictionary,
+  sample: LongTexts["sample"],
   tables: MeaningTable[],
 ): { name: string; markdown: string } {
   const oracleName = getOracle(DEFAULT_ORACLE_ID).name;
 
-  const lines = t.sample.script.map((line) => {
+  const lines = sample.script.map((line) => {
     if ("oracle" in line) {
       const [white, black] = line.oracle.map((dice) => (Array.isArray(dice) ? dice : [dice]));
       const verdict = judgeDice(Math.max(...white), Math.max(...black));
@@ -68,7 +70,7 @@ export function buildSampleAdventure(
   }
 
   return {
-    name: t.sample.name,
-    markdown: formatFrontMatter(t.sample.notes, t.sample.descriptions) + lines.join("\n\n") + "\n",
+    name: sample.name,
+    markdown: formatFrontMatter(sample.notes, sample.descriptions) + lines.join("\n\n") + "\n",
   };
 }

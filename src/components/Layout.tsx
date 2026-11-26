@@ -8,6 +8,7 @@ import { isGuideOpen, openGuide, subscribeGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
 import { useLocaleContext } from "../hooks/useLocaleContext";
+import { loadLongTexts } from "../lib/i18n";
 import { useTableDiceFill } from "../hooks/useTableDiceFill";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { focusHotkeyTarget, isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
@@ -21,7 +22,7 @@ const GuideDialog = preloadable(() => import("./GuideDialog").then((m) => m.Guid
 const IN_ADVENTURE = /^\/diario\/./;
 
 export function Layout() {
-  const { t } = useLocaleContext();
+  const { t, locale } = useLocaleContext();
   const { activeAdventureId } = useJournalContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -94,8 +95,9 @@ export function Layout() {
     "?": openGuide,
   });
 
-  // The other screens and the bigger dialogs, fetched once this one is up.
-  useEffect(() => preloadAll(), []);
+  // The other screens and the bigger dialogs, and the help texts, fetched
+  // once this one is up.
+  useEffect(() => preloadAll([() => loadLongTexts(locale)]), [locale]);
 
   useTableDiceFill();
 

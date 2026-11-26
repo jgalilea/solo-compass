@@ -1,15 +1,7 @@
 import { useId, useMemo, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import {
-  buildEntries,
-  cleanSource,
-  diceChoiceFor,
-  EDITOR_DICE,
-  entriesToText,
-  parseEntryLines,
-  type CustomTableDraft,
-  type DiceChoice,
-} from "../lib/customTables";
+import { EDITOR_DICE, type CustomTableDraft, type DiceChoice } from "../lib/customTables";
+import { buildEntries, cleanSource, diceChoiceFor, entriesToText, parseEntryLines } from "../lib/customTableText";
 import { interpolate } from "../lib/i18n";
 import { TABLE_THEMES, type TableTheme } from "../lib/tables";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";

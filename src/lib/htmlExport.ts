@@ -14,6 +14,7 @@
  * Lonelog (.md) is still the interchange format: this is for reading.
  */
 
+import { isStoryEntry } from "./zenMode";
 import { interpolate, type Dictionary } from "./i18n";
 import { sessionDate, type JournalEntry } from "./lonelog";
 import type { CastDescription } from "./journal";
@@ -243,6 +244,7 @@ export function exportAdventureToHtml({
   answerFor = () => undefined,
   drawRoll = () => "",
   exportedAt = new Date(),
+  story = false,
 }: {
   t: Dictionary;
   name: string;
@@ -254,12 +256,20 @@ export function exportAdventureToHtml({
   /** Draws a roll's dice or cards (needs the DOM: drawRolls.tsx); without it, only the text. */
   drawRoll?: DrawRoll;
   exportedAt?: Date;
+  /**
+   * Only the story (zen mode, zenMode.ts): what's told, each entry on
+   * the page without a card, and of the notebook the pinned notes and
+   * who and where (not clocks or inventory, which are the game's).
+   */
+  story?: boolean;
 }): string {
-  const sorted = [...entries].sort((a, b) => a.timestamp - b.timestamp);
-  const cast = buildCast(sorted);
+  const all = [...entries].sort((a, b) => a.timestamp - b.timestamp);
+  const sorted = story ? all.filter(isStoryEntry) : all;
+  // The notebook comes from every entry: a tag-only note isn't told, but it's still the cast.
+  const cast = buildCast(all);
   const characters = cast.filter((c) => ["pc", "npc", "place", "room", "foe"].includes(c.kind));
-  const threads = cast.filter((c) => c.kind === "thread" || c.kind === "event" || PROGRESS_KINDS.has(c.kind));
-  const inventory = cast.filter((c) => QUANTITY_KINDS.has(c.kind));
+  const threads = story ? [] : cast.filter((c) => c.kind === "thread" || c.kind === "event" || PROGRESS_KINDS.has(c.kind));
+  const inventory = story ? [] : cast.filter((c) => QUANTITY_KINDS.has(c.kind));
   const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(exportedAt);
 
   const views = storylineViews(groupBySession(sorted));
@@ -270,7 +280,7 @@ export function exportAdventureToHtml({
         .map((block) =>
           block[0].kind === "scene"
             ? sceneHtml(t, block[0])
-            : `<section class="card">${block.map((e) => entryHtml(t, e, answerFor, drawRoll, views.get(e.id))).join("")}</section>`,
+            : `<section class="${story ? "told" : "card"}">${block.map((e) => entryHtml(t, e, answerFor, drawRoll, views.get(e.id))).join("")}</section>`,
         )
         .join("");
       const session = group.sessionEntry;
@@ -323,6 +333,7 @@ header a { color: var(--color-gold); }
 .session { display: grid; gap: .6rem; margin-bottom: 2rem; }
 h2 { font-size: 1.15rem; color: var(--color-parchment); border: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent); background: color-mix(in srgb, var(--color-gold) 10%, transparent); border-radius: .75rem; padding: .6rem 1rem; }
 h2 time { float: right; font: .8rem/1.6 var(--font-text); color: var(--color-parchment-dim); }
+.told { display: grid; gap: .6rem; padding: .1rem 1rem; }
 .card { border: 1px solid var(--color-ink-border); background: var(--color-ink-900); border-radius: .75rem; padding: .75rem 1rem; display: grid; gap: .6rem; break-inside: avoid; }
 .entry { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: .5rem; }
 .entry p { margin: 0; }
@@ -377,7 +388,7 @@ aside { display: grid; gap: 1rem; }
 <main class="${aside ? "with-aside" : ""}">
 <header>
 <h1>${escapeHtml(name)}</h1>
-<p>${escapeHtml(interpolate(t.journal.htmlExportedOn, { date }))} · ${interpolate(escapeHtml(t.journal.lonelogCreditLine), {
+${story ? `<p>${escapeHtml(t.journal.htmlStoryNote)}</p>\n` : ""}<p>${escapeHtml(interpolate(t.journal.htmlExportedOn, { date }))} · ${interpolate(escapeHtml(t.journal.lonelogCreditLine), {
     app: '<a href="https://jgalilea.github.io/solo-compass/">Solo Compass</a>',
     lonelog: '<a href="https://lonelog.itch.io/lonelog">Lonelog</a>',
   })}</p>

@@ -15,21 +15,32 @@
 /** More at once than anyone means to open; the rest are left out. */
 const MAX_WAITING = 10;
 
-let waiting: readonly File[] = [];
+/**
+ * How a file got here. "shared" may not be the player's doing: any web
+ * page can post a file to the share target, so the dialog says so.
+ */
+export type FileSource = "button" | "dropped" | "opened" | "shared";
+
+export interface IncomingFile {
+  file: File;
+  source: FileSource;
+}
+
+let waiting: readonly IncomingFile[] = [];
 const listeners = new Set<() => void>();
 
-function set(next: readonly File[]) {
+function set(next: readonly IncomingFile[]) {
   waiting = next;
   for (const listener of listeners) listener();
 }
 
 /** Files to open, after any already waiting. */
-export function offerFiles(files: readonly File[]): void {
-  if (files.length) set([...waiting, ...files].slice(0, MAX_WAITING));
+export function offerFiles(files: readonly File[], source: FileSource): void {
+  if (files.length) set([...waiting, ...files.map((file) => ({ file, source }))].slice(0, MAX_WAITING));
 }
 
 /** The file the dialog is showing, if any. */
-export function currentFile(): File | null {
+export function currentFile(): IncomingFile | null {
   return waiting[0] ?? null;
 }
 
@@ -94,6 +105,6 @@ export function watchLaunchedFiles(): void {
   const queue = (window as Window & { launchQueue?: LaunchQueue }).launchQueue;
   queue?.setConsumer((params) => {
     if (!params.files?.length) return;
-    Promise.all(params.files.map((handle) => handle.getFile())).then(offerFiles, () => {});
+    Promise.all(params.files.map((handle) => handle.getFile())).then((files) => offerFiles(files, "opened"), () => {});
   });
 }

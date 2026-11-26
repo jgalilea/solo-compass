@@ -2,7 +2,8 @@ import { Fragment, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useM
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
-import { definitionDraft, type CustomTableDraft } from "../lib/customTables";
+import { type CustomTableDraft } from "../lib/customTables";
+import { definitionDraft } from "../lib/customTableText";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { isTypingTarget, useHotkeys } from "../hooks/useHotkeys";
@@ -60,6 +61,7 @@ import {
   IconSession,
   IconTable,
   IconTrash,
+  IconWebPage,
   IconZen,
 } from "./icons/Icons";
 
@@ -484,8 +486,9 @@ export function AdventureDetailView() {
     setExportedFilename(filename);
   }
 
-  // A page to read or share, in the theme on screen (htmlExport.ts).
-  async function handleExportHtml() {
+  // A page to read or share, in the theme on screen (htmlExport.ts);
+  // `story`, only what's told (zen mode).
+  async function handleExportHtml(story = false) {
     const theme = await readExportTheme();
     const html = withRollDrawings(localeContext, (drawRoll) =>
       exportAdventureToHtml({
@@ -497,9 +500,10 @@ export function AdventureDetailView() {
         theme,
         answerFor: entryActions.answerFor,
         drawRoll,
+        story,
       }),
     );
-    const filename = `${sanitizeFilename(adventure!.name)}.html`;
+    const filename = `${sanitizeFilename(story ? `${adventure!.name} - ${t.journal.storyFileSuffix}` : adventure!.name)}.html`;
     downloadTextFile(filename, html, "text/html");
     setExportedFilename(filename);
   }
@@ -721,18 +725,33 @@ export function AdventureDetailView() {
           )}
 
           {zen && (
-            <div className="flex items-center gap-2 rounded-xl border border-ink-border bg-ink-900/60 px-3 py-2 text-sm text-parchment-dim">
-              <IconZen size={16} className="shrink-0 text-gold" />
-              <span className="min-w-0 flex-1">{t.journal.zenBar}</span>
-              <button
-                type="button"
-                onClick={toggleZen}
-                title={t.journal.zenOff}
-                className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10 pointer-coarse:min-h-10"
-              >
-                <IconClose size={14} />
-                {t.journal.zenLeave}
-              </button>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-ink-border bg-ink-900/60 px-3 py-2 text-sm text-parchment-dim">
+              <IconZen size={16} className="shrink-0 self-start text-gold max-sm:mt-0.5 sm:self-center" />
+              <div className="min-w-0 flex-1 basis-56">
+                <p>{t.journal.zenBar}</p>
+                {/* What's lost with the questions: said once, where it matters. */}
+                <p className="text-xs text-parchment-faint">{t.journal.zenHint}</p>
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => void handleExportHtml(true)}
+                  title={t.journal.zenExportTitle}
+                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10 pointer-coarse:min-h-10"
+                >
+                  <IconWebPage size={14} />
+                  {t.journal.zenExport}
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleZen}
+                  title={t.journal.zenOff}
+                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-gold transition hover:bg-gold/10 pointer-coarse:min-h-10"
+                >
+                  <IconClose size={14} />
+                  {t.journal.zenLeave}
+                </button>
+              </div>
             </div>
           )}
 

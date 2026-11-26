@@ -1,20 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DICTIONARIES } from "./i18n/allDictionaries";
-import {
-  buildEntries,
-  createCustomTable,
-  definitionDraft,
-  diceChoiceFor,
-  entriesToText,
-  exportTableToMarkdown,
-  isCustomTable,
-  MAX_TABLE_SIDES,
-  parseEntryLines,
-  parseTablesFile,
-  parseTheme,
-  toMeaningTable,
-  webAddress,
-} from "./customTables";
+import { createCustomTable, isCustomTable, MAX_TABLE_SIDES, toMeaningTable, webAddress } from "./customTables";
+import { buildEntries, definitionDraft, diceChoiceFor, entriesToText, exportTableToMarkdown, parseEntryLines, parseTablesFile, parseTheme } from "./customTableText";
 
 const t = DICTIONARIES.es;
 

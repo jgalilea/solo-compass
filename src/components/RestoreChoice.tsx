@@ -19,6 +19,10 @@ export function RestoreChoice({
 }) {
   const { t } = useLocaleContext();
   const [restoring, setRestoring] = useState(false);
+  // "Replace everything" asks again: it wipes this device and can't be
+  // undone, and a file can come from somewhere the player didn't choose
+  // (anyone can send one to the app's share target, IncomingFileDialog).
+  const [confirmingReplace, setConfirmingReplace] = useState(false);
 
   async function confirm(mode: RestoreMode) {
     if (restoring) return;
@@ -37,6 +41,30 @@ export function RestoreChoice({
   }
 
   if (restoring) return <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>;
+  if (confirmingReplace) {
+    return (
+      <div role="alert" className="mt-4 flex flex-col gap-3 rounded-xl border border-no/60 px-4 py-3">
+        <p className="text-sm text-parchment">{t.about.restoreReplaceConfirm}</p>
+        <div className="flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setConfirmingReplace(false)}
+            className="rounded-full px-4 py-2 text-sm text-parchment-dim transition hover:text-parchment"
+          >
+            {t.about.restoreReplaceBack}
+          </button>
+          <button
+            type="button"
+            onClick={() => void confirm("replace")}
+            className="rounded-full bg-no/90 px-4 py-2 text-sm font-medium text-ink-950 transition hover:bg-no"
+          >
+            {t.about.restoreReplaceConfirmButton}
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="mt-4 flex flex-col gap-2">
       <button
@@ -49,7 +77,7 @@ export function RestoreChoice({
       </button>
       <button
         type="button"
-        onClick={() => void confirm("replace")}
+        onClick={() => setConfirmingReplace(true)}
         className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
       >
         <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>

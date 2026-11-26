@@ -40,7 +40,7 @@ export function IncomingFiles() {
   const { t } = useLocaleContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const file = useSyncExternalStore(subscribeIncomingFiles, currentFile);
+  const incoming = useSyncExternalStore(subscribeIncomingFiles, currentFile);
   const after = useSyncExternalStore(subscribeIncomingFiles, filesAfterCurrent);
   const [dragging, setDragging] = useState(false);
 
@@ -51,7 +51,7 @@ export function IncomingFiles() {
   useEffect(() => {
     if (!shared) return;
     navigate({ pathname: location.pathname, search: "" }, { replace: true });
-    void takeSharedFiles().then(offerFiles);
+    void takeSharedFiles().then((files) => offerFiles(files, "shared"));
   }, [shared, location.pathname, navigate]);
 
   // Dropped on the window. Without this, the browser would open the
@@ -81,7 +81,7 @@ export function IncomingFiles() {
       e.preventDefault();
       depth = 0;
       setDragging(false);
-      offerFiles(Array.from(e.dataTransfer!.files));
+      offerFiles(Array.from(e.dataTransfer!.files), "dropped");
     }
     window.addEventListener("dragenter", enter);
     window.addEventListener("dragover", over);
@@ -109,9 +109,15 @@ export function IncomingFiles() {
           </div>
         </div>
       )}
-      {file && (
+      {incoming && (
         <Suspense fallback={null}>
-          <IncomingFileDialog key={fileId(file)} file={file} after={after} onDone={dismissCurrentFile} />
+          <IncomingFileDialog
+            key={fileId(incoming.file)}
+            file={incoming.file}
+            shared={incoming.source === "shared"}
+            after={after}
+            onDone={dismissCurrentFile}
+          />
         </Suspense>
       )}
     </>

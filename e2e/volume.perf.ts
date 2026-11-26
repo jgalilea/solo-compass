@@ -153,6 +153,8 @@ test("stays usable with years of play on a modest phone", async ({ page }) => {
     buffer: Buffer.from(JSON.stringify(backup)),
   });
   await page.getByRole("button", { name: /Sustituir todo/ }).click();
+  // It asks again: it can't be undone.
+  await page.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
   await expect(page.getByText("La gran campaña").first()).toBeVisible({ timeout: 60_000 });
 
   await slowDownCpu(page);

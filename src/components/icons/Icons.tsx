@@ -1,6 +1,3 @@
-import type { SVGProps } from "react";
-import * as Tabler from "@tabler/icons-react";
-
 /**
  * App icons: Tabler Icons (MIT), wrapped to keep a single API (`size`
  * in px; they inherit currentColor so Tailwind can tint them). Screens
@@ -8,407 +5,115 @@ import * as Tabler from "@tabler/icons-react";
  * new one is needed, pick the closest Tabler icon
  * (https://tabler.io/icons) and add it here — no hand-drawn SVG. The
  * only exception is the logo (IconCompass).
+ *
+ * One module per icon (set/), re-exported here: each one travels with
+ * the screens that draw it. In a single module, every icon went into
+ * the first screen's bundle (99 of them, for the 36 it uses).
  */
 
-type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number };
-
-// Slightly thinner stroke than the default (2): at 2 they looked too
-// heavy next to text at the app's small sizes.
-// Decorative unless given an aria-label (an entry's kind, say): then
-// screen readers read it as an image with that name.
-function TablerIcon({ icon: Icon, size = 20, strokeWidth = 1.75, ...rest }: IconProps & { icon: Tabler.Icon }) {
-  const labelled = rest["aria-label"] !== undefined;
-  return (
-    <Icon size={size} stroke={strokeWidth} aria-hidden={labelled ? undefined : true} role={labelled ? "img" : undefined} {...rest} />
-  );
-}
-
-/**
- * App logo (not from Tabler: it's the brand). A four-point compass
- * rose with one face of each point filled; it's the same drawing as the
- * installed icon and the favicon (public/), so the brand looks the
- * same inside and outside the app.
- */
-export function IconCompass({ size = 20, ...rest }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinejoin="round"
-      aria-hidden
-      {...rest}
-    >
-      <circle cx="12" cy="12" r="9.25" strokeWidth={1.5} />
-      <path
-        d="M12 4.25L13.75 10.25L19.75 12L13.75 13.75L12 19.75L10.25 13.75L4.25 12L10.25 10.25Z"
-        strokeWidth={0.9}
-      />
-      <path
-        d="M12 4.25L13.75 10.25L12 12ZM19.75 12L13.75 13.75L12 12ZM12 19.75L10.25 13.75L12 12ZM4.25 12L10.25 10.25L12 12Z"
-        fill="currentColor"
-        strokeWidth={0.9}
-      />
-    </svg>
-  );
-}
-
-export function IconStar({ filled = false, ...props }: IconProps & { filled?: boolean }) {
-  return <TablerIcon icon={filled ? Tabler.IconStarFilled : Tabler.IconStar} {...props} />;
-}
-
-// Sections
-// The oracle: a crystal ball.
-export function IconOracle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCrystalBall} {...props} />;
-}
-// A meaning table is a numbered list rolled with a die.
-export function IconTable(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconListNumbers} {...props} />;
-}
-export function IconJournal(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBook} {...props} />;
-}
-export function IconHistory(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHistory} {...props} />;
-}
-/** Choosing what's on a game table (its dice, its tables). */
-export function IconAdjust(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconAdjustmentsHorizontal} {...props} />;
-}
-
-export function IconSettings(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSettings} {...props} />;
-}
-
-// Journal entry kinds (matching the Lonelog symbols)
-export function IconQuestion(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
-}
-export function IconDice(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDice5} {...props} />;
-}
-export function IconAction(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSword} {...props} />;
-}
-export function IconConsequence(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCornerDownRight} {...props} />;
-}
-// Written with a quill: free narration.
-export function IconNote(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconFeather} {...props} />;
-}
-export function IconSession(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBookmark} {...props} />;
-}
-
-// Actions and states
-export function IconAlertTriangle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconAlertTriangle} {...props} />;
-}
-export function IconAlertCircle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconAlertCircle} {...props} />;
-}
-export function IconTrash(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconTrash} {...props} />;
-}
-export function IconClose(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconX} {...props} />;
-}
-export function IconPalette(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPalette} {...props} />;
-}
-export function IconCheck(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCheck} {...props} />;
-}
-export function IconCheckCircle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCircleCheck} {...props} />;
-}
-export function IconInfo(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconInfoCircle} {...props} />;
-}
-export function IconCoffee(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCoffee} {...props} />;
-}
-// A natural 1: the error screen's fumble.
-export function IconFumble(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDice1} {...props} />;
-}
-// Off the map: the page for an address that isn't a screen.
-export function IconLost(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMapQuestion} {...props} />;
-}
-// The privacy note, in Settings → About.
-export function IconShieldLock(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconShieldLock} {...props} />;
-}
-// The feedback form (ideas and bugs), in Settings → About.
-export function IconFeedback(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMessageReport} {...props} />;
-}
-// The project's code, in Settings → About.
-export function IconGithub(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBrandGithub} {...props} />;
-}
-export function IconExternalLink(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconExternalLink} {...props} />;
-}
-export function IconSearch(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSearch} {...props} />;
-}
-export function IconList(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconList} {...props} />;
-}
-export function IconLanguage(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconLanguage} {...props} />;
-}
-export function IconSwap(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowsLeftRight} {...props} />;
-}
-export function IconDownload(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDownload} {...props} />;
-}
-export function IconShare(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconShare} {...props} />;
-}
-export function IconChart(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconChartBar} {...props} />;
-}
-export function IconUpload(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconUpload} {...props} />;
-}
-/** A file to open (dropped on the window, opened with the app or shared to it). */
-export function IconFileImport(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconFileImport} {...props} />;
-}
-/** Zen mode: only the story, without the dice. */
-export function IconZen(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconYoga} {...props} />;
-}
-/** Carrying an adventure's notebook over into a new one. */
-export function IconContinue(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBooks} {...props} />;
-}
-export function IconPlus(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPlus} {...props} />;
-}
-export function IconPencil(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPencil} {...props} />;
-}
-export function IconGripVertical(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconGripVertical} {...props} />;
-}
-export function IconChevronRight(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconChevronRight} {...props} />;
-}
-export function IconChevronUpDown(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSelector} {...props} />;
-}
-export function IconMinus(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMinus} {...props} />;
-}
-export function IconEquals(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconEqual} {...props} />;
-}
-export function IconChevronDown(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconChevronDown} {...props} />;
-}
-export function IconArrowLeft(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowLeft} {...props} />;
-}
-export function IconPause(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPlayerPause} {...props} />;
-}
-export function IconPlay(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPlayerPlay} {...props} />;
-}
-export function IconArchive(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArchive} {...props} />;
-}
-export function IconArchiveRestore(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowBackUp} {...props} />;
-}
-export function IconSend(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSend} {...props} />;
-}
-export function IconMore(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDots} {...props} />;
-}
-export function IconShieldCheck(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconShieldCheck} {...props} />;
-}
-export function IconShieldAlert(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconShieldExclamation} {...props} />;
-}
-// The changelog: a scroll.
-export function IconChronicle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconScript} {...props} />;
-}
-export function IconSparkles(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSparkles} {...props} />;
-}
-export function IconInstall(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDeviceMobileDown} {...props} />;
-}
-export function IconInstalled(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDeviceMobileCheck} {...props} />;
-}
-// The adventure's notebook: pinned notes plus its cast.
-export function IconNotebook(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconNotebook} {...props} />;
-}
-export function IconPinned(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPinned} {...props} />;
-}
-// Lonelog tags: an NPC, the player character and a place.
-export function IconNpc(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconUser} {...props} />;
-}
-export function IconPc(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconUserStar} {...props} />;
-}
-export function IconPlace(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMapPin} {...props} />;
-}
-export function IconCast(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconUsers} {...props} />;
-}
-export function IconCheckbox(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSquare} {...props} />;
-}
-export function IconCheckboxChecked(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSquareCheck} {...props} />;
-}
-// Copying a session, a scene or an adventure as Lonelog.
-export function IconCopy(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCopy} {...props} />;
-}
-// Renaming an element everywhere in the journal.
-export function IconRename(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCursorText} {...props} />;
-}
-// Showing only one element's entries in the journal.
-export function IconFilter(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconFilter} {...props} />;
-}
-// Mentioning an element in the composer.
-export function IconMention(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconAt} {...props} />;
-}
-// Lonelog threads and progress: a plot thread, a clock (threat), a
-// track (progress) and a timer (countdown).
-export function IconThread(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconNeedleThread} {...props} />;
-}
-export function IconClock(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconClockHour4} {...props} />;
-}
-export function IconTrack(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconFlag} {...props} />;
-}
-// An event (`[E:…]`): a turning point.
-export function IconEvent(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBolt} {...props} />;
-}
-export function IconTimer(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHourglass} {...props} />;
-}
-// Exporting an adventure as a readable web page.
-export function IconWebPage(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBrowser} {...props} />;
-}
-// Journal entry order: move up/down, write below.
-export function IconArrowUp(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowUp} {...props} />;
-}
-export function IconArrowDown(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowDown} {...props} />;
-}
-export function IconInsertBelow(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconRowInsertBottom} {...props} />;
-}
-// "How does it work?" next to the oracle.
-export function IconHelp(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHelpCircle} {...props} />;
-}
-
-/** A scene (S1 *…*) inside a session. */
-export function IconScene(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMovie} {...props} />;
-}
-/** Combat add-on: a fight, its rounds and its foes. */
-export function IconCombat(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSwords} {...props} />;
-}
-export function IconFoe(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSkull} {...props} />;
-}
-/** Dungeon crawling add-on: a room. */
-export function IconRoom(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDoor} {...props} />;
-}
-/** Resource tracking add-on: items and money. */
-export function IconInventory(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconBackpack} {...props} />;
-}
-export function IconWealth(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCoins} {...props} />;
-}
-/** Dialogue lines and narrative blocks. */
-export function IconDialogue(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconMessageCircle} {...props} />;
-}
-export function IconExcerpt(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconQuote} {...props} />;
-}
-/** A table roll (tbl:) and a generator (gen:). */
-export function IconGenerator(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconLayersSubtract} {...props} />;
-}
-
-export function IconCards(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconCards} {...props} />;
-}
-
-// A drawn card's suits (PlayingCard): the standard deck's filled, as
-// printed; the tarot's (wands, cups, swords, pentacles) and the Major
-// Arcana's mark outlined, like the rest of the app.
-export function IconSuitHearts(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconHeartFilled} {...props} />;
-}
-export function IconSuitDiamonds(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconDiamondsFilled} {...props} />;
-}
-export function IconSuitClubs(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconClubsFilled} {...props} />;
-}
-export function IconSuitSpades(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSpadeFilled} {...props} />;
-}
-export function IconJoker(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconJoker} {...props} />;
-}
-export function IconSuitWands(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconWand} {...props} />;
-}
-export function IconSuitCups(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconGlassFull} {...props} />;
-}
-export function IconSuitSwords(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSword} {...props} />;
-}
-export function IconSuitPentacles(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconPentagram} {...props} />;
-}
-export function IconMajorArcana(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconSparkles} {...props} />;
-}
-
-export function IconShuffle(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconArrowsShuffle} {...props} />;
-}
-export function IconRepeat(props: IconProps) {
-  return <TablerIcon icon={Tabler.IconRepeat} {...props} />;
-}
+export { IconCompass } from "./set/IconCompass";
+export { IconStar } from "./set/IconStar";
+export { IconOracle } from "./set/IconOracle";
+export { IconTable } from "./set/IconTable";
+export { IconJournal } from "./set/IconJournal";
+export { IconHistory } from "./set/IconHistory";
+export { IconAdjust } from "./set/IconAdjust";
+export { IconSettings } from "./set/IconSettings";
+export { IconQuestion } from "./set/IconQuestion";
+export { IconDice } from "./set/IconDice";
+export { IconAction } from "./set/IconAction";
+export { IconConsequence } from "./set/IconConsequence";
+export { IconNote } from "./set/IconNote";
+export { IconSession } from "./set/IconSession";
+export { IconAlertTriangle } from "./set/IconAlertTriangle";
+export { IconAlertCircle } from "./set/IconAlertCircle";
+export { IconTrash } from "./set/IconTrash";
+export { IconClose } from "./set/IconClose";
+export { IconPalette } from "./set/IconPalette";
+export { IconCheck } from "./set/IconCheck";
+export { IconCheckCircle } from "./set/IconCheckCircle";
+export { IconInfo } from "./set/IconInfo";
+export { IconCoffee } from "./set/IconCoffee";
+export { IconFumble } from "./set/IconFumble";
+export { IconLost } from "./set/IconLost";
+export { IconShieldLock } from "./set/IconShieldLock";
+export { IconFeedback } from "./set/IconFeedback";
+export { IconGithub } from "./set/IconGithub";
+export { IconExternalLink } from "./set/IconExternalLink";
+export { IconSearch } from "./set/IconSearch";
+export { IconList } from "./set/IconList";
+export { IconLanguage } from "./set/IconLanguage";
+export { IconSwap } from "./set/IconSwap";
+export { IconDownload } from "./set/IconDownload";
+export { IconShare } from "./set/IconShare";
+export { IconChart } from "./set/IconChart";
+export { IconUpload } from "./set/IconUpload";
+export { IconFileImport } from "./set/IconFileImport";
+export { IconZen } from "./set/IconZen";
+export { IconContinue } from "./set/IconContinue";
+export { IconPlus } from "./set/IconPlus";
+export { IconPencil } from "./set/IconPencil";
+export { IconGripVertical } from "./set/IconGripVertical";
+export { IconChevronRight } from "./set/IconChevronRight";
+export { IconChevronUpDown } from "./set/IconChevronUpDown";
+export { IconMinus } from "./set/IconMinus";
+export { IconEquals } from "./set/IconEquals";
+export { IconChevronDown } from "./set/IconChevronDown";
+export { IconArrowLeft } from "./set/IconArrowLeft";
+export { IconPause } from "./set/IconPause";
+export { IconPlay } from "./set/IconPlay";
+export { IconArchive } from "./set/IconArchive";
+export { IconArchiveRestore } from "./set/IconArchiveRestore";
+export { IconSend } from "./set/IconSend";
+export { IconMore } from "./set/IconMore";
+export { IconShieldCheck } from "./set/IconShieldCheck";
+export { IconShieldAlert } from "./set/IconShieldAlert";
+export { IconChronicle } from "./set/IconChronicle";
+export { IconSparkles } from "./set/IconSparkles";
+export { IconInstall } from "./set/IconInstall";
+export { IconInstalled } from "./set/IconInstalled";
+export { IconNotebook } from "./set/IconNotebook";
+export { IconPinned } from "./set/IconPinned";
+export { IconNpc } from "./set/IconNpc";
+export { IconPc } from "./set/IconPc";
+export { IconPlace } from "./set/IconPlace";
+export { IconCast } from "./set/IconCast";
+export { IconCheckbox } from "./set/IconCheckbox";
+export { IconCheckboxChecked } from "./set/IconCheckboxChecked";
+export { IconCopy } from "./set/IconCopy";
+export { IconRename } from "./set/IconRename";
+export { IconFilter } from "./set/IconFilter";
+export { IconMention } from "./set/IconMention";
+export { IconThread } from "./set/IconThread";
+export { IconClock } from "./set/IconClock";
+export { IconTrack } from "./set/IconTrack";
+export { IconEvent } from "./set/IconEvent";
+export { IconTimer } from "./set/IconTimer";
+export { IconWebPage } from "./set/IconWebPage";
+export { IconArrowUp } from "./set/IconArrowUp";
+export { IconArrowDown } from "./set/IconArrowDown";
+export { IconInsertBelow } from "./set/IconInsertBelow";
+export { IconHelp } from "./set/IconHelp";
+export { IconScene } from "./set/IconScene";
+export { IconCombat } from "./set/IconCombat";
+export { IconFoe } from "./set/IconFoe";
+export { IconRoom } from "./set/IconRoom";
+export { IconInventory } from "./set/IconInventory";
+export { IconWealth } from "./set/IconWealth";
+export { IconDialogue } from "./set/IconDialogue";
+export { IconExcerpt } from "./set/IconExcerpt";
+export { IconGenerator } from "./set/IconGenerator";
+export { IconCards } from "./set/IconCards";
+export { IconSuitHearts } from "./set/IconSuitHearts";
+export { IconSuitDiamonds } from "./set/IconSuitDiamonds";
+export { IconSuitClubs } from "./set/IconSuitClubs";
+export { IconSuitSpades } from "./set/IconSuitSpades";
+export { IconJoker } from "./set/IconJoker";
+export { IconSuitWands } from "./set/IconSuitWands";
+export { IconSuitCups } from "./set/IconSuitCups";
+export { IconSuitSwords } from "./set/IconSuitSwords";
+export { IconSuitPentacles } from "./set/IconSuitPentacles";
+export { IconMajorArcana } from "./set/IconMajorArcana";
+export { IconShuffle } from "./set/IconShuffle";
+export { IconRepeat } from "./set/IconRepeat";
+export type { IconProps } from "./TablerIcon";

@@ -1,5 +1,6 @@
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useOracleContext } from "../hooks/useOracleContext";
+import { useLongTexts } from "../hooks/useLongTexts";
 import { interpolate } from "../lib/i18n";
 import { getOracle } from "../lib/oracles";
 import { oracleLevels, oracleOdds, oracleTarget, type OracleId, type OracleOdds } from "../lib/oracleEngines";
@@ -16,7 +17,7 @@ export function OracleHelpContent() {
   const { t } = useLocaleContext();
   const { oracleId } = useOracleContext();
   const oracle = getOracle(oracleId);
-  const help = t.oracleHelp;
+  const help = useLongTexts().oracleHelp;
   const rules = help.rules[oracle.id];
 
   return (
@@ -82,7 +83,7 @@ export function OracleHelpContent() {
  */
 function OddsTable({ oracleId }: { oracleId: OracleId }) {
   const { t, locale } = useLocaleContext();
-  const help = t.oracleHelp;
+  const help = useLongTexts().oracleHelp;
   const special = help.oddsSpecial[oracleId];
   const percent = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   const format = (value: number) => (value > 0 && value < 0.005 ? "<1 %" : percent.format(value));

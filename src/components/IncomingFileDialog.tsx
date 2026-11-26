@@ -7,7 +7,7 @@ import { fileProblemText, inspectFile, inspectJournal, inspectTables, type Inspe
 import { readLonelog } from "../lib/lonelog";
 import { PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import { DialogBody, DialogHeader } from "./Dialog";
-import { IconAlertCircle, IconFileImport } from "./icons/Icons";
+import { IconAlertCircle, IconFileImport, IconInfo } from "./icons/Icons";
 import { Modal } from "./Modal";
 import { RestoreChoice } from "./RestoreChoice";
 
@@ -25,7 +25,18 @@ export interface ImportTablesState {
  * (fileImport.ts looks at it). Its own chunk, with what reads files;
  * drawn by IncomingFiles, one file at a time.
  */
-export function IncomingFileDialog({ file, after, onDone }: { file: File; after: number; onDone: () => void }) {
+export function IncomingFileDialog({
+  file,
+  shared,
+  after,
+  onDone,
+}: {
+  file: File;
+  /** Came through the share target: maybe not the player's doing (incomingFiles.ts). */
+  shared: boolean;
+  after: number;
+  onDone: () => void;
+}) {
   const { t } = useLocaleContext();
   const { importAdventure, setActiveAdventureId } = useJournalContext();
   const navigate = useNavigate();
@@ -64,6 +75,12 @@ export function IncomingFileDialog({ file, after, onDone }: { file: File; after:
     <Modal onClose={onDone} labelledBy="incoming-file-title" centered size="sm">
       <DialogHeader id="incoming-file-title" title={f.dialogTitle} Icon={IconFileImport} subtitle={file.name || undefined} onClose={onDone} />
       <DialogBody className="block">
+        {shared && found?.kind !== "problem" && (
+          <p className="mb-4 flex items-start gap-2 rounded-xl border border-ink-border px-3 py-2 text-xs text-parchment-dim">
+            <IconInfo size={14} className="mt-0.5 shrink-0 text-gold" />
+            {f.sharedNote}
+          </p>
+        )}
         {found === null ? (
           <p className="text-sm text-parchment-dim">{f.reading}</p>
         ) : found.kind === "problem" ? (

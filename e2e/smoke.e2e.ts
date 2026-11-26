@@ -13,6 +13,9 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   });
 
   await page.goto("./");
+  // Built with its Content Security Policy (vite.config.ts): a script it
+  // blocked would be a console error, and fail this test.
+  await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveCount(1);
 
   // Oracle.
   await page.getByLabel("Pregunta para el oráculo").fill("¿Hay alguien en la posada?");

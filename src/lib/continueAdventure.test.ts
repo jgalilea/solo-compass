@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { continuationOf } from "./continueAdventure";
-import { DICTIONARIES } from "./i18n/allDictionaries";
+import { DICTIONARIES, LONG_TEXTS } from "./i18n/allDictionaries";
 import type { Adventure } from "./journal";
 import { isImportedEntry, parseMarkdownToEntries, parseNotesFromMarkdown, parseDescriptionsFromMarkdown } from "./lonelog";
 import { buildCast, type CastMember } from "./lonelogTags";
@@ -14,7 +14,7 @@ describe("carrying on in a new adventure", () => {
     for (const lang of ["es", "en"] as const) {
       const t = DICTIONARIES[lang];
       // The sample uses every kind of element and every way to change one.
-      const { markdown } = buildSampleAdventure(t, await loadMeaningTables("solo-compass", t, lang));
+      const { markdown } = buildSampleAdventure(t, LONG_TEXTS[lang].sample, await loadMeaningTables("solo-compass", t, lang));
       const entries = parseMarkdownToEntries(markdown, "old", 0);
       const from: Adventure = {
         id: "old",

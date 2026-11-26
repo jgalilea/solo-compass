@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <script>
-      // Aplica el tema y el modo claro/oscuro guardados antes del
-      // primer pintado, para evitar un parpadeo con los valores por
-      // defecto al cargar.
+      // The saved theme and light/dark mode, before the first paint:
+      // otherwise the defaults flash while loading. Allowed by its hash
+      // in the Content Security Policy (vite.config.ts).
       try {
         var t = localStorage.getItem("solo-compass:theme") || "osr";
         document.documentElement.setAttribute("data-theme", t);

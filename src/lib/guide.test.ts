@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LOCALES } from "./i18n";
-import { DICTIONARIES } from "./i18n/allDictionaries";
+import { LONG_TEXTS } from "./i18n/allDictionaries";
 import { closeGuide, isGuideOpen, openGuide, subscribeGuide } from "./guide";
 import { isCardDraw } from "./cards";
 import { parseMarkdownToEntries, type JournalEntry } from "./lonelog";
@@ -25,7 +25,7 @@ describe("guide store", () => {
 
 // The guide's examples must do what it says they do.
 for (const locale of LOCALES) {
-  const g = DICTIONARIES[locale].guide;
+  const g = LONG_TEXTS[locale].guide;
 
   describe(`quick guide (${locale})`, () => {
     it("reads every notation example as it says", () => {
@@ -70,7 +70,7 @@ for (const locale of LOCALES) {
     });
 
     it("has the same rows in both languages", () => {
-      const other = DICTIONARIES[locale === "es" ? "en" : "es"].guide;
+      const other = LONG_TEXTS[locale === "es" ? "en" : "es"].guide;
       expect(g.notation.length).toBe(other.notation.length);
       expect(g.tags.length).toBe(other.tags.length);
       expect(g.updates.length).toBe(other.updates.length);

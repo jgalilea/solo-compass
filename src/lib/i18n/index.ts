@@ -1,6 +1,6 @@
-import { LOCALES, type Dictionary, type Locale } from "./types";
+import { LOCALES, type Dictionary, type Locale, type LongTexts } from "./types";
 
-export type { Dictionary, Locale } from "./types";
+export type { Dictionary, Locale, LongTexts } from "./types";
 export { LOCALES, interpolate } from "./types";
 
 /**
@@ -24,6 +24,42 @@ export async function loadDictionary(locale: Locale): Promise<Dictionary> {
 /** A dictionary already loaded by loadDictionary, if any. */
 export function loadedDictionary(locale: Locale): Dictionary | undefined {
   return loaded[locale];
+}
+
+/**
+ * The long texts (help, the quick guide, the sample adventure's
+ * script: LongTexts), a chunk of their own per language, fetched when
+ * opened or once the first screen is up (preloadAll). Read in a
+ * component with useLongTexts, which suspends until they're here.
+ */
+const LONG_LOADERS: Record<Locale, () => Promise<LongTexts>> = {
+  es: () => import("./locales/es.long").then((m) => m.esLong),
+  en: () => import("./locales/en.long").then((m) => m.enLong),
+};
+
+/** A promise React's `use` can read at once when it's already settled. */
+type Tracked<T> = Promise<T> & { status?: "fulfilled"; value?: T };
+
+const longTexts: Partial<Record<Locale, Tracked<LongTexts>>> = {};
+
+/** The same promise each time, so `use` doesn't suspend again once it's in. */
+export function loadLongTexts(locale: Locale): Promise<LongTexts> {
+  const cached = longTexts[locale];
+  if (cached) return cached;
+  const promise: Tracked<LongTexts> = LONG_LOADERS[locale]().then(
+    (texts) => {
+      promise.status = "fulfilled";
+      promise.value = texts;
+      return texts;
+    },
+    (error: unknown) => {
+      // Let a later render try again (offline for a moment, say).
+      delete longTexts[locale];
+      throw error;
+    },
+  );
+  longTexts[locale] = promise;
+  return promise;
 }
 
 const STORAGE_KEY = "solo-compass:locale";

@@ -32,7 +32,7 @@ import { THEMES } from "../lib/theme";
 import { MODES } from "../lib/mode";
 import { LOCALES, interpolate } from "../lib/i18n";
 import { LONELOG_LICENSE_URL, LONELOG_URL } from "../lib/lonelog";
-import { TABLE_CREDITS } from "../lib/tableGames";
+import { TABLE_CREDITS } from "../lib/tableCredits";
 import { backupFilename, backupText, buildBackup, downloadBackupFile } from "../lib/backup";
 import { canShare, shareTextFile } from "../lib/share";
 import { fileProblemText, inspectFile } from "../lib/fileImport";
@@ -381,7 +381,7 @@ function BackupSettings() {
     setImportError(null);
     const found = await inspectFile(t, file, "backup");
     if (found.kind === "problem") setImportError(fileProblemText(t, found.problem));
-    else if (found.kind !== "backup") offerFiles([file]);
+    else if (found.kind !== "backup") offerFiles([file], "button");
     else {
       const date =
         found.exportedAt === null

@@ -4,7 +4,8 @@ import { TABLE_THEMES, type MeaningTable, type TableTheme } from "../lib/tables"
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "../lib/tableFavorites";
 import { loadOpenTableSections, saveOpenTableSections } from "../lib/tableSections";
 import { gameOfTable, TABLE_GAMES } from "../lib/tableGames";
-import { exportTableToMarkdown, type CustomTable, type CustomTableDraft } from "../lib/customTables";
+import { type CustomTable, type CustomTableDraft } from "../lib/customTables";
+import { exportTableToMarkdown } from "../lib/customTableText";
 import { fileProblemText, inspectFile } from "../lib/fileImport";
 import { offerFiles } from "../lib/incomingFiles";
 import { loadSearchResults, matchingEntries, saveSearchResults } from "../lib/tableSearch";
@@ -243,7 +244,7 @@ export function TablesView() {
     const found = await inspectFile(t, file, "tables");
     if (found.kind === "tables") importDrafts(found.drafts);
     else if (found.kind === "problem") setToast({ kind: "message", title: fileProblemText(t, found.problem), error: true });
-    else offerFiles([file]);
+    else offerFiles([file], "button");
   }
 
   function importDrafts(drafts: CustomTableDraft[]) {

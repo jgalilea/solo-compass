@@ -23,7 +23,8 @@
  */
 
 import { BACKUP_SCHEMA_VERSION, isBackupPayload } from "./backup";
-import { parseTablesFile, type CustomTableDraft } from "./customTables";
+import { type CustomTableDraft } from "./customTables";
+import { parseTablesFile } from "./customTableText";
 import type { Dictionary } from "./i18n";
 import { parseMarkdownToEntries, parseNotesFromMarkdown, parseTitleFromMarkdown } from "./lonelog";
 

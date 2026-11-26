@@ -3,7 +3,7 @@ import { fixOldD66, readRolledDice, rollFormula, withEdge } from "./diceNotation
 import { normalizeHistoryEntry } from "./history";
 import { normalizeJournalEntry } from "./journal";
 import { LOCALES } from "./i18n";
-import { DICTIONARIES } from "./i18n/allDictionaries";
+import { LONG_TEXTS } from "./i18n/allDictionaries";
 
 /** A die roll that always lands on the given faces, in order (1-based). */
 function dice(...faces: number[]) {
@@ -221,7 +221,7 @@ describe("rollFormula, the rest of Lonelog's dice notation", () => {
 describe("dice help", () => {
   it("only shows examples rollFormula can write", () => {
     for (const locale of LOCALES) {
-      for (const { examples } of DICTIONARIES[locale].diceHelp.formulas) {
+      for (const { examples } of LONG_TEXTS[locale].diceHelp.formulas) {
         for (const { line } of examples) {
           const formula = line.split(" -> ")[0];
           expect(rollFormula(formula)?.startsWith(`${formula} -> `), line).toBe(true);
@@ -231,7 +231,7 @@ describe("dice help", () => {
   });
 
   it("writes each example exactly as the help shows it", () => {
-    const lines = DICTIONARIES.es.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line));
+    const lines = LONG_TEXTS.es.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line));
     const rolls: Record<string, [number, number][]> = {
       "2d6+3": [[4, 6], [2, 6]],
       "d20+5": [[12, 20]],
@@ -269,7 +269,7 @@ describe("dice help", () => {
       expect(rollFormula(formula, faces(...rolls[formula]))).toBe(line);
     }
     // Both languages show the same lines.
-    expect(DICTIONARIES.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(lines);
+    expect(LONG_TEXTS.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(lines);
   });
 
   it("every formula a card or a game names can be rolled", () => {
@@ -282,7 +282,7 @@ describe("dice help", () => {
       return t;
     };
     for (const locale of LOCALES) {
-      for (const { formula, parts, usedIn } of DICTIONARIES[locale].diceHelp.formulas) {
+      for (const { formula, parts, usedIn } of LONG_TEXTS[locale].diceHelp.formulas) {
         const text = [usedIn, ...parts.map((p) => p.text)].join(" ").replace(/\{(\S+), /g, "{$1,");
         const named = [...formula.split(" · "), ...(text.match(/\S*\dd[\d%F(]\S*|\S*\bd[\d%F(]\S*/g) ?? []).map(clean)];
         for (const f of named) expect(rollFormula(f), `${locale}: ${f}`).not.toBeNull();

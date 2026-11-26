@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { interpolate } from "../lib/i18n";
+import { interpolate, loadLongTexts } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
 import { AllDiceStatsDialog } from "./AllDiceStatsDialog";
 import { EmptyState, ErrorState, LoadingState } from "./StateViews";
@@ -180,7 +180,7 @@ export function JournalListView() {
       const found = await inspectFile(t, file, "journal");
       if (found.kind === "problem") return setImportError(fileProblemText(t, found.problem));
       setImportError(null);
-      if (found.kind !== "journal") return offerFiles([file]);
+      if (found.kind !== "journal") return offerFiles([file], "button");
       const adventure = importAdventure(found.title, readLonelog(found.text));
       setActiveAdventureId(adventure.id);
       navigate(`/diario/${adventure.id}`);
@@ -194,9 +194,10 @@ export function JournalListView() {
   // Its table rolls come from Solo Compass's tables, loaded on demand.
   // If they can't be loaded, the link just does nothing.
   function handleOpenSample() {
-    loadMeaningTables("solo-compass", t, locale)
-      .then((tables) => {
-        const { name, markdown } = buildSampleAdventure(t, tables);
+    // Its script is in the long texts, loaded apart (loadLongTexts).
+    Promise.all([loadMeaningTables("solo-compass", t, locale), loadLongTexts(locale)])
+      .then(([tables, long]) => {
+        const { name, markdown } = buildSampleAdventure(t, long.sample, tables);
         const adventure = importAdventure(name, readLonelog(markdown));
         navigate(`/diario/${adventure.id}`, { state: { fromStart: true } });
       })

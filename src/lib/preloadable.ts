@@ -37,12 +37,13 @@ export function preloadable<P extends object>(load: () => Promise<ComponentType<
 
 /**
  * Fetches every preloadable chunk while the browser is idle, once the
- * first screen is up. The service worker caches them too, but only
- * this makes them ready to render without suspending.
+ * first screen is up, and `also` (the long texts in the language in
+ * use). The service worker caches them too, but only this makes them
+ * ready to render without suspending.
  */
-export function preloadAll(): void {
+export function preloadAll(also: (() => Promise<unknown>)[] = []): void {
   const run = () => {
-    for (const preload of registry) preload().catch(() => {});
+    for (const preload of [...registry, ...also]) preload().catch(() => {});
   };
   const whenIdle = () => {
     if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });

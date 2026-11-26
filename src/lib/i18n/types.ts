@@ -180,32 +180,8 @@ export interface Dictionary {
   };
   guide: {
     title: string;
-    intro: string;
     settingsText: string;
     settingsButton: string;
-    writingHeading: string;
-    writing: string[];
-    /** Each adventure's oracle, dice and tables, and the favourites. */
-    gameTableHeading: string;
-    gameTableIntro: string;
-    gameTable: string[];
-    notationHeading: string;
-    notationIntro: string;
-    notation: GuideRow[];
-    tagsHeading: string;
-    tagsIntro: string;
-    tags: GuideRow[];
-    updatesHeading: string;
-    updatesIntro: string;
-    updates: GuideRow[];
-    /** Which of Lonelog's documents the app reads, and which it leaves apart. */
-    scopeHeading: string;
-    scopeIntro: string;
-    scopeUsedLabel: string;
-    scopeUsed: GuideRow[];
-    scopeApartLabel: string;
-    scopeApart: GuideRow[];
-    scopeNote: string;
   };
   shortcuts: {
     ctrlKey: string;
@@ -364,6 +340,10 @@ export interface Dictionary {
     restoreMergeDescription: string;
     restoreReplaceLabel: string;
     restoreReplaceDescription: string;
+    /** "Replace everything" asks again: it can't be undone. */
+    restoreReplaceConfirm: string;
+    restoreReplaceConfirmButton: string;
+    restoreReplaceBack: string;
   };
   oracleSwitcher: {
     triggerLabel: string;
@@ -378,49 +358,10 @@ export interface Dictionary {
   oracleHelp: {
     button: string;
     title: string;
-    intro: string;
-    steps: string[];
-    answersHeading: string;
-    answers: { label: string; text: string }[];
-    /** How the chosen oracle reads its dice, in our own words, and its special answer if it has one. */
-    rules: Record<OracleId, { heading: string; text: string; special?: { label: string; text: string } }>;
-    oddsHeading: string;
-    oddsIntro: string;
-    oddsColumns: { likelihood: string; yes: string; no: string; and: string; but: string };
-    /** The column for each oracle's special outcome (none for OPSE). */
-    oddsSpecial: Partial<Record<OracleId, string>>;
-    stuck: string;
-    /** {name}, {author}, {license}. */
-    credit: string;
   };
   diceHelp: {
     button: string;
     title: string;
-    intro: string;
-    stepsHeading: string;
-    steps: string[];
-    buttonsHeading: string;
-    buttons: { label: string; text: string }[];
-    symbolsHeading: string;
-    /** What each mark in a logged roll means. */
-    symbols: { symbol: string; text: string }[];
-    formulasHeading: string;
-    formulasIntro: string;
-    partsLabel: string;
-    examplesLabel: string;
-    usedInLabel: string;
-    formulas: {
-      name: string;
-      formula: string;
-      text: string;
-      /** The formula taken apart, piece by piece. */
-      parts: { token: string; text: string }[];
-      /** `line` is what it leaves in the journal (a test rolls each one). */
-      examples: { line: string; text: string }[];
-      usedIn: string;
-    }[];
-    rulesHeading: string;
-    rules: string[];
   };
   /** A file dropped on the window, opened with the installed app or shared to it (fileImport.ts). */
   files: {
@@ -446,6 +387,8 @@ export interface Dictionary {
     rollsLabel: string;
     tablesLabel: string;
     problemTitle: string;
+    /** A file shared to the app: it may not have been the player who shared it. */
+    sharedNote: string;
     problems: {
       unsupported: string;
       tooBig: string;
@@ -795,6 +738,13 @@ export interface Dictionary {
     zenOn: string;
     zenOff: string;
     zenBar: string;
+    zenHint: string;
+    zenExport: string;
+    zenExportTitle: string;
+    /** Under the exported story's title. */
+    htmlStoryNote: string;
+    /** Added to the exported story's file name ("La torre - relato.html"). */
+    storyFileSuffix: string;
     zenLeave: string;
     zenEmpty: string;
     /** Carrying on in a new adventure with this one's notebook (continueAdventure.ts). */
@@ -1101,12 +1051,6 @@ export interface Dictionary {
   sample: {
     /** Discreet link under "You don't have any adventures yet". */
     offer: string;
-    name: string;
-    /** Its pinned notes (in the .md's front matter). */
-    notes: string;
-    /** Notebook descriptions, one "[N:Name] text" line each (front matter too). */
-    descriptions: string;
-    script: SampleLine[];
   };
   dateLocale: string;
 }
@@ -1118,4 +1062,91 @@ export function interpolate(
   return template.replace(/\{(\w+)\}/g, (_, key: string) =>
     key in params ? String(params[key]) : `{${key}}`,
   );
+}
+
+/**
+ * The long texts: help, the quick guide and the sample adventure's script.
+ * Their own chunk per language, loaded when they're opened (loadLongTexts),
+ * not with the dictionary every screen waits for before its first paint.
+ * What shows before opening them (a help's title and button) stays in
+ * the Dictionary.
+ */
+export interface LongTexts {
+  sample: {
+    name: string;
+    /** Its pinned notes (in the .md's front matter). */
+    notes: string;
+    /** Notebook descriptions, one "[N:Name] text" line each (front matter too). */
+    descriptions: string;
+    script: SampleLine[];
+  };
+  diceHelp: {
+    intro: string;
+    stepsHeading: string;
+    steps: string[];
+    buttonsHeading: string;
+    buttons: { label: string; text: string }[];
+    symbolsHeading: string;
+    /** What each mark in a logged roll means. */
+    symbols: { symbol: string; text: string }[];
+    formulasHeading: string;
+    formulasIntro: string;
+    partsLabel: string;
+    examplesLabel: string;
+    usedInLabel: string;
+    formulas: {
+      name: string;
+      formula: string;
+      text: string;
+      /** The formula taken apart, piece by piece. */
+      parts: { token: string; text: string }[];
+      /** `line` is what it leaves in the journal (a test rolls each one). */
+      examples: { line: string; text: string }[];
+      usedIn: string;
+    }[];
+    rulesHeading: string;
+    rules: string[];
+  };
+  guide: {
+    intro: string;
+    writingHeading: string;
+    writing: string[];
+    /** Each adventure's oracle, dice and tables, and the favourites. */
+    gameTableHeading: string;
+    gameTableIntro: string;
+    gameTable: string[];
+    notationHeading: string;
+    notationIntro: string;
+    notation: GuideRow[];
+    tagsHeading: string;
+    tagsIntro: string;
+    tags: GuideRow[];
+    updatesHeading: string;
+    updatesIntro: string;
+    updates: GuideRow[];
+    /** Which of Lonelog's documents the app reads, and which it leaves apart. */
+    scopeHeading: string;
+    scopeIntro: string;
+    scopeUsedLabel: string;
+    scopeUsed: GuideRow[];
+    scopeApartLabel: string;
+    scopeApart: GuideRow[];
+    scopeNote: string;
+  };
+  oracleHelp: {
+    intro: string;
+    steps: string[];
+    answersHeading: string;
+    answers: { label: string; text: string }[];
+    /** How the chosen oracle reads its dice, in our own words, and its special answer if it has one. */
+    rules: Record<OracleId, { heading: string; text: string; special?: { label: string; text: string } }>;
+    oddsHeading: string;
+    oddsIntro: string;
+    oddsColumns: { likelihood: string; yes: string; no: string; and: string; but: string };
+    /** The column for each oracle's special outcome (none for OPSE). */
+    oddsSpecial: Partial<Record<OracleId, string>>;
+    stuck: string;
+    /** {name}, {author}, {license}. */
+    credit: string;
+  };
 }
