@@ -102,6 +102,20 @@ nothing the app uses. `@types/node` stays on the Node the workflows run
 (24). Dependabot ignores both (its `ignore` rules): change them there
 when moving on.
 
+Outside contributions: `CONTRIBUTING.md` (setup, checks, the
+principles a change must keep), `SECURITY.md` (private reports through
+GitHub's vulnerability reporting), `CODE_OF_CONDUCT.md`, the PR
+template and the issue forms (bug, idea, tables or oracle, all
+bilingual) in `.github/`. A ruleset on `main` makes every pull request
+need the code owner's approval (`.github/CODEOWNERS`) and the Tests
+workflow to pass, squash merge only; the maintainer (admin) bypasses
+it to push straight to `main`. Workflows on an outside contributor's
+pull request wait for the maintainer's approval. Keep CONTRIBUTING.md
+true when a convention or a check changes. `npm install` runs
+`scripts/git-setup.mjs` (the `prepare` script), which points git blame
+at `.git-blame-ignore-revs` (formatting-only commits: add one there
+when it only reformats).
+
 Push to `main` triggers `.github/workflows/deploy.yml`, which builds and
 publishes `dist/` to GitHub Pages via `actions/deploy-pages`. The sync
 relay (`relay/`) isn't deployed from GitHub: Cloudflare's Workers Builds

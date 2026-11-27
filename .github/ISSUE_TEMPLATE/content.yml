@@ -1,0 +1,39 @@
+name: Tables or oracle · Tablas u oráculo
+description: A game's tables or yes/no oracle you'd like in the app. · Las tablas o el oráculo de un juego que te gustaría ver en la app.
+labels: [content]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The app can only include content under an open licence that allows it: CC BY or CC BY-SA (never NC, "non-commercial"), or the author's written permission. A link to where the licence is stated saves a lot of time.
+        La app solo puede incluir contenido con una licencia abierta que lo permita: CC BY o CC BY-SA (nunca NC, «no comercial»), o el permiso escrito del autor. Un enlace a donde se indica la licencia ahorra mucho tiempo.
+  - type: input
+    id: game
+    attributes:
+      label: Game and author · Juego y autor
+      placeholder: Ironsworn, Shawn Tomkin
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is it? · ¿Qué es?
+      options:
+        - Tables · Tablas
+        - Yes/no oracle · Oráculo de sí/no
+        - Both · Las dos cosas
+    validations:
+      required: true
+  - type: input
+    id: licence
+    attributes:
+      label: Licence · Licencia
+      description: Which one, and the link where it says so. · Cuál, y el enlace donde se indica.
+      placeholder: CC BY 4.0, https://…
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it would help · Por qué ayudaría
+      description: Which tables, and how you'd use them in play. · Qué tablas, y cómo las usarías al jugar.

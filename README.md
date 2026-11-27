@@ -193,6 +193,7 @@ You need Node.js 24 (the version CI uses) and npm.
 git clone https://github.com/jgalilea/solo-compass.git
 cd solo-compass
 npm install
+npm install --prefix relay   # the sync relay's types, which lint needs
 npm run dev       # dev server at http://localhost:5173/solo-compass/
 ```
 
@@ -212,6 +213,10 @@ The browser tests need Playwright's Chromium once: `npx playwright install chrom
 The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, [Tabler Icons](https://tabler.io/icons), [uqr](https://github.com/unjs/uqr) (MIT) to draw the sync's QR code and [jsQR](https://github.com/cozmo/jsQR) (Apache-2.0) to read it where the browser can't. The sync relay is a Cloudflare Worker (`relay/`, deployed with Wrangler).
 
 The UI text lives in `src/lib/i18n/locales/{es,en}.ts`, which share one typed `Dictionary`, so TypeScript flags a missing key. The UI is Spanish first; the code comments, test names and commit messages are in English. [`CLAUDE.md`](CLAUDE.md) describes the architecture in more depth: state, storage, theming and responsive layout.
+
+### Contributing
+
+Bug reports, ideas, tables from openly licensed games, translations and code are all welcome, in Spanish or English. [`CONTRIBUTING.md`](CONTRIBUTING.md) explains how to set up, what the checks are and what the app will and won't take; security problems go privately, as [`SECURITY.md`](SECURITY.md) says.
 
 ### Deploying
 

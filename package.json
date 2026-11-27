@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "test:perf": "playwright test -c playwright.perf.config.ts",
     "format": "oxfmt",
-    "format:check": "oxfmt --check"
+    "format:check": "oxfmt --check",
+    "prepare": "node scripts/git-setup.mjs"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.52.0",
