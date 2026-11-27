@@ -186,6 +186,8 @@ test("replacing everything from a dropped backup asks again, and going back keep
   await dialog.getByRole("button", { name: "Mejor no" }).click();
   await expect(dialog.getByRole("button", { name: /Juntar/ })).toBeVisible();
   await dialog.getByRole("button", { name: "Cancelar" }).click();
+  // Closing takes its history entry off a moment later: navigating before would be undone by it.
+  await expect.poll(() => page.evaluate("history.state?.modalDepth ?? 0")).toBe(0);
 
   await page.goto("./#/diario");
   await expect(page.getByRole("link", { name: /^Lo mío/ })).toBeVisible();

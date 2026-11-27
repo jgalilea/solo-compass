@@ -452,9 +452,19 @@ test("the other device links by scanning the QR code with its camera", async ({ 
   const relay = fakeRelay();
   await relay.attach(page.context());
   const errors = watchErrors(page);
-  // No camera here (a plain test browser): the card doesn't offer scanning.
+  // A device that lists its media and has no camera (a microphone only): the card doesn't offer scanning.
+  await page.addInitScript(
+    `navigator.mediaDevices.enumerateDevices = async () => [{ kind: "audioinput", deviceId: "", groupId: "", label: "" }];`,
+  );
   let card = await openSettings(page);
+  await expect(card.getByRole("button", { name: "Activar en este dispositivo" })).toBeVisible();
   await expect(card.getByRole("button", { name: "Escanear el QR" })).toHaveCount(0);
+  // One that lists nothing before the camera is allowed (Safari): it may well have one, so it's offered.
+  const safariLike = await page.context().browser()!.newContext({ ...testInfo.project.use, locale: "es-ES" });
+  await safariLike.addInitScript(`navigator.mediaDevices.enumerateDevices = async () => [];`);
+  const safariPage = await safariLike.newPage();
+  await expect((await openSettings(safariPage)).getByRole("button", { name: "Escanear el QR" })).toBeVisible();
+  await safariLike.close();
   await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
   const code = (await card.locator(".font-mono").first().textContent())!.trim();
   await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
