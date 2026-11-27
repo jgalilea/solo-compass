@@ -11,20 +11,23 @@
  * already handle gets duplicated.
  */
 
-import { loadHistory, normalizeHistoryEntry, replaceHistory, type HistoryEntry } from "./history";
+import { loadHistory, normalizeHistoryEntry, replaceHistory, saveHistoryChanges, type HistoryEntry } from "./history";
 import {
   loadAdventures,
   loadJournalEntries,
   normalizeAdventure,
   normalizeJournalEntry,
+  orderAdventures,
   replaceAdventures,
   replaceJournalEntries,
+  saveAdventureChanges,
+  saveJournalEntryChanges,
   type Adventure,
 } from "./journal";
 import type { JournalEntry } from "./lonelog";
-import { isCustomTable, loadCustomTables, replaceCustomTables, type CustomTable } from "./customTables";
-import { loadSavedRolls, normalizeSavedRoll, replaceSavedRolls, type SavedRoll } from "./savedRolls";
-import { loadGenerators, normalizeGenerator, replaceGenerators, type Generator } from "./generators";
+import { isCustomTable, loadCustomTables, replaceCustomTables, saveCustomTableChanges, type CustomTable } from "./customTables";
+import { loadSavedRolls, normalizeSavedRoll, replaceSavedRolls, saveSavedRollChanges, type SavedRoll } from "./savedRolls";
+import { loadGenerators, normalizeGenerator, replaceGenerators, saveGeneratorChanges, type Generator } from "./generators";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
@@ -35,8 +38,8 @@ import { loadCardSettings, mergeCardSettings, normalizeCardSettings, saveCardSet
 import { isBuiltinDie } from "./dice";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
-import { mergeData } from "./backupMerge";
-import { loadDeletions, recentDeletions, replaceDeletions, type Deletion } from "./deletions";
+import { mergeData, type MergeData } from "./backupMerge";
+import { loadDeletions, recentDeletions, replaceDeletions, saveDeletionChanges, type Deletion } from "./deletions";
 import { announceChange } from "./sync";
 
 // 2: journal.adventures (formerly journal.campaigns) — backups are so
@@ -160,44 +163,26 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
 
   // Record by record, like on load: a damaged or hand-edited backup
   // loses what can't be read, instead of leaving a screen that can't open.
-  const incomingHistory = parsed.history.map(normalizeHistoryEntry).filter((x) => x !== null);
-  const incomingAdventures = parsed.journal.adventures.map(normalizeAdventure).filter((x) => x !== null);
-  const incomingEntries = parsed.journal.entries.map(normalizeJournalEntry).filter((x) => x !== null);
-  const incomingTables = Array.isArray(parsed.customTables) ? parsed.customTables.filter(isCustomTable) : null;
-  const incomingRolls = Array.isArray(parsed.savedRolls)
-    ? parsed.savedRolls.map(normalizeSavedRoll).filter((x) => x !== null)
-    : null;
-  const incomingGenerators = Array.isArray(parsed.generators)
-    ? parsed.generators.map(normalizeGenerator).filter((x) => x !== null)
-    : null;
-  const incomingDeleted = recentDeletions(
-    (Array.isArray(parsed.journal.deleted) ? parsed.journal.deleted : []).filter(
-      (d): d is Deletion => !!d && typeof d.id === "string" && typeof d.at === "number",
-    ),
-  );
+  const incoming = normalizeMergeData({
+    history: parsed.history,
+    adventures: parsed.journal.adventures,
+    entries: parsed.journal.entries,
+    customTables: parsed.customTables,
+    savedRolls: parsed.savedRolls,
+    generators: parsed.generators,
+    deleted: parsed.journal.deleted,
+  });
+  const incomingHistory = incoming.history;
+  const incomingAdventures = incoming.adventures;
+  const incomingEntries = incoming.entries;
+  // Missing from older backups: then this device's stay as they are.
+  const incomingTables = Array.isArray(parsed.customTables) ? incoming.customTables : null;
+  const incomingRolls = Array.isArray(parsed.savedRolls) ? incoming.savedRolls : null;
+  const incomingGenerators = Array.isArray(parsed.generators) ? incoming.generators : null;
+  const incomingDeleted = incoming.deleted;
 
   if (mode === "merge") {
-    const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
-      loadHistory(t),
-      loadAdventures(t),
-      loadJournalEntries(t),
-      loadCustomTables(t),
-      loadSavedRolls(t),
-      loadGenerators(t),
-      loadDeletions(),
-    ]);
-    const merged = mergeData(
-      { history, adventures, entries, customTables, savedRolls, generators, deleted },
-      {
-        history: incomingHistory,
-        adventures: incomingAdventures,
-        entries: incomingEntries,
-        customTables: incomingTables ?? [],
-        savedRolls: incomingRolls ?? [],
-        generators: incomingGenerators ?? [],
-        deleted: incomingDeleted,
-      },
-    );
+    const merged = mergeData(await loadMergeData(t), incoming);
     await Promise.all([
       replaceHistory(t, merged.history),
       replaceAdventures(t, merged.adventures),
@@ -245,6 +230,64 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     // A deck shuffled on either device stays shuffled.
     if (s.cards) saveCardSettings(mergeCardSettings(loadCardSettings(), normalizeCardSettings(s.cards)));
   }
+}
+
+/** Everything a merge (restoring a backup, or a sync) works on, as stored here. */
+export async function loadMergeData(t: Dictionary): Promise<MergeData> {
+  const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
+    loadHistory(t),
+    loadAdventures(t),
+    loadJournalEntries(t),
+    loadCustomTables(t),
+    loadSavedRolls(t),
+    loadGenerators(t),
+    loadDeletions(),
+  ]);
+  return { history, adventures, entries, customTables, savedRolls, generators, deleted };
+}
+
+function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Records from elsewhere (a backup, another device's sync), each one
+ * read like on load: what can't be used is dropped, the rest kept.
+ */
+export function normalizeMergeData(raw: { [K in keyof MergeData]?: unknown }): MergeData {
+  return {
+    history: listOf(raw.history).map(normalizeHistoryEntry).filter((x) => x !== null),
+    adventures: listOf(raw.adventures).map(normalizeAdventure).filter((x) => x !== null),
+    entries: listOf(raw.entries).map(normalizeJournalEntry).filter((x) => x !== null),
+    customTables: listOf(raw.customTables).filter(isCustomTable),
+    savedRolls: listOf(raw.savedRolls).map(normalizeSavedRoll).filter((x) => x !== null),
+    generators: listOf(raw.generators).map(normalizeGenerator).filter((x) => x !== null),
+    deleted: recentDeletions(
+      listOf(raw.deleted).filter(
+        (d): d is Deletion =>
+          !!d && typeof (d as Deletion).id === "string" && typeof (d as Deletion).at === "number",
+      ),
+    ),
+  };
+}
+
+/**
+ * Writes only what changed from `before` (as loaded) to `after` (a
+ * sync's merge), never the whole lists: something saved meanwhile, by
+ * this tab or another, isn't written over. Adventures new here go first,
+ * newest first, like any adventure missing from the saved order.
+ */
+export async function saveMergeChanges(t: Dictionary, before: MergeData, after: MergeData): Promise<void> {
+  const adventures = orderAdventures(after.adventures, before.adventures.map((a) => a.id));
+  await Promise.all([
+    saveHistoryChanges(t, before.history, after.history),
+    saveAdventureChanges(t, before.adventures, adventures),
+    saveJournalEntryChanges(t, before.entries, after.entries),
+    saveCustomTableChanges(t, before.customTables, after.customTables),
+    saveSavedRollChanges(t, before.savedRolls, after.savedRolls),
+    saveGeneratorChanges(t, before.generators, after.generators),
+    saveDeletionChanges(before.deleted, after.deleted),
+  ]);
 }
 
 /** This tab reloads after a restore; the others read it all again. */

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { fakeRelay } from "./fakeRelay.ts";
 
 /**
  * Synthetic performance check: years of play (thousands of journal
@@ -125,6 +126,43 @@ async function timed(label: string, action: () => Promise<void>, budgetMs: numbe
   expect(ms, label).toBeLessThan(budgetMs);
 }
 
+/** Years of play restored as a player would (Settings → restore → replace). */
+async function restoreVolume(page: Page) {
+  const backup = buildVolumeBackup();
+  console.log(
+    `Volume: ${backup.journal.entries.length} entries in ${backup.journal.adventures.length} adventures, ` +
+      `${backup.history.length} rolls, CPU ${CPU_SLOWDOWN}x slower`,
+  );
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: /^Ajustes/ }).click();
+  await page.locator('input[type=file][accept*="json"]').setInputFiles({
+    name: "solo-compass-volumen.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
+  await page.getByRole("button", { name: /Sustituir todo/ }).click();
+  // It asks again: it can't be undone.
+  await page.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
+  await expect(page.getByText("La gran campaña").first()).toBeVisible({ timeout: 60_000 });
+}
+
+/** The longest the main thread was busy at once (a "long task") since the last call, in ms. */
+async function longestTask(page: Page): Promise<number> {
+  // The browser hands long tasks to the watch a moment later: wait for them.
+  return page.evaluate(`(async () => {
+    if (!window.__longest) {
+      window.__longest = { ms: 0 };
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) window.__longest.ms = Math.max(window.__longest.ms, entry.duration);
+      }).observe({ type: "longtask" });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const ms = window.__longest.ms;
+    window.__longest.ms = 0;
+    return Math.round(ms);
+  })()`);
+}
+
 async function slowDownCpu(page: Page) {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: CPU_SLOWDOWN });
@@ -138,25 +176,7 @@ test("stays usable with years of play on a modest phone", async ({ page }) => {
     if (message.type() === "error") errors.push(message.text());
   });
 
-  const backup = buildVolumeBackup();
-  console.log(
-    `Volume: ${backup.journal.entries.length} entries in ${backup.journal.adventures.length} adventures, ` +
-      `${backup.history.length} rolls, CPU ${CPU_SLOWDOWN}x slower`,
-  );
-
-  // Restore it as a player would (Settings → restore → replace).
-  await page.goto("./#/diario");
-  await page.getByRole("button", { name: /^Ajustes/ }).click();
-  await page.locator('input[type=file][accept*="json"]').setInputFiles({
-    name: "solo-compass-volumen.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(backup)),
-  });
-  await page.getByRole("button", { name: /Sustituir todo/ }).click();
-  // It asks again: it can't be undone.
-  await page.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
-  await expect(page.getByText("La gran campaña").first()).toBeVisible({ timeout: 60_000 });
-
+  await restoreVolume(page);
   await slowDownCpu(page);
 
   await timed("Cold start to the journal list", async () => {
@@ -231,6 +251,66 @@ test("stays usable with years of play on a modest phone", async ({ page }) => {
     await page.goto("./#/historial");
     await expect(page.getByText("¿Sigue en pie la torre?").first()).toBeVisible({ timeout: 30_000 });
   }, 3000);
+
+  expect(errors).toEqual([]);
+});
+
+/**
+ * The longest the page may freeze while syncing in the background: past
+ * that, typing meanwhile stutters. Fingerprinting every record at once
+ * took ~200 ms here; it's done in slices now.
+ */
+const STALL_BUDGET = 150;
+
+test("syncs years of play without stalling a modest phone", async ({ page }) => {
+  test.setTimeout(5 * 60_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  const relay = fakeRelay();
+  await relay.attach(page.context());
+  await restoreVolume(page);
+  await slowDownCpu(page);
+
+  const settings = page.getByRole("button", { name: /^Ajustes/ });
+  const card = page.locator("#settings-sync");
+  await settings.click();
+  await card.scrollIntoViewIfNeeded();
+  // The watch sees a stall made on purpose (so a 0 below means none, not a blind watch).
+  await longestTask(page);
+  // (As a task of the page's own: one run from the test isn't counted.)
+  await page.evaluate("setTimeout(() => { const end = performance.now() + 120; while (performance.now() < end); })");
+  expect(await longestTask(page)).toBeGreaterThanOrEqual(100);
+
+  await timed("Sync: first upload of everything", async () => {
+    await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
+    await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
+    await expect(card.getByText(/^Sincronizado/)).toBeVisible({ timeout: 120_000 });
+  }, 30_000);
+  const firstLongest = await longestTask(page);
+  console.log(`${"Sync: longest stall in the first upload".padEnd(36)} ${String(firstLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  expect(firstLongest).toBeLessThan(STALL_BUDGET);
+
+  // A normal moment of play: an entry written, then the exchange that sends it.
+  await page.keyboard.press("Escape");
+  await page.getByText("La gran campaña").first().click();
+  await page.locator("[data-composer] textarea").fill("Una entrada que viaja.");
+  await page.getByRole("button", { name: "Añadir al diario" }).click();
+  await expect(page.locator("[id^=entry-]").getByText("Una entrada que viaja.")).toBeVisible({ timeout: 30_000 });
+  await page.goto("./#/diario");
+  await settings.click();
+  await card.scrollIntoViewIfNeeded();
+  await longestTask(page);
+  await timed("Sync: an exchange after one entry", async () => {
+    await card.getByRole("button", { name: "Sincronizar ahora" }).click();
+    await expect(card.getByText("Sincronizando…").first()).toBeHidden({ timeout: 60_000 });
+    await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+  }, 10_000);
+  const steadyLongest = await longestTask(page);
+  console.log(`${"Sync: longest stall in that exchange".padEnd(36)} ${String(steadyLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  expect(steadyLongest).toBeLessThan(STALL_BUDGET);
 
   expect(errors).toEqual([]);
 });

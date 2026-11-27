@@ -2,12 +2,15 @@ import { useMemo, useState } from "react";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { dismissBackupNote, saveLastBackupAt, shouldShowBackupNote } from "../lib/backupReminder";
+import { isSyncEnabled, syncAvailable } from "../lib/syncStatus";
 import { IconAlertTriangle, IconClose, IconDownload } from "./icons/Icons";
 
 /**
  * Journal list: the adventures are only in this browser, and nothing
- * copies them anywhere. Shown while there's something no backup has;
- * closed, it comes back in a month (backupReminder.ts).
+ * copies them anywhere (with the device sync on, they're on the other
+ * devices too, but a sync isn't a backup: a deletion travels). Shown
+ * while there's something no backup has; closed, it comes back in a
+ * month (backupReminder.ts).
  */
 export function BackupNote() {
   const { entries } = useJournalContext();
@@ -45,7 +48,16 @@ export function BackupNote() {
       </button>
       <p>
         <IconAlertTriangle size={16} className="mr-1.5 inline align-[-0.15em] text-no" />
-        <span className="font-semibold">{t.backupNote.title}</span> {t.backupNote.text}
+        {isSyncEnabled() ? (
+          <>
+            <span className="font-semibold">{t.backupNote.syncedTitle}</span> {t.backupNote.syncedText}
+          </>
+        ) : (
+          <>
+            <span className="font-semibold">{t.backupNote.title}</span> {t.backupNote.text}
+            {syncAvailable() && ` ${t.backupNote.syncHint}`}
+          </>
+        )}
       </p>
       <button
         type="button"

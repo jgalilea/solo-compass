@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Solo Compass: a solo-RPG tabletop companion (yes/no oracle, meaning tables,
 and a session journal). Browser-only, installable PWA, no backend — all data
-lives on the device (IndexedDB + localStorage). The UI is bilingual
+lives on the device (IndexedDB + localStorage); the one exception is the
+optional device sync, through a small relay that only keeps encrypted
+bytes (`relay/`, see "Device sync" below). The UI is bilingual
 (Spanish first, English); see "i18n" below.
 
 **Code comments, test names and commit messages are written in English.**
@@ -26,8 +28,9 @@ npm run deploy    # manual publish to gh-pages branch (normally unnecessary, see
 ```
 
 Tests are Vitest unit tests next to the module they cover
-(`src/lib/*.test.ts`): oracle mechanics, Lonelog export/import, journal
-grouping and table data integrity. No component/DOM tests; instead
+(`src/lib/*.test.ts`, and `relay/src/*.test.ts`): oracle mechanics, Lonelog export/import, journal
+grouping, table data integrity, and the device sync (two devices
+exchanging through the relay's own code, `syncExchange.test.ts`). No component/DOM tests; instead
 Playwright tests (`e2e/*.e2e.ts`, config in `playwright.config.ts`) on a
 phone and a desktop viewport against `vite preview` (on its own port,
 4174, always a fresh build: a preview left open is never reused), failing on any
@@ -35,7 +38,17 @@ console error: `smoke.e2e.ts` plays the main path (oracle, new
 adventure, an entry, a table roll, reload; two tabs at once; own dice
 and cards) and `lonelog.e2e.ts` Lonelog 1.7 in, changed and out; `data.e2e.ts` what would hurt most to lose (an
 adventure out as Lonelog and back in, the full backup restored on an
-empty browser, a table of one's own, the language picked); `files.e2e.ts`
+empty browser, a table of one's own, the language picked); `sync.e2e.ts` two devices
+(two browsers) syncing through a fake relay (`fakeRelay.ts`: the relay's `box.ts` behind
+Playwright's routing), a pause, a link with a code, a session of play
+(a backup merged in, edits and deletions on both, two tabs) ending with
+both devices' backups equal, the device's storage failing, the
+explanation dialog, scanning the QR code (a second Chromium whose fake
+camera films it, a Y4M drawn from it) and what two hours of play cost
+in requests (Playwright's clock), skipped when the
+build has no relay (`SYNC_E2E_LIVE=1` sends it to a real relay instead:
+`npm run dev` in `relay/` and the app built with
+`VITE_SYNC_RELAY_URL=http://localhost:8787`); `files.e2e.ts`
 files handed to the app (dropped on the window, shared through the
 service worker's share target, the wrong kind picked with a button, and
 refused ones); `a11y.e2e.ts` axe (WCAG 2.1 A and AA) on the main screens
@@ -49,7 +62,9 @@ text/roles in Spanish (the test runs with `locale: "es-ES"`).
 `e2e/volume.perf.ts` (config `playwright.perf.config.ts`, run by hand
 with `npm run test:perf`) restores a backup with ~11,000 entries and
 10,000 rolls and times the main screens on a phone with the CPU 4x
-slower, printing each timing. It's why the roll history is paged
+slower, printing each timing; it also syncs all of it and checks the
+page never freezes more than 150 ms meanwhile (fingerprinting every
+record at once took ~250 ms: `changedRecords` works in slices). It's why the roll history is paged
 (`HistoryView`, 60 at a time as you scroll) and a session's entries
 are drawn from the end (`EntryList`, 80 blocks, "earlier entries"
 button; whatever is highlighted, edited, selected or written below is
@@ -73,7 +88,10 @@ nothing the app uses. `@types/node` stays on the Node the workflows run
 when moving on.
 
 Push to `main` triggers `.github/workflows/deploy.yml`, which builds and
-publishes `dist/` to GitHub Pages via `actions/deploy-pages`. There is no
+publishes `dist/` to GitHub Pages via `actions/deploy-pages`. The sync
+relay (`relay/`) isn't deployed from GitHub: Cloudflare's Workers Builds
+pulls the repository and deploys it when `relay/` or `src/lib/syncWire.ts`
+change (no Cloudflare token in GitHub); `test.yml` type-checks it. There is no
 staging/preview step — a push to `main` goes live. The jobs are pinned to
 `ubuntu-24.04` (on 26.04, `ubuntu-latest`, the browser's system packages
 kept failing to download) and capped in time; installing Playwright's
@@ -217,15 +235,18 @@ No backend; persistence is split by access pattern, not by feature:
   Android's "no" clears it. Where nothing can tell (Brave, most
   desktops) the card says how to reinstall if it was removed.
 - **Privacy** (Settings → About, `PrivacyCard`): nothing leaves the
-  browser. The app makes no request outside its own origin (the only
-  `fetch` is its own fonts, for the HTML export); everything external
-  is a link the player opens. Keep it that way, or change the note.
+  browser unless the player takes it out. The app makes no request
+  outside its own origin (its own fonts, for the HTML export) except
+  the device sync's relay, only once sync is turned on and only sealed
+  bytes (`privacySync`, shown when the build has a relay); everything
+  external is a link the player opens. Keep it that way, or change the note.
 - **Content Security Policy** (`contentSecurityPolicyPlugin` in
   `vite.config.ts`): a `<meta>` first in `<head>` (Pages can't send
   headers), built pages only. Scripts only from the app and the two
   inline ones in `index.html` (theme, language preload), allowed by a
   hash worked out at build; every request on the app's own origin
-  (`connect-src 'self'`, the privacy note in code); styles keep
+  (`connect-src 'self'`, the privacy note in code) plus the sync relay's
+  origin when `.env` has one (`VITE_SYNC_RELAY_URL`); styles keep
   `'unsafe-inline'`. A blocked script is a console error, so the e2e
   catch it; `smoke.e2e.ts` checks the policy is there. Something new
   that needs another origin or an inline script means changing it.
@@ -292,6 +313,81 @@ No backend; persistence is split by access pattern, not by feature:
   `MAX_MARKED_LINE` for a note's Markdown, runs of spaces matched only
   from their start; `longText.test.ts`): a pattern run over imported
   text must not take quadratic time.
+- **Device sync** (Settings → Your data, `SyncSettings`; only in a
+  build whose `.env` has `VITE_SYNC_RELAY_URL`): the same data on
+  several devices through a relay that can't read it (`relay/`, a
+  Cloudflare Worker with one Durable Object per box, free plan; its
+  README says how it's deployed). No account: a **code** (`syncCode.ts`,
+  16 random bytes in Crockford base32 with a check character) gives,
+  by HKDF (`syncCrypto.ts`), the box's id, its pass (the relay keeps
+  only its hash) and an AES-GCM key; everything is gzipped and sealed
+  before it leaves. A box holds a snapshot and numbered changes after
+  it; a device sends what the relay doesn't have yet and gets the
+  others' since its last number in one POST (`syncWire.ts`, shared with
+  the relay; `text/plain`, so no CORS preflight, which would count as a
+  request), and folds changes into a new snapshot past 50 of them.
+  What to send is worked out from the data alone (`syncData.ts`): each
+  record's fingerprint against the ones the relay has (`prints`), so
+  anything (another tab, an import, a change made while sync was off)
+  goes, with no hooks in the stores. What comes in is merged with the
+  backup's merge and written as changes only (`saveMergeChanges` in
+  `backup.ts`), then announced to this tab too (`announceChange(…,
+  "sync")`). The exchange is `syncExchange.ts` (a device and a relay
+  passed in, so it's tested with two in memory); when to run it, the
+  statuses and the API Settings uses are `syncEngine.ts` (its own chunk;
+  `watchSync` in `syncStatus.ts`, from `Layout`, loads it only on a
+  device that syncs): on start, on coming back (visible or focused, if
+  the last exchange is over 5 min old, checked holding the lock so two
+  tabs don't both ask), 3 min after a change (15 at most from the first
+  one), on leaving with changes waiting (`keepalive`, so it arrives if
+  the app is closed then), when back online, and "Sync now"; a change
+  that leaves nothing to send makes no request (`onlyToSend`), and a
+  device stops itself past `DAILY_EXCHANGES` automatic ones in a UTC day
+  (pause `daily`). Requests and the relay's rows written are each a
+  100,000-a-day allowance shared by every player: `sync.e2e.ts` checks
+  two hours of play cost about eight requests, and the relay's tests one
+  row per change (`MemoryBoxStore.rowsWritten`); keep both. One
+  exchange at a time across tabs (Web Locks), and a request that hangs
+  is given up (`relayTimeout`, half a minute and more for big ones).
+  At a glance, an icon beside Settings
+  (`SyncIndicator`, only on a device that syncs; in an adventure's bar
+  on phone and tablet, only for trouble) says how it's going
+  (`syncGlance`: synced, sending, changes waiting, offline, paused,
+  something to look at; a shape each, not only a colour), and a tap
+  opens Settings at the sync's card (`askForSyncCard`).
+  Failures pause it and
+  say so (`SyncStatus` in localStorage, shared by the tabs; a dot on
+  the Settings button past 15 minutes, `syncNeedsAttention`): offline;
+  relay unreachable or its free daily allowance used up (it then
+  answers for us without CORS, so the two can't be told apart: retried
+  with backoff, at the latest after midnight UTC plus up to 30 minutes,
+  `nextSyncReset`); a box closed from another device (this one stops);
+  data from a newer app (stops until updated); something failing on the
+  device itself (its storage, say: `unexpected`, retried with the same
+  backoff, with a report to paste in the feedback form, `syncReport`,
+  which leaves out the error's message since it could quote the journal).
+  Every button in the card catches its failure and says so. A device unsynced for
+  335 days asks first (deletions are kept a year: merging could bring
+  some back); a clock more than 2 minutes off is pointed out (the
+  newest edit wins by each device's clock). A link `#/?vincular=CODE`
+  (the QR) opens Settings and asks; it never links by itself. "Scan the
+  QR code" reads it with the camera inside the app (an iPhone's camera
+  would open Safari, apart from the installed app; `qrScan.ts`: the
+  browser's BarcodeDetector, or jsQR in its own chunk, left out of the
+  service worker's precache; only shown with a
+  camera), then asks the same way (`offerSyncLink(code, "scan")`). Settings
+  per device (theme, mode, language…) don't travel, as with "merge".
+  Not a backup: the backup reminders stay as they are (`BackupNote`
+  says so on a device that syncs). The card's "How it works, security
+  and privacy" (also from About's privacy note, `SyncHelpButton`) is
+  the full explanation for players (long texts `sync.help`): keep it
+  true to the code (what the relay keeps, what travels, the limits),
+  like the README's "Device sync" and the privacy note. The relay keeps
+  no request logs (`observability` off in `wrangler.jsonc`): the note
+  says no IP addresses are kept. Its state (code,
+  last number, prints) is IndexedDB's `solo-compass-sync`; whether the
+  device syncs and the last status, localStorage (`solo-compass:sync`,
+  `solo-compass:sync-status`).
 - **Full backup/restore** (`backup.ts`, wired into `SettingsPanel`): exports
   everything above into one `.json` (download, or "Send" through the
   share sheet, as `.txt` on Chromium), and restores it either by
@@ -994,8 +1090,8 @@ import `locales/*` directly: tests get both through
 `i18n/allDictionaries.ts`, and the table themes' names (read in either
 language by `customTableText.ts`) live in `i18n/tableThemeNames.ts`.
 The long texts (`LongTexts`: the sample adventure's script, notes and
-descriptions, and the content of the dice help, the oracle help and the
-quick guide) aren't in the Dictionary: `locales/es.long.ts` and
+descriptions, the content of the dice help, the oracle help and the
+quick guide, and the device sync's card in Settings) aren't in the Dictionary: `locales/es.long.ts` and
 `en.long.ts`, a chunk each, loaded when opened (`loadLongTexts`, read
 with `useLongTexts`, which suspends: only in a component drawn once
 what it shows is open, under a `<Suspense>`) and in the background once

@@ -81,6 +81,8 @@ export interface Dictionary {
     aboutHeading: string;
     /** Settings button title when it shows the backup-due dot. */
     triggerLabelBackupDue: string;
+    /** The sync needs a look (paused a while, stopped, a question). */
+    triggerLabelSync: string;
     /** Switch for the Screen Wake Lock (only where the browser has it). */
     keepScreenOnLabel: string;
     keepScreenOnHint: string;
@@ -212,10 +214,33 @@ export interface Dictionary {
     enterKey: string;
   };
   /** Journal list: the adventures are only in this browser. */
-  backupNote: { title: string; text: string; button: string; failed: string };
+  /** The header's sync icon (only on a device that syncs): its name says how it's going. */
+  syncGlance: {
+    /** "{when}": "2 minutes ago". */
+    ok: string;
+    syncing: string;
+    pending: string;
+    waiting: string;
+    offline: string;
+    paused: string;
+    problem: string;
+  };
+  backupNote: {
+    title: string;
+    text: string;
+    /** Added in a build with the device sync, while this device doesn't sync. */
+    syncHint: string;
+    /** Instead of title and text, on a device that syncs. */
+    syncedTitle: string;
+    syncedText: string;
+    button: string;
+    failed: string;
+  };
   safariNote: {
     text: string;
     moveData: string;
+    /** In a build with the device sync. */
+    moveDataSync: string;
   };
   install: {
     sectionTitle: string;
@@ -298,6 +323,10 @@ export interface Dictionary {
     /** The privacy note: everything stays in the browser. */
     privacyTitle: string;
     privacyItems: string[];
+    /** Only in a build with the device sync. */
+    privacySync: string;
+    /** Opens the sync's full explanation (how it works, security, privacy). */
+    privacySyncHow: string;
     /** The feedback card: ideas and bugs, through a form. */
     feedbackTitle: string;
     feedbackDescription: string;
@@ -1072,6 +1101,104 @@ export function interpolate(
  * the Dictionary.
  */
 export interface LongTexts {
+  /** Syncing devices (Settings → Your data): drawn only once Settings is open. */
+  sync: {
+    title: string;
+    intro: string;
+    turnOn: string;
+    haveCode: string;
+    codeLabel: string;
+    codeInvalid: string;
+    link: string;
+    linkFromUrlTitle: string;
+    linkFromUrl: string;
+    alreadyLinked: string;
+    /** Asked after scanning a QR code here (like a link, the code may not be the person's). */
+    linkFromScan: string;
+    scanQr: string;
+    scanTitle: string;
+    scanHint: string;
+    scanNotCode: string;
+    scanDenied: string;
+    scanUnavailable: string;
+    scanCancel: string;
+    saveTitle: string;
+    saveText: string;
+    notBackup: string;
+    otherDevice: string;
+    iosHint: string;
+    qrLabel: string;
+    copy: string;
+    copied: string;
+    download: string;
+    done: string;
+    showCode: string;
+    hideCode: string;
+    syncNow: string;
+    syncing: string;
+    /** "Synced {when}" ("2 minutes ago"). */
+    synced: string;
+    notYet: string;
+    /** Changes made here that haven't gone yet. */
+    pendingNote: string;
+    offlineTitle: string;
+    offline: string;
+    pausedTitle: string;
+    pausedUnreachable: string;
+    pausedQuota: string;
+    pausedRate: string;
+    /** A device past its own daily number of exchanges (a safeguard). */
+    pausedDaily: string;
+    /** "{reset}": midnight UTC in the person's time ("1:00"). */
+    backBy: string;
+    meanwhile: string;
+    errorTitle: string;
+    errorFull: string;
+    errorUpdate: string;
+    errorDamaged: string;
+    /** Something failed on this device; tried again by itself. */
+    errorUnexpected: string;
+    /** "{time}": when it tries again, in the person's time. */
+    retryAt: string;
+    copyReport: string;
+    reportCopied: string;
+    reportHint: string;
+    /** Turning on, linking or the like couldn't be done (the browser's storage). */
+    actionFailed: string;
+    staleTitle: string;
+    staleText: string;
+    staleMerge: string;
+    staleMergeHint: string;
+    staleServer: string;
+    staleServerHint: string;
+    closedTitle: string;
+    closed: string;
+    closedOk: string;
+    /** "{minutes}" off; ahead or behind. */
+    clockAhead: string;
+    clockBehind: string;
+    moreOptions: string;
+    changeCode: string;
+    changeCodeTitle: string;
+    changeCodeText: string;
+    unlink: string;
+    unlinkTitle: string;
+    unlinkText: string;
+    deleteServer: string;
+    deleteServerTitle: string;
+    deleteServerText: string;
+    deleteServerFailed: string;
+    fileName: string;
+    /** The .txt with the code: "{code}", "{link}". */
+    fileText: string;
+    /** Opens the full explanation (`help`). */
+    learnMore: string;
+    help: {
+      title: string;
+      intro: string;
+      sections: { heading: string; items: string[] }[];
+    };
+  };
   sample: {
     name: string;
     /** Its pinned notes (in the .md's front matter). */

@@ -37,6 +37,7 @@ export const es: Dictionary = {
     languageHeading: "Idioma",
     aboutHeading: "Acerca de",
     triggerLabelBackupDue: "Ajustes · hace tiempo que no guardas una copia",
+    triggerLabelSync: "Ajustes · la sincronización necesita que le eches un vistazo",
     keepScreenOnLabel: "Mantener la pantalla encendida",
     keepScreenOnHint: "Mientras la app está a la vista, la pantalla no se apaga sola (útil al jugar con dados de verdad). Gasta algo más de batería.",
   },
@@ -157,9 +158,22 @@ export const es: Dictionary = {
     shiftKey: "Mayús",
     enterKey: "Intro",
   },
+  syncGlance: {
+    ok: "Sincronizado {when} · ver en Ajustes",
+    syncing: "Sincronizando…",
+    pending: "Cambios por enviar: salen en unos minutos o al salir de la app · ver en Ajustes",
+    waiting: "Sincronización: aún sin sincronizar · ver en Ajustes",
+    offline: "Sin conexión: los cambios esperan en este dispositivo · ver en Ajustes",
+    paused: "Sincronización en pausa: vuelve sola · ver en Ajustes",
+    problem: "La sincronización necesita que le eches un vistazo · ver en Ajustes",
+  },
   backupNote: {
     title: "Tus aventuras solo están en este navegador.",
-    text: "No hay nube ni copias automáticas: si borras sus datos, o pierdes o cambias de dispositivo, se pierden. Exporta una copia de vez en cuando.",
+    text: "No hay copias automáticas: si borras sus datos, o pierdes o cambias de dispositivo, se pierden. Exporta una copia de vez en cuando.",
+    syncHint: "Para tenerlas también en otro dispositivo, activa «Sincronizar dispositivos» en Ajustes.",
+    syncedTitle: "Tus aventuras se sincronizan, pero no tienen copia.",
+    syncedText:
+      "Sincronizar no es una copia de seguridad: un borrado o un error llega a todos tus dispositivos. Exporta una copia de vez en cuando.",
     button: "Exportar todo",
     failed: "No se pudo crear la copia. Prueba desde Ajustes.",
   },
@@ -167,6 +181,8 @@ export const es: Dictionary = {
     text: "En iPhone, Safari borra los datos de las webs que pasas una semana sin abrir, y tu diario con ellos. Para evitarlo, instala Solo Compass: botón Compartir → «Añadir a pantalla de inicio».",
     moveData:
       "La app instalada empieza vacía. Para llevarte lo de aquí: Ajustes → «Exportar todo» en Safari y «Restaurar copia» en la app.",
+    moveDataSync:
+      "La app instalada empieza vacía. Para llevarte lo de aquí, activa «Sincronizar dispositivos» en los Ajustes de Safari y pega el código en los de la app; o usa «Exportar todo» en Safari y «Restaurar copia» en la app.",
   },
   install: {
     sectionTitle: "Aplicación",
@@ -188,7 +204,7 @@ export const es: Dictionary = {
     sectionTitle: "Tus datos",
     whatTitle: "¿Qué es esto?",
     what:
-      "Solo Compass no tiene servidor: tus aventuras, tiradas y ajustes se guardan solo en este dispositivo, dentro del navegador. Si el dispositivo se queda sin espacio, o pasas mucho tiempo sin abrir la app, algunos navegadores pueden borrar esos datos por su cuenta para hacer sitio.",
+      "Tus aventuras, tiradas y ajustes se guardan en este dispositivo, dentro del navegador. Si el dispositivo se queda sin espacio, o pasas mucho tiempo sin abrir la app, algunos navegadores pueden borrar esos datos por su cuenta para hacer sitio.",
     benefitTitle: "¿Qué ganas?",
     benefit:
       "Si das permiso, el navegador marca los datos de Solo Compass como importantes y ya no los borrará por su cuenta. Solo desaparecerían si tú lo decides (por ejemplo, borrando los datos del sitio).",
@@ -197,7 +213,7 @@ export const es: Dictionary = {
       "Es un permiso estándar de los navegadores. Algunos, como Firefox, te mostrarán su propio aviso para que lo confirmes: es normal, lo pide esta app. Otros, como Chrome o Safari, lo deciden solos sin preguntar, a menudo según si has instalado la app o la usas con frecuencia.",
     ownershipTitle: "Tus datos son siempre tuyos",
     ownership:
-      "Nada sale de tu dispositivo: no hay cuentas ni servidor, y este permiso no envía nada a nadie. Puedes exportar una copia o borrarlo todo cuando quieras.",
+      "Este permiso no envía nada a nadie, y no hay cuentas: nada sale de tu dispositivo si tú no lo sacas. Puedes exportar una copia o borrarlo todo cuando quieras.",
     protectButton: "Proteger mis datos",
     protecting: "Pidiendo permiso…",
     howToRemoveTitle: "¿Cómo se quita?",
@@ -253,7 +269,7 @@ export const es: Dictionary = {
     triggerLabel: "Acerca de Solo Compass y créditos",
     dialogLabel: "Acerca de Solo Compass",
     description:
-      "Oráculo, tablas de significado y diario para jugar a rol en solitario. Todo se guarda solo en este dispositivo.",
+      "Oráculo, tablas de significado y diario para jugar a rol en solitario. Todo se guarda en tu dispositivo, sin cuentas.",
     oracleUsedBy: "Oráculos",
     journalUsedBy: "El diario se escribe en notación",
     tablesUsedBy: "Tablas de otros juegos",
@@ -264,11 +280,14 @@ export const es: Dictionary = {
     version: "Versión {version}",
     privacyTitle: "Tu diario es solo tuyo",
     privacyItems: [
-      "Todo lo que escribes y tiras (aventuras, diario, cuaderno, tablas, dados y ajustes) se guarda en este navegador, en tu dispositivo. No hay servidor, ni cuenta, ni nube: nada de eso sale de aquí.",
+      "Todo lo que escribes y tiras (aventuras, diario, cuaderno, tablas, dados y ajustes) se guarda en este navegador, en tu dispositivo. No hay cuenta: nada de eso sale de aquí si tú no lo sacas.",
       "Sin anuncios, sin cookies de seguimiento y sin analíticas. La app no sabe quién eres ni cuánto juegas.",
       "La app se descarga de GitHub Pages, como cualquier web, y a partir de ahí funciona sin conexión. Solo sale algo si tú lo sacas: al exportar o enviar una copia, al compartir una aventura o al abrir un enlace a otra web (Ko-fi, GitHub, el formulario de ideas y errores, la página de un juego).",
-      "Por eso mismo, si borras los datos del navegador o desinstalas la app, el diario se va con ellos: guarda una copia de vez en cuando.",
+      "Por eso mismo, si borras los datos del navegador o desinstalas la app, lo que hay en este dispositivo se va con ellos: guarda una copia de vez en cuando.",
     ],
+    privacySync:
+      "Si activas la sincronización de dispositivos, tu diario se cifra en tu dispositivo, con una llave que solo tienen tus dispositivos, y viaja así a un pequeño servidor de Solo Compass en Cloudflare: ni el servidor ni nadie más puede leerlo. Ve cuándo y cuánto se envía, pero no guarda tu dirección IP ni nada que diga quién eres.",
+    privacySyncHow: "Cómo funciona la sincronización, su seguridad y su privacidad",
     feedbackTitle: "Ideas y errores",
     feedbackDescription:
       "¿Algo no funciona, echas algo en falta o se te ha ocurrido una idea? Cuéntamelo en un formulario corto. Solo lleva la versión de la app y tu navegador, nada de tu diario.",
@@ -292,7 +311,7 @@ export const es: Dictionary = {
       "En la app cada tipo de entrada lleva un icono; al exportar se escribe con su símbolo Lonelog:",
     dataSectionTitle: "Copia de seguridad",
     dataSectionDescription:
-      "Todo se guarda solo en este dispositivo. Descarga una copia completa (historial, diario, tus tablas y ajustes) para no perderla, o envíala a otro dispositivo y júntala allí con lo que tengas para seguir jugando.",
+      "Todo se guarda en este dispositivo. Descarga una copia completa (historial, diario, tus tablas y ajustes) para no perderla, o envíala a otro dispositivo y júntala allí con lo que tengas para seguir jugando.",
     dataSectionHint:
       "La copia lo guarda todo: todas tus aventuras con sus notas, el historial de tiradas, tus tablas y los ajustes. Para sacar solo una aventura (en Markdown o como página web), usa el menú de esa aventura. Desde Android o Chrome se envía como .txt; se restaura igual.",
     exportAllButton: "Exportar todo",
@@ -536,7 +555,7 @@ export const es: Dictionary = {
       authorLabel: "Autoría",
       licenseLabel: "Licencia",
       urlLabel: "Enlace",
-      ownershipNote: "Tus tablas se guardan solo en este dispositivo y en tu copia de seguridad. La app no las publica en ningún sitio.",
+      ownershipNote: "Tus tablas se guardan en este dispositivo y en tu copia de seguridad. La app no las publica en ningún sitio.",
       save: "Guardar tabla",
       summary: "{count} resultados · {dice}",
       errorName: "Ponle un nombre a la tabla.",

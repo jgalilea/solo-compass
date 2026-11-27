@@ -9,6 +9,7 @@ import { openGuide } from "../lib/guide";
 import { settingsOpen } from "../lib/settingsOpen";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { ActionMenu } from "./ActionMenu";
+import { SyncIndicator } from "./SyncIndicator";
 import { SessionMenu } from "./SessionNavigation";
 import {
   IconArchive,
@@ -207,6 +208,8 @@ export function AdventureHeader({
             >
               <IconNotebook size={21} />
             </button>
+            {/* Where the app's header is hidden (phone, tablet): the sync's icon, only when something isn't right. */}
+            {noHeader && <SyncIndicator onlyTrouble />}
             {/* Everything rarely used, grouped, so the header fits on one
                 line and doesn't compete with what's used while playing. */}
             <ActionMenu

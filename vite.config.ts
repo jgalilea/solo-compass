@@ -56,7 +56,7 @@ const manifest: Partial<ManifestOptions> = {
   name: "Solo Compass",
   short_name: "Solo Compass",
   description:
-    "Oráculo de sí o no, más de 750 tablas, dados, cartas y un diario en Lonelog para jugar rol en solitario. Sin cuenta, sin conexión y todo en tu dispositivo.",
+    "Oráculo de sí o no, más de 750 tablas, dados, cartas y un diario en Lonelog para jugar rol en solitario. Sin cuenta y sin conexión; si quieres, sincronizado y cifrado entre tus dispositivos.",
   start_url: base,
   scope: base,
   display: "standalone",
@@ -110,7 +110,7 @@ const manifest: Partial<ManifestOptions> = {
 const englishManifest: Partial<ManifestOptions> = {
   ...manifest,
   description:
-    "A yes/no oracle, 750+ tables, dice, cards and a Lonelog journal for solo role-playing. No account, works offline, everything stays on your device.",
+    "A yes/no oracle, 750+ tables, dice, cards and a Lonelog journal for solo role-playing. No account, works offline, and syncs encrypted between your devices if you want.",
   lang: "en",
   shortcuts: shortcuts({ oraculo: "Oracle", tablas: "Tables", dados: "Dice", diario: "Journal" }),
 };
@@ -176,14 +176,27 @@ function localeModulePreloadPlugin(): Plugin {
  * from the page as built. A safety net if text ever got drawn as HTML:
  * nothing injected could run or send anything anywhere. Styles keep
  * 'unsafe-inline' (a style can't run code, and some are set inline);
- * every request stays on the app's own origin, as the privacy note says.
+ * every request stays on the app's own origin, as the privacy note says,
+ * except the device sync's relay when the build has one.
  * Built pages only: the dev server injects scripts of its own. The e2e
  * fail on any console error, so a blocked script shows up there.
  */
 function contentSecurityPolicyPlugin(): Plugin {
+  // The device sync's relay (.env's VITE_SYNC_RELAY_URL), the one origin
+  // besides the app's own that it may talk to, and only if this build has it.
+  let relayOrigin = "";
   return {
     name: "solo-compass:content-security-policy",
     apply: "build",
+    configResolved(config) {
+      const url = config.env.VITE_SYNC_RELAY_URL;
+      if (!url) return;
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") {
+        throw new Error(`VITE_SYNC_RELAY_URL must be https (got ${url})`);
+      }
+      relayOrigin = parsed.origin;
+    },
     transformIndexHtml: {
       order: "post",
       handler(html) {
@@ -197,7 +210,7 @@ function contentSecurityPolicyPlugin(): Plugin {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob:",
           "font-src 'self'",
-          "connect-src 'self'",
+          `connect-src 'self'${relayOrigin ? ` ${relayOrigin}` : ""}`,
           "worker-src 'self'",
           "manifest-src 'self'",
           "object-src 'none'",
@@ -249,7 +262,9 @@ export default defineConfig({
         // Receives the files shared to the installed app (share_target above).
         importScripts: ["share-target.js"],
         // Only for link previews (index.html): players never need it offline.
-        globIgnores: ["og-image.png", "404.html"],
+        // The QR code reader (jsQR, ~47 kB) is only for linking a device,
+        // which needs a connection anyway: fetched when scanning, not by everyone.
+        globIgnores: ["og-image.png", "404.html", "assets/jsQR-*.js"],
       },
       // The manifest always comes from the network: Chrome reads it through
       // the service worker to build and update the installed app (WebAPK),

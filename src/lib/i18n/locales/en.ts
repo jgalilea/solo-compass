@@ -37,6 +37,7 @@ export const en: Dictionary = {
     languageHeading: "Language",
     aboutHeading: "About",
     triggerLabelBackupDue: "Settings · it's been a while since your last backup",
+    triggerLabelSync: "Settings · the sync could use a look",
     keepScreenOnLabel: "Keep the screen on",
     keepScreenOnHint: "While the app is in view, the screen won't turn off by itself (handy when playing with real dice). Uses a little more battery.",
   },
@@ -157,9 +158,21 @@ export const en: Dictionary = {
     shiftKey: "Shift",
     enterKey: "Enter",
   },
+  syncGlance: {
+    ok: "Synced {when} · see in Settings",
+    syncing: "Syncing…",
+    pending: "Changes to send: they go in a few minutes or when you leave the app · see in Settings",
+    waiting: "Sync: not synced yet · see in Settings",
+    offline: "Offline: changes wait on this device · see in Settings",
+    paused: "Sync paused: it comes back by itself · see in Settings",
+    problem: "The sync could use a look · see in Settings",
+  },
   backupNote: {
     title: "Your adventures are only in this browser.",
-    text: "There's no cloud or automatic backup: if you clear its data, or lose or change your device, they're gone. Export a copy now and then.",
+    text: "There's no automatic backup: if you clear its data, or lose or change your device, they're gone. Export a copy now and then.",
+    syncHint: "To have them on another device too, turn on “Sync your devices” in Settings.",
+    syncedTitle: "Your adventures sync, but have no backup.",
+    syncedText: "Syncing isn't a backup: a deletion or a mistake reaches all your devices. Export a copy now and then.",
     button: "Export everything",
     failed: "The backup couldn't be made. Try from Settings.",
   },
@@ -167,6 +180,8 @@ export const en: Dictionary = {
     text: "On iPhone, Safari deletes the data of sites you don't open for a week, your journal included. To avoid it, install Solo Compass: Share button → “Add to Home Screen”.",
     moveData:
       "The installed app starts empty. To bring what's here: Settings → “Export everything” in Safari, then “Restore backup” in the app.",
+    moveDataSync:
+      "The installed app starts empty. To bring what's here, turn on “Sync your devices” in Safari's Settings and paste the code into the app's; or use “Export everything” in Safari, then “Restore backup” in the app.",
   },
   install: {
     sectionTitle: "App",
@@ -188,7 +203,7 @@ export const en: Dictionary = {
     sectionTitle: "Your data",
     whatTitle: "What is this?",
     what:
-      "Solo Compass has no server: your adventures, rolls and settings are saved only on this device, inside the browser. If the device runs low on space, or you don't open the app for a long time, some browsers may delete that data on their own to free up room.",
+      "Your adventures, rolls and settings are saved on this device, inside the browser. If the device runs low on space, or you don't open the app for a long time, some browsers may delete that data on their own to free up room.",
     benefitTitle: "What do you get?",
     benefit:
       "If you allow it, the browser marks Solo Compass's data as important and won't delete it on its own anymore. It would only go away if you decide so (for example, by clearing the site's data).",
@@ -197,7 +212,7 @@ export const en: Dictionary = {
       "It's a standard browser permission. Some browsers, like Firefox, will show their own prompt so you can confirm it: that's normal, this app is the one asking. Others, like Chrome or Safari, decide on their own without asking, often based on whether you've installed the app or use it often.",
     ownershipTitle: "Your data is always yours",
     ownership:
-      "Nothing leaves your device: there are no accounts and no server, and this permission doesn't send anything to anyone. You can export a copy or delete everything whenever you want.",
+      "This permission doesn't send anything to anyone, and there are no accounts: nothing leaves your device unless you take it out. You can export a copy or delete everything whenever you want.",
     protectButton: "Protect my data",
     protecting: "Asking for permission…",
     howToRemoveTitle: "How do I remove it?",
@@ -253,7 +268,7 @@ export const en: Dictionary = {
     triggerLabel: "About Solo Compass and credits",
     dialogLabel: "About Solo Compass",
     description:
-      "An oracle, meaning tables and a journal for solo tabletop RPGs. Everything is saved only on this device.",
+      "An oracle, meaning tables and a journal for solo tabletop RPGs. Everything is saved on your device, with no account.",
     oracleUsedBy: "Oracles",
     journalUsedBy: "The journal is written in",
     tablesUsedBy: "Tables from other games",
@@ -264,11 +279,14 @@ export const en: Dictionary = {
     version: "Version {version}",
     privacyTitle: "Your journal is yours alone",
     privacyItems: [
-      "Everything you write and roll (adventures, journal, notebook, tables, dice and settings) is kept in this browser, on your device. There's no server, no account and no cloud: none of it leaves here.",
+      "Everything you write and roll (adventures, journal, notebook, tables, dice and settings) is kept in this browser, on your device. There's no account: none of it leaves here unless you take it out.",
       "No ads, no tracking cookies and no analytics. The app doesn't know who you are or how much you play.",
       "The app is downloaded from GitHub Pages, like any website, and from then on works offline. Something only leaves if you take it out: when you export or send a backup, share an adventure or open a link to another site (Ko-fi, GitHub, the ideas and bugs form, a game's page).",
-      "Which also means that if you clear the browser's data or uninstall the app, the journal goes with it: save a backup now and then.",
+      "Which also means that if you clear the browser's data or uninstall the app, what's on this device goes with it: save a backup now and then.",
     ],
+    privacySync:
+      "If you turn on device sync, your journal is encrypted on your device, with a key only your devices have, and travels like that to a small Solo Compass server on Cloudflare: neither the server nor anyone else can read it. It sees when and how much is sent, but doesn't keep your IP address or anything that says who you are.",
+    privacySyncHow: "How sync works, its security and privacy",
     feedbackTitle: "Ideas and bugs",
     feedbackDescription:
       "Something not working, something missing, or an idea? Tell me in a short form. It only carries the app's version and your browser, nothing from your journal.",
@@ -292,7 +310,7 @@ export const en: Dictionary = {
       "In the app each entry type has an icon; when exported it's written with its Lonelog symbol:",
     dataSectionTitle: "Backup",
     dataSectionDescription:
-      "Everything is saved only on this device. Download a full copy (history, journal, your tables and settings) so you don't lose it, or send it to another device and merge it there with what you have to keep playing.",
+      "Everything is saved on this device. Download a full copy (history, journal, your tables and settings) so you don't lose it, or send it to another device and merge it there with what you have to keep playing.",
     dataSectionHint:
       "The copy holds everything: all your adventures with their notes, your roll history, your tables and your settings. To take out a single adventure (as Markdown or a web page), use that adventure's menu. From Android or Chrome it's sent as .txt; it restores just the same.",
     exportAllButton: "Export everything",
@@ -536,7 +554,7 @@ export const en: Dictionary = {
       authorLabel: "Author",
       licenseLabel: "License",
       urlLabel: "Link",
-      ownershipNote: "Your tables are stored only on this device and in your backup. The app doesn't publish them anywhere.",
+      ownershipNote: "Your tables are stored on this device and in your backup. The app doesn't publish them anywhere.",
       save: "Save table",
       summary: "{count} results · {dice}",
       errorName: "Give the table a name.",

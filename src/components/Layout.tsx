@@ -7,6 +7,7 @@ import { IncomingFiles } from "./IncomingFiles";
 import { isGuideOpen, openGuide, subscribeGuide } from "../lib/guide";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { ActiveAdventureChip } from "./ActiveAdventureChip";
+import { SyncIndicator } from "./SyncIndicator";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { loadLongTexts } from "../lib/i18n";
 import { useTableDiceFill } from "../hooks/useTableDiceFill";
@@ -16,6 +17,8 @@ import { KOFI_URL } from "../lib/support";
 import { PAGE_WIDTH } from "../lib/pageLayout";
 import { preloadable, preloadAll } from "../lib/preloadable";
 import { watchKeepScreenOn } from "../lib/wakeLock";
+import { offerSyncLink, SYNC_LINK_PARAM, syncAvailable, watchSync } from "../lib/syncStatus";
+import { settingsOpen } from "../lib/settingsOpen";
 
 const GuideDialog = preloadable(() => import("./GuideDialog").then((m) => m.GuideDialog));
 
@@ -104,6 +107,19 @@ export function Layout() {
   // "Keep the screen on" (Settings), for as long as the app is open.
   useEffect(() => watchKeepScreenOn(), []);
 
+  // The device sync, on a device that syncs (its engine is a chunk of its own).
+  useEffect(() => watchSync(t), [t]);
+
+  // A link with a sync code (another device's QR): Settings asks first.
+  const syncLink = new URLSearchParams(location.search).get(SYNC_LINK_PARAM);
+  useEffect(() => {
+    if (!syncLink) return;
+    navigate({ pathname: location.pathname, search: "" }, { replace: true });
+    if (!syncAvailable()) return;
+    offerSyncLink(syncLink);
+    settingsOpen.open();
+  }, [syncLink, location.pathname, navigate]);
+
   // Esc in a text field drops focus, so shortcuts keep working without
   // reaching for the mouse (dialogs and menus already use Esc to close,
   // and they come first).
@@ -170,6 +186,8 @@ export function Layout() {
           </nav>
           <div className="flex min-w-0 items-center justify-end gap-1.5 lg:gap-2">
             <ActiveAdventureChip />
+            {/* How the device sync is going, on a device that syncs. */}
+            <SyncIndicator />
             {/* Ko-fi, as a quiet icon beside Settings and in the same
                 style, at every size: in sight on phones too without
                 taking room or asking for anything. */}

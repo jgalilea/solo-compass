@@ -23,7 +23,8 @@ Playing an RPG on your own means being both the player and the game master. You 
 - **Plain-text journals you own.** Adventures are stored in [Lonelog](https://lonelog.itch.io/lonelog), an open notation for solo play. You can export any adventure as a `.md` file that other Lonelog tools can read, or import one you already have.
 - **Works on a phone at the table and on a big screen at your desk.** On a phone the journal is clear of clutter, with the tools in a sheet. On desktop, an adventure becomes a workspace with a session index and a game-table panel.
 - **Offline and installable.** It's a PWA: install it from the browser, and it keeps working without a connection.
-- **No account and no server.** Everything stays in your browser. The app makes no network requests, has no analytics and needs no sign-up.
+- **On all your devices, if you want.** Turn on sync and a code links your phone and your computer: the same journal on both, kept up to date by itself, end-to-end encrypted and with no account. [How it works](#device-sync).
+- **No account, and your journal stays yours.** Everything is kept in your browser, with no analytics and no sign-up. The only request the app makes beyond its own site is the optional device sync, encrypted on your device before it leaves.
 - **Five looks, light or dark.** OSR is the main one, plus Fantasy, Pulp, Modern and Sci-fi, each with its own palette and display font.
 - **English and Spanish.** The app follows your browser's language by default, and you can switch it in Settings.
 
@@ -138,9 +139,29 @@ Shortcuts work whenever you aren't typing in a field. Press <kbd>?</kbd> to see 
 
 ## Your data
 
-Solo Compass has no server. Your adventures, rolls and settings are stored only in this browser on this device: the journal and history in IndexedDB, small settings in `localStorage`. Nothing syncs between devices or browsers.
+Your adventures, rolls and settings are stored in this browser on this device: the journal and history in IndexedDB, small settings in `localStorage`. There's no account and nothing leaves the device unless you take it out, or turn on device sync.
 
-There are three ways to keep your data safe, all in **Settings**:
+### Device sync
+
+**Sync your devices** (Settings → Your data) keeps the same journal on your phone and your computer, up to date by itself. It's optional and off until you turn it on.
+
+**How to use it.** On the device that has your journal, press *Turn on for this device*. You get a sync code with a QR code: keep it somewhere safe (a password manager, a private note) or download it, since it's the only key to your synced data. On the other device, go to the same card and press *Scan the QR code* (the camera opens inside the app), or *I have a code* to type or paste it (a typo is caught before anything happens); the system camera works too, since the QR code is a link that opens the app. It always asks before linking, and what each device had is joined, losing nothing. On an iPhone or iPad with the app installed, paste the code inside the app: the QR code opens Safari, which keeps its data apart. Any number of devices can share one code.
+
+**When it syncs.** When the app opens and when you come back to it (if the last time was over five minutes ago), three minutes after your last change (a quarter of an hour at most while you keep playing), when you leave the app with changes waiting (sent so it arrives even if the app is closed right then), when the connection comes back, and with *Sync now*. Changes are gathered and nothing is asked for no reason, since the relay's free daily allowance is shared by everyone: two hours of steady play cost about eight requests. Offline you play as usual and changes go out later. If the same thing changes on two devices, the most recent edit wins (by each device's clock; the app warns if a clock is off), and deletions are remembered for a year so they don't come back from another device. A cloud icon beside Settings shows at a glance how it's going (synced, sending, changes waiting, offline or paused, something to look at) and opens the details.
+
+**What travels.** Your adventures (journal, pinned notes, descriptions, game table), the roll history, your own tables, dice and generators, and what you delete. Each device's settings don't: theme, mode, language, favorites, the order of your adventures, the active one, card shuffles and unsent drafts.
+
+**Security.** The code is 128 random bits made on your device. From it the app derives (HKDF-SHA-256), separately, the box's id on the relay, its password and an AES-256-GCM key. Everything is compressed and encrypted on the device before it leaves, over HTTPS, and each sealed part is authenticated, so anything altered is rejected. The code itself is never sent: the relay keeps only a SHA-256 hash of the password, and the QR code's link carries the code after `#`, which browsers don't send to servers. Whoever has the code can read and change the synced journal, so *Change the code* moves to a new one and deletes the old copy. Without the code the relay's copy can't be decrypted by anyone, the maintainer included.
+
+**Privacy and data use.** There's no account, email or name: each code is an anonymous box. For each box the relay keeps the encrypted data (each change with the time it came in), the password's hash, its size and when it expires; it doesn't store IP addresses or browser details. Like any website, the connection itself shows your IP address and browser to the relay and to Cloudflare, which hosts it on its free plan and handles that connection data under [its privacy policy](https://www.cloudflare.com/privacypolicy/). Nothing is used for ads or analytics or shared with anyone. The relay's code is in [`relay/`](relay/).
+
+**Limits and retention.** A box holds up to 24 MB, compressed and encrypted (many years of play), with changes folded into one snapshot as they pile up. A box nobody uses for six months is deleted by itself (a device back later starts a new one with everything it has); *Delete the server's copy* deletes it at once, and *Stop syncing here* only unlinks one device. The relay runs on Cloudflare's free plan: if its daily allowance runs out or it doesn't answer, sync pauses, says until when at the latest (midnight UTC), suggests carrying changes by hand with *Send* and *Merge* meanwhile, and resumes by itself. Nothing is ever charged and nothing is lost.
+
+**It isn't a backup.** A deletion or a mistake syncs too, so keep exporting backups now and then.
+
+### Keeping your data safe
+
+There are three more ways to keep your data safe, all in **Settings**:
 
 - **Backup:** *Export everything* downloads a single `.json` file with your journal, history and settings; *Send* hands it straight to another device or app through your system's share menu. *Restore* loads such a file and asks whether to **merge** it with what's on this device (to carry a game between your phone and your computer: what's new on either side is kept, the latest change wins and deletions stay deleted) or to **replace** everything.
 - **Storage protection:** asks the browser not to clear the app's data when space runs low. It's only requested when you press the button, because some browsers show their own permission prompt.
@@ -168,8 +189,8 @@ The browser tests need Playwright's Chromium once: `npx playwright install chrom
 | `npm run dev` | Vite dev server |
 | `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
 | `npm run preview` | Serve the production build |
-| `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup) |
-| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
+| `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup, device sync) and the sync relay (`relay/src`) |
+| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, two devices syncing through a fake relay (when the build has one), and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
 | `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU. Not part of the deploy |
 | `npm run lint` | oxlint |
 
@@ -185,6 +206,8 @@ Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/dep
 2. If your repository isn't called `solo-compass`, change `base` in `vite.config.ts` to match.
 
 `npm run deploy` publishes `dist/` to a `gh-pages` branch by hand instead. You don't need it if you use the workflow.
+
+Device sync needs its relay deployed once on Cloudflare's free plan (steps in [`relay/README.md`](relay/README.md)) and its URL in `.env` (`VITE_SYNC_RELAY_URL`). With it empty, the build simply doesn't offer sync.
 
 ## Credits and license
 

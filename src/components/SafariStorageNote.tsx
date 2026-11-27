@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { dismissSafariStorageNote, shouldShowSafariStorageNote } from "../lib/safariStorageNote";
+import { syncAvailable } from "../lib/syncStatus";
 import { IconClose, IconInstall } from "./icons/Icons";
 
 /** Journal list, iPhone/iPad Safari only: see src/lib/safariStorageNote.ts. */
@@ -25,7 +26,7 @@ export function SafariStorageNote() {
       <IconInstall size={18} className="mt-0.5 shrink-0 text-gold" />
       <div className="flex flex-col gap-1 text-sm text-parchment-dim">
         <p>{t.safariNote.text}</p>
-        <p className="text-xs text-parchment-dim">{t.safariNote.moveData}</p>
+        <p className="text-xs text-parchment-dim">{syncAvailable() ? t.safariNote.moveDataSync : t.safariNote.moveData}</p>
       </div>
       <button
         type="button"

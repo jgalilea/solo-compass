@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
+import { Suspense, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
 import {
   IconAction,
   IconCast,
@@ -46,6 +46,8 @@ import {
 } from "../lib/backupReminder";
 import { ChangelogDialog } from "./ChangelogDialog";
 import { StorageProtectionSettings } from "./StorageProtection";
+import { SyncHelpButton, SyncSettings } from "./SyncSettings";
+import { syncAvailable } from "../lib/syncStatus";
 import { InstallAppSettings } from "./InstallApp";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -173,6 +175,10 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
               <Section part="data" title={t.storage.sectionTitle}>
                 <StorageProtectionSettings />
                 <BackupSettings />
+                {/* Its texts are long ones (useLongTexts): a moment, if they aren't here yet. */}
+                <Suspense fallback={null}>
+                  <SyncSettings />
+                </Suspense>
               </Section>
               <Section part="about" title={t.settings.aboutHeading}>
                 <AboutSettings />
@@ -541,12 +547,7 @@ function AboutSettings() {
   );
 }
 
-/**
- * A plain link to Ko-fi, not its widget: the widget loads a third-party
- * script on every visit (and here nothing leaves the device), doesn't
- * work offline and doesn't respect the themes.
- */
-/** Where the data lives: in this browser, and nowhere else. */
+/** Where the data lives: in this browser, and, only if the device sync is on, sealed on its relay. */
 function PrivacyCard() {
   const { t } = useLocaleContext();
   return (
@@ -559,7 +560,13 @@ function PrivacyCard() {
         {t.about.privacyItems.map((item) => (
           <li key={item}>{item}</li>
         ))}
+        {syncAvailable() && <li>{t.about.privacySync}</li>}
       </ul>
+      {syncAvailable() && (
+        <div className="mt-3">
+          <SyncHelpButton label={t.about.privacySyncHow} />
+        </div>
+      )}
     </div>
   );
 }
@@ -609,6 +616,11 @@ function SourceCard() {
   );
 }
 
+/**
+ * A plain link to Ko-fi, not its widget: the widget loads a third-party
+ * script on every visit (and here nothing leaves the device), doesn't
+ * work offline and doesn't respect the themes.
+ */
 function SupportCard() {
   const { t } = useLocaleContext();
   return (

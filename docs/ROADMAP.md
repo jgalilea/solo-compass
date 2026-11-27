@@ -905,10 +905,11 @@ id (`deletions.ts`, esquema de copia 4) y las ediciones llevan fecha
 (`editedAt`, `notesUpdatedAt`), así que la fusión ya está lista para
 una sincronización automática.
 
-Recomendación: 1) hecho; 2) después,
+Recomendación (2026-11-11): 1) hecho; 2) después,
 Google Drive (`drive.appdata`) como sincronización opcional y
 explícita, sin cambiar la promesa de "todo en tu dispositivo" para
-quien no la active. Fuentes: [ámbitos de Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth),
+quien no la active. **Cambiada el 2026-11-26:** relevo cifrado propio
+en Cloudflare (ver «Paso 2» abajo). Fuentes: [ámbitos de Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth),
 [soporte de showDirectoryPicker](https://caniuse.com/mdn-api_window_showdirectorypicker),
 [límites de desarrollo de Dropbox](https://www.dropboxforum.com/discussions/101000014/does-a-dropbox-app-have-a-limit-on-development-users/846671).
 
@@ -924,7 +925,76 @@ cabe en un QR (~1,5 kB útiles); haría falta una secuencia animada
 dos dispositivos por WebRTC (cámara en los dos, falla entre redes
 distintas sin servidor). «Enviar» en Ajustes ya cubre ese caso.
 
-### Paso 2: sincronización con Google Drive (análisis del 2026-11-11)
+### Paso 2: relevo cifrado propio en Cloudflare — HECHO (2026-11-27, 1.11.0)
+
+Elegido en lugar de Google Drive (análisis de abajo, que queda como
+referencia): sin cuenta ni OAuth (ni la hora de token de Google ni las
+ventanitas que fallan en el iPhone instalado), igual en todos los
+navegadores, gratis y sin trámites de verificación. Comparado también
+con Dropbox, OneDrive, P2P (Trystero), Evolu, Jazz, InstantDB (cierra en
+2027), Firebase y Supabase: ver la conversación del 2026-11-26.
+
+- **Qué hace:** Ajustes → Tus datos → «Sincronizar dispositivos». Un
+  código (con QR) une los dispositivos; todo se cifra en el dispositivo
+  con una llave que sale del código y el relevo (`relay/`, Worker +
+  un Durable Object por buzón) solo guarda bytes que no puede leer. Ver
+  «Device sync» en CLAUDE.md para el diseño.
+- **Decidido con el usuario:** aviso para guardar el código en un sitio
+  seguro y seguir exportando; «Cambiar el código»; si se agota el cupo
+  gratuito o el relevo no responde, pausa visible en Ajustes (punto en
+  el botón pasados 15 min), con hasta cuándo como tarde (medianoche UTC)
+  y cómo pasar los cambios a mano mientras; aviso de reloj desajustado;
+  pregunta antes de juntar un dispositivo que lleva casi un año sin
+  sincronizar. Sin token de Cloudflare en GitHub (Workers Builds).
+- **Peticiones:** una por intercambio, sin preflight, cambios agrupados
+  (3 min tras el último, 15 como mucho; al volver, solo si hace más de 5
+  min; nada si no hay nada que enviar): unas 10–20 al día por jugador
+  activo. El relevo escribe una fila por cambio enviado y ninguna al
+  preguntar (las filas escritas son otro cupo de 100.000 al día, y
+  antes, con tres por envío, era el que se agotaba primero). Da para del
+  orden de 5.000–8.000 jugadores activos al día en el plan gratis. Un
+  dispositivo se para solo pasados 150 intercambios automáticos en un
+  día (salvaguarda contra un fallo que repita peticiones).
+  `MIN_WAIT` en `relay/wrangler.jsonc` frena a todos sin publicar app.
+- **Almacenamiento:** un buzón sin uso se borra a los seis meses (la
+  marca de uno cerrado, al año); la copia completa va en trozos de
+  1,8 MB. Años de partidas (11.000 entradas) ocupan unos 700 KB: los
+  5 GB dan para decenas de miles de jugadores.
+- **QR:** «Escanear el QR» dentro de la app (la cámara del sistema en un
+  iPhone abriría Safari, aparte de la app instalada): el lector del
+  navegador donde lo hay y jsQR (Apache-2.0, su propio trozo) donde no;
+  probado en la e2e con una cámara falsa que filma el QR.
+- **Desplegado** (2026-11-27, a mano con `wrangler deploy`) en
+  `https://solo-compass-sync.jgalilea.workers.dev`, ya en `.env`;
+  probado en vivo (subir, bajar, foto, pase incorrecto, cerrar, origen
+  ajeno). Al estar `relay/` en `main`: conectar el Worker al repositorio
+  (Settings → Build → Connect, raíz `relay`, sin build, sin preview
+  builds, rutas vigiladas `relay/*` y `src/lib/syncWire.ts`; pasos en
+  `relay/README.md`) y ver que el primer build encuentra
+  `src/lib/syncWire.ts` fuera de la raíz. Opcional: el límite de buzones
+  nuevos por IP (`ratelimits`, comentado en `wrangler.jsonc`).
+- **Comprobado antes de publicar** (2026-11-27): errores (peticiones
+  colgadas, fallos del almacenamiento del dispositivo con informe sin
+  texto del diario, botones que no tiran nada sin decirlo), una partida
+  en dos dispositivos y dos pestañas que acaba con las dos copias
+  iguales (también contra el Worker real en local, `SYNC_E2E_LIVE=1`), y
+  11.000 entradas sincronizadas en un móvil lento sin congelar la página
+  más de 50 ms (antes, ~250 ms al calcular las huellas de golpe). Textos
+  que decían «sin servidor» o «solo en este dispositivo» corregidos, y
+  la explicación completa en Ajustes, en el README y en la privacidad.
+- **Pendiente / a vigilar:** probarlo en un iPhone real (app instalada y
+  Safari); una carrera muy improbable: si editas una entrada justo en
+  la décima de segundo en que llega un cambio de esa misma entrada desde
+  otro dispositivo, puede ganar el que llega (releer cada registro antes
+  de escribirlo lo evitaría); mirar en el panel de Cloudflare las peticiones diarias tras
+  el lanzamiento; no viajan el orden de las aventuras, los favoritos ni
+  las barajadas (son del dispositivo, como en «Juntar»); restaurar con
+  «Sustituir todo» con la sincronización activa vuelve a traer lo del
+  servidor en el siguiente intercambio (avisarlo en el diálogo si
+  confunde); si el cupo se queda corto, subir antes la espera entre
+  envíos o pasar al plan de 5 $/mes.
+
+### Paso 2 (descartado): sincronización con Google Drive (análisis del 2026-11-11)
 
 **Qué haría.** Un interruptor «Sincronizar con Google Drive» en Ajustes,
 apagado por defecto. Al activarlo, Google pide permiso para el ámbito

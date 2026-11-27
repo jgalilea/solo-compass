@@ -2,6 +2,184 @@ import type { LongTexts } from "../types";
 
 /** The Spanish long texts (see LongTexts): loaded apart, when opened. */
 export const esLong: LongTexts = {
+  sync: {
+    title: "Sincronizar dispositivos",
+    intro:
+      "El mismo diario en el móvil y en el ordenador, al día sin hacer nada. Sin cuenta: un código une tus dispositivos, y todo viaja cifrado con él. Ni el servidor puede leerlo.",
+    turnOn: "Activar en este dispositivo",
+    haveCode: "Ya tengo un código",
+    codeLabel: "Código de sincronización",
+    codeInvalid: "Ese código no es válido: revisa que esté completo y sin erratas.",
+    link: "Vincular",
+    linkFromUrlTitle: "¿Vincular este dispositivo?",
+    linkFromUrl:
+      "Has abierto un enlace con un código de sincronización. Vincula solo si el código es tuyo: lo que hay en este dispositivo se juntará con lo de ese código, y podrá leerlo quien lo tenga.",
+    alreadyLinked: "Este dispositivo ya se sincroniza con otro código: si vinculas este, dejará de usar el anterior.",
+    linkFromScan:
+      "Has escaneado un código de sincronización. Vincula solo si es tuyo: lo que hay en este dispositivo se juntará con lo de ese código, y podrá leerlo quien lo tenga.",
+    scanQr: "Escanear el QR",
+    scanTitle: "Escanea el QR de tu otro dispositivo",
+    scanHint: "Apunta la cámara al QR que muestra tu otro dispositivo en Ajustes → Sincronizar dispositivos → «Ver el código». La imagen no sale de este dispositivo.",
+    scanNotCode: "Ese QR no es un código de sincronización de Solo Compass. Apunta al que muestra tu otro dispositivo.",
+    scanDenied: "Solo Compass no tiene permiso para usar la cámara. Dáselo en los ajustes del navegador, o escribe el código con «Ya tengo un código».",
+    scanUnavailable: "No se ha podido abrir la cámara. Escribe el código con «Ya tengo un código».",
+    scanCancel: "Cancelar",
+    saveTitle: "Guarda este código en un sitio seguro",
+    saveText:
+      "Lo necesitarás para vincular otro dispositivo, o este mismo si pierde sus datos. Un gestor de contraseñas o una nota privada valen. Quien lo tenga puede leer y cambiar tu diario sincronizado: no lo compartas.",
+    notBackup:
+      "Sincronizar no es una copia de seguridad: un borrado también se sincroniza. Sigue exportando una copia de vez en cuando.",
+    otherDevice:
+      "En el otro dispositivo, abre Ajustes → Sincronizar dispositivos y pulsa «Escanear el QR» (o escríbelo con «Ya tengo un código»). También vale la cámara del sistema: el QR es un enlace que abre la app.",
+    iosHint:
+      "En un iPhone o iPad con la app instalada, escanéalo desde la propia app con «Escanear el QR»: la cámara del sistema abriría Safari, que guarda sus datos aparte de la app.",
+    qrLabel: "Código QR para vincular otro dispositivo",
+    copy: "Copiar",
+    copied: "Copiado",
+    download: "Descargar",
+    done: "Hecho, ya lo he guardado",
+    showCode: "Ver el código",
+    hideCode: "Ocultar el código",
+    syncNow: "Sincronizar ahora",
+    syncing: "Sincronizando…",
+    synced: "Sincronizado {when}",
+    notYet: "Aún sin sincronizar",
+    pendingNote: "Hay cambios por enviar: salen solos en unos minutos o al salir de la app, o ahora con «Sincronizar ahora».",
+    offlineTitle: "Sin conexión",
+    offline: "Lo que cambies se guarda aquí y se enviará cuando vuelva la conexión.",
+    pausedTitle: "Sincronización en pausa",
+    pausedUnreachable:
+      "El servicio de sincronización no responde (puede que se haya agotado su cupo gratuito del día). Tus cambios están guardados en este dispositivo y se enviarán solos.",
+    pausedQuota:
+      "Se ha agotado el cupo gratuito del día del servicio de sincronización. Tus cambios están guardados en este dispositivo y se enviarán solos.",
+    pausedRate: "Demasiados envíos seguidos: se reintentará sola en un momento.",
+    pausedDaily:
+      "Este dispositivo ha sincronizado hoy muchas más veces de lo normal, así que espera para no gastar el cupo que comparten todos. «Sincronizar ahora» sigue funcionando.",
+    backBy: "Volverá sola, como muy tarde a medianoche UTC ({reset} en tu hora).",
+    meanwhile: "Mientras tanto, puedes pasar tus cambios a mano: «Enviar» aquí y, en el otro dispositivo, restaurar con «Juntar».",
+    errorTitle: "La sincronización se ha detenido",
+    errorFull:
+      "La copia del servidor ha llegado a su tamaño máximo y no admite más cambios. Tus datos siguen aquí; cuéntamelo en el formulario de ideas y errores.",
+    errorUpdate: "Otro dispositivo usa una versión más nueva de Solo Compass: actualiza la app aquí para seguir sincronizando.",
+    errorDamaged: "El código guardado en este dispositivo está dañado. Deja de sincronizar aquí y vuelve a vincularlo con tu código.",
+    errorUnexpected:
+      "Algo ha fallado en este dispositivo al sincronizar (quizá su almacenamiento). No se ha perdido nada: lo que falte por enviar o recibir se calcula de nuevo en el siguiente intento.",
+    retryAt: "Lo volverá a intentar sola a las {time}, o ahora con «Sincronizar ahora».",
+    copyReport: "Copiar el informe",
+    reportCopied: "Informe copiado",
+    reportHint:
+      "Si se repite, pégalo en el formulario de ideas y errores (Acerca de). Solo lleva la versión de la app, tu navegador y dónde falló: nada de tu diario.",
+    actionFailed: "No se ha podido hacer: el almacenamiento de este navegador no responde. Vuelve a intentarlo o recarga la app.",
+    staleTitle: "Este dispositivo lleva casi un año sin sincronizar",
+    staleText:
+      "Lo que borraste en tus otros dispositivos hace tanto ya no se recuerda, y al juntar podría volver. ¿Qué prefieres?",
+    staleMerge: "Juntar lo de este dispositivo",
+    staleMergeHint: "No se pierde nada, pero puede volver algo que borraste.",
+    staleServer: "Quedarme con lo del servidor",
+    staleServerHint: "Lo que solo esté en este dispositivo se pierde: exporta antes una copia si lo quieres.",
+    closedTitle: "Este dispositivo ya no se sincroniza",
+    closed:
+      "La sincronización se cerró desde otro dispositivo (quizá cambiaste el código). Tus datos siguen aquí. Para volver, vincúlalo con el código nuevo.",
+    closedOk: "Entendido",
+    clockAhead: "La hora de este dispositivo va {minutes} min adelantada: corrígela para que la sincronización sepa qué cambio es el último.",
+    clockBehind: "La hora de este dispositivo va {minutes} min atrasada: corrígela para que la sincronización sepa qué cambio es el último.",
+    moreOptions: "Más opciones",
+    changeCode: "Cambiar el código",
+    changeCodeTitle: "¿Cambiar el código?",
+    changeCodeText:
+      "Este dispositivo pasa a un código nuevo y se cierra la copia del anterior. Tus otros dispositivos dejarán de sincronizarse hasta que los vincules con el código nuevo.",
+    unlink: "Dejar de sincronizar aquí",
+    unlinkTitle: "¿Dejar de sincronizar este dispositivo?",
+    unlinkText: "Tus datos se quedan aquí, y la copia del servidor y tus otros dispositivos siguen como están. Podrás volver con tu código.",
+    deleteServer: "Borrar la copia del servidor",
+    deleteServerTitle: "¿Borrar la copia del servidor?",
+    deleteServerText:
+      "Se borra para siempre y todos tus dispositivos dejan de sincronizarse. Lo que hay en cada dispositivo se queda en él.",
+    deleteServerFailed: "No se ha podido borrar: comprueba la conexión y vuelve a intentarlo.",
+    fileName: "solo-compass-codigo-sincronizacion.txt",
+    fileText:
+      "Solo Compass · código de sincronización\n\n{code}\n\nEnlace para vincular otro dispositivo:\n{link}\n\nGuárdalo en un sitio seguro: quien lo tenga puede leer y cambiar tu diario sincronizado.\n",
+    learnMore: "Cómo funciona, seguridad y privacidad",
+    help: {
+      title: "Cómo funciona la sincronización",
+      intro:
+        "Tu diario al día en todos tus dispositivos, sin cuenta y cifrado de extremo a extremo: viaja y se guarda de forma que solo tus dispositivos pueden leerlo.",
+      sections: [
+        {
+          heading: "Cómo se activa",
+          items: [
+            "En el dispositivo donde está tu diario: Ajustes → Tus datos → «Sincronizar dispositivos» → «Activar en este dispositivo».",
+            "Aparece tu código de sincronización con su QR. Guárdalo en un sitio seguro, como un gestor de contraseñas o una nota privada, o descárgalo en un archivo: es la única llave de tus datos sincronizados.",
+            "En el otro dispositivo, ve a Ajustes → «Sincronizar dispositivos» → «Escanear el QR» y apunta la cámara al QR. O pulsa «Ya tengo un código» y escríbelo o pégalo: dan igual las mayúsculas, los espacios y los guiones, y si hay una errata te avisa. Siempre pregunta antes de vincular.",
+            "En un iPhone o iPad con la app instalada, escanéalo desde la propia app: la cámara del sistema abriría el enlace en Safari, que guarda sus datos aparte de la app.",
+            "Lo que hubiera en cada dispositivo se junta, sin perder nada de ninguno. Puedes vincular tantos dispositivos como quieras con el mismo código.",
+          ],
+        },
+        {
+          heading: "Cuándo se sincroniza",
+          items: [
+            "Al abrir la app y al volver a ella, si hace más de cinco minutos de la última vez; tres minutos después de tu último cambio (un cuarto de hora como mucho, si sigues jugando); al salir de la app con cambios pendientes, para que estén en el otro dispositivo cuando lo cojas; al recuperar la conexión, y cuando pulsas «Sincronizar ahora».",
+            "El icono de la nube, arriba junto a Ajustes, dice de un vistazo cómo va: con ✓, al día; con una flecha, cambios por enviar; girando, enviando; tachada, sin conexión o en pausa; un triángulo, algo que mirar. Tócalo para ver el detalle aquí.",
+            "Junta los cambios y no pregunta al servidor sin motivo: el servicio gratuito tiene un cupo diario que compartimos todos, y así alcanza para muchos más.",
+            "Esa espera deja tiempo para «Deshacer»: un borrado que ya ha viajado no se deshace en los otros dispositivos.",
+            "Sin conexión juegas igual: los cambios esperan en el dispositivo y salen cuando vuelve.",
+            "Si cambias lo mismo en dos dispositivos, gana el cambio más reciente según el reloj de cada uno. Por eso te avisa si la hora de un dispositivo va desajustada.",
+            "Lo que borras se recuerda durante un año, para que no vuelva desde otro dispositivo. Uno que lleve casi un año sin sincronizar te pregunta antes de juntar.",
+          ],
+        },
+        {
+          heading: "Qué viaja y qué no",
+          items: [
+            "Viajan tus aventuras con su diario, sus notas fijas, sus descripciones y su mesa de juego; el historial de tiradas; tus tablas, tus dados y tus generadores; y lo que borras.",
+            "No viajan los ajustes de cada dispositivo: tema, modo, idioma, pantalla encendida, tus tablas, dados y oráculo favoritos, el orden de las aventuras, cuál es la activa, las barajadas de cartas ni lo que tengas a medio escribir.",
+          ],
+        },
+        {
+          heading: "Seguridad",
+          items: [
+            "El código son 128 bits al azar creados en tu dispositivo: no se puede adivinar. De él salen, por separado, el nombre de tu buzón en el servidor, su contraseña y la llave que lo cifra.",
+            "Todo se comprime y se cifra en tu dispositivo (AES-256-GCM) antes de salir, y viaja por una conexión segura (HTTPS). El servidor solo recibe bytes cifrados; si alguien los alterara, tus dispositivos lo notarían y los descartarían.",
+            "El código nunca se envía. El servidor solo guarda una huella de la contraseña (SHA-256), y el enlace del QR lleva el código tras «#», una parte de la dirección que el navegador no manda a ningún servidor.",
+            "Quien tenga tu código puede leer y cambiar tu diario sincronizado: guárdalo como una contraseña. Si crees que alguien lo ha visto, usa «Cambiar el código» y la copia del código anterior se borra.",
+            "Si lo pierdes, tus datos siguen en tus dispositivos, y en cualquiera que siga vinculado lo tienes en «Ver el código». Sin el código no hay forma de recuperar la copia del servidor: nadie puede descifrarla, tampoco yo.",
+          ],
+        },
+        {
+          heading: "Privacidad y uso de tus datos",
+          items: [
+            "Sin cuenta, sin correo y sin nombre: el servidor no sabe quién eres. Cada código es un buzón anónimo.",
+            "La cámara solo se usa al escanear el QR, y la imagen se lee en tu dispositivo: no se guarda ni se envía.",
+            "De cada buzón, el servidor guarda tus datos cifrados (cada cambio con la hora a la que llegó), la huella de la contraseña, cuánto ocupa y hasta cuándo se guarda. Nada más: ni tu dirección IP ni tu navegador.",
+            "Como cualquier web, al conectarte el servidor ve tu dirección IP y tu navegador, pero no los guarda ni los relaciona con nada. Lo aloja Cloudflare, en su plan gratuito, que trata esos datos de conexión según su política de privacidad.",
+            "Yo, que lo mantengo, solo veo cuántas peticiones recibe al día, nunca qué contienen. No hay anuncios ni analíticas, y no se comparte con nadie.",
+            "Su código es abierto y está en GitHub, junto al de la app, para quien quiera comprobar todo esto.",
+          ],
+        },
+        {
+          heading: "Cuánto se guarda y cuándo se borra",
+          items: [
+            "Cada buzón admite hasta 24 MB, ya comprimidos y cifrados: da para muchos años de partidas. Los cambios se van reuniendo en una sola copia para que no crezca de más.",
+            "Un buzón que nadie usa en seis meses se borra solo, para no ocupar sitio de más; lo que hay en tus dispositivos se queda, y si vuelves a sincronizar después, empieza uno nuevo con todo.",
+            "«Borrar la copia del servidor» la borra al momento y para siempre, y tus dispositivos conservan lo suyo. «Dejar de sincronizar aquí» solo desvincula este dispositivo.",
+          ],
+        },
+        {
+          heading: "Si el servicio no responde",
+          items: [
+            "Funciona en el plan gratuito de Cloudflare, con un cupo diario de peticiones para todos. Si se agota, o el servidor no responde, la sincronización se pone en pausa, te dice hasta cuándo como muy tarde (medianoche UTC) y vuelve sola. Nunca se cobra nada ni se pierde nada.",
+            "Mientras tanto puedes pasar los cambios a mano: «Enviar» una copia y, en el otro dispositivo, restaurarla con «Juntar».",
+            "Si algo falla en el propio dispositivo, te lo dice, lo reintenta solo y te da un informe para enviarme, sin nada de tu diario.",
+          ],
+        },
+        {
+          heading: "No es una copia de seguridad",
+          items: [
+            "Un borrado o un error también se sincronizan. Sigue exportando una copia de vez en cuando: es la que te salva pase lo que pase, también si el servicio dejara de existir.",
+          ],
+        },
+      ],
+    },
+  },
   sample: {
     name: "Ejemplo: La posada del cruce",
     notes:

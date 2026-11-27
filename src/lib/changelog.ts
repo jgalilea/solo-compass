@@ -25,6 +25,38 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.11.0",
+    date: "2026-11-27",
+    text: {
+      es: {
+        title: "Capítulo XXVIII · Dos libretas, una historia",
+        intro: "Mara escribe en la libreta del barco y, al volver al faro, la de la mesa ya cuenta lo mismo.",
+        items: [
+          "Sincronizar dispositivos (Ajustes → Tus datos): el mismo diario en el móvil y en el ordenador, al día sin hacer nada. Sin cuenta: un código une tus dispositivos, con un QR que el otro escanea con «Escanear el QR», desde la propia app.",
+          "Una nube junto a Ajustes dice de un vistazo cómo va: al día, enviando, con cambios por enviar, sin conexión o en pausa, o si hay algo que mirar.",
+          "Todo viaja cifrado en tu dispositivo con una llave que sale del código: ni el servidor que lo guarda puede leerlo.",
+          "Se sincroniza al abrir la app, al volver a ella y unos minutos después de cada cambio. Si el servicio no responde o se agota su cupo gratuito del día, se pone en pausa, lo dice, y vuelve sola; mientras, puedes pasar tus cambios a mano con «Enviar».",
+          "Avisa si la hora del dispositivo va desajustada, pregunta antes de juntar un dispositivo que lleva casi un año sin sincronizar, y deja cambiar el código o borrar la copia del servidor.",
+          "«Cómo funciona, seguridad y privacidad», en la propia tarjeta y en Acerca de, lo cuenta todo: cómo se activa, qué viaja y qué no, cómo se protege y qué guarda el servidor (nada que diga quién eres).",
+          "Sincronizar no es una copia de seguridad (un borrado también viaja): sigue exportando una copia de vez en cuando.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVIII · Two notebooks, one story",
+        intro: "Mara writes in the ship's notebook and, back at the lighthouse, the one on the table already tells the same.",
+        items: [
+          "Sync your devices (Settings → Your data): the same journal on your phone and your computer, kept up to date by itself. No account: a code links your devices, with a QR code the other one scans with “Scan the QR code”, inside the app.",
+          "A cloud beside Settings tells you at a glance how it's going: up to date, sending, changes to send, offline or paused, or something to look at.",
+          "Everything travels encrypted on your device with a key that comes from the code: not even the server that keeps it can read it.",
+          "It syncs when you open the app, when you come back to it and a few minutes after each change. If the service doesn't answer or its free daily allowance runs out, it pauses, says so, and comes back by itself; meanwhile, you can carry your changes over by hand with “Send”.",
+          "It warns you if the device's clock is off, asks before merging a device that hasn't synced for almost a year, and lets you change the code or delete the server's copy.",
+          "“How it works, security and privacy”, on the card itself and in About, tells it all: how to turn it on, what travels and what doesn't, how it's protected and what the server keeps (nothing that says who you are).",
+          "Syncing isn't a backup (a deletion travels too): keep exporting a backup now and then.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.10.0",
     date: "2026-11-26",
     text: {

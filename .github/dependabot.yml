@@ -33,6 +33,17 @@ updates:
         dependency-type: production
         update-types: [minor, patch]
 
+  # The sync relay (Cloudflare's tools and types), apart from the app's.
+  - package-ecosystem: npm
+    directory: /relay
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    groups:
+      relay:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

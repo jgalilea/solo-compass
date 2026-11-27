@@ -2,6 +2,181 @@ import type { LongTexts } from "../types";
 
 /** The English long texts (see LongTexts): loaded apart, when opened. */
 export const enLong: LongTexts = {
+  sync: {
+    title: "Sync your devices",
+    intro:
+      "The same journal on your phone and your computer, kept up to date by itself. No account: a code links your devices, and everything travels encrypted with it. Not even the server can read it.",
+    turnOn: "Turn on for this device",
+    haveCode: "I have a code",
+    codeLabel: "Sync code",
+    codeInvalid: "That code isn't valid: check it's complete and has no typos.",
+    link: "Link",
+    linkFromUrlTitle: "Link this device?",
+    linkFromUrl:
+      "You opened a link with a sync code. Only link if the code is yours: what's on this device will be joined with that code's, and whoever has it can read it.",
+    alreadyLinked: "This device already syncs with another code: linking this one stops it using the old one.",
+    linkFromScan:
+      "You scanned a sync code. Only link if it's yours: what's on this device will be joined with that code's, and whoever has it can read it.",
+    scanQr: "Scan the QR code",
+    scanTitle: "Scan your other device's QR code",
+    scanHint: "Point the camera at the QR code your other device shows in Settings → Sync your devices → “Show the code”. The picture never leaves this device.",
+    scanNotCode: "That QR code isn't a Solo Compass sync code. Point at the one your other device shows.",
+    scanDenied: "Solo Compass isn't allowed to use the camera. Allow it in the browser's settings, or type the code with “I have a code”.",
+    scanUnavailable: "The camera couldn't be opened. Type the code with “I have a code”.",
+    scanCancel: "Cancel",
+    saveTitle: "Keep this code somewhere safe",
+    saveText:
+      "You'll need it to link another device, or this one if it loses its data. A password manager or a private note will do. Whoever has it can read and change your synced journal: don't share it.",
+    notBackup: "Syncing isn't a backup: a deletion syncs too. Keep exporting a backup now and then.",
+    otherDevice:
+      "On the other device, open Settings → Sync your devices and press “Scan the QR code” (or type it with “I have a code”). The system camera works too: the QR code is a link that opens the app.",
+    iosHint:
+      "On an iPhone or iPad with the app installed, scan it from inside the app with “Scan the QR code”: the system camera would open Safari, which keeps its data apart from the app's.",
+    qrLabel: "QR code to link another device",
+    copy: "Copy",
+    copied: "Copied",
+    download: "Download",
+    done: "Done, I've kept it",
+    showCode: "Show the code",
+    hideCode: "Hide the code",
+    syncNow: "Sync now",
+    syncing: "Syncing…",
+    synced: "Synced {when}",
+    notYet: "Not synced yet",
+    pendingNote: "There are changes to send: they go by themselves in a few minutes or when you leave the app, or now with “Sync now”.",
+    offlineTitle: "Offline",
+    offline: "What you change is kept here and will be sent when you're back online.",
+    pausedTitle: "Sync paused",
+    pausedUnreachable:
+      "The sync service isn't answering (its free daily allowance may be used up). Your changes are kept on this device and will be sent by themselves.",
+    pausedQuota:
+      "The sync service's free daily allowance is used up. Your changes are kept on this device and will be sent by themselves.",
+    pausedRate: "Too many sends in a row: it'll try again by itself in a moment.",
+    pausedDaily:
+      "This device has synced far more times today than usual, so it waits so as not to use up the allowance everyone shares. “Sync now” still works.",
+    backBy: "It'll resume by itself, at the latest at midnight UTC ({reset} your time).",
+    meanwhile: "Meanwhile, you can carry your changes over by hand: “Send” here and, on the other device, restore with “Merge”.",
+    errorTitle: "Sync has stopped",
+    errorFull:
+      "The server's copy has reached its maximum size and takes no more changes. Your data is still here; please tell me in the ideas and bugs form.",
+    errorUpdate: "Another device uses a newer version of Solo Compass: update the app here to keep syncing.",
+    errorDamaged: "The code saved on this device is damaged. Stop syncing here and link it again with your code.",
+    errorUnexpected:
+      "Something failed on this device while syncing (its storage, perhaps). Nothing is lost: what's left to send or receive is worked out again on the next try.",
+    retryAt: "It'll try again by itself at {time}, or now with “Sync now”.",
+    copyReport: "Copy the report",
+    reportCopied: "Report copied",
+    reportHint:
+      "If it keeps happening, paste it into the ideas and bugs form (About). It only carries the app's version, your browser and where it failed: nothing from your journal.",
+    actionFailed: "That couldn't be done: this browser's storage isn't answering. Try again, or reload the app.",
+    staleTitle: "This device hasn't synced for almost a year",
+    staleText: "What you deleted on your other devices that long ago is no longer remembered, and merging could bring it back. What would you rather do?",
+    staleMerge: "Merge this device's",
+    staleMergeHint: "Nothing is lost, but something you deleted may come back.",
+    staleServer: "Keep the server's",
+    staleServerHint: "What's only on this device is lost: export a backup first if you want it.",
+    closedTitle: "This device no longer syncs",
+    closed:
+      "Sync was closed from another device (maybe you changed the code). Your data is still here. To come back, link it with the new code.",
+    closedOk: "Got it",
+    clockAhead: "This device's clock is {minutes} min ahead: set it right so the sync can tell which change is the latest.",
+    clockBehind: "This device's clock is {minutes} min behind: set it right so the sync can tell which change is the latest.",
+    moreOptions: "More options",
+    changeCode: "Change the code",
+    changeCodeTitle: "Change the code?",
+    changeCodeText:
+      "This device moves to a new code and the old one's copy is closed. Your other devices stop syncing until you link them with the new code.",
+    unlink: "Stop syncing here",
+    unlinkTitle: "Stop syncing this device?",
+    unlinkText: "Your data stays here, and the server's copy and your other devices stay as they are. You can come back with your code.",
+    deleteServer: "Delete the server's copy",
+    deleteServerTitle: "Delete the server's copy?",
+    deleteServerText: "It's deleted for good and all your devices stop syncing. What's on each device stays on it.",
+    deleteServerFailed: "It couldn't be deleted: check your connection and try again.",
+    fileName: "solo-compass-sync-code.txt",
+    fileText:
+      "Solo Compass · sync code\n\n{code}\n\nLink to add another device:\n{link}\n\nKeep it somewhere safe: whoever has it can read and change your synced journal.\n",
+    learnMore: "How it works, security and privacy",
+    help: {
+      title: "How sync works",
+      intro:
+        "Your journal up to date on all your devices, with no account and end-to-end encrypted: it travels and is stored so that only your devices can read it.",
+      sections: [
+        {
+          heading: "Turning it on",
+          items: [
+            "On the device that has your journal: Settings → Your data → “Sync your devices” → “Turn on for this device”.",
+            "Your sync code appears with its QR code. Keep it somewhere safe, like a password manager or a private note, or download it as a file: it's the only key to your synced data.",
+            "On the other device, go to Settings → “Sync your devices” → “Scan the QR code” and point the camera at it. Or press “I have a code” and type or paste it: case, spaces and dashes don't matter, and a typo is pointed out. It always asks before linking.",
+            "On an iPhone or iPad with the app installed, scan it from inside the app: the system camera would open the link in Safari, which keeps its data apart from the app's.",
+            "What each device had is joined, losing nothing from either. You can link as many devices as you like with the same code.",
+          ],
+        },
+        {
+          heading: "When it syncs",
+          items: [
+            "When you open the app and come back to it, if it's been more than five minutes; three minutes after your last change (a quarter of an hour at most, if you keep playing); when you leave the app with changes waiting, so they're on the other device when you pick it up; when the connection comes back; and when you press “Sync now”.",
+            "The cloud icon at the top, beside Settings, tells you at a glance how it's going: with a ✓, up to date; with an arrow, changes to send; spinning, sending; crossed out, offline or paused; a triangle, something to look at. Tap it to see the detail here.",
+            "It gathers changes and doesn't ask the server for no reason: the free service has a daily allowance we all share, and this way it stretches to many more players.",
+            "That wait leaves time for “Undo”: a deletion that has already travelled can't be undone on the other devices.",
+            "Offline you play just the same: changes wait on the device and go out when it's back.",
+            "If you change the same thing on two devices, the most recent change wins, by each device's clock. That's why it tells you when a device's clock is off.",
+            "What you delete is remembered for a year, so it doesn't come back from another device. One that hasn't synced for almost a year asks you before merging.",
+          ],
+        },
+        {
+          heading: "What travels and what doesn't",
+          items: [
+            "Your adventures travel with their journal, pinned notes, descriptions and game table; your roll history; your tables, dice and generators; and what you delete.",
+            "Each device's settings don't: theme, mode, language, keeping the screen on, your favorite tables, dice and oracle, the order of your adventures, which one is active, card shuffles, or anything you're halfway through writing.",
+          ],
+        },
+        {
+          heading: "Security",
+          items: [
+            "The code is 128 random bits made on your device: it can't be guessed. From it come, separately, the name of your box on the server, its password and the key that encrypts it.",
+            "Everything is compressed and encrypted on your device (AES-256-GCM) before it leaves, and travels over a secure connection (HTTPS). The server only gets encrypted bytes; if someone altered them, your devices would notice and discard them.",
+            "The code is never sent. The server only keeps a fingerprint of the password (SHA-256), and the QR code's link carries the code after “#”, a part of the address the browser never sends to any server.",
+            "Whoever has your code can read and change your synced journal: keep it like a password. If you think someone has seen it, use “Change the code” and the old code's copy is deleted.",
+            "If you lose it, your data is still on your devices, and any device still linked shows it under “Show the code”. Without the code there's no way to recover the server's copy: nobody can decrypt it, me included.",
+          ],
+        },
+        {
+          heading: "Privacy and how your data is used",
+          items: [
+            "No account, no email and no name: the server doesn't know who you are. Each code is an anonymous box.",
+            "The camera is only used to scan the QR code, and the picture is read on your device: it's never kept or sent.",
+            "For each box, the server keeps your encrypted data (each change with the time it came in), the password's fingerprint, its size and how long it's kept. Nothing else: not your IP address, not your browser.",
+            "Like any website, when you connect the server sees your IP address and browser, but it doesn't keep them or link them to anything. It's hosted by Cloudflare, on its free plan, which handles that connection data under its privacy policy.",
+            "I look after it and only see how many requests it gets a day, never what they hold. No ads, no analytics, and nothing is shared with anyone.",
+            "Its code is open, on GitHub next to the app's, for anyone who wants to check all this.",
+          ],
+        },
+        {
+          heading: "How much is kept, and when it's deleted",
+          items: [
+            "Each box takes up to 24 MB, already compressed and encrypted: enough for many years of play. Changes are gathered into a single copy so it doesn't grow more than it needs to.",
+            "A box nobody uses for six months is deleted by itself, so it doesn't take up room for nothing; what's on your devices stays, and if you sync again later, a new one starts with everything.",
+            "“Delete the server's copy” deletes it at once and for good, and your devices keep what they have. “Stop syncing here” only unlinks this device.",
+          ],
+        },
+        {
+          heading: "If the service doesn't answer",
+          items: [
+            "It runs on Cloudflare's free plan, with a daily allowance of requests for everyone. If it runs out, or the server doesn't answer, sync pauses, tells you until when at the latest (midnight UTC) and comes back by itself. Nothing is ever charged and nothing is lost.",
+            "Meanwhile you can carry changes over by hand: “Send” a backup and, on the other device, restore it with “Merge”.",
+            "If something fails on the device itself, it tells you, tries again by itself and gives you a report to send me, with nothing from your journal.",
+          ],
+        },
+        {
+          heading: "It isn't a backup",
+          items: [
+            "A deletion or a mistake syncs too. Keep exporting a backup now and then: it's what saves you whatever happens, even if the service stopped existing.",
+          ],
+        },
+      ],
+    },
+  },
   sample: {
     name: "Sample: The Crossroads Inn",
     notes:

@@ -24,3 +24,7 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+
+# Cloudflare (relay/)
+.wrangler
+.dev.vars

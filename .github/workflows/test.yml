@@ -1,7 +1,8 @@
 name: Tests
 
 # Every pull request (Dependabot's included) gets the same checks as a
-# deploy, without deploying: unit tests, the build and the smoke test.
+# deploy, without deploying: unit tests, the build and the smoke test,
+# plus the sync relay's types.
 on:
   pull_request:
 
@@ -26,6 +27,9 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # The sync relay (relay/; Cloudflare deploys it): its types against the Workers runtime.
+      - run: npm ci --prefix relay
+      - run: npm run --prefix relay typecheck
       - run: npm run build
       - run: timeout 180 npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run test:e2e

@@ -1,4 +1,4 @@
-import { createCollection } from "./collectionStore";
+import { createCollection, diffById } from "./collectionStore";
 
 /**
  * What was deleted on this device (journal entries, adventures, history
@@ -58,6 +58,12 @@ export async function loadDeletions(): Promise<Deletion[]> {
 export async function replaceDeletions(deletions: Deletion[]): Promise<void> {
   if (typeof window === "undefined") return;
   await deletionStore.replace(recentDeletions(deletions.map(normalizeDeletion).filter((d) => d !== null)));
+}
+
+/** Writes only what changed between the two lists (a sync's merge). */
+export async function saveDeletionChanges(prev: Deletion[], next: Deletion[]): Promise<void> {
+  if (typeof window === "undefined") return;
+  await deletionStore.save(diffById(prev, next));
 }
 
 export function recordDeletions(ids: string[]): void {
