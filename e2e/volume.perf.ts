@@ -299,6 +299,12 @@ test("syncs years of play without stalling a modest phone", async ({ page }) => 
   await page.locator("[data-composer] textarea").fill("Una entrada que viaja.");
   await page.getByRole("button", { name: "Añadir al diario" }).click();
   await expect(page.locator("[id^=entry-]").getByText("Una entrada que viaja.")).toBeVisible({ timeout: 30_000 });
+  // A moment after the entry, the change is prepared for leaving (read and sealed): never a stall either.
+  await longestTask(page);
+  await page.waitForTimeout(4000);
+  const preparing = await longestTask(page);
+  console.log(`${"Sync: longest stall preparing it".padEnd(36)} ${String(preparing).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  expect(preparing).toBeLessThan(STALL_BUDGET);
   await page.goto("./#/diario");
   await settings.click();
   await card.scrollIntoViewIfNeeded();

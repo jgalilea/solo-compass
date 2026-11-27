@@ -4,16 +4,24 @@
  * (syncExchange.ts does the exchange) and what each outcome means for
  * the person (the status Settings shows, syncStatus.ts).
  *
- * When: on opening the app, on coming back to it (if the last exchange
- * is five minutes old), three minutes after the last change (at most a
+ * When: on opening the app, always (another device may have been used
+ * meanwhile); on coming back to it after half a minute away (another
+ * app, another window, the screen off), or on the first touch or key
+ * after five minutes without any (a computer's window left in view while
+ * the phone was used); three minutes after the last change (at most a
  * quarter of an hour after the first one, so a long session sends a few
- * times an hour instead of after every roll), on leaving the app with
- * changes waiting (sent so it arrives even if the app is closed right
- * then: that's when the person moves to another device), when the
- * connection comes back, and with "Sync now". That leaves time for
- * "Undo", too: a deletion that has travelled can't be undone on the
- * other devices. One exchange at a time across tabs (Web Locks), and a
- * tab that gets there just after another doesn't ask again.
+ * times an hour instead of after every roll); on leaving the app with
+ * changes waiting; when the connection comes back; and with "Sync now".
+ * Waiting leaves time for "Undo", too: a deletion that has travelled
+ * can't be undone on the other devices.
+ *
+ * Leaving is when the person moves to another device, and closing the
+ * app or the tab leaves no time to read and seal everything: so a moment
+ * after each change, what's waiting is worked out and sealed ahead
+ * (prepareChange), and leaving only sends it (keepalive: it goes even if
+ * the page is closed right then); its answer is taken in if the page
+ * lives on. One exchange at a time across tabs (Web Locks), and a tab
+ * that gets there just after another doesn't ask again.
  *
  * Every request counts against the relay's free daily allowance, shared
  * by every player (100,000 a day), so none is spent for nothing: a change
@@ -39,9 +47,9 @@ import type { Dictionary } from "./i18n";
 import { loadMergeData, saveMergeChanges } from "./backup";
 import { announceChange, onLocalChange, type SyncTopic } from "./sync";
 import { formatCode, newSecret, parseCode } from "./syncCode";
-import { deriveKeys } from "./syncCrypto";
+import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import type { Prints, SyncKind } from "./syncData";
-import { exchange, type SyncDevice, type SyncState } from "./syncExchange";
+import { exchange, prepareChange, type ChangeInFlight, type PreparedChange, type SyncDevice, type SyncState } from "./syncExchange";
 import { callRelay, type RelayError } from "./syncRelay";
 import {
   SYNC_RELAY_URL,
@@ -62,8 +70,16 @@ const MINUTE = 60 * 1000;
 const CHANGE_DELAY = 3 * MINUTE;
 /** …but no later than this after the first one still waiting. */
 const CHANGE_MAX_DELAY = 15 * MINUTE;
-/** Coming back to the app checks only if the last exchange is older. */
-const FOREGROUND_GAP = 5 * MINUTE;
+/** Opening the app looks for what's new unless an exchange is this fresh (two tabs opened together, a reload). */
+const JUST_SYNCED = 20 * 1000;
+/** Coming back looks for what's new after this long away (another device may have been used meanwhile). */
+const AWAY = 30 * 1000;
+/** No touch, click or key for this long: the next one is a coming back too. */
+const IDLE = 5 * MINUTE;
+/** A change is worked out and sealed this long after the last one, ready for leaving. */
+const PREPARE_DELAY = 500;
+/** What a request sent on leaving may carry (the browser's limit for keepalive, with room). */
+const LEAVING_BYTES = 60 * 1024;
 /** Automatic exchanges a device makes in a day (UTC) at most: a normal day of play is a few dozen. */
 export const DAILY_EXCHANGES = 150;
 const TODAY_KEY = "solo-compass:sync-today";
@@ -129,7 +145,7 @@ function countExchange(): void {
   }
 }
 
-type Reason = "start" | "foreground" | "online" | "change" | "leaving" | "manual" | "retry" | "follow-up";
+type Reason = "start" | "back" | "online" | "change" | "leaving" | "manual" | "retry" | "follow-up";
 
 let dictionary: Dictionary | null = null;
 let users = 0;
@@ -142,6 +158,21 @@ let changeTimer: ReturnType<typeof setTimeout> | undefined;
 let retryTimer: ReturnType<typeof setTimeout> | undefined;
 let waitUntil = 0;
 let failures = 0;
+/** Bumped on every change: a prepared change is good only for the one it was made after. */
+let changeStamp = 0;
+let prepared: { stamp: number; change: PreparedChange } | null = null;
+let prepareTimer: ReturnType<typeof setTimeout> | undefined;
+/** Sent on leaving, with the change it was prepared after (later ones are still to go). */
+let inFlight: { flight: ChangeInFlight; stamp: number } | null = null;
+let cachedKeys: { code: string; keys: SyncKeys } | null = null;
+
+async function keysFor(code: string): Promise<SyncKeys | null> {
+  if (cachedKeys?.code === code) return cachedKeys.keys;
+  const secret = parseCode(code);
+  if (!secret) return null;
+  cachedKeys = { code, keys: await deriveKeys(secret) };
+  return cachedKeys.keys;
+}
 
 /** From Layout (watchSync), in every tab of a device that syncs. */
 export function startSync(t: Dictionary): () => void {
@@ -154,27 +185,54 @@ export function startSync(t: Dictionary): () => void {
     detach = null;
     clearTimeout(changeTimer);
     clearTimeout(retryTimer);
+    clearTimeout(prepareTimer);
   };
 }
 
 function attach(): () => void {
   const stopWatching = onLocalChange(noteChange);
+  // When the app was left (hidden, or its window in the background), and the last touch or key.
+  let leftAt = 0;
+  let lastInput = Date.now();
+  const cameBack = () => {
+    const away = leftAt ? Date.now() - leftAt : 0;
+    leftAt = 0;
+    lastInput = Date.now();
+    if (away >= AWAY) void request("back");
+  };
   const onVisibility = () => {
-    if (document.visibilityState === "visible") void request("foreground");
-    else if (pending) void request("leaving");
+    if (document.visibilityState === "visible") return cameBack();
+    leftAt ||= Date.now();
+    leave();
+  };
+  // On a computer the app can stay in view behind another window: leaving it is a blur.
+  const onBlur = () => {
+    leftAt ||= Date.now();
+  };
+  const onInput = () => {
+    const now = Date.now();
+    if (!leftAt && now - lastInput >= IDLE) void request("back");
+    lastInput = now;
   };
   const onOnline = () => void request("online");
-  // On a computer the app can stay in view behind another window: coming back to it is a focus.
-  const onFocus = () => void request("foreground");
+  const listen = { capture: true, passive: true } as const;
   document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("blur", onBlur);
+  window.addEventListener("focus", cameBack);
+  window.addEventListener("pagehide", leave);
+  window.addEventListener("pointerdown", onInput, listen);
+  window.addEventListener("keydown", onInput, listen);
   window.addEventListener("online", onOnline);
-  window.addEventListener("focus", onFocus);
   void request("start");
   return () => {
     stopWatching();
     document.removeEventListener("visibilitychange", onVisibility);
+    window.removeEventListener("blur", onBlur);
+    window.removeEventListener("focus", cameBack);
+    window.removeEventListener("pagehide", leave);
+    window.removeEventListener("pointerdown", onInput, listen);
+    window.removeEventListener("keydown", onInput, listen);
     window.removeEventListener("online", onOnline);
-    window.removeEventListener("focus", onFocus);
   };
 }
 
@@ -186,6 +244,63 @@ function noteChange(): void {
   clearTimeout(changeTimer);
   const delay = Math.max(0, Math.min(CHANGE_DELAY, firstPendingAt + CHANGE_MAX_DELAY - now));
   changeTimer = setTimeout(() => void request("change"), delay);
+  changeStamp++;
+  // One prepared before this change is no good: it could hold what was just undone (a deletion, say).
+  prepared = null;
+  clearTimeout(prepareTimer);
+  prepareTimer = setTimeout(() => void prepare(), PREPARE_DELAY);
+}
+
+/** What's waiting, worked out and sealed ahead, so leaving the app only has to send it. */
+async function prepare(): Promise<void> {
+  const t = dictionary;
+  const stamp = changeStamp;
+  if (!t || !pending || !canSendNow()) return;
+  try {
+    const state = await loadState();
+    const keys = state && (await keysFor(state.code));
+    if (!state || !keys) return;
+    const change = await prepareChange(deviceFor(t), keys, state, LEAVING_BYTES);
+    if (stamp === changeStamp && pending) prepared = change && { stamp, change };
+  } catch {
+    // Not ready: leaving does it the usual way.
+  }
+}
+
+/** Whether an exchange may go now on its own (no pause, no wait, within the day's number). */
+function canSendNow(now = Date.now()): boolean {
+  if (!isSyncEnabled()) return false;
+  const status = loadSyncStatus();
+  if (status?.state === "stale" || status?.state === "closed") return false;
+  if (status?.state === "paused" && now < status.retryAt) return false;
+  if (status?.state === "error" && (status.reason === "update" || (status.retryAt && now < status.retryAt))) return false;
+  return now >= waitUntil && exchangesToday(now).count < DAILY_EXCHANGES;
+}
+
+/**
+ * Leaving the app (hidden, or the page closed) with changes waiting: the
+ * prepared change goes at once, before anything else can be awaited (the
+ * page may not live to see it), and its answer is taken in by the
+ * exchange that follows, if the page lives on. Only one prepared after
+ * the very last change: an older one could hold what was undone since.
+ * Without one ready (the last change is under a second old), the usual
+ * way, which a closed page cuts short: then it goes the next time.
+ */
+function leave(): void {
+  if (!pending) return;
+  const ready = prepared?.stamp === changeStamp ? prepared : null;
+  prepared = null;
+  if (ready && !inFlight && canSendNow()) {
+    inFlight = {
+      flight: {
+        change: ready.change,
+        result: callRelay(SYNC_RELAY_URL, ready.change.request, ready.change.op, { keepalive: true }),
+        sentAt: Date.now(),
+      },
+      stamp: ready.stamp,
+    };
+  }
+  void request("leaving");
 }
 
 function scheduleRetry(ms: number): void {
@@ -219,8 +334,11 @@ async function run(reason: Reason): Promise<void> {
   // Data from a newer app: only worth trying again once this one is updated (a reload).
   if (status?.state === "error" && status.reason === "update" && reason !== "start" && reason !== "manual") return;
   if (reason !== "manual") {
-    if (status?.state === "paused" && now < status.retryAt) return scheduleRetry(status.retryAt - now);
-    if (status?.state === "error" && status.retryAt && now < status.retryAt) return scheduleRetry(status.retryAt - now);
+    // Opening the app tries once whatever stopped it last time (not the day's allowance being used up).
+    const opening = reason === "start";
+    const waitedOut = status?.state === "paused" && now < status.retryAt && !(opening && status.reason === "unreachable");
+    if (waitedOut) return scheduleRetry(status.retryAt - now);
+    if (status?.state === "error" && status.retryAt && now < status.retryAt && !opening) return scheduleRetry(status.retryAt - now);
     if (now < waitUntil) return scheduleRetry(waitUntil - now);
     if (exchangesToday(now).count >= DAILY_EXCHANGES) return pause("daily", 0);
   }
@@ -229,21 +347,28 @@ async function run(reason: Reason): Promise<void> {
   else await cycle(t, reason);
 }
 
-/** Looking for what's new, with no changes to send: only if the last exchange is a while ago. */
-const LOOKS = new Set<Reason>(["start", "foreground", "online"]);
+/** Looking for what's new: not when an exchange has just been made (by another tab, say). */
+const FRESH: Partial<Record<Reason, number>> = { start: JUST_SYNCED, back: JUST_SYNCED, online: JUST_SYNCED };
 /** Sending what changed: nothing to send, no request. */
 const SENDS = new Set<Reason>(["change", "leaving"]);
 
 async function cycle(t: Dictionary, reason: Reason): Promise<void> {
   const state = await loadState();
   if (!state) return;
+  // A change sent on leaving: this exchange takes its answer in, whatever brought it about.
+  const flying = inFlight?.flight;
+  // Changes made since it left (back in the app at once): still to go.
+  const behind = !!inFlight && inFlight.stamp !== changeStamp;
+  inFlight = null;
   // Checked here, holding the lock: another tab may have just done it. Changes waiting go with their timer.
   const status = loadSyncStatus();
-  if (LOOKS.has(reason) && state.lastSyncAt && Date.now() - state.lastSyncAt < FOREGROUND_GAP && status?.state === "ok") return;
-  const secret = parseCode(state.code);
-  if (!secret) return problem("damaged");
-  const keys = await deriveKeys(secret);
+  const fresh = FRESH[reason];
+  if (!flying && fresh && state.lastSyncAt && Date.now() - state.lastSyncAt < fresh && status?.state === "ok") return;
+  const keys = await keysFor(state.code);
+  if (!keys) return problem("damaged");
   clearTimeout(changeTimer);
+  clearTimeout(prepareTimer);
+  prepared = null;
   pending = false;
   firstPendingAt = 0;
   setSyncPending(false);
@@ -251,9 +376,11 @@ async function cycle(t: Dictionary, reason: Reason): Promise<void> {
   try {
     const outcome = await exchange(deviceFor(t), reason === "leaving" ? leavingRelay : relay, keys, state, Date.now, {
       onlyToSend: SENDS.has(reason),
+      ...(flying ? { inFlight: flying } : {}),
     });
     if (outcome.kind === "ok" && outcome.skipped) return;
     if (reason !== "manual") countExchange();
+    if (behind) noteChange();
     switch (outcome.kind) {
       case "ok":
         failures = 0;

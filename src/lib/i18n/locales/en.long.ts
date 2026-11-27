@@ -115,7 +115,8 @@ export const enLong: LongTexts = {
         {
           heading: "When it syncs",
           items: [
-            "When you open the app and come back to it, if it's been more than five minutes; three minutes after your last change (a quarter of an hour at most, if you keep playing); when you leave the app with changes waiting, so they're on the other device when you pick it up; when the connection comes back; and when you press “Sync now”.",
+            "When you open the app, always; when you come back to it after half a minute in another app or window, or with the screen off; on a computer, also on the first click or key after five minutes without touching it. That way you see what you wrote on another device without asking.",
+            "What you change goes three minutes after your last change (a quarter of an hour at most, if you keep playing) and, above all, when you leave the app or close the tab: it's prepared and sealed a moment after each change, so leaving only has to send it, and it arrives even if you close right away. Also when the connection comes back, and when you press “Sync now”.",
             "The cloud icon at the top, beside Settings, tells you at a glance how it's going: with a ✓, up to date; with an arrow, changes to send; spinning, sending; crossed out, offline or paused; a triangle, something to look at. Tap it to see the detail here.",
             "It gathers changes and doesn't ask the server for no reason: the free service has a daily allowance we all share, and this way it stretches to many more players.",
             "That wait leaves time for “Undo”: a deletion that has already travelled can't be undone on the other devices.",

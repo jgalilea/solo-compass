@@ -81,6 +81,14 @@ function glance(page: Page) {
   return page.locator("[data-sync-glance]").filter({ visible: true });
 }
 
+/** The app goes out of view (another app, the screen off) or comes back, as the browser tells it. */
+async function setVisible(page: Page, visible: boolean) {
+  await page.evaluate(`{
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "${visible ? "visible" : "hidden"}" });
+    document.dispatchEvent(new Event("visibilitychange"));
+  }`);
+}
+
 async function openAdventure(page: Page, name: string) {
   await page.goto("./#/diario");
   await page.getByText(name, { exact: true }).first().click();
@@ -546,14 +554,107 @@ test("two hours of play cost a handful of requests", async ({ page }) => {
     document.dispatchEvent(new Event("visibilitychange"));
   }`);
   await expect.poll(() => relay.requests()).toBe(leaving + 1);
-  // Back a minute later: nothing new to ask yet.
-  await page.clock.runFor(60_000);
-  await page.evaluate(`{
-    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" });
-    document.dispatchEvent(new Event("visibilitychange"));
-    window.dispatchEvent(new Event("focus"));
-  }`);
+  // Back after a few seconds (a glance at another app): nothing asked.
   await page.clock.runFor(10_000);
+  await setVisible(page, true);
+  await page.clock.runFor(5_000);
   expect(relay.requests()).toBe(leaving + 1);
+  // Back after a while: another device may have been used meanwhile, so it looks.
+  await setVisible(page, false);
+  await page.clock.runFor(90_000);
+  await setVisible(page, true);
+  await expect.poll(() => relay.requests()).toBe(leaving + 2);
+  expect(errors).toEqual([]);
+});
+
+test("opening the app, or coming back to it, brings what another device wrote", async ({ page, browser }, testInfo) => {
+  test.setTimeout(120_000);
+  const relay = fakeRelay();
+  await relay.attach(page.context());
+  const errors = watchErrors(page);
+  await newAdventure(page, "El paso");
+  await write(page, "Primera huella.");
+  let card = await openSettings(page);
+  await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
+  const code = (await card.locator(".font-mono").first().textContent())!.trim();
+  await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
+  await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+  await closeSettings(page);
+
+  // The computer, its clock in the test's hands, linked.
+  const computer = await browser.newContext({ ...testInfo.project.use, locale: "es-ES" });
+  await relay.attach(computer);
+  const other = await computer.newPage();
+  const otherErrors = watchErrors(other);
+  await other.clock.install();
+  card = await openSettings(other);
+  await card.getByRole("button", { name: "Ya tengo un código" }).click();
+  await card.getByLabel("Código de sincronización").fill(code);
+  await card.getByRole("button", { name: "Vincular" }).click();
+  await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+  await closeSettings(other);
+  await openAdventure(other, "El paso");
+  await expect(other.locator("[id^=entry-]").getByText("Primera huella.")).toBeVisible();
+
+  // The phone writes on.
+  await openAdventure(page, "El paso");
+  await write(page, "Segunda huella.");
+  await syncNow(page);
+  await openAdventure(page, "El paso");
+
+  // The computer's app opened again half a minute later: it looks by itself.
+  await other.clock.runFor(30_000);
+  await other.reload();
+  await other.clock.runFor(5_000);
+  await expect(other.locator("[id^=entry-]").getByText("Segunda huella.")).toBeVisible();
+
+  // Away a while (another app), and the phone writes meanwhile: coming back, it looks by itself.
+  await setVisible(other, false);
+  await write(page, "Tercera huella.");
+  await syncNow(page);
+  await other.clock.runFor(45_000);
+  await setVisible(other, true);
+  await expect(other.locator("[id^=entry-]").getByText("Tercera huella.")).toBeVisible();
+
+  await computer.close();
+  expect(errors).toEqual([]);
+  expect(otherErrors).toEqual([]);
+});
+
+test("leaving the app sends what was just written at once, even if it closes right then", async ({ page }) => {
+  test.skip(LIVE_RELAY, "Counts the fake relay's requests.");
+  const relay = fakeRelay();
+  await relay.attach(page.context());
+  const errors = watchErrors(page);
+  await newAdventure(page, "La salida");
+  const card = await openSettings(page);
+  await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
+  await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
+  await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+  await closeSettings(page);
+  await openAdventure(page, "La salida");
+  await write(page, "Escrito justo antes de irme.");
+  // A change is prepared and sealed a moment (1.5 s) after it's made.
+  await page.waitForTimeout(3000);
+  const before = relay.requests();
+  // The request has to leave within the event itself: a closed tab doesn't wait for anything after it.
+  const sentWithinTheEvent = await page.evaluate(`(() => {
+    let sent = false;
+    const original = window.fetch;
+    window.fetch = (...args) => {
+      sent = true;
+      return original(...args);
+    };
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
+    document.dispatchEvent(new Event("visibilitychange"));
+    window.fetch = original;
+    return sent;
+  })()`);
+  expect(sentWithinTheEvent).toBe(true);
+  await expect.poll(() => relay.requests()).toBe(before + 1);
+  // Its answer is taken in: nothing is left waiting, and nothing more goes.
+  await setVisible(page, true);
+  await expect(page.getByRole("button", { name: /^Cambios por enviar/ })).toHaveCount(0);
+  expect(relay.requests()).toBe(before + 1);
   expect(errors).toEqual([]);
 });

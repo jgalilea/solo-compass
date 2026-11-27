@@ -336,11 +336,19 @@ No backend; persistence is split by access pattern, not by feature:
   passed in, so it's tested with two in memory); when to run it, the
   statuses and the API Settings uses are `syncEngine.ts` (its own chunk;
   `watchSync` in `syncStatus.ts`, from `Layout`, loads it only on a
-  device that syncs): on start, on coming back (visible or focused, if
-  the last exchange is over 5 min old, checked holding the lock so two
-  tabs don't both ask), 3 min after a change (15 at most from the first
-  one), on leaving with changes waiting (`keepalive`, so it arrives if
-  the app is closed then), when back online, and "Sync now"; a change
+  device that syncs): on start, always (unless an exchange is under
+  20 s old: checked holding the lock, so two tabs don't both ask); on
+  coming back after 30 s away (hidden, or the window blurred) and on
+  the first touch or key after 5 min idle (a computer's window left in
+  view); 3 min after a change (15 at most from the first one); on
+  leaving with changes waiting, which can't wait for reading and
+  sealing (a closed tab doesn't live that long), so a change is
+  prepared and sealed 0.5 s after it's made (`prepareChange`; only one
+  prepared after the very last change is sent: an older one could hold
+  what was undone since) and
+  leaving sends it within the event itself (`keepalive`), its answer
+  taken in by the next exchange (`inFlight`; unanswered, it's sent
+  again, harmlessly); when back online; and "Sync now"; a change
   that leaves nothing to send makes no request (`onlyToSend`), and a
   device stops itself past `DAILY_EXCHANGES` automatic ones in a UTC day
   (pause `daily`). Requests and the relay's rows written are each a

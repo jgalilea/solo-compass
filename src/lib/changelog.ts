@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.11.1",
+    date: "2026-11-27",
+    text: {
+      es: {
+        title: "Capítulo XXVIII, al margen · Sin tener que pedirlo",
+        items: [
+          "Al abrir la app, la sincronización mira siempre si hay algo nuevo de tus otros dispositivos, y también al volver a ella tras medio minuto en otra app o ventana (o, en el ordenador, al primer clic tras unos minutos sin tocarlo).",
+          "Al salir de la app o cerrar la pestaña, lo que escribiste se envía en el acto: queda preparado y cifrado un momento después de cada cambio, así que ya no hace falta «Sincronizar ahora» antes de irte.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVIII, in the margin · Without asking",
+        items: [
+          "Opening the app, the sync always looks for anything new from your other devices, and also when you come back to it after half a minute in another app or window (or, on a computer, on the first click after a few minutes without touching it).",
+          "Leaving the app or closing the tab, what you wrote is sent at once: it's prepared and sealed a moment after each change, so there's no need for “Sync now” before you go.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.11.0",
     date: "2026-11-27",
     text: {

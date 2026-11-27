@@ -15,6 +15,7 @@ import {
   changedKinds,
   changedRecords,
   combineData,
+  countRecords,
   emptyData,
   fingerprint,
   isEmptyData,
@@ -127,9 +128,53 @@ function syncRequest(keys: SyncKeys, state: Pick<SyncState, "epoch" | "since">, 
   return { v: 1, op: "sync", box: keys.box, pass: keys.pass, epoch: state.epoch, since: state.epoch ? state.since : null, size };
 }
 
+/**
+ * A change worked out and sealed ahead of time (a moment after it's
+ * made), so that leaving the app has nothing left to do but send it:
+ * closing the app or the tab right then leaves no time to read and seal.
+ */
+export interface PreparedChange {
+  request: SyncRequest;
+  op: Uint8Array;
+  part: MergeData;
+  sent: Prints;
+}
+
+/** A prepared change already on its way, and when it left. */
+export interface ChangeInFlight {
+  change: PreparedChange;
+  result: Promise<RelayResult>;
+  sentAt: number;
+}
+
 export interface ExchangeOptions {
   /** Only if there's something to send (after a change): otherwise no request at all. */
   onlyToSend?: boolean;
+  /** Sent already (on leaving the app): its answer is taken in like any other. */
+  inFlight?: ChangeInFlight;
+}
+
+/**
+ * What the relay doesn't have yet, sealed and ready to go in one request
+ * of at most `maxBytes`; null when there's nothing, or it isn't that
+ * simple (a first upload, a question pending, too big): the usual
+ * exchange does it then.
+ */
+export async function prepareChange(
+  device: SyncDevice,
+  keys: SyncKeys,
+  state: SyncState,
+  maxBytes: number,
+  now = Date.now,
+): Promise<PreparedChange | null> {
+  if (state.epoch === null || state.closeCodes?.length || state.staleChoice) return null;
+  if (state.lastSyncAt !== null && now() - state.lastSyncAt > STALE_AFTER) return null;
+  const [prints, local] = await Promise.all([device.loadPrints(), device.loadData()]);
+  const { delta, sent } = await changedRecords(local, prints);
+  if (isEmptyData(delta) || countRecords(delta) > RECORDS_PER_PART) return null;
+  const op = await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: delta } satisfies Packet);
+  if (op.length > maxBytes) return null;
+  return { request: syncRequest(keys, state, op.length), op, part: delta, sent };
 }
 
 /** The whole exchange, in as many requests as the changes need. */
@@ -171,23 +216,29 @@ async function exchangeOrThrow(
   }
 
   const local = await device.loadData();
-  const { delta, sent } = await changedRecords(local, prints);
+  const flying = options.inFlight;
+  const { delta, sent } = flying ? { delta: flying.change.part, sent: flying.change.sent } : await changedRecords(local, prints);
   // A change that came to nothing (undone, or already sent by another tab): every request counts.
-  if (options.onlyToSend && isEmptyData(delta) && current.epoch !== null && !current.closeCodes?.length) {
+  if (!flying && options.onlyToSend && isEmptyData(delta) && current.epoch !== null && !current.closeCodes?.length) {
     return { kind: "ok", state: current, skew: 0, wait: 0, followUp: false, skipped: true };
   }
-  const parts: (MergeData | null)[] = isEmptyData(delta) ? [null] : splitData(delta, RECORDS_PER_PART);
+  const parts: (MergeData | null)[] = isEmptyData(delta) ? [null] : flying ? [delta] : splitData(delta, RECORDS_PER_PART);
   let stats: SyncStats | null = null;
   let skew = 0;
   let wait = 0;
   let followUp = false;
   let compacted = false;
 
-  for (const part of parts) {
-    const op = part ? await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: part } satisfies Packet) : new Uint8Array();
+  for (const [index, part] of parts.entries()) {
+    const ahead = index === 0 ? flying : undefined;
+    const op = ahead
+      ? ahead.change.op
+      : part
+        ? await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: part } satisfies Packet)
+        : new Uint8Array();
     if (op.length > MAX_REQUEST_BYTES) return { kind: "problem", reason: "full" };
-    const started = now();
-    let result = await relay(syncRequest(keys, current, op.length), op);
+    const started = ahead ? ahead.sentAt : now();
+    let result = ahead ? await ahead.result : await relay(syncRequest(keys, current, op.length), op);
     // The box is full: fold its changes into the snapshot, then once more.
     if (!result.ok && result.error === "full" && !compacted) {
       compacted = true;

@@ -7,7 +7,7 @@ import type { JournalEntry } from "./lonelog";
 import { formatCode, newSecret, parseCode } from "./syncCode";
 import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import { emptyData, type Prints } from "./syncData";
-import { exchange, RECORDS_PER_PART, STALE_AFTER, type Relay, type SyncDevice, type SyncState } from "./syncExchange";
+import { exchange, prepareChange, RECORDS_PER_PART, STALE_AFTER, type Relay, type SyncDevice, type SyncState } from "./syncExchange";
 import type { HistoryEntry } from "./history";
 import { callRelay } from "./syncRelay";
 import { MAX_BOX_BYTES, MAX_REQUEST_BYTES, decodeFrame, parseSyncRequest } from "./syncWire";
@@ -160,6 +160,59 @@ describe("sync exchange", () => {
     const sent = await exchange(a.device, relay, a.keys, a.state, Date.now, { onlyToSend: true });
     expect(sent.kind === "ok" && sent.skipped).toBeFalsy();
     expect(requests).toBe(1);
+  });
+
+  it("sends a change prepared ahead the moment the app is left, and takes its answer in", async () => {
+    const code = formatCode(newSecret());
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    const laptop = new Device(code);
+    await settle(phone, laptop);
+
+    phone.data.entries.push(entry("e1", "a1", "Escrito antes de cerrar"));
+    const ready = (await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024))!;
+    expect(ready.part.entries.map((e) => e.id)).toEqual(["e1"]);
+    // Leaving: sent at once; the exchange after it only takes the answer in.
+    requests = 0;
+    const inFlight = { change: ready, result: relay(ready.request, ready.op), sentAt: Date.now() };
+    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { inFlight });
+    expect(outcome.kind).toBe("ok");
+    if (outcome.kind === "ok") phone.state = outcome.state;
+    expect(requests).toBe(1);
+    // It's known to be sent: nothing more goes.
+    expect(await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { onlyToSend: true })).toMatchObject({ skipped: true });
+    await laptop.sync();
+    expect(laptop.ids("entries")).toEqual(["e1"]);
+  });
+
+  it("sends a prepared change again if the app closed before its answer, and nothing doubles", async () => {
+    const code = formatCode(newSecret());
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    const laptop = new Device(code);
+    await settle(phone, laptop);
+    phone.data.entries.push(entry("e1", "a1", "Escrito antes de cerrar"));
+    const ready = (await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024))!;
+    // Sent on leaving, and the page was gone before the answer: nothing taken in.
+    await relay(ready.request, ready.op);
+    await laptop.sync();
+    expect(laptop.ids("entries")).toEqual(["e1"]);
+    // Opened again: it doesn't know it went, so it goes again; harmless.
+    await settle(phone, laptop);
+    expect(laptop.ids("entries")).toEqual(["e1"]);
+    expect(phone.ids("entries")).toEqual(["e1"]);
+  });
+
+  it("prepares nothing when there's nothing to send, or it isn't a small change", async () => {
+    const code = formatCode(newSecret());
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    // Never synced: the first upload goes the usual way.
+    expect(await prepareChange(phone.device, (phone.keys ??= await deriveKeys(parseCode(code)!)), phone.state, 60 * 1024)).toBeNull();
+    await phone.sync();
+    expect(await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024)).toBeNull();
+    // Text that doesn't compress, past what a request on leaving may carry.
+    const noise = Array.from(crypto.getRandomValues(new Uint8Array(4096)), (b) => b.toString(36)).join("");
+    phone.data.entries.push(entry("e1", "a1", noise));
+    expect(await prepareChange(phone.device, phone.keys, phone.state, 1024)).toBeNull();
+    expect(await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024)).not.toBeNull();
   });
 
   it("carries edits and deletions, and deleted things don't come back", async () => {

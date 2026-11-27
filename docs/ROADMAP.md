@@ -982,6 +982,14 @@ con Dropbox, OneDrive, P2P (Trystero), Evolu, Jazz, InstantDB (cierra en
   más de 50 ms (antes, ~250 ms al calcular las huellas de golpe). Textos
   que decían «sin servidor» o «solo en este dispositivo» corregidos, y
   la explicación completa en Ajustes, en el README y en la privacidad.
+- **1.11.1** (2026-11-27, tras probarlo el usuario: «muchas veces hay que
+  sincronizar a mano»): al abrir la app no miraba si la última vez fue
+  hace menos de 5 min, y al cerrarla no daba tiempo a leer y cifrar.
+  Ahora mira siempre al abrir, al volver tras 30 s fuera y al primer
+  toque tras 5 min quieto, y el cambio se prepara cifrado medio segundo después
+  de hacerlo para que salir solo tenga que enviarlo (dentro del propio
+  evento, con keepalive). Probado en la e2e y con 11.000 entradas en un
+  móvil lento (sin bloqueos).
 - **Pendiente / a vigilar:** probarlo en un iPhone real (app instalada y
   Safari); una carrera muy improbable: si editas una entrada justo en
   la décima de segundo en que llega un cambio de esa misma entrada desde
