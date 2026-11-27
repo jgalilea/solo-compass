@@ -3,7 +3,8 @@
   <h1>Solo Compass</h1>
   <p><strong>A yes/no oracle, meaning tables and a session journal for solo tabletop RPGs, in one app that works offline.</strong></p>
   <p>
-    <a href="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml/badge.svg"></a>
+    <a href="https://github.com/jgalilea/solo-compass/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/jgalilea/solo-compass"></a>
+    <a href="https://github.com/jgalilea/solo-compass/actions/workflows/deploy.yml"><img alt="Deploy status" src="https://img.shields.io/github/actions/workflow/status/jgalilea/solo-compass/deploy.yml?branch=main&label=deploy"></a>
     <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/jgalilea/solo-compass"></a>
   </p>
   <p><a href="https://jgalilea.github.io/solo-compass/"><strong>Open the app</strong></a> · <a href="#how-to-play">How to play</a> · <a href="#your-data">Your data</a> · <a href="#development">Development</a></p>
