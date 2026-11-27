@@ -253,7 +253,7 @@ export function AdventureHeader({
                 {
                   label: t.history.showRolls,
                   Icon: IconHistory,
-                  onSelect: () => navigate(`/historial?aventura=${adventure.id}`),
+                  onSelect: () => void navigate(`/historial?aventura=${adventure.id}`),
                 },
                 { label: t.guide.title, Icon: IconHelp, onSelect: openGuide },
                 ...(noHeader

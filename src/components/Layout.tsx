@@ -101,8 +101,8 @@ export function Layout() {
 
   // Desktop shortcuts (legend in Settings; "?" is registered by SettingsDialog).
   useHotkeys({
-    ...Object.fromEntries(tabs.map((tab) => [tab.hotkey, () => navigate(tab.to)])),
-    h: () => navigate("/historial"),
+    ...Object.fromEntries(tabs.map((tab) => [tab.hotkey, () => void navigate(tab.to)])),
+    h: () => void navigate("/historial"),
     "/": () => focusHotkeyTarget("write"),
     o: () => focusHotkeyTarget("oracle"),
     t: () => focusHotkeyTarget("table"),

@@ -67,7 +67,7 @@ const closed = (points: [number, number][]) => `M${points.map((p) => p.join(" ")
 /** A face's outline, and an edge from each of its corners to the hull's. */
 function faceEdges(face: [number, number][], hull: [number, number][]): string {
   const step = hull.length / face.length;
-  return closed(face) + face.map((p, i) => `M${p.join(" ")}L${hull[i * step].join(" ")}`).join("");
+  return closed(face) + face.map((p, i) => `M${p.join(" ")}L${hull[i * step]!.join(" ")}`).join("");
 }
 
 const HEXAGON = corners(6, 47);

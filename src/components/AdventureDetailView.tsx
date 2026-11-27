@@ -344,9 +344,7 @@ export function AdventureDetailView() {
     // (no search through thousands of entries each time).
     canMove: (id, direction) =>
       adventureEntries.length > 0 &&
-      id !==
-        (direction === "up" ? adventureEntries[0] : adventureEntries[adventureEntries.length - 1])
-          .id,
+      id !== (direction === "up" ? adventureEntries[0] : adventureEntries.at(-1))?.id,
     onInsertBelow: (id) => {
       const entry = adventureEntries.find((e) => e.id === id);
       setSelectedEntryId(null);
@@ -402,7 +400,7 @@ export function AdventureDetailView() {
         }
         return;
       }
-      const group = groups[index];
+      const group = groups[index]!;
       setJournalFilter(null);
       if (index < groups.length - 1) {
         setPreviousExpanded(true);

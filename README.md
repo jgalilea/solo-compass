@@ -206,7 +206,8 @@ The browser tests need Playwright's Chromium once: `npx playwright install chrom
 | `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup, device sync) and the sync relay (`relay/src`) |
 | `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, two devices syncing through a fake relay when the build has one (a session of play on both, opening and coming back, leaving the app, the QR code scanned by a fake camera, what it costs in requests), and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
 | `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU, then syncs it all and checks the page never freezes meanwhile. Not part of the deploy |
-| `npm run lint` | oxlint |
+| `npm run lint` | oxlint, with type-aware rules (promises nobody waits for, hook dependencies, exhaustive switches) |
+| `npm run format` | oxfmt (CI checks it with `format:check`) |
 
 The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, [Tabler Icons](https://tabler.io/icons), [uqr](https://github.com/unjs/uqr) (MIT) to draw the sync's QR code and [jsQR](https://github.com/cozmo/jsQR) (Apache-2.0) to read it where the browser can't. The sync relay is a Cloudflare Worker (`relay/`, deployed with Wrangler).
 

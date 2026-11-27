@@ -24,20 +24,20 @@ interface State {
  * a reload, and lets the player copy what happened or report it.
  */
 export class AppErrorBoundary extends Component<Props, State> {
-  static contextType = LocaleContext;
+  static override contextType = LocaleContext;
   declare context: ContextType<typeof LocaleContext>;
 
-  state: State = { error: null, report: "", copied: null };
+  override state: State = { error: null, report: "", copied: null };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error, report: errorReport(error) };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  override componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Unhandled error in Solo Compass:", error, info);
   }
 
-  render() {
+  override render() {
     const { error, report, copied } = this.state;
     const locale = this.context?.locale ?? loadLocale();
     if (error) {

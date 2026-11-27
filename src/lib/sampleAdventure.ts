@@ -31,7 +31,10 @@ export function buildSampleAdventure(
 
   const lines = sample.script.map((line) => {
     if ("oracle" in line) {
-      const [white, black] = line.oracle.map((dice) => (Array.isArray(dice) ? dice : [dice]));
+      const [white, black] = line.oracle.map((dice) => (Array.isArray(dice) ? dice : [dice])) as [
+        number[],
+        number[],
+      ];
       const verdict = judgeDice(Math.max(...white), Math.max(...black));
       // Written as usePlayActions writes a Recluse roll, every die thrown.
       const dice = formatOracleDice(t, {
@@ -59,7 +62,7 @@ export function buildSampleAdventure(
     }
     if ("inspiration" in line) {
       // Written like usePlayActions' rollInspiration.
-      const rolls = INSPIRATION_TABLE_IDS.map((id, i) => roll(id, line.inspiration[i]));
+      const rolls = INSPIRATION_TABLE_IDS.map((id, i) => roll(id, line.inspiration[i]!));
       const detail = rolls.map((r) => `${r.table.name} ${r.table.dice}=${r.total}`).join(", ");
       const text = `tbl: ${t.tables.inspirationName} (${detail}) -> ${rolls.map((r) => r.result).join(" · ")}`;
       return formatLine({ kind: "roll", text });
@@ -71,7 +74,7 @@ export function buildSampleAdventure(
 
   function roll(id: string, dice: number[]) {
     const table = tables.find((x) => x.id === id)!;
-    const total = dice.length === 2 ? dice[0] * 10 + dice[1] : dice[0];
+    const total = dice.length === 2 ? dice[0]! * 10 + dice[1]! : dice[0]!;
     return { table, total, result: lookupEntry(table, total)?.text ?? t.tables.noEntryFallback };
   }
 

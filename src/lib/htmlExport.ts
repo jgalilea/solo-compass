@@ -132,7 +132,7 @@ function rollHtml(
   // A generator's axes or a table written out, under its first line.
   const [first, ...rest] = entry.text.split("\n");
   if (rest.length)
-    return `${rollHtml(t, { ...entry, text: first }, answer, drawRoll)}<p class="detail">${rest.map(escapeHtml).join("<br>")}</p>`;
+    return `${rollHtml(t, { ...entry, text: first! }, answer, drawRoll)}<p class="detail">${rest.map(escapeHtml).join("<br>")}</p>`;
   const { detail, result, answer: parsed } = splitRollText(entry.text);
   const drawing = drawn(detail, result);
   if (result === null) return `<p>${drawing}${escapeHtml(entry.text)}</p>`;
@@ -317,8 +317,8 @@ export function exportAdventureToHtml({
     .map((group) => {
       const blocks = buildEntryBlocks(group.items)
         .map((block) =>
-          block[0].kind === "scene"
-            ? sceneHtml(t, block[0])
+          block[0]!.kind === "scene"
+            ? sceneHtml(t, block[0]!)
             : `<section class="${story ? "told" : "card"}">${block.map((e) => entryHtml(t, e, answerFor, drawRoll, views.get(e.id))).join("")}</section>`,
         )
         .join("");

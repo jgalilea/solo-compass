@@ -160,7 +160,7 @@ function localeModulePreloadPlugin(): Plugin {
         for (const chunk of Object.values(ctx.bundle ?? {})) {
           const match =
             chunk.type === "chunk" && chunk.facadeModuleId?.match(/i18n\/locales\/(\w+)\.ts$/);
-          if (match) files[match[1]] = base + chunk.fileName;
+          if (match) files[match[1]!] = base + chunk.fileName;
         }
         if (!files.es || !files.en)
           throw new Error("Locale chunks not found for the modulepreload hint");
@@ -215,7 +215,7 @@ function contentSecurityPolicyPlugin(): Plugin {
       order: "post",
       handler(html) {
         const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(
-          ([, body]) => `'sha256-${createHash("sha256").update(body).digest("base64")}'`,
+          ([, body]) => `'sha256-${createHash("sha256").update(body!).digest("base64")}'`,
         );
         if (inline.length === 0)
           throw new Error("No inline scripts found for the Content Security Policy");

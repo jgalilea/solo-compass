@@ -286,8 +286,9 @@ export function TablesView() {
 
   function deleteTable(id: string) {
     const index = customTables.findIndex((x) => x.id === id);
-    if (index < 0) return;
-    setToast({ kind: "deleted", table: customTables[index], index });
+    const table = customTables[index];
+    if (!table) return;
+    setToast({ kind: "deleted", table, index });
     removeTable(id);
     if (last?.sourceId === id) setLast(null);
   }

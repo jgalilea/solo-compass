@@ -96,7 +96,7 @@ const PREFIXES = "PC|N|L|Thread|Clock|Track|Timer|E|R|F|Inv|Wealth|Deck";
 function kindOf(prefix: string, name: string): CastKind {
   return prefix === "E" && /\d\s*\/\s*\d+$|\S\s*[+-]\d+$/.test(name)
     ? "clock"
-    : KIND_OF_PREFIX[prefix];
+    : KIND_OF_PREFIX[prefix]!;
 }
 
 /** A clock's, track's or timer's number: "5/12" sets it, "+1" changes it. */
@@ -145,10 +145,10 @@ function readProgress(raw: string): { name: string; progress?: Progress } {
   if (!m) return { name: raw };
   if (m[2])
     return {
-      name: m[1],
+      name: m[1]!,
       progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true },
     };
-  return { name: m[1], progress: { value: Number(m[4]), ...(m[5] ? { max: Number(m[5]) } : {}) } };
+  return { name: m[1]!, progress: { value: Number(m[4]), ...(m[5] ? { max: Number(m[5]) } : {}) } };
 }
 
 /** "45>52" (or "→", "->"): what it is now, 52. */
@@ -178,12 +178,12 @@ function readName(
   if (kind === "item") {
     const m = raw.match(RELATIVE_NAME);
     return m
-      ? { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } }
+      ? { name: m[1]!, progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } }
       : { name: raw };
   }
   if (kind === "foe" || (kind === "npc" && raw.includes("×"))) {
     const m = raw.match(GROUP_NAME);
-    return m ? { name: m[1], group: `×${m[2]}` } : { name: raw };
+    return m ? { name: m[1]!, group: `×${m[2]}` } : { name: raw };
   }
   return { name: raw };
 }
@@ -193,15 +193,15 @@ export function splitTags(text: string): TextPart[] {
   const parts: TextPart[] = [];
   let last = 0;
   for (const match of text.matchAll(TAG)) {
-    const raw = match[3].trim();
+    const raw = match[3]!.trim();
     if (!raw) continue;
-    const kind = kindOf(match[2], raw);
+    const kind = kindOf(match[2]!, raw);
     const { name, progress, group } = readName(kind, raw);
     const details = [
       ...(group ? [group] : []),
-      ...match[4]
+      ...match[4]!
         // On paper each line is a value; after a "|", a line break is just a wrap.
-        .split(/^\s*\n\s*[^|\s]/.test(match[4]) ? /[|\n]/ : "|")
+        .split(/^\s*\n\s*[^|\s]/.test(match[4]!) ? /[|\n]/ : "|")
         .map((d) => d.replace(/\s+/g, " ").trim())
         .filter(Boolean),
     ];
@@ -217,7 +217,7 @@ export function splitTags(text: string): TextPart[] {
         details,
         ...(progress ? { progress } : {}),
         ...(owned ? { owned } : {}),
-        ...(/^\s*\n/.test(match[4]) ? { block: true as const } : {}),
+        ...(/^\s*\n/.test(match[4]!) ? { block: true as const } : {}),
       },
     });
     last = match.index + match[0].length;
@@ -239,7 +239,7 @@ export function purseKey(owner: string, currency: string): string {
 /** The element a tag names (a purse's, its first currency). */
 export function tagKey(tag: TagRef): string {
   return tag.owned
-    ? purseKey(tag.name, readProgress(toLatest(tag.details[0])).name)
+    ? purseKey(tag.name, readProgress(toLatest(tag.details[0]!)).name)
     : castKey(tag.kind, tag.name);
 }
 
@@ -266,10 +266,10 @@ export function combineSteps(previous: string, next: string): string | null {
   const same = (a: string, b: string) => normalizeForSearch(a) === normalizeForSearch(b);
   const p = previous.trim().match(PROGRESS_STEP);
   const n = next.trim().match(PROGRESS_STEP);
-  if (p && n) return p[1] === n[1] && same(p[2], n[2]) ? next.trim() : null;
+  if (p && n) return p[1] === n[1] && same(p[2]!, n[2]!) ? next.trim() : null;
   const pq = previous.trim().match(QUANTITY_STEP);
   const nq = next.trim().match(QUANTITY_STEP);
-  if (!pq || !nq || pq[1] !== nq[1] || !same(pq[2], nq[2])) return null;
+  if (!pq || !nq || pq[1] !== nq[1] || !same(pq[2]!, nq[2]!)) return null;
   const total = Number(`${pq[3]}${pq[4]}`) + Number(`${nq[3]}${nq[4]}`);
   if (total === 0) return "";
   return `[${pq[1]}:${pq[2]}${total > 0 ? "+" : "-"}${Math.abs(total)}]`;
@@ -324,7 +324,7 @@ const listOf = (values: string) =>
 
 function statKey(tag: string): string | null {
   const m = tag.match(STAT);
-  return m ? normalizeForSearch(m[1]) : null;
+  return m ? normalizeForSearch(m[1]!) : null;
 }
 
 // The add-ons' own categories, in either language: the same one.
@@ -355,11 +355,11 @@ export function showDetail(detail: string, words: CategoryWords): string {
 /** A category's name and what it holds; null for any other value. */
 function readCategory(tag: string): { key: string; label: string; values: string } | null {
   const m = tag.match(CATEGORY);
-  const label = m?.[1].trimEnd();
+  const label = m?.[1]?.trimEnd();
   if (!m || !label) return null;
   const word = normalizeForSearch(label);
-  const key = Object.hasOwn(KNOWN_CATEGORIES, word) ? KNOWN_CATEGORIES[word] : word;
-  return { key, label, values: m[2] };
+  const key = Object.hasOwn(KNOWN_CATEGORIES, word) ? KNOWN_CATEGORIES[word]! : word;
+  return { key, label, values: m[2]! };
 }
 
 /**
@@ -378,10 +378,10 @@ function updateList(current: string[], update: string): string[] {
   for (const entry of entries) {
     const swap = isChange(entry) ? null : entry.match(REPLACE);
     if (swap) {
-      const index = list.findIndex((x) => same(x, swap[1]));
-      if (index >= 0) list.splice(index, 1, swap[2]);
-      else if (list.length <= 1) list = [swap[2]];
-      else add(swap[2]);
+      const index = list.findIndex((x) => same(x, swap[1]!));
+      if (index >= 0) list.splice(index, 1, swap[2]!);
+      else if (list.length <= 1) list = [swap[2]!];
+      else add(swap[2]!);
     } else if (isChange(entry) && entry.startsWith("-"))
       list = list.filter((x) => !same(x, entry.slice(1).trim()));
     else add(isChange(entry) ? entry.slice(1).trim() : entry);
@@ -396,7 +396,7 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     const count = readCount(update);
     if (count) {
       const index = tags.findIndex((t) => COUNT.test(t));
-      const before = index >= 0 ? (readCount(tags[index])?.value ?? 0) : 0;
+      const before = index >= 0 ? (readCount(tags[index]!)?.value ?? 0) : 0;
       const next = `×${Math.max(0, count.relative ? before + count.value : count.value)}`;
       if (index >= 0) tags[index] = next;
       else tags.push(next);
@@ -421,7 +421,7 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     const category = readCategory(value);
     if (category) {
       const index = tags.findIndex((t) => readCategory(t)?.key === category.key);
-      const before = index >= 0 ? readCategory(tags[index])! : null;
+      const before = index >= 0 ? readCategory(tags[index]!)! : null;
       const list = updateList(before ? listOf(before.values) : [], category.values);
       // A whole new list is kept as written.
       const changed = !same(list.join(","), listOf(category.values).join(","));
@@ -436,11 +436,11 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     if (replace) {
       // "Supply d8>d6": the label stays and the value after it changes,
       // whatever it was before.
-      const labelled = replace[1].match(/^(.*\s)(\S+)$/);
-      const label = labelled && !/\s/.test(replace[2].trim()) ? labelled[1] : null;
-      const next = label ? `${label}${replace[2]}` : replace[2];
+      const labelled = replace[1]!.match(/^(.*\s)(\S+)$/);
+      const label = labelled && !/\s/.test(replace[2]!.trim()) ? labelled[1] : null;
+      const next = label ? `${label}${replace[2]}` : replace[2]!;
       const index = tags.findIndex(
-        (t) => same(t, replace[1]) || (!!label && same(t.slice(0, label.length), label)),
+        (t) => same(t, replace[1]!) || (!!label && same(t.slice(0, label.length), label)),
       );
       // Never twice: "wary>ally" when it's already an ally.
       const existing = tags.findIndex((t) => same(t, next));
@@ -452,10 +452,10 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     }
     const stat = value.match(STAT);
     if (stat) {
-      const [, label, space, sign, digits, max = ""] = stat;
+      const [, label = "", space, sign, digits, max = ""] = stat;
       const key = normalizeForSearch(label);
       const index = tags.findIndex((t) => statKey(t) === key);
-      const previous = index >= 0 ? tags[index].match(STAT)! : null;
+      const previous = index >= 0 ? tags[index]!.match(STAT)! : null;
       let next = value;
       // "HP-2" changes it; "ATK +3" (with a space) is a bonus, unless it
       // changes a number without a sign.
@@ -473,7 +473,7 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     const out = value.match(RAN_OUT);
     if (out) {
       const index = tags.findIndex(
-        (t) => /\s(?:d?\d\S*|\d+)$/.test(t) && same(t.replace(/\s+\S+$/, ""), out[1]),
+        (t) => /\s(?:d?\d\S*|\d+)$/.test(t) && same(t.replace(/\s+\S+$/, ""), out[1]!),
       );
       if (index >= 0) {
         tags[index] = value;
@@ -527,7 +527,7 @@ const stateOf = (tag: string) => THREAD_STATES[normalizeForSearch(tag.replace(/^
 /** "Open>Closed" is Closed; null when it isn't a change of state. */
 function newState(detail: string): string | null {
   const m = detail.match(REPLACE);
-  return m && (stateOf(m[1]) || stateOf(m[2])) ? m[2].trim() : null;
+  return m && (stateOf(m[1]!) || stateOf(m[2]!)) ? m[2]!.trim() : null;
 }
 
 /** A thread's change of state, as the spec writes it: "Open>Closed". */
@@ -593,7 +593,7 @@ function exitKey(exit: string): string {
   // "N:R5(secret)", "N R2", "E R7 secret", "R4".
   const direction = exit.match(/^([^\s:]+)(?::|\s+(?=R?\d))/);
   return normalizeForSearch(
-    direction ? direction[1] : exit.replace(/\s*\(.*\)$/, "").split(/\s/)[0],
+    direction ? direction[1]! : exit.replace(/\s*\(.*\)$/, "").split(/\s/)[0]!,
   );
 }
 
@@ -606,7 +606,7 @@ function applyRoomUpdates(room: RoomState, details: string[]): void {
     const category = oldExits ? null : categories[i];
     if (oldExits) {
       room.exitsWord = oldExits[1];
-      for (const exit of listOf(oldExits[2])) room.exits.set(exitKey(exit), exit);
+      for (const exit of listOf(oldExits[2]!)) room.exits.set(exitKey(exit), exit);
     } else if (category && STATUS.test(category.key)) {
       room.status = updateList(room.status, category.values);
     } else if (category && EXITS.test(category.key)) {
@@ -728,7 +728,7 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
   /** A currency with no owner: the only one there is of it, or loose money. */
   function currency(name: string, entry: JournalEntry): CastMember {
     const known = money().filter((m) => same(m.name, name));
-    return known.length === 1 ? mention(known[0], entry) : memberFor("wealth", name, entry);
+    return known.length === 1 ? mention(known[0]!, entry) : memberFor("wealth", name, entry);
   }
 
   function applyProgress(member: CastMember, progress: Progress) {
@@ -829,8 +829,8 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
       let updates = details;
       if (kind === "thread") {
         updates = details.map((d) => newState(d) ?? d);
-        if (updates.some((d, i) => stateOf(d) || newState(details[i]) !== null)) {
-          const replaced = details.map((d) => d.match(REPLACE)?.[1].trim() ?? "");
+        if (updates.some((d, i) => stateOf(d) || newState(details[i]!) !== null)) {
+          const replaced = details.map((d) => d.match(REPLACE)?.[1]?.trim() ?? "");
           current = current.filter((t) => !stateOf(t) && !replaced.some((r) => same(r, t)));
         }
       }
@@ -950,7 +950,7 @@ const KIND_OF_TYPED_PREFIX = new Map(
 export function findTagQuery(beforeCaret: string): TagQuery | null {
   const match = beforeCaret.match(OPEN_TAG);
   if (!match) return null;
-  const text = match[3];
+  const text = match[3]!;
   if ((!match[2] && text.includes(":")) || /^\s/.test(text) || text.length > 40) return null;
   return {
     start: match.index!,
@@ -968,10 +968,10 @@ export function findActorQuery(beforeCaret: string, context: "action" | "note"):
   const match = beforeCaret.match(
     context === "action" ? /^\(([^()\n]{0,40})$/ : /^N \(([^()\n]{0,40})$/,
   );
-  if (!match || /^\s/.test(match[1])) return null;
+  if (!match || /^\s/.test(match[1]!)) return null;
   return {
-    start: beforeCaret.length - match[1].length,
-    text: match[1],
+    start: beforeCaret.length - match[1]!.length,
+    text: match[1]!,
     actor: context === "action" ? "action" : "dialogue",
   };
 }
@@ -1100,7 +1100,7 @@ export function renameInEntry(
   let text = entry.text.replace(
     new RegExp(TAG.source, "g"),
     (whole, hash: string, prefix: string, tagName: string, details: string) => {
-      const tag = splitTags(whole)[0].tag;
+      const tag = splitTags(whole)[0]!.tag;
       if (!tag) return whole;
       if (tag.owned || (tag.kind === "wealth" && hash)) {
         if (character && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
@@ -1132,7 +1132,7 @@ export function renameInEntry(
         : isGroup
           ? tagName.match(/^(.*?)(\s*[×x]\s*\d+)?$/)
           : null;
-      const base = same(tagName) ? tagName : split ? split[1] : tagName;
+      const base = same(tagName) ? tagName : split ? split[1]! : tagName;
       if (!same(base)) return whole;
       return `[${hash}${prefix}:${name}${tagName.slice(base.length)}${owner}]`;
     },

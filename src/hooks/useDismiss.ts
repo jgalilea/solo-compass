@@ -53,7 +53,7 @@ export function useDismiss(
             : e.key === "ArrowDown"
               ? (current + 1) % items.length
               : (current - 1 + items.length) % items.length;
-      items[next].focus();
+      items[next]!.focus();
     }
     function handleFocusOut(e: FocusEvent) {
       // relatedTarget is null when clicking a non-focusable area: pointerdown

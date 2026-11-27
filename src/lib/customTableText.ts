@@ -38,17 +38,17 @@ import {
  * can't take (fewer than two), it opens with what there is.
  */
 export function definitionDraft(t: Dictionary, text: string): CustomTableDraft {
-  const [first, ...rest] = text.replace(/^tbl:\s*/, "").split("\n");
+  const [first = "", ...rest] = text.replace(/^tbl:\s*/, "").split("\n");
   const list = first.match(/^(.*?)\s*\[(.+)\]\s*$/);
-  const head = (list ? list[1] : first).trim();
+  const head = (list ? list[1]! : first).trim();
   const name = head.replace(/\s*\([^()]*\)$/, "").trim() || t.tables.editor.newTitle;
   const die = head
     .match(/\(\s*\d*(d(?:\d+|%))\s*\)$/i)?.[1]
-    .toLowerCase()
+    ?.toLowerCase()
     .replace("%", "100") as DiceType | undefined;
   const parsed = list
     ? {
-        lines: list[2]
+        lines: list[2]!
           .split(",")
           .map((x) => ({ text: x.trim() }))
           .filter((l) => l.text),
@@ -70,7 +70,7 @@ export function definitionDraft(t: Dictionary, text: string): CustomTableDraft {
     : {
         name,
         description: "",
-        dice: "d1" as DiceType,
+        dice: "d1",
         entries: parsed.lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })),
       };
 }
@@ -138,13 +138,13 @@ export function parseEntryLines(text: string): {
       const cells = splitRow(line);
       if (cells.every((c) => /^:?-{2,}:?$/.test(c) || c === "")) continue; // separator row
       const first = tableRows++ === 0;
-      const m = RANGE_CELL.exec(cells[0]);
+      const m = RANGE_CELL.exec(cells[0]!);
       if (m && cells.length > 1) {
         const rest = cells.slice(1).filter(Boolean).join(" — ");
-        raw.push({ ranged: { range: toRange(m[1], m[2]), text: rest }, plain: rest });
+        raw.push({ ranged: { range: toRange(m[1]!, m[2]), text: rest }, plain: rest });
       } else if (first && cells.length > 1) {
         // Header row: its first cell may name the die.
-        const die = cells[0].toLowerCase();
+        const die = cells[0]!.toLowerCase();
         if (die === "d66" || diceSides(die) > 0) dice = die as DiceType;
       } else {
         const joined = cells.filter(Boolean).join(" — ");
@@ -156,7 +156,7 @@ export function parseEntryLines(text: string): {
     const unbulleted = line.replace(LIST_MARKER, "");
     const m = RANGE_PREFIX.exec(unbulleted);
     raw.push({
-      ranged: m ? { range: toRange(m[1], m[2]), text: m[3].trim() } : undefined,
+      ranged: m ? { range: toRange(m[1]!, m[2]), text: m[3]!.trim() } : undefined,
       plain: unbulleted,
     });
   }
@@ -196,7 +196,7 @@ export function buildEntries(
     if (choice === "auto") {
       if (lines.length === 66) return { ok: false, error: e.errorD66Lines };
       if (lines.length > MAX_TABLE_SIDES) return { ok: false, error: e.errorTooBig };
-      const dice = `d${lines.length}` as DiceType;
+      const dice: DiceType = `d${lines.length}`;
       return {
         ok: true,
         dice,
@@ -218,7 +218,7 @@ export function buildEntries(
     return {
       ok: true,
       dice: choice,
-      entries: lines.map((l, i) => ({ range: [values[i], values[i]], text: l.text })),
+      entries: lines.map((l, i) => ({ range: [values[i]!, values[i]!], text: l.text })),
     };
   }
 
@@ -228,9 +228,9 @@ export function buildEntries(
   let dice: DiceType;
   if (choice !== "auto") dice = choice;
   else {
-    const min = entries[0].range[0];
+    const min = entries[0]!.range[0];
     const max = Math.max(...entries.map((x) => x.range[1]));
-    dice = min === 11 && max === 66 ? "d66" : (`d${max}` as DiceType);
+    dice = min === 11 && max === 66 ? "d66" : `d${max}`;
   }
 
   if (!isTableDie(dice)) return { ok: false, error: e.errorTooBig };
@@ -246,19 +246,19 @@ export function buildEntries(
     for (const end of entry.range) {
       if (!position.has(end)) return { ok: false, error: rangeError(t, values, end) };
     }
-    steps[position.get(entry.range[0])!]++;
-    steps[position.get(entry.range[1])! + 1]--;
+    steps[position.get(entry.range[0])!]! += 1;
+    steps[position.get(entry.range[1])! + 1]! -= 1;
   }
   let covered = 0;
   for (let i = 0; i < values.length; i++) {
-    covered += steps[i];
-    if (covered !== 1) return { ok: false, error: rangeError(t, values, values[i]) };
+    covered += steps[i]!;
+    if (covered !== 1) return { ok: false, error: rangeError(t, values, values[i]!) };
   }
   return { ok: true, dice, entries };
 }
 
 function rangeError(t: Dictionary, values: number[], value: number): string {
-  return interpolate(t.tables.editor.errorRanges, { from: values[0], to: values.at(-1)!, value });
+  return interpolate(t.tables.editor.errorRanges, { from: values[0]!, to: values.at(-1)!, value });
 }
 
 /**
@@ -323,7 +323,7 @@ export function parseTablesFile(t: Dictionary, text: string, filename: string): 
   for (const line of trimmed.split(/\r?\n/)) {
     const heading = /^#{1,3}\s+(.+)$/.exec(line.trim());
     if (heading) {
-      current = { name: heading[1].trim(), body: [] };
+      current = { name: heading[1]!.trim(), body: [] };
       sections.push(current);
     } else {
       if (!current) {
@@ -347,10 +347,10 @@ export function parseTablesFile(t: Dictionary, text: string, filename: string): 
       const meta = META_LINE.exec(l);
       const die = DIE_LINE.exec(l);
       const themeLine = THEME_LINE.exec(l);
-      if (quote) description.push(quote[1].trim());
+      if (quote) description.push(quote[1]!.trim());
       else if (themeLine) theme = parseTheme(themeLine[2]);
-      else if (meta) source[metaKey(meta[1])] = meta[2].trim();
-      else if (die) dice = die[1].toLowerCase() as DiceType;
+      else if (meta) source[metaKey(meta[1]!)] = meta[2]!.trim();
+      else if (die) dice = die[1]!.toLowerCase() as DiceType;
       else entryLines.push(line);
     }
     const parsed = parseEntryLines(entryLines.join("\n"));
@@ -401,8 +401,7 @@ function parseJsonTables(t: Dictionary, data: unknown, fallbackName: string): Cu
         : "auto";
     const built = buildEntries(t, { lines: usable, mixedRanges: false }, dice);
     if (!built.ok) continue;
-    const str = (key: string) =>
-      typeof v[key] === "string" ? (v[key] as string).trim() : undefined;
+    const str = (key: string) => (typeof v[key] === "string" ? v[key].trim() : undefined);
     drafts.push({
       name: str("name") || fallbackName,
       description: str("description") ?? "",

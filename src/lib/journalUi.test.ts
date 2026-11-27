@@ -387,9 +387,9 @@ describe("filterGroups", () => {
     const odile = buildCast(entries).find((c) => c.name === "Odile")!;
     const { groups, count } = filterGroups(groupBySession(entries), odile);
     expect(groups).toHaveLength(1);
-    expect(groups[0].sessionEntry?.text).toBe("S1");
+    expect(groups[0]!.sessionEntry?.text).toBe("S1");
     // The question names her; its roll and consequence come along.
-    expect(groups[0].items.map((e) => e.kind)).toEqual([
+    expect(groups[0]!.items.map((e) => e.kind)).toEqual([
       "question",
       "roll",
       "consequence",
@@ -407,7 +407,7 @@ describe("splitOwnRolls", () => {
       rolls: [{ label: "", die: "d20+1", result: "8 (7 + 1)" }],
     });
     expect(splitOwnRolls("d20 -> 14")?.rolls).toEqual([{ label: "", die: "d20", result: "14" }]);
-    expect(splitOwnRolls("4dF -> -1 (− 0 0 0)")?.rolls[0].die).toBe("4dF");
+    expect(splitOwnRolls("4dF -> -1 (− 0 0 0)")?.rolls[0]?.die).toBe("4dF");
     expect(splitOwnRolls("Dark omen draw=M16r -> The Tower, reversed")).toEqual({
       label: "Dark omen",
       rolls: [{ label: "", die: "draw=M16r", result: "The Tower, reversed" }],

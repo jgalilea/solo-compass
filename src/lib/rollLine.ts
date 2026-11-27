@@ -63,7 +63,7 @@ export function splitRollSeries(text: string): OwnRolls | null {
   const rest = text.slice(first).trim();
   const rolls: OwnRolls["rolls"] = [];
   for (const m of rest.matchAll(ROLL_SEGMENT)) {
-    rolls.push({ label: m[1]?.trim() ?? "", die: m[2], result: m[3].trim() });
+    rolls.push({ label: m[1]?.trim() ?? "", die: m[2]!, result: m[3]!.trim() });
   }
   const leftover = rest.replace(ROLL_SEGMENT, "").replace(/[\s,]/g, "");
   if (rolls.length < 2 || leftover) return null;
@@ -79,7 +79,7 @@ export function loneRoll(text: string): OwnRolls | null {
   if (text.length > MAX_ROLL_TEXT) return null;
   const m = text.match(LONE_ROLL);
   if (!m) return null;
-  const [, label = "", die, result] = m;
+  const [, label = "", die = "", result = ""] = m;
   if (!die.startsWith("draw=") && !/^[+-]?\d+(?:\.\d+)?(?:\s+\(.+\))?$/.test(result.trim()))
     return null;
   return { label: label.trim(), rolls: [{ label: "", die, result: result.trim() }] };
@@ -101,7 +101,7 @@ const TAKES_COMPARE = /[<>=!ru]|c[sf]/;
 /** "4+2 + 3" for 2d6+3 → "4, 2"; anything less plain, as the app writes it. */
 function shortDice(formula: string, detail: string): string {
   const kept = KEEP_DROP.test(formula) && detail.match(/^(\d+(?:\+\d+)*), (\d+✗(?: \d+✗)*)$/);
-  if (kept) return [...kept[1].split("+"), ...kept[2].replaceAll("✗", "d").split(" ")].join(", ");
+  if (kept) return [...kept[1]!.split("+"), ...kept[2]!.replaceAll("✗", "d").split(" ")].join(", ");
   const m = formula.match(SIMPLE);
   if (!m) return detail;
   const bonus = m[1] ? ` ${m[1][0] === "-" ? "−" : "+"} ${m[1].slice(1)}` : "";
@@ -147,8 +147,8 @@ function splitRolls(line: string): string[] {
   let depth = 0;
   let from = 0;
   for (let i = 0; i < line.length; i++) {
-    if ("[({".includes(line[i])) depth++;
-    else if ("])}".includes(line[i])) depth--;
+    if ("[({".includes(line[i]!)) depth++;
+    else if ("])}".includes(line[i]!)) depth--;
     else if (line[i] === "," && depth === 0 && line[i + 1] === " ") {
       parts.push(line.slice(from, i));
       from = i + 2;
@@ -176,7 +176,7 @@ export function fromRollLine(line: string): string {
   if (pending || segments.length === 0) return line;
   const rolls: string[] = [];
   for (const segment of segments) {
-    const [, label = "", formula, dice, total] = segment.match(LINE_SEGMENT)!;
+    const [, label = "", formula = "", dice, total] = segment.match(LINE_SEGMENT)!;
     // The right dice, or it's something else ("Armoured=3").
     if (rollFormula(formula, () => 0.5) === null) return line;
     rolls.push(
@@ -190,7 +190,7 @@ export function fromRollLine(line: string): string {
 export function diceInDetail(detail: string): string | null {
   if (detail.length > MAX_ROLL_TEXT) return null;
   const m = detail.match(/(?:^|\s)(\S*d\S*?)\[([^\]]+)\]\s?=([+-]?\d+)/);
-  return m && !m[1].includes("=>") && rollFormula(m[1], () => 0.5)
-    ? `${m[1]} -> ${m[3]} (${longDice(m[1], m[2])})`
+  return m && !m[1]!.includes("=>") && rollFormula(m[1]!, () => 0.5)
+    ? `${m[1]} -> ${m[3]} (${longDice(m[1]!, m[2]!)})`
     : null;
 }

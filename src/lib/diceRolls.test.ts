@@ -27,7 +27,7 @@ const LOWEST = () => 0;
 const HIGHEST = () => 1 - Number.EPSILON / 2;
 const ROLLS = 3000;
 
-const total = (line: string) => Number(line.split(" -> ")[1].split(" ")[0]);
+const total = (line: string) => Number(line.split(" -> ")[1]!.split(" ")[0]!);
 const range = (from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, i) => from + i);
 const D66 = diceValues("d66");

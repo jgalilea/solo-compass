@@ -12,7 +12,7 @@ import {
 function faces(...rolls: [face: number, sides: number][]) {
   let i = 0;
   return () => {
-    const [face, sides] = rolls[i++ % rolls.length];
+    const [face, sides] = rolls[i++ % rolls.length]!;
     return (face - 1) / sides;
   };
 }

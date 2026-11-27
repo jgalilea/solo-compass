@@ -217,7 +217,7 @@ type Part = (typeof PARTS)[number];
  * heading has reached the top, or the last part once at the bottom.
  */
 function partInView(body: HTMLElement): Part {
-  if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) return PARTS[PARTS.length - 1];
+  if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) return "about";
   const line = body.getBoundingClientRect().top + 80;
   let found: Part = PARTS[0];
   for (const part of PARTS) {
@@ -391,8 +391,20 @@ function BackupSettings() {
     setLastBackupAt(now);
   }
 
+  // Reading every store can fail (storage unavailable): say so where
+  // the card's errors go instead of a button that does nothing.
+  async function readBackup() {
+    try {
+      return await buildBackup(t);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : t.history.storageUnavailableError);
+      return null;
+    }
+  }
+
   async function handleExportAll() {
-    const payload = await buildBackup(t);
+    const payload = await readBackup();
+    if (!payload) return;
     const filename = backupFilename();
     downloadBackupFile(filename, payload);
     setExportedFilename(filename);
@@ -402,7 +414,8 @@ function BackupSettings() {
   // Straight to another device through the system's share sheet; if
   // sharing fails (not just cancelled), it's downloaded instead.
   async function handleShareAll() {
-    const payload = await buildBackup(t);
+    const payload = await readBackup();
+    if (!payload) return;
     const filename = backupFilename();
     try {
       if (
@@ -468,7 +481,7 @@ function BackupSettings() {
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={handleExportAll}
+          onClick={() => void handleExportAll()}
           className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-gold px-3 py-2.5 text-sm font-medium text-ink-950 transition hover:bg-gold-soft"
         >
           <IconDownload size={16} />
@@ -498,7 +511,7 @@ function BackupSettings() {
           // .txt too: shared from Chromium, the backup arrives as text.
           accept=".json,.txt,application/json,text/plain"
           className="hidden"
-          onChange={handleImportFile}
+          onChange={(e) => void handleImportFile(e)}
         />
       </div>
       <p className="mt-3 text-xs leading-relaxed text-parchment-dim">{t.about.dataSectionHint}</p>

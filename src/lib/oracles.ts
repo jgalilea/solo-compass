@@ -22,7 +22,7 @@ export interface OracleInfo {
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const CC_BY_SA = "https://creativecommons.org/licenses/by-sa/4.0/";
 
-export const ORACLES: OracleInfo[] = [
+export const ORACLES: readonly [OracleInfo, ...OracleInfo[]] = [
   {
     id: "recluse",
     name: "Recluse",

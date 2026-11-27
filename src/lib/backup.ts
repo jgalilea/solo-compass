@@ -269,7 +269,7 @@ export async function restoreBackup(
     else if (typeof s.favoriteOracleId === "string" && isOracleId(s.favoriteOracleId))
       saveFavoriteOracleId(s.favoriteOracleId);
     if (typeof s.activeAdventureId === "string" || s.activeAdventureId === null) {
-      saveActiveAdventureId((s.activeAdventureId as string | null) ?? null);
+      saveActiveAdventureId(s.activeAdventureId);
     }
     if (Array.isArray(s.favoriteTableIds)) {
       saveFavoriteTableIds(

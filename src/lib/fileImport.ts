@@ -83,7 +83,7 @@ const TEXT_EXTENSIONS = new Set(["json", "md", "markdown", "txt"]);
  * another app sometimes comes without one).
  */
 export function isOpenableFile(name: string, type: string): boolean {
-  const extension = /\.([^./\\]+)$/.exec(name)?.[1].toLowerCase();
+  const extension = /\.([^./\\]+)$/.exec(name)?.[1]?.toLowerCase();
   if (extension) return TEXT_EXTENSIONS.has(extension);
   return type === "" || type.startsWith("text/") || type === "application/json";
 }

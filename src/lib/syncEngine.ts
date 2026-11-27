@@ -151,8 +151,7 @@ function me(): { id: string; name: string } {
   return {
     id,
     name:
-      saved.name ||
-      defaultDeviceName(navigator.userAgent, !!installed, navigator.maxTouchPoints > 1),
+      saved.name || defaultDeviceName(navigator.userAgent, installed, navigator.maxTouchPoints > 1),
   };
 }
 
@@ -545,7 +544,7 @@ async function closeReplaced(codes: string[]): Promise<void> {
 function unexpected(error: unknown): void {
   setSyncBusy(false);
   failures++;
-  const wait = BACKOFF[Math.min(failures, BACKOFF.length) - 1] * MINUTE;
+  const wait = BACKOFF[Math.min(failures, BACKOFF.length) - 1]! * MINUTE;
   const status = loadSyncStatus();
   const since =
     status?.state === "error" && status.reason === "unexpected" ? status.since : Date.now();
@@ -613,7 +612,7 @@ function pause(reason: SyncPause, delay: number): void {
 
 async function failed(error: RelayError, retryAfter?: number): Promise<void> {
   failures++;
-  const backoff = BACKOFF[Math.min(failures, BACKOFF.length) - 1] * MINUTE;
+  const backoff = BACKOFF[Math.min(failures, BACKOFF.length) - 1]! * MINUTE;
   switch (error) {
     case "network":
       if (typeof navigator !== "undefined" && navigator.onLine === false) {

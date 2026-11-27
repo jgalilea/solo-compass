@@ -44,7 +44,7 @@ export function tableRollDie(
   entry: Pick<TableRollEntry, "dice" | "rolls" | "total">,
 ): DiceType | null {
   if (entry.dice) return entry.dice;
-  const [tens, ones] = entry.rolls;
+  const [tens = 0, ones = 0] = entry.rolls;
   return entry.rolls.length === 2 && tens * 10 + ones === entry.total ? "d66" : null;
 }
 

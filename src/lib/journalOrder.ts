@@ -65,7 +65,7 @@ export function placeAfter(
 ): Placement {
   const list = movingId ? sorted.filter((e) => e.id !== movingId) : sorted;
   const index = afterId === null ? -1 : list.findIndex((e) => e.id === afterId);
-  const prev = index >= 0 ? list[index].timestamp : undefined;
+  const prev = index >= 0 ? list[index]!.timestamp : undefined;
   const next = list[index + 1]?.timestamp;
 
   let timestamp: number;
@@ -105,7 +105,7 @@ export function placeMoved(
     return placeAfter(sorted, sorted[index - 2]?.id ?? null, id);
   }
   if (index === sorted.length - 1) return null;
-  return placeAfter(sorted, sorted[index + 1].id, id);
+  return placeAfter(sorted, sorted[index + 1]!.id, id);
 }
 
 /** One adventure's entries in journal order. */

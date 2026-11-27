@@ -79,7 +79,7 @@ describe("mergeData", () => {
       }),
     );
     expect(merged.adventures[0]).toMatchObject({ name: "Renamed", notes: "new notes" });
-    expect(merged.entries[0].text).toBe("edited here");
+    expect(merged.entries[0]!.text).toBe("edited here");
   });
 
   it("the oracle picked last wins, whichever side was edited later", () => {
@@ -105,7 +105,7 @@ describe("mergeData", () => {
       data({ adventures: [adventure("a", { updatedAt: 9 })] }),
       data({ adventures: [adventure("a", { oracle: "opse", oracleUpdatedAt: 2 })] }),
     );
-    expect(one.adventures[0].oracle).toBe("opse");
+    expect(one.adventures[0]!.oracle).toBe("opse");
   });
 
   it("the game table's dice and tables: each the one picked last", () => {
@@ -156,7 +156,7 @@ describe("mergeData", () => {
         ],
       }),
     );
-    expect(merged.adventures[0].descriptions).toEqual({
+    expect(merged.adventures[0]!.descriptions).toEqual({
       "npc:bram": { text: "new", updatedAt: 9 },
       "npc:odile": { text: "mine", updatedAt: 1 },
       "place:mill": { text: "theirs", updatedAt: 2 },
@@ -168,7 +168,7 @@ describe("mergeData", () => {
       data({ adventures: [adventure("a")] }),
       data({ adventures: [adventure("a", { notes: "x" })] }),
     );
-    expect(merged.adventures[0].notes).toBe("x");
+    expect(merged.adventures[0]!.notes).toBe("x");
   });
 
   it("what either side deleted stays deleted, with its adventure's entries", () => {

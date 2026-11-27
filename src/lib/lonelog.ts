@@ -118,7 +118,7 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   if (entry.kind === "scene") return escapeInner(entry.text.replace(/\s*\n\s*/g, " "));
   // Its own markers delimit it: written as is, lines and all.
   if (entry.kind === "note" && EXCERPT.test(entry.text)) return entry.text;
-  const [first, ...rest] = entry.text.split(/\r?\n/);
+  const [first = "", ...rest] = entry.text.split(/\r?\n/);
   const head =
     entry.kind === "note"
       ? NEEDS_ESCAPE.test(first) || SCENE_LINE.test(first)
@@ -301,10 +301,10 @@ function splitFrontMatter(text: string): { frontMatter: string | null; body: str
   // Only if it reads as YAML: a log that opens with a "---" rule and
   // has another further down mustn't lose what's in between.
   const yaml = match?.[1]
-    .split(/\r?\n/)
+    ?.split(/\r?\n/)
     .every((line) => !line.trim() || /^\s/.test(line) || /^(#|- |[\w-]+\s*:)/.test(line));
   if (!match || !yaml) return { frontMatter: null, body: clean };
-  return { frontMatter: match[1], body: clean.slice(match[0].length) };
+  return { frontMatter: match[1]!, body: clean.slice(match[0].length) };
 }
 
 /**
@@ -319,9 +319,9 @@ export function parseTitleFromMarkdown(text: string): string {
     const line = raw.trim();
     if (!line || CODE_FENCE.test(line)) continue;
     const h1 = line.match(/^#(?!#)\s*(.+)$/);
-    if (h1) return h1[1].trim();
+    if (h1) return h1[1]!.trim();
     const campaign = line.match(CAMPAIGN_LOG_LINE);
-    if (campaign) return campaign[1];
+    if (campaign) return campaign[1]!;
     if (!line.startsWith(">")) break;
   }
   return "";
@@ -354,7 +354,7 @@ export function parseDescriptionsFromMarkdown(
       const { kind, name, details } = first.tag;
       const key =
         kind === "wealth" && details.length === 1 && !first.tag.progress
-          ? purseKey(name, details[0])
+          ? purseKey(name, details[0]!)
           : castKey(kind, name);
       current = { key, lines: [line.slice(first.text.length).trim()] };
     } else if (current) {
@@ -394,7 +394,7 @@ function readFrontMatterField(text: string, name: string): string {
   const field = new RegExp(`^${name}\\s*:\\s*`, "i");
   const start = lines.findIndex((l) => field.test(l));
   if (start < 0) return "";
-  const value = lines[start].replace(field, "");
+  const value = lines[start]!.replace(field, "");
 
   const block = value.match(/^([|>])[+-]?\s*$/);
   if (!block) {
@@ -585,8 +585,8 @@ export function parseMarkdownToEntries(
     // The line right below a session can be its date.
     const dateMatch =
       previous?.kind === "session" && !previous.date ? line.match(SESSION_DATE_LINE) : null;
-    if (dateMatch) {
-      previous.date = dateMatch[1];
+    if (dateMatch && previous) {
+      previous.date = dateMatch[1]!;
       if (dateMatch[2]) push("note", dateMatch[2]);
       continue;
     }
@@ -611,10 +611,10 @@ export function parseMarkdownToEntries(
       content = line.slice(1);
     } else if (h2Match) {
       kind = "session";
-      content = h2Match[1];
+      content = h2Match[1]!;
     } else if (sceneMatch) {
       kind = "scene";
-      content = sceneMatch[1];
+      content = sceneMatch[1]!;
     } else if (TABLE_RESULT.test(line)) {
       kind = "roll";
       content = `tbl: -> ${line.match(TABLE_RESULT)![1]}`;
@@ -623,7 +623,7 @@ export function parseMarkdownToEntries(
       content = line;
     } else if (legacySessionMatch) {
       kind = "session";
-      content = legacySessionMatch[1];
+      content = legacySessionMatch[1]!;
     } else if (ROLL_PREFIX.test(line)) {
       kind = "roll";
       content = fixOldOracle(fromRollLine(line.replace(ROLL_PREFIX, "")));

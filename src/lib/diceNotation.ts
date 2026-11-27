@@ -250,7 +250,7 @@ class Parser {
 
   private compare(): Compare | null {
     const m = this.match(COMPARE);
-    return m ? { op: m[1], n: Number(m[2]) } : null;
+    return m ? { op: m[1]!, n: Number(m[2]) } : null;
   }
 
   private expr(): Node {
@@ -346,16 +346,16 @@ class Parser {
     if (subs.length === 1) {
       // A group of one keeps or drops single dice, across all of it.
       applyKeepDrop(
-        diceIn(subs[0]).filter((d) => !d.dropped),
+        diceIn(subs[0]!).filter((d) => !d.dropped),
         total,
         keepDrop,
         (d) => (d.dropped = true),
       );
-      if (keepDrop.length) poolsIn(subs[0]).forEach((pool) => (pool.drops = true));
+      if (keepDrop.length) poolsIn(subs[0]!).forEach((pool) => (pool.drops = true));
     } else {
       applyKeepDrop(
         node.order,
-        (i) => value(subs[i]),
+        (i) => value(subs[i]!),
         keepDrop,
         (i) => (node.out[i] = true),
       );
@@ -368,7 +368,7 @@ class Parser {
       });
     }
     if (sort)
-      node.order.sort((a, b) => (sort === "asc" ? 1 : -1) * (value(subs[a]) - value(subs[b])));
+      node.order.sort((a, b) => (sort === "asc" ? 1 : -1) * (value(subs[a]!) - value(subs[b]!)));
     return node;
   }
 
@@ -472,7 +472,7 @@ class Parser {
       const r = this.random();
       const v =
         fudge === 1
-          ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)]
+          ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)]!
           : fudge
             ? Math.floor(r * 3) - 1
             : d66
@@ -502,11 +502,11 @@ class Parser {
       for (let d = 0; d < count; d++) {
         let current = newDie(roll());
         out.push(current);
-        let last = current.faces[0].v;
+        let last = current.faces[0]!.v;
         for (let n = 0; n < MAX_ITERATIONS && meets(when, last); n++) {
           const face = roll();
           last = face.v;
-          current.faces[current.faces.length - 1].mark += "!";
+          current.faces[current.faces.length - 1]!.mark += "!";
           const counted = penetrate ? { ...face, v: face.v - 1 } : face;
           if (compound) current.faces.push(counted);
           else {
@@ -634,7 +634,7 @@ function detail(node: Node): string {
     case "group":
       return `{${node.order
         .map((i) => {
-          const sub = detail(node.subs[i]);
+          const sub = detail(node.subs[i]!);
           const mark = node.hit[i] ? "✓" : node.miss[i] || node.out[i] ? "✗" : "";
           return mark && /[ +,]/.test(sub) ? `(${sub})${mark}` : sub + mark;
         })
@@ -725,7 +725,7 @@ class DetailReader {
         this.need("{");
         node.order.forEach((i, n) => {
           if (n > 0) this.need(", ");
-          this.part(node.subs[i], !!node.failure);
+          this.part(node.subs[i]!, !!node.failure);
         });
         return this.need("}");
       case "dice":
@@ -766,7 +766,7 @@ class DetailReader {
     const dice = this.dice.slice(before);
     if (hit || miss) {
       // A part's success is the die's when it's just one.
-      if (dice.length === 1) dice[0].mark = hit ? "hit" : "miss";
+      if (dice.length === 1) dice[0]!.mark = hit ? "hit" : "miss";
     } else for (const die of dice) die.mark = "out";
   }
 
@@ -807,11 +807,11 @@ class DetailReader {
       for (const die of fallen(node, number(text)))
         this.dice.push({ ...die, ...(mark ? { mark } : {}) });
     };
-    for (const value of m[1].split("→").slice(0, -1)) add(value, "out");
+    for (const value of m[1]!.split("→").slice(0, -1)) add(value, "out");
     const crossed = m[3] === "✗" || m[5] === "✗";
     const failed = crossed && !dropped && (!!node.failure || miss);
     add(
-      m[2],
+      m[2]!,
       crossed && !failed
         ? "out"
         : m[4] === "▲"
@@ -913,7 +913,7 @@ function splitDescription(input: string): { formula: string; description: string
     .replace(/\[([^\]]*)\]/g, (_, text: string) => (parts.push(text), " "));
   const tail = formula.match(/(?:\/\/|#)([\s\S]*)$/);
   if (tail) {
-    parts.push(tail[1]);
+    parts.push(tail[1]!);
     formula = formula.slice(0, tail.index);
   }
   return {
@@ -975,7 +975,7 @@ export function rollFormula(input: string, random: () => number = Math.random): 
     !node.fudge &&
     !node.target &&
     only.faces.length === 1 &&
-    !only.faces[0].mark &&
+    !only.faces[0]!.mark &&
     !only.rerolled.length &&
     !only.crit &&
     !only.dropped;

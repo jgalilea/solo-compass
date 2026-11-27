@@ -16,7 +16,7 @@ const ORACLE_IDS: OracleId[] = ["recluse", "loner", "ironsworn", "opse"];
 /** Always rolls the given faces, in order. */
 function fixed(...faces: number[]) {
   let i = 0;
-  return () => faces[i++];
+  return () => faces[i++]!;
 }
 
 describe("oracleOdds", () => {

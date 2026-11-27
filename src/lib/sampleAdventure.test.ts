@@ -28,11 +28,11 @@ import { cardName, isCardDraw } from "./cards";
 
 const shapeOf = (l: SampleLine) =>
   "oracle" in l
-    ? `oracle:${l.oracle}`
+    ? `oracle:${JSON.stringify(l.oracle)}`
     : "table" in l
-      ? `table:${l.table}:${l.roll}`
+      ? `table:${l.table}:${JSON.stringify(l.roll)}`
       : "inspiration" in l
-        ? `inspiration:${l.inspiration}`
+        ? `inspiration:${JSON.stringify(l.inspiration)}`
         : `${l.kind}${"date" in l ? `:${l.date}` : ""}`;
 
 async function build(lang: "es" | "en") {
@@ -62,7 +62,7 @@ describe("sample adventure", () => {
       );
 
       const answers = entries
-        .filter((_, i) => "oracle" in LONG_TEXTS[lang].sample.script[i])
+        .filter((_, i) => "oracle" in LONG_TEXTS[lang].sample.script[i]!)
         .map((e) => splitRollText(e.text).answer);
       expect(answers).toEqual(["si", "si", "no", "contradiccion", "no", "si"]);
       // Each roll throws the dice its question's likelihood asks for
@@ -74,16 +74,16 @@ describe("sample adventure", () => {
           (Object.keys(LIKELIHOOD_DICE) as Likelihood[])
             .filter((l) => l !== "equilibrado")
             .find(
-              (l) => "kind" in question && question.text.endsWith(askedQuestion(t, "", l).trim()),
+              (l) => "kind" in question! && question.text.endsWith(askedQuestion(t, "", l).trim()),
             ) ?? "equilibrado";
         const [white, black] = line.oracle.map((d) => (Array.isArray(d) ? d.length : 1));
-        expect({ white, black }, `${"kind" in question ? question.text : ""}`).toEqual(
+        expect({ white, black }, `${"kind" in question! ? question.text : ""}`).toEqual(
           LIKELIHOOD_DICE[likelihood],
         );
       });
       // Word for word: nothing in it is split or read as something else.
       expect(
-        entries.filter((_, i) => "kind" in LONG_TEXTS[lang].sample.script[i]).map((e) => e.text),
+        entries.filter((_, i) => "kind" in LONG_TEXTS[lang].sample.script[i]!).map((e) => e.text),
       ).toEqual(LONG_TEXTS[lang].sample.script.flatMap((l) => ("kind" in l ? [l.text] : [])));
       const again = parseMarkdownToEntries(exportAdventureToMarkdown(t, "A", entries), "a", 0);
       expect(again.map((e) => [e.kind, e.text, e.date])).toEqual(
@@ -163,7 +163,7 @@ describe("sample adventure", () => {
       ])
         expect(all, String(form)).toMatch(form);
       expect(
-        entries.some((e) => noteForm(e.text).form === "dialogue" && /^PC \(/.test(e.text)),
+        entries.some((e) => noteForm(e.text).form === "dialogue" && e.text.startsWith("PC (")),
       ).toBe(true);
       expect(
         new Set(
@@ -187,7 +187,7 @@ describe("sample adventure", () => {
         if (entry.kind !== "roll" || entry.text.includes("Recluse: ")) continue;
         if (isCardDraw(entry.text)) {
           const [, card, name] = entry.text.match(/draw=(\S+) -> (.+)$/)!;
-          expect(name).toBe(cardName(card, lang));
+          expect(name).toBe(cardName(card!, lang));
           continue;
         }
         if (splitRollSymbol(entry.text).symbol !== "d") continue;
@@ -231,7 +231,7 @@ describe("sample adventure notebook", () => {
       const one = (kind: string) => cast.find((c) => c.kind === kind)!;
       expect(one("pc").tags).toContain(lang === "es" ? "herida" : "wounded");
       expect(cast.filter((c) => c.kind === "foe").map(foeIsOut)).toEqual([true, true]);
-      expect(cast.filter((c) => c.kind === "place")[1].tags).toEqual(
+      expect(cast.filter((c) => c.kind === "place")[1]!.tags).toEqual(
         lang === "es" ? ["habitado"] : ["inhabited"],
       );
       // Money and supplies spent along the way; the trail followed to the end.

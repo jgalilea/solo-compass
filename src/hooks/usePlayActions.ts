@@ -163,9 +163,9 @@ export function usePlayActions() {
       const rolls = tables.map((table) => buildTableRoll(table, all));
       for (const roll of rolls) record(roll, adventureId);
       const inspiration: Inspiration = {
-        id: rolls[0].id,
+        id: rolls[0]!.id,
         rollIds: rolls.map((r) => r.id),
-        detail: rolls.map((r, i) => `${r.tableName} ${tables[i].dice}=${r.total}`).join(", "),
+        detail: rolls.map((r, i) => `${r.tableName} ${tables[i]!.dice}=${r.total}`).join(", "),
         text: rolls.map((r) => r.resultText).join(" · "),
       };
       announce(`${name}: ${inspiration.text}`);

@@ -107,7 +107,7 @@ export function classifyRoll(
   }
   const { symbol, text } = splitRollSymbol(entry.text);
   // A generator's axes and a table written out: their first line names it.
-  const { detail, result, answer } = splitRollText(entry.text.split("\n", 1)[0]);
+  const { detail, result, answer } = splitRollText(entry.text.split("\n", 1)[0]!);
   if (symbol === "tbl" || symbol === "gen") {
     // A card gives content too, but it's a deck's.
     if (isCardDraw(text) || readCards(detail)) return { kind: "dice" };
@@ -313,7 +313,7 @@ export function longestStreak(isoDays: string[]): number {
   let best = 0;
   let run = 0;
   dayNumbers.forEach((n, i) => {
-    run = i > 0 && n === dayNumbers[i - 1] + 1 ? run + 1 : 1;
+    run = i > 0 && n === dayNumbers[i - 1]! + 1 ? run + 1 : 1;
     best = Math.max(best, run);
   });
   return best;

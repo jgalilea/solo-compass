@@ -124,9 +124,11 @@ async function openIncoming(
   ];
   const datas: MergeData[] = [];
   for (let i = 0; i < kinds.length; i++) {
+    const part = result.parts[i];
+    if (!part) continue;
     let packet: Packet;
     try {
-      packet = (await unseal(keys, kinds[i], result.parts[i])) as Packet;
+      packet = (await unseal(keys, kinds[i]!, part)) as Packet;
     } catch {
       continue;
     }

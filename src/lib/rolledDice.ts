@@ -62,7 +62,7 @@ export function readOracleDice(detail: string): OracleDieRead[] | null {
   const dice: OracleDieRead[] = [];
   for (const part of after.split(" / ")) {
     const m = part.match(/^(\S+) (\d+)(?: vs \d+\+)?(?: \((\d+(?:, \d+)+)\))?$/);
-    const role = m && ORACLE_DICE[m[1].toLowerCase()];
+    const role = m && ORACLE_DICE[m[1]!.toLowerCase()];
     if (!role) return null;
     const sides = role === "percentile" ? 100 : 6;
     const kept = Number(m[2]);
@@ -92,7 +92,7 @@ export function rolledWhat(roll: string): string {
 
 /** "Attack d20+5 -> 19 (14 + 5)": "19". */
 export function rolledTotal(roll: string): string {
-  return roll.slice(roll.lastIndexOf(" -> ") + 4).split(" ")[0];
+  return roll.slice(roll.lastIndexOf(" -> ") + 4).split(" ")[0]!;
 }
 
 /**

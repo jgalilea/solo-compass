@@ -238,7 +238,7 @@ export async function saveAdventureChanges(
   try {
     await adventureStore.save(diffById(prev, next));
     const ids = next.map((a) => a.id);
-    if (ids.length !== prev.length || ids.some((id, i) => prev[i].id !== id))
+    if (ids.length !== prev.length || ids.some((id, i) => prev[i]!.id !== id))
       await set(ADVENTURE_ORDER_KEY, ids);
   } catch {
     throw new JournalStorageError(t.history.storageSaveError);

@@ -319,7 +319,7 @@ export function JournalListView() {
               type="file"
               accept=".md,.markdown,.txt,text/markdown,text/plain"
               className="hidden"
-              onChange={handleImportFile}
+              onChange={(e) => void handleImportFile(e)}
             />
 
             {importError && <p className="text-sm text-no">{importError}</p>}
@@ -454,7 +454,7 @@ export function JournalListView() {
                 query={search.trim()}
                 adventureName={(id) => byId.get(id)?.name}
                 onPick={(match) =>
-                  navigate(`/diario/${match.entry.adventureId}`, {
+                  void navigate(`/diario/${match.entry.adventureId}`, {
                     state: { entryId: match.entry.id },
                   })
                 }

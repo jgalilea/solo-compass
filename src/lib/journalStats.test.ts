@@ -227,10 +227,10 @@ describe("play activity", () => {
       "2026-10",
       "2026-11",
     ]);
-    expect(months[0].days.at(-1)).toEqual({ iso: "2025-12-31", day: 31, count: 1, future: false });
-    expect(months[2].days).toHaveLength(28);
-    expect(months[11].days[8]).toEqual({ iso: "2026-11-09", day: 9, count: 3, future: false });
-    expect(months[11].days[9].future).toBe(true);
+    expect(months[0]!.days.at(-1)).toEqual({ iso: "2025-12-31", day: 31, count: 1, future: false });
+    expect(months[2]!.days).toHaveLength(28);
+    expect(months[11]!.days[8]).toEqual({ iso: "2026-11-09", day: 9, count: 3, future: false });
+    expect(months[11]!.days[9]!.future).toBe(true);
   });
 
   it("grades each day against the busiest one", () => {

@@ -216,14 +216,14 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
   const current: BlockWindow = { shown: view.shown, end: endIndex >= 0 ? endIndex : null };
   const toView = (w: BlockWindow) => ({
     shown: w.shown,
-    endId: w.end === null ? null : blocks[w.end][0].id,
+    endId: w.end === null ? null : blocks[w.end]![0]!.id,
   });
 
   // A new entry at the end of the session (the composer's) takes the
   // view back there, so what was just written is on screen, even while
   // the entry jumped to is still highlighted (it no longer pulls the
   // view back to it).
-  const lastId = blocks.at(-1)?.[0].id ?? null;
+  const lastId = blocks.at(-1)?.[0]?.id ?? null;
   const [seenLastId, setSeenLastId] = useState(lastId);
   const [leftHighlight, setLeftHighlight] = useState<string | null>(null);
   if (lastId !== seenLastId) {
@@ -266,14 +266,14 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
         </li>
       )}
       {blocks.slice(start, end).map((block) =>
-        block[0].kind === "scene" ? (
+        block[0]!.kind === "scene" ? (
           // A scene opens a stretch of the session: a heading, not a
           // card, pinned while you read it (scene-bar in index.css).
-          <li key={block[0].id} className="scene-bar mt-2 bg-ink-950 px-1 py-1 first:mt-0">
-            <EntryLine entry={block[0]} actions={actions} />
+          <li key={block[0]!.id} className="scene-bar mt-2 bg-ink-950 px-1 py-1 first:mt-0">
+            <EntryLine entry={block[0]!} actions={actions} />
           </li>
         ) : actions.story ||
-          (block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question") ? (
+          (block.length === 1 && block[0]!.kind !== "roll" && block[0]!.kind !== "question") ? (
           // What's told (notes, actions, dialogue…) is text on the page;
           // only what the dice and the oracle say is framed, so it stands
           // out and the journal reads as one. In zen mode there's nothing
@@ -285,7 +285,7 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
           ))
         ) : (
           <li
-            key={block[0].id}
+            key={block[0]!.id}
             className="flex flex-col gap-2.5 rounded-xl border border-ink-border bg-ink-800/50 px-3 py-3"
           >
             {block.map((entry) => (
@@ -322,7 +322,7 @@ export function SessionDate({ session }: { session: JournalEntry }) {
   const { locale } = useLocaleContext();
   const iso = sessionDate(session);
   if (!iso) return null;
-  const [y, m, d] = iso.split("-").map(Number);
+  const [y = NaN, m = NaN, d = NaN] = iso.split("-").map(Number);
   const day = new Date(y, m - 1, d);
   if (session.text === day.toLocaleDateString()) return null;
   return (
@@ -567,12 +567,16 @@ function withView(text: string, view: string | undefined) {
   return own.actor || !view ? own : { actor: view, text };
 }
 
+// One empty cast for every entry drawn without one (a new [] each
+// render would look like a change to whatever compares it).
+const NO_CAST: CastMember[] = [];
+
 export function EntryContent({
   entry,
   whole = entry.text,
   answer,
   onTagClick,
-  cast = [],
+  cast = NO_CAST,
   view,
 }: {
   entry: JournalEntry;
@@ -635,7 +639,7 @@ export function EntryContent({
     return (
       <div className="flex flex-col gap-1">
         <EntryContent
-          entry={{ ...entry, text: first }}
+          entry={{ ...entry, text: first! }}
           whole={entry.text}
           answer={answer}
           onTagClick={onTagClick}
@@ -892,7 +896,7 @@ export function TaggedText({
 }) {
   const { t } = useLocaleContext();
   const parts = splitTags(text);
-  if (parts.length === 1 && !parts[0].tag) return text;
+  if (parts.length === 1 && !parts[0]!.tag) return text;
   return parts.map((part, i) => {
     if (!part.tag) return part.text;
     const { kind, name, progress } = part.tag;
@@ -907,7 +911,7 @@ export function TaggedText({
           <span className="sr-only">{t.notebook.kinds[kind]} </span>
           {firstWord}
         </span>
-        <span className="font-medium text-parchment">{name.slice(firstWord.length)}</span>
+        <span className="font-medium text-parchment">{name.slice(firstWord!.length)}</span>
         {progress && (
           <span
             className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}

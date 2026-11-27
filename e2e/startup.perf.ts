@@ -67,7 +67,7 @@ async function visitTwice(
 }
 
 const median = (values: number[]) =>
-  values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
+  values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
 
 for (const [label, route] of [
   ["oracle", ""],

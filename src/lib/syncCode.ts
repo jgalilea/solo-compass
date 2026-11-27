@@ -77,12 +77,12 @@ export function parseCode(text: string): Uint8Array<ArrayBuffer> | null {
     .replace(/O/g, "0")
     .replace(/[IL]/g, "1");
   if (cleaned.length !== BODY_LENGTH + 1) return null;
-  const values = [...cleaned].map((c) => ALPHABET.indexOf(c));
+  const values = Array.from(cleaned, (c) => ALPHABET.indexOf(c));
   if (values.some((v) => v < 0)) return null;
   const body = values.slice(0, BODY_LENGTH);
   if (checkSymbol(body) !== values[BODY_LENGTH]) return null;
   // The last symbol carries three bits: its other two are always zero.
-  if (body[BODY_LENGTH - 1] & 0b11) return null;
+  if (body[BODY_LENGTH - 1]! & 0b11) return null;
   const secret = new Uint8Array(SECRET_BYTES);
   let buffer = 0;
   let bits = 0;

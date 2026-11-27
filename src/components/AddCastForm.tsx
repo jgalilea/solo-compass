@@ -61,7 +61,7 @@ export function AddCastForm({
     if (kind === "wealth") return formatQuantity("wealth", name, String(quantity), owner.trim());
     // A group's size is a count, not part of its name: "Goblins×4".
     const group = kind === "foe" ? name.match(/^(.*?\S)\s*[×x]\s*(\d+)$/) : null;
-    return formatTag(kind, group ? group[1] : name, [
+    return formatTag(kind, group ? group[1]! : name, [
       ...(group ? [`×${group[2]}`] : []),
       ...writeDetails(kind, details.split(","), t.notebook.categories),
     ]);

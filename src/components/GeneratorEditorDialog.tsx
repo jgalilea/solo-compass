@@ -58,7 +58,7 @@ export function GeneratorEditorDialog({
   function move(index: number, by: -1 | 1) {
     setTableIds((prev) => {
       const next = [...prev];
-      [next[index], next[index + by]] = [next[index + by], next[index]];
+      [next[index], next[index + by]] = [next[index + by]!, next[index]!];
       return next;
     });
   }

@@ -199,12 +199,12 @@ export function handleBox(
   let stats: SyncStats | null = null;
   if (request.size > 0) {
     const recent = store.recentChangeTimes(WRITES_PER_MINUTE);
-    if (recent.length >= WRITES_PER_MINUTE && recent[WRITES_PER_MINUTE - 1] > now - MINUTE) {
+    if (recent.length >= WRITES_PER_MINUTE && recent[WRITES_PER_MINUTE - 1]! > now - MINUTE) {
       return failure(
         429,
         "rate",
         now,
-        Math.max(1, Math.ceil((recent[WRITES_PER_MINUTE - 1] + MINUTE - now) / 1000)),
+        Math.max(1, Math.ceil((recent[WRITES_PER_MINUTE - 1]! + MINUTE - now) / 1000)),
       );
     }
     const before = statsOf(store, meta);

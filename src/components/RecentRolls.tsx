@@ -196,7 +196,7 @@ function DiceRow({ text }: { text: string }) {
   return (
     <>
       <IconDice size={16} className="shrink-0 text-parchment-faint" />
-      <OwnRoll what={text.split(" -> ")[0]} result={arrow < 0 ? "" : text.slice(arrow + 4)} />
+      <OwnRoll what={text.split(" -> ")[0]!} result={arrow < 0 ? "" : text.slice(arrow + 4)} />
     </>
   );
 }

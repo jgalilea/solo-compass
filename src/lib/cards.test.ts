@@ -222,7 +222,7 @@ describe("the deck of an adventure", () => {
       "a",
       100,
     );
-    expect([a.timestamp, b.timestamp]).toEqual([100, 101]);
+    expect([a!.timestamp, b!.timestamp]).toEqual([100, 101]);
     expect(b).toMatchObject({ adventureId: "a", card: { deck: "poker", id: "Qs" } });
     expect(a).not.toHaveProperty("card");
   });

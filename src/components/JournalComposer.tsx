@@ -367,7 +367,10 @@ export function JournalComposer({
       addEntry(
         adventureId,
         "note",
-        formatDialogue(speaker.pc && pcs.length > 1 ? { pc: true, name: pc.name } : speaker, text),
+        formatDialogue(
+          speaker.pc && pc && pcs.length > 1 ? { pc: true, name: pc.name } : speaker,
+          text,
+        ),
       );
     } else if (mode === "excerpt") {
       if (!canSend) return;

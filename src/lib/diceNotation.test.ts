@@ -10,14 +10,14 @@ function dice(...faces: number[]) {
   let i = 0;
   return (sides = 6) =>
     () =>
-      (faces[i++ % faces.length] - 1) / sides;
+      (faces[i++ % faces.length]! - 1) / sides;
 }
 
 /** Rolls that land on the given faces, each with its own die's sides. */
 function faces(...rolls: [face: number, sides: number][]) {
   let i = 0;
   return () => {
-    const [face, sides] = rolls[i++ % rolls.length];
+    const [face, sides] = rolls[i++ % rolls.length]!;
     return (face - 1) / sides;
   };
 }
@@ -266,7 +266,7 @@ describe("dice help", () => {
       for (const { examples } of LONG_TEXTS[locale].diceHelp.formulas) {
         for (const { line } of examples) {
           const formula = line.split(" -> ")[0];
-          expect(rollFormula(formula)?.startsWith(`${formula} -> `), line).toBe(true);
+          expect(rollFormula(formula!)?.startsWith(`${formula} -> `), line).toBe(true);
         }
       }
     }
@@ -405,9 +405,9 @@ describe("dice help", () => {
       ],
     };
     for (const line of lines) {
-      const formula = line.split(" -> ")[0];
+      const formula = line.split(" -> ")[0]!;
       expect(rolls[formula], formula).toBeDefined();
-      expect(rollFormula(formula, faces(...rolls[formula]))).toBe(line);
+      expect(rollFormula(formula, faces(...rolls[formula]!))).toBe(line);
     }
     // Both languages show the same lines.
     expect(LONG_TEXTS.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(

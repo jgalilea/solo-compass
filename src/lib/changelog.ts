@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.11.4",
+    date: "2026-11-27",
+    text: {
+      es: {
+        title: "Capítulo XXVIII, al margen · Orden en el taller",
+        items: [
+          "Si exportar o enviar la copia de seguridad no puede leer tus datos, ahora lo dice en la tarjeta en vez de no hacer nada.",
+          "Por dentro, el taller está más ordenado y vigilado: hay menos rincones donde un fallo pueda colarse sin que nadie se entere.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVIII, in the margin · A tidier workshop",
+        items: [
+          "If exporting or sending the backup can't read your data, the card now says so instead of doing nothing.",
+          "Inside, the workshop is tidier and better watched: fewer corners where a fault could slip in unnoticed.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.11.3",
     date: "2026-11-27",
     text: {

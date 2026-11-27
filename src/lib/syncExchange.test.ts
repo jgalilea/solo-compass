@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { handleBox, type BoxRequest } from "../../relay/src/box";
+import { handleBox } from "../../relay/src/box";
 import { MemoryBoxStore } from "../../relay/src/memoryStore";
 import type { MergeData } from "./backupMerge";
 import type { Adventure } from "./journal";
@@ -69,7 +69,7 @@ beforeEach(() => {
     const passHash = [...new Uint8Array(digest)]
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-    const result = handleBox(store, { ...rest, passHash } as BoxRequest, payload, {
+    const result = handleBox(store, { ...rest, passHash }, payload, {
       now: (clock += 4000),
       newEpoch: () => crypto.randomUUID(),
       wait: 0,
@@ -172,12 +172,12 @@ describe("sync exchange", () => {
         updatedAt: 7,
       });
     const box = [...boxes.values()][0];
-    const latest = box.lastChange();
-    const written = box.rowsWritten;
+    const latest = box!.lastChange();
+    const written = box!.rowsWritten;
     await settle(a, b);
-    expect(box.lastChange()).toBe(latest);
+    expect(box!.lastChange()).toBe(latest);
     // Asking for what's new writes nothing on the relay.
-    expect(box.rowsWritten).toBe(written);
+    expect(box!.rowsWritten).toBe(written);
   });
 
   it("tells the devices sharing the code their names, without anything new to send", async () => {
@@ -186,7 +186,7 @@ describe("sync exchange", () => {
       const list: SyncedDevice[][] = [[]];
       d.roster = {
         me: () => ({ id, name: d.name ?? name }),
-        load: async () => list[0],
+        load: async () => list[0]!,
         save: async (l) => void (list[0] = l),
       };
       return list;
@@ -196,19 +196,19 @@ describe("sync exchange", () => {
     const phoneList = named(phone, "p", "iPhone · app");
     const laptopList = named(laptop, "l", "Windows · Chrome");
     await settle(phone, laptop);
-    expect(laptopList[0].map((d) => d.name)).toContain("iPhone · app");
-    expect(phoneList[0].map((d) => d.name)).toContain("Windows · Chrome");
+    expect(laptopList[0]!.map((d) => d.name)).toContain("iPhone · app");
+    expect(phoneList[0]!.map((d) => d.name)).toContain("Windows · Chrome");
     // Only reading, it says it's there once a day, not each time.
     requests = 0;
-    const rows = [...boxes.values()][0].rowsWritten;
+    const rows = [...boxes.values()][0]!.rowsWritten;
     await laptop.sync();
     await laptop.sync();
-    expect([...boxes.values()][0].rowsWritten).toBe(rows);
+    expect([...boxes.values()][0]!.rowsWritten).toBe(rows);
     // A new name goes with the next exchange.
     laptop.name = "Portátil del salón";
     await laptop.sync();
     await phone.sync();
-    expect(phoneList[0].find((d) => d.id === "l")?.name).toBe("Portátil del salón");
+    expect(phoneList[0]!.find((d) => d.id === "l")?.name).toBe("Portátil del salón");
     // A device that starts from the snapshot knows them too.
     for (let i = 0; i < 105; i++) {
       phone.data.entries = [
@@ -220,7 +220,7 @@ describe("sync exchange", () => {
     const tablet = new Device(code);
     const tabletList = named(tablet, "t", "iPad · Safari");
     await tablet.sync();
-    expect(tabletList[0].map((d) => d.id)).toEqual(expect.arrayContaining(["p", "l"]));
+    expect(tabletList[0]!.map((d) => d.id)).toEqual(expect.arrayContaining(["p", "l"]));
   });
 
   it("notes when something last came from another device", async () => {
@@ -355,7 +355,7 @@ describe("sync exchange", () => {
 
     for (const d of [a, b]) {
       expect(d.ids("entries")).toEqual(["e1"]);
-      expect(d.data.entries[0].text).toBe("Primera, corregida");
+      expect(d.data.entries[0]!.text).toBe("Primera, corregida");
     }
   });
 
@@ -371,8 +371,8 @@ describe("sync exchange", () => {
       await a.sync();
     }
     const box = [...boxes.values()][0];
-    expect(box.meta()!.gen).toBeGreaterThan(0);
-    expect(box.changeStatsAfter(box.meta()!.upto).count).toBeLessThan(100);
+    expect(box!.meta()!.gen).toBeGreaterThan(0);
+    expect(box!.changeStatsAfter(box!.meta()!.upto).count).toBeLessThan(100);
     const c = new Device(code);
     await c.sync();
     expect(c.ids("entries")).toHaveLength(105);
@@ -443,7 +443,7 @@ describe("sync exchange", () => {
       data: { adventures: [adventure("future")] },
     });
     const store = [...boxes.values()][0];
-    store.appendChange((store.lastChange() ?? 0) + 1, Date.now(), sealed);
+    store!.appendChange((store!.lastChange() ?? 0) + 1, Date.now(), sealed);
     const b = new Device(code);
     expect(await b.sync()).toMatchObject({ kind: "problem", reason: "update" });
     expect(b.data.adventures).toEqual([]);
@@ -473,7 +473,7 @@ describe("sync exchange", () => {
       const upload = performance.now() - started;
       expect(biggest).toBeLessThanOrEqual(MAX_REQUEST_BYTES + 16 * 1024);
       const box = [...boxes.values()][0];
-      const stored = box.meta()!.snapshotBytes + box.changeStatsAfter(box.meta()!.upto).bytes;
+      const stored = box!.meta()!.snapshotBytes + box!.changeStatsAfter(box!.meta()!.upto).bytes;
       expect(stored).toBeLessThan(MAX_BOX_BYTES / 4);
 
       started = performance.now();
@@ -560,7 +560,7 @@ function yearsOfPlay(): Partial<MergeData> {
           answer: white === black ? "contradiccion" : white > black ? "si" : "no",
           qualifier: null,
           favorite: false,
-        } as HistoryEntry);
+        });
         entries.push(
           entry(`${id}-e${i}`, id, `Recluse ${white}/${black} -> Sí`, {
             kind: "roll",
@@ -590,7 +590,7 @@ function yearsOfPlay(): Partial<MergeData> {
       total: 1 + (i % 6),
       resultText: sentence(2),
       favorite: false,
-    } as HistoryEntry);
+    });
   }
   return { adventures, entries, history };
 }

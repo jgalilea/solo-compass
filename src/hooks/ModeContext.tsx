@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { loadMode, saveMode, systemPrefersDark, type ThemeMode } from "../lib/mode";
 import { ModeContext } from "./modeContextInstance";
 
@@ -26,7 +26,6 @@ export function ModeProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.colorScheme = resolvedMode;
   }, [resolvedMode]);
 
-  return (
-    <ModeContext.Provider value={{ mode, setMode, resolvedMode }}>{children}</ModeContext.Provider>
-  );
+  const value = useMemo(() => ({ mode, setMode, resolvedMode }), [mode, resolvedMode]);
+  return <ModeContext.Provider value={value}>{children}</ModeContext.Provider>;
 }

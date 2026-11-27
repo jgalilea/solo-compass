@@ -47,8 +47,8 @@ describe("carrying on in a new adventure", () => {
 
       expect(started).toHaveLength(1);
       expect(started[0]).toMatchObject({ adventureId: "new", timestamp: 1000, kind: "note" });
-      expect(started[0].text.split("\n")[0]).toBe("Continúa «La torre».");
-      expect(isImportedEntry(started[0])).toBe(false);
+      expect(started[0]!.text.split("\n")[0]).toBe("Continúa «La torre».");
+      expect(isImportedEntry(started[0]!)).toBe(false);
       expect(buildCast(started).map(state)).toEqual(buildCast(entries).map(state));
       expect(log.notes).toBe(from.notes);
       expect(log.notes).not.toBe("");

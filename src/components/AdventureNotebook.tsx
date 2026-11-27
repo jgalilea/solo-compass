@@ -113,7 +113,7 @@ export function AdventureNotebook({
   const { t } = useLocaleContext();
   const cast = useMemo(() => buildCast(entries), [entries]);
   const pcs = cast.filter((c) => c.kind === "pc");
-  const purseOwner = pcs.length === 1 ? pcs[0].name : undefined;
+  const purseOwner = pcs.length === 1 ? pcs[0]!.name : undefined;
   // The session each entry is in and the day it was played, to say
   // where and when every mention is.
   const sessionOf = useMemo(() => {
@@ -241,7 +241,7 @@ export function AdventureNotebook({
     const words = rollWords[id];
     if (members.length === 0 || !words) return;
     const roll = rollDie(members.length);
-    onRoll(formatTableRoll(words.name, `d${members.length}`, roll, members[roll - 1].name));
+    onRoll(formatTableRoll(words.name, `d${members.length}`, roll, members[roll - 1]!.name));
   }
 
   function group(id: NotebookSection) {

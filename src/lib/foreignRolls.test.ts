@@ -7,8 +7,8 @@ import { TABLE_GAMES } from "./tableGames";
 /** What a line of a journal counts as, once imported. */
 function kindOf(line: string) {
   const [entry] = parseMarkdownToEntries(line, "a", 1);
-  expect(entry.kind, line).toBe("roll");
-  return classifyRoll(entry, undefined);
+  expect(entry!.kind, line).toBe("roll");
+  return classifyRoll(entry!, undefined);
 }
 
 // Every shape of roll in Lonelog's spec and add-ons.
@@ -79,15 +79,16 @@ describe("rolls of an imported journal", () => {
   });
 
   it("knows every game's tag", () => {
-    for (const { game } of TABLE_GAMES) {
-      const { tag } = game(DICTIONARIES.es);
-      if (tag) expect(kindOf(`d: ${tag}: Name d6=2 -> Thing`).kind, tag).toBe("table");
+    const tags = TABLE_GAMES.flatMap(({ game }) => game(DICTIONARIES.es).tag ?? []);
+    expect(tags.length).toBeGreaterThan(0);
+    for (const tag of tags) {
+      expect(kindOf(`d: ${tag}: Name d6=2 -> Thing`).kind, tag).toBe("table");
     }
   });
 
   it("one made here is a table's even with the history cleared", () => {
     const [entry] = parseMarkdownToEntries("d: Forest d6=5 -> Traveler", "a", 1);
-    expect(classifyRoll({ ...entry, linkedRollId: "gone" }, undefined)).toEqual({
+    expect(classifyRoll({ ...entry!, linkedRollId: "gone" }, undefined)).toEqual({
       kind: "table",
       name: "Forest",
     });

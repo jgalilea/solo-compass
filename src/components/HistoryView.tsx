@@ -128,7 +128,7 @@ export function HistoryView() {
   }
 
   function startLog(entry: HistoryEntry) {
-    if (openAdventures.length === 1) logIn(entry, openAdventures[0]);
+    if (openAdventures.length === 1) logIn(entry, openAdventures[0]!);
     else setLogging(entry);
   }
 
@@ -181,7 +181,7 @@ export function HistoryView() {
     // stays for keyboards and for browsers without the observer.
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) showMore();
+        if (entry?.isIntersecting) showMore();
       },
       { rootMargin: "600px 0px" },
     );

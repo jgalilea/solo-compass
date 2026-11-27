@@ -82,7 +82,7 @@ export function drawCard(
   const taken = new Set(drawn ?? []);
   const left = deckCards(deck, options).filter((card) => !taken.has(card));
   if (left.length === 0) return null;
-  const card = left[Math.floor(random() * left.length)];
+  const card = left[Math.floor(random() * left.length)]!;
   return deck === "tarot" && options.reversed && random() < 0.5 ? `${card}r` : card;
 }
 
@@ -288,7 +288,7 @@ function romanNumeral(n: number): string {
 export function cardLook(id: string, locale: Locale): CardLook | null {
   if (id === "RJkr" || id === "BJkr" || id === "Jkr") return { kind: "joker", red: id === "RJkr" };
   const poker = id.match(POKER_ID);
-  if (poker) return { kind: "poker", rank: poker[1], suit: poker[2] as "h" | "d" | "c" | "s" };
+  if (poker) return { kind: "poker", rank: poker[1]!, suit: poker[2] as "h" | "d" | "c" | "s" };
   const major = id.match(MAJOR_ID);
   if (major)
     return { kind: "major", numeral: romanNumeral(Number(major[1])), reversed: !!major[2] };
@@ -313,7 +313,7 @@ const SUIT_SYMBOLS: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: 
  */
 export function cardFace(id: string): string {
   const poker = id.match(POKER_ID);
-  return poker ? `${poker[1]}${SUIT_SYMBOLS[poker[2]]}` : id;
+  return poker ? `${poker[1]}${SUIT_SYMBOLS[poker[2]!]}` : id;
 }
 
 /** A draw as the journal writes it: "draw=Qs -> Reina de picas". */
@@ -342,7 +342,7 @@ export function cardPurpose(text: string): string {
  */
 export function readCards(text: string): string[] | null {
   const ids = [...text.matchAll(/=([A-Za-z0-9]+)(?![\w+-])/g)]
-    .map((m) => m[1])
+    .map((m) => m[1]!)
     .filter((id) => cardLook(id, "en"));
   return ids.length > 0 ? ids : null;
 }

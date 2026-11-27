@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ORACLES } from "../lib/oracles";
+import { getOracle, ORACLES } from "../lib/oracles";
 import { useOracleContext } from "../hooks/useOracleContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
@@ -24,7 +24,7 @@ export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: bo
   } = useOracleContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
-  const current = ORACLES.find((o) => o.id === oracleId) ?? ORACLES[0];
+  const current = getOracle(oracleId);
 
   return (
     <>

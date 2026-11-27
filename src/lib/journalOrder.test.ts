@@ -86,7 +86,7 @@ describe("placeAfter", () => {
         .map((e) => ({ ...e, timestamp: placement.nudged.get(e.id) ?? e.timestamp }))
         .concat(entry(`x${i}`, placement.timestamp))
         .sort((p, q) => p.timestamp - q.timestamp);
-      expect(list[1].id).toBe(`x${i}`);
+      expect(list[1]!.id).toBe(`x${i}`);
       expect(new Set(list.map((e) => e.timestamp)).size).toBe(list.length);
     }
   });

@@ -65,23 +65,23 @@ export function composerShortcut(
   text: string,
 ): { mode: ComposerMode; text: string; speaker?: Speaker } | null {
   let m: RegExpMatchArray | null;
-  if ((m = text.match(/^@ ([\s\S]*)$/))) return { mode: "action", text: m[1] };
-  if ((m = text.match(/^@(\([\s\S]*)$/))) return { mode: "action", text: m[1] };
+  if ((m = text.match(/^@ ([\s\S]*)$/))) return { mode: "action", text: m[1]! };
+  if ((m = text.match(/^@(\([\s\S]*)$/))) return { mode: "action", text: m[1]! };
   if ((m = text.match(/^=> ?([\s\S]*)$/)) && text.length > 2)
-    return { mode: "consequence", text: m[1] };
+    return { mode: "consequence", text: m[1]! };
   if ((m = text.match(/^PC(?: \(([^()\n]+)\))?: ([\s\S]*)$/))) {
     return {
       mode: "dialogue",
-      text: m[2],
+      text: m[2]!,
       speaker: m[1] ? { pc: true, name: m[1].trim() } : { pc: true },
     };
   }
   if ((m = text.match(/^N \(([^()\n]+)\): ([\s\S]*)$/))) {
-    return { mode: "dialogue", text: m[2], speaker: { pc: false, name: m[1].trim() } };
+    return { mode: "dialogue", text: m[2]!, speaker: { pc: false, name: m[1]!.trim() } };
   }
-  if ((m = text.match(/^\\--- ([\s\S]*)$/))) return { mode: "excerpt", text: m[1] };
+  if ((m = text.match(/^\\--- ([\s\S]*)$/))) return { mode: "excerpt", text: m[1]! };
   if ((m = text.match(/^=== ([\s\S]*)$/)))
-    return { mode: "session", text: m[1].replace(/\s*===\s*$/, "") };
+    return { mode: "session", text: m[1]!.replace(/\s*===\s*$/, "") };
   return null;
 }
 
@@ -167,12 +167,8 @@ export function buildEntryBlocks(items: JournalEntry[]): JournalEntry[][] {
     } else if (entry.kind === "roll") {
       open = [entry];
       blocks.push(open);
-    } else if (
-      entry.kind === "consequence" &&
-      blocks.length > 0 &&
-      !isMarker(blocks[blocks.length - 1][0])
-    ) {
-      open = blocks[blocks.length - 1];
+    } else if (entry.kind === "consequence" && blocks.length > 0 && !isMarker(blocks.at(-1)![0]!)) {
+      open = blocks.at(-1)!;
       open.push(entry);
     } else {
       open = null;
@@ -367,12 +363,12 @@ export function lastOwnRoll(
 /** "8 (7 + 1)": the total, and how it was reached if it says. */
 export function splitRollTotal(result: string): { total: string; faces: string | null } {
   const m = result.match(/^(\S+)\s+\((.+)\)$/);
-  return { total: m ? m[1] : result, faces: m ? m[2] : null };
+  return { total: m ? m[1]! : result, faces: m ? m[2]! : null };
 }
 
 /** "2025-09-03" as a short date ("3 sept 2025"), on that day in local time. */
 export function formatIsoDay(iso: string, locale: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
+  const [y = NaN, m = NaN, d = NaN] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",

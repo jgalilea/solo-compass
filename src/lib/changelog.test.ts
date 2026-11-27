@@ -5,7 +5,7 @@ import { CHANGELOG } from "./changelog";
 const semver = (v: string) => v.split(".").map(Number);
 const newer = (a: string, b: string) => {
   const [x, y] = [semver(a), semver(b)];
-  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i]! > y[i]!;
   return false;
 };
 
@@ -13,17 +13,17 @@ describe("changelog", () => {
   // APP_VERSION is package.json's (vite.config.ts defines it, for tests too).
   it("its newest chapter is the app's version", () => {
     expect(APP_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(CHANGELOG[0].version).toBe(APP_VERSION);
+    expect(CHANGELOG[0]!.version).toBe(APP_VERSION);
   });
 
   it("goes from newest to oldest, one version per chapter", () => {
     for (const entry of CHANGELOG)
       expect(entry.version, entry.text.en.title).toMatch(/^\d+\.\d+\.\d+$/);
     for (let i = 1; i < CHANGELOG.length; i++) {
-      expect(newer(CHANGELOG[i - 1].version, CHANGELOG[i].version), CHANGELOG[i].version).toBe(
+      expect(newer(CHANGELOG[i - 1]!.version, CHANGELOG[i]!.version), CHANGELOG[i]!.version).toBe(
         true,
       );
-      expect(CHANGELOG[i - 1].date >= CHANGELOG[i].date, CHANGELOG[i].version).toBe(true);
+      expect(CHANGELOG[i - 1]!.date >= CHANGELOG[i]!.date, CHANGELOG[i]!.version).toBe(true);
     }
   });
 

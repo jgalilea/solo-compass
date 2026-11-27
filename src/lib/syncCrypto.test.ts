@@ -35,7 +35,7 @@ describe("sync sealing", () => {
     );
     await expect(unseal(keys, "snapshot", sealed)).rejects.toThrow(SyncDataError);
     const tampered = sealed.slice();
-    tampered[tampered.length - 1] ^= 1;
+    tampered[tampered.length - 1]! ^= 1;
     await expect(unseal(keys, "op", tampered)).rejects.toThrow(SyncDataError);
     await expect(unseal(keys, "op", new Uint8Array(4))).rejects.toThrow(SyncDataError);
   });

@@ -165,7 +165,7 @@ export function computeDiceStats(
     .filter((s) => s.count >= MIN_DICE_PER_SESSION)
     .map((s): SessionLuck => ({ title: s.title, score: zScore(s.deviation, s.count) }))
     .sort((a, b) => b.score - a.score);
-  if (ranked.length > 1) stats.sessions = { best: ranked[0], worst: ranked.at(-1)! };
+  if (ranked.length > 1) stats.sessions = { best: ranked[0]!, worst: ranked.at(-1)! };
   return stats;
 }
 
@@ -196,6 +196,6 @@ function countBars(sides: number, values: readonly number[]): DieStats["bars"] {
   const bars: DieStats["bars"] = [];
   for (let from = first; from <= last; from += size)
     bars.push({ from, to: Math.min(from + size - 1, last), count: 0 });
-  for (const value of values) bars[Math.floor((value - first) / size)].count++;
+  for (const value of values) bars[Math.floor((value - first) / size)]!.count++;
   return bars;
 }

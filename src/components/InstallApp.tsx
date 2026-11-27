@@ -49,7 +49,7 @@ export function InstallAppSettings() {
       {state === "available" && (
         <button
           type="button"
-          onClick={install}
+          onClick={() => void install()}
           disabled={installing}
           className="flex items-center justify-center gap-2 rounded-xl border border-gold/50 bg-gold/10 py-2.5 text-sm font-medium text-gold transition hover:bg-gold/20 disabled:opacity-60"
         >

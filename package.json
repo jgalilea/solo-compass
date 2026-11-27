@@ -1,6 +1,6 @@
 {
   "name": "solo-compass",
-  "version": "1.11.3",
+  "version": "1.11.4",
   "private": true,
   "license": "GPL-3.0-only",
   "type": "module",
@@ -13,7 +13,9 @@
     "deploy": "gh-pages -d dist",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:perf": "playwright test -c playwright.perf.config.ts"
+    "test:perf": "playwright test -c playwright.perf.config.ts",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.52.0",
@@ -34,7 +36,9 @@
     "@vitejs/plugin-react": "^6.1.0",
     "fake-indexeddb": "^6.2.8",
     "gh-pages": "^6.3.0",
+    "oxfmt": "^0.80.0",
     "oxlint": "^1.94.0",
+    "oxlint-tsgolint": "^7.0.2009",
     "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",

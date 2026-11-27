@@ -104,7 +104,7 @@ describe("rollJournalLines", () => {
     expect(rollJournalLines(en, table())).toEqual([
       { kind: "roll", text: "tbl: Ironsworn: Action d100=42 -> Bolster" },
     ]);
-    expect(rollJournalLines(en, table({ dice: undefined }))[0].text).toBe(
+    expect(rollJournalLines(en, table({ dice: undefined }))[0]!.text).toBe(
       "tbl: Ironsworn: Action 42 -> Bolster",
     );
     expect(rollJournalLines(es, createDiceRollEntry("Ataque d20+5 -> 19 (14 + 5)"))).toEqual([
@@ -114,7 +114,7 @@ describe("rollJournalLines", () => {
     const lines = rollJournalLines(es, roll);
     expect(lines[0]).toEqual({ kind: "question", text: "¿Está abierta?" });
     // Its likelihood goes on the question, unless it's even.
-    expect(rollJournalLines(es, { ...roll, likelihood: "muy-improbable" })[0].text).toBe(
+    expect(rollJournalLines(es, { ...roll, likelihood: "muy-improbable" })[0]!.text).toBe(
       "¿Está abierta? (Muy improbable)",
     );
     // A card gives content.
@@ -122,9 +122,9 @@ describe("rollJournalLines", () => {
       rollJournalLines(
         es,
         createDiceRollEntry("draw=Qs -> Reina de picas", undefined, { deck: "poker", id: "Qs" }),
-      )[0].text,
+      )[0]!.text,
     ).toBe("tbl: draw=Qs -> Reina de picas");
-    expect(lines[1].text).toMatch(/^Recluse: blanco \d \/ negro \d -> /);
+    expect(lines[1]!.text).toMatch(/^Recluse: blanco \d \/ negro \d -> /);
   });
 });
 

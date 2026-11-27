@@ -20,7 +20,8 @@ npm install
 npm run dev      # dev server (vite)
 npm run build    # tsc -b && vite build -> dist/
 npm run preview  # serve the production build
-npm run lint      # oxlint
+npm run lint      # oxlint, type-aware (oxlint-tsgolint): floating promises, hooks deps…
+npm run format    # oxfmt (CI runs format:check; data tables and Markdown are left as written)
 npm test          # vitest (unit tests de src/lib)
 npm run test:e2e  # playwright smoke test (builds, then plays the app on phone + desktop)
 npm run test:perf # start-up on slow 4G + synthetic volume test (slowed-down phone CPU); not in the deploy
@@ -55,8 +56,21 @@ refused ones); `a11y.e2e.ts` axe (WCAG 2.1 A and AA) on the main screens
 in every theme and mode on the desktop, OSR on the phone, the
 dialogs, and the header in English with and without an active
 adventure (its chip's name starts with what it shows), with reduced motion (a colour caught mid-fade isn't the one
-shown) and `meta-viewport` left out (zoom is blocked on purpose). The deploy
-workflow runs `npm test`, builds, then runs the smoke test, so a
+shown) and `meta-viewport` left out (zoom is blocked on purpose). Lint (`.oxlintrc.json`) is oxlint with
+type-aware rules (`oxlint-tsgolint`): a promise nobody waits for is
+an error, so fire-and-forget calls say so with `void` (react-router's
+`navigate` is allowed as is); the `jsx-a11y` rules that fight the
+app's deliberate patterns (autofocus, `span role="button"` chips,
+clicks with a button beside them) are off, axe checks the rest.
+Formatting is oxfmt (`.oxfmtrc.json`, 100 columns; table data and
+Markdown left as written). TypeScript is `strict` with
+`noUncheckedIndexedAccess`, `noImplicitReturns` and
+`noImplicitOverride` (app, tooling and relay): a regex group or an
+array slot is `T | undefined`; `!` only where the pattern or a check
+just above guarantees it (a group that isn't optional), otherwise
+handle the missing case. `.editorconfig` and `.vscode/` (oxc
+extension, format on save) keep editors in step. The deploy
+workflow runs lint, the format check, `npm test`, builds, then runs the smoke test, so a
 failure in either blocks the publish. Keep its selectors on visible
 text/roles in Spanish (the test runs with `locale: "es-ES"`).
 

@@ -23,7 +23,7 @@ export async function readExportTheme(): Promise<ExportTheme> {
   );
   const fontDisplay = style.getPropertyValue("--font-display").trim() || "Georgia, serif";
   const family = fontDisplay
-    .split(",")[0]
+    .split(",")[0]!
     .trim()
     .replace(/^["']|["']$/g, "");
   const mode = root.dataset.mode === "light" ? "light" : "dark";
@@ -37,7 +37,7 @@ export async function readExportTheme(): Promise<ExportTheme> {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () =>
-        resolve(String(reader.result).replace(/^data:[^;]*;/, "data:font/woff2;"));
+        resolve((reader.result as string).replace(/^data:[^;]*;/, "data:font/woff2;"));
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });

@@ -93,15 +93,16 @@ describe("built-in tables, all games", () => {
   // leaves it to the original game: it would only show up twice.
   it("no table is an exact copy of another game's", () => {
     const owners = new Map<string, string>();
+    const copies: string[] = [];
     for (const { game, data } of loaded) {
       for (const table of data) {
         const key = JSON.stringify(table.rows.map((r) => r.slice(0, 3)));
         const other = owners.get(key);
-        if (other && !other.startsWith(game.id + ":"))
-          throw new Error(`${table.id} repeats ${other}`);
+        if (other && !other.startsWith(game.id + ":")) copies.push(`${table.id} repeats ${other}`);
         owners.set(key, `${game.id}:${table.id}`);
       }
     }
+    expect(copies).toEqual([]);
   });
 
   it("ids are unique across games", () => {
@@ -118,9 +119,9 @@ describe("built-in tables, all games", () => {
   it("rolls are logged with the game in front, Solo Compass's own without it", () => {
     const ironsworn = loaded.find((x) => x.game.id === "ironsworn")!;
     const [action] = toMeaningTables(ironsworn.game, ironsworn.data, DICTIONARIES.es, "es");
-    expect(tableRollName(action)).toBe("Ironsworn: Acción");
+    expect(tableRollName(action!)).toBe("Ironsworn: Acción");
     const [mine] = toMeaningTables(own.game, own.data, DICTIONARIES.es, "es");
-    expect(tableRollName(mine)).toBe(mine.name);
+    expect(tableRollName(mine!)).toBe(mine!.name);
   });
 
   it("loads a game once and keeps it", async () => {

@@ -49,7 +49,7 @@ export function matchingEntries(table: MeaningTable, query: string, limit = 3): 
   const texts = searchableEntries(table);
   const found: TableEntry[] = [];
   for (let i = 0; i < texts.length && found.length < limit; i++) {
-    if (texts[i].includes(query)) found.push(table.entries[i]);
+    if (texts[i]!.includes(query)) found.push(table.entries[i]!);
   }
   return found;
 }

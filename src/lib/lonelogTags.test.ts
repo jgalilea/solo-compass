@@ -47,30 +47,30 @@ describe("splitTags", () => {
       ". ",
       "[PC:Alex|HP 8]",
     ]);
-    expect(parts[1].tag).toEqual({
+    expect(parts[1]!.tag).toEqual({
       kind: "npc",
       name: "Jonah",
       reference: false,
       details: ["friendly", "wounded"],
     });
-    expect(parts[3].tag).toEqual({
+    expect(parts[3]!.tag).toEqual({
       kind: "place",
       name: "Lighthouse",
       reference: false,
       details: [],
     });
-    expect(parts[5].tag?.kind).toBe("pc");
+    expect(parts[5]!.tag?.kind).toBe("pc");
   });
 
   it("reads reference tags and multi-line tags", () => {
-    expect(splitTags("[#N:Jonah]")[0].tag).toEqual({
+    expect(splitTags("[#N:Jonah]")[0]!.tag).toEqual({
       kind: "npc",
       name: "Jonah",
       reference: true,
       details: [],
     });
     const [multi] = splitTags("[PC:Jonah\n  | trait: friendly, curious\n  | status: wounded\n]");
-    expect(multi.tag).toEqual({
+    expect(multi!.tag).toEqual({
       kind: "pc",
       name: "Jonah",
       reference: false,
@@ -167,9 +167,9 @@ describe("threads and progress", () => {
       entry("note", "[Thread:La caja sellada|Abierto|urgente]", 1),
       entry("note", "[Thread:la caja sellada|Closed]", 2),
     ]);
-    expect(thread.tags).toEqual(["urgente", "Closed"]);
-    expect(threadStatus(thread)).toBe("closed");
-    expect(threadStatus(buildCast([entry("note", "[Thread:Otra]", 3)])[0])).toBe("open");
+    expect(thread!.tags).toEqual(["urgente", "Closed"]);
+    expect(threadStatus(thread!)).toBe("closed");
+    expect(threadStatus(buildCast([entry("note", "[Thread:Otra]", 3)])[0]!)).toBe("open");
   });
 
   it("clocks follow their last value, relative changes and keep their size", () => {
@@ -178,8 +178,8 @@ describe("threads and progress", () => {
       entry("note", "[Clock:Ritual+2] [Timer:Alba 2]", 2),
       entry("note", "[Clock:Ritual 5] [#Clock:Ritual]", 3),
     ]);
-    expect(clock.progress).toEqual({ value: 5, max: 6 });
-    expect(timer.progress).toEqual({ value: 2 });
+    expect(clock!.progress).toEqual({ value: 5, max: 6 });
+    expect(timer!.progress).toEqual({ value: 2 });
     expect(formatProgressTag("clock", "Ritual", 6, 6)).toBe("[Clock:Ritual 6/6]");
     expect(tagsToPlainText("Sube [Clock:Ritual 6/6]")).toBe("Sube Ritual 6/6");
   });
@@ -191,7 +191,7 @@ describe("formatTag", () => {
     expect(formatTag("place", "Old mill", [], true)).toBe("[#L:Old mill]");
     expect(formatTag("pc", "Ma|ra]", ["HP 8"])).toBe("[PC:Ma ra|HP 8]");
     const written = formatTag("npc", "Odile", ["+captured"]);
-    expect(splitTags(written)[0].tag).toEqual({
+    expect(splitTags(written)[0]!.tag).toEqual({
       kind: "npc",
       name: "Odile",
       reference: false,
@@ -241,8 +241,8 @@ describe("who acts or speaks", () => {
 
   it("writes the name and closes the notation", () => {
     const [odile] = tagOptions(cast, findActorQuery("(Od", "action")!);
-    expect(tagOptionText(odile, { actor: "action" })).toBe("Odile) ");
-    expect(tagOptionText(odile, { actor: "dialogue" })).toBe("Odile): ");
+    expect(tagOptionText(odile!, { actor: "action" })).toBe("Odile) ");
+    expect(tagOptionText(odile!, { actor: "dialogue" })).toBe("Odile): ");
     expect(tagOptionText({ kind: "npc", name: "El (viejo) Bram" }, { actor: "action" })).toBe(
       "El viejo Bram) ",
     );
@@ -393,7 +393,7 @@ describe("the official add-ons' tags", () => {
     const sala = buildCast([
       entry("note", "[R:1|explorada|sala de la rueda|salidas Arriba:R2, Abajo:R3]", 1),
     ])[0];
-    expect(sala.tags.at(-1)).toBe("salidas Arriba:R2, Abajo:R3");
+    expect(sala!.tags.at(-1)).toBe("salidas Arriba:R2, Abajo:R3");
     expect(room?.mentions).toHaveLength(4);
     expect(find(["[R:1|cleared]", "[R:1|+looted]", "[R:1|-cleared]"], "room:1")?.tags).toEqual([
       "looted",
@@ -455,13 +455,13 @@ describe("the official add-ons' tags", () => {
 
   it("draws the add-ons' tags as chips, with their numbers", () => {
     const [, foe] = splitTags("Two of them: [F:Goblins×2|Close]");
-    expect(foe.tag).toMatchObject({ kind: "foe", name: "Goblins", details: ["×2", "Close"] });
-    expect(splitTags("[Inv:Arrow-1]")[0].tag).toMatchObject({
+    expect(foe!.tag).toMatchObject({ kind: "foe", name: "Goblins", details: ["×2", "Close"] });
+    expect(splitTags("[Inv:Arrow-1]")[0]!.tag).toMatchObject({
       kind: "item",
       name: "Arrow",
       progress: { value: -1, relative: true },
     });
-    expect(splitTags("[Wealth:Gold 45→52]")[0].tag).toMatchObject({
+    expect(splitTags("[Wealth:Gold 45→52]")[0]!.tag).toMatchObject({
       kind: "wealth",
       name: "Gold",
       progress: { value: 52 },
@@ -704,10 +704,10 @@ describe("Lonelog 1.7 tags", () => {
       ["Gold", "Mara", 3, 3],
       ["Silver", "Kael", 4, 1],
     ]);
-    const key = tagKey(splitTags("[Wealth:Mara|Silver-6]")[0].tag!);
+    const key = tagKey(splitTags("[Wealth:Mara|Silver-6]")[0]!.tag!);
     expect(findMember(cast, key)).toBe(cast[0]);
     expect(findMember(cast, "wealth:mara")).toBe(cast[0]);
-    expect(formatReference(cast[2])).toBe("[#Wealth:Kael]");
+    expect(formatReference(cast[2]!)).toBe("[#Wealth:Kael]");
     expect(tagsToPlainText("[Wealth:Mara|Silver-6] [Inv:Torch|×-1]")).toBe(
       "Mara Silver-6 Torch ×-1",
     );
@@ -781,7 +781,7 @@ describe("Lonelog 1.7 tags", () => {
 });
 
 it("reads a range of slots as a name, not a change", () => {
-  expect(splitTags("[Inv:Slot 6-10|empty]")[0].tag).toMatchObject({
+  expect(splitTags("[Inv:Slot 6-10|empty]")[0]!.tag).toMatchObject({
     name: "Slot 6-10",
     details: ["empty"],
   });
@@ -792,7 +792,11 @@ it("a value wrapped over two lines is one value, and doesn't start its element o
     entry("note", "[R:7|active|exits N:R2]", 1),
     entry("note", "[R:7|active|vaulted throne room,\nbones on the floor]", 2),
   ]);
-  expect(cast[0].tags).toEqual(["active", "vaulted throne room, bones on the floor", "exits N:R2"]);
+  expect(cast[0]!.tags).toEqual([
+    "active",
+    "vaulted throne room, bones on the floor",
+    "exits N:R2",
+  ]);
 });
 
 it("goes on with a clock written as an event, however it's named later", () => {
@@ -833,7 +837,7 @@ describe("the add-ons' categories in either language", () => {
         text,
       })),
     );
-    expect(cast[0].tags).toEqual(["dueño:Nela", "lugar:el molino"]);
+    expect(cast[0]!.tags).toEqual(["dueño:Nela", "lugar:el molino"]);
   });
   it("a bare PC is the first one named", () => {
     const cast = buildCast(

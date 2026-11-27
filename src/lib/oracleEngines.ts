@@ -100,7 +100,8 @@ const ENGINES: Record<OracleId, Engine> = {
       { role: "white", sides: 6, count: LIKELIHOOD_DICE[likelihood].white },
       { role: "black", sides: 6, count: LIKELIHOOD_DICE[likelihood].black },
     ],
-    read: (_, [white, black]) => judgeDice(white, black),
+    // Each engine is handed one kept die per group it declared.
+    read: (_, [white, black]) => judgeDice(white!, black!),
   },
   loner: {
     levels: THREE,
@@ -108,7 +109,8 @@ const ENGINES: Record<OracleId, Engine> = {
       { role: "chance", sides: 6, count: likelihood === "probable" ? 2 : 1 },
       { role: "risk", sides: 6, count: likelihood === "improbable" ? 2 : 1 },
     ],
-    read: (_, [chance, risk]) => {
+    read: (_, kept) => {
+      const [chance, risk] = kept as [number, number];
       if (chance === risk) return { answer: "si", qualifier: "pero", special: "double" };
       const answer: Answer = chance > risk ? "si" : "no";
       if (chance <= 3 && risk <= 3) return { answer, qualifier: "pero" };
@@ -119,7 +121,7 @@ const ENGINES: Record<OracleId, Engine> = {
   ironsworn: {
     levels: FIVE,
     dice: () => [{ role: "percentile", sides: 100, count: 1 }],
-    read: (likelihood, [roll]) => ({
+    read: (likelihood, [roll = 0]) => ({
       answer: roll >= IRONSWORN_YES_FROM[likelihood] ? "si" : "no",
       qualifier: null,
       // Two d10 showing the same digit: 11, 22… 99, and 100 (0 and 0).
@@ -132,7 +134,7 @@ const ENGINES: Record<OracleId, Engine> = {
       { role: "answer", sides: 6, count: 1 },
       { role: "modifier", sides: 6, count: 1 },
     ],
-    read: (likelihood, [answerDie, modifier]) => ({
+    read: (likelihood, [answerDie = 0, modifier]) => ({
       answer: answerDie >= (OPSE_YES_FROM[likelihood] ?? 4) ? "si" : "no",
       qualifier: modifier === 1 ? "pero" : modifier === 6 ? "y" : null,
     }),
@@ -216,7 +218,7 @@ export function oracleOdds(id: OracleId, likelihood: Likelihood): OracleOdds {
   const values = dice.map(() => 1);
   for (;;) {
     const kept = groups.map((_, group) =>
-      Math.max(...values.filter((_, i) => dice[i].group === group)),
+      Math.max(...values.filter((_, i) => dice[i]!.group === group)),
     );
     const reading = engine.read(likelihood, kept);
     total += 1;
@@ -229,9 +231,9 @@ export function oracleOdds(id: OracleId, likelihood: Likelihood): OracleOdds {
 
     // Next combination, like an odometer.
     let i = values.length - 1;
-    while (i >= 0 && values[i] === dice[i].sides) values[i--] = 1;
+    while (i >= 0 && values[i] === dice[i]!.sides) values[i--] = 1;
     if (i < 0) break;
-    values[i] += 1;
+    values[i]! += 1;
   }
 
   for (const key of Object.keys(odds) as (keyof OracleOdds)[]) odds[key] /= total;

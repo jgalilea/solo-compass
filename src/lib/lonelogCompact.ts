@@ -61,7 +61,7 @@ function starts(line: string): number[] {
     if (c === '"' && quotes) quoted = !quoted;
     else if (c === "[" || c === "(") depth++;
     else if (c === "]" || c === ")") depth = Math.max(0, depth - 1);
-    if (depth || quoted || !/\s/.test(line[i - 1]) || !opens(line.slice(i), current)) continue;
+    if (depth || quoted || !/\s/.test(line[i - 1]!) || !opens(line.slice(i), current)) continue;
     found.push(i);
     current = elementOf(line.slice(i));
   }

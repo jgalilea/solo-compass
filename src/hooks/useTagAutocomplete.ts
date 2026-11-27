@@ -117,7 +117,7 @@ export function useTagAutocomplete({
       // Closes the list only; a second Esc does what the field does.
       e.preventDefault();
       e.stopPropagation();
-      setDismissedAt(query!.start);
+      setDismissedAt(query.start);
       return true;
     }
     if (options.length === 0) return false;
@@ -129,7 +129,7 @@ export function useTagAutocomplete({
     }
     if ((e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) || e.key === "Tab") {
       e.preventDefault();
-      pick(options[active]);
+      pick(options[active]!);
       return true;
     }
     return false;

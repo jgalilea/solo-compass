@@ -36,7 +36,7 @@ const HEADER_ROOM = 16 * 1024;
 function failureResponse(
   status: number,
   error: SyncFailure,
-  cors: HeadersInit,
+  cors: Record<string, string>,
   retryAfter?: number,
 ): Response {
   const reply = { ok: false, error, now: Date.now(), ...(retryAfter ? { retryAfter } : {}) };
@@ -151,7 +151,7 @@ export class SyncBox extends DurableObject<Env> {
   }
 
   /** A year without use (or a year after closing): the box goes. */
-  async alarm(): Promise<void> {
+  override async alarm(): Promise<void> {
     await this.ctx.storage.deleteAll();
     this.store.init();
   }

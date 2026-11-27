@@ -16,7 +16,7 @@ export function createOpenStore() {
     open: () => set(true),
     close: () => set(false),
     isOpen: () => open,
-    subscribe(listener: () => void): () => void {
+    subscribe: (listener: () => void): (() => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },

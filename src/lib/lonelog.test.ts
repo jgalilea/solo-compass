@@ -238,8 +238,8 @@ describe("session dates", () => {
 
   it("an imported session without a date has none, not the day of the import", () => {
     const [session] = parseMarkdownToEntries("=== Session 1 ===\n@ Go", "a1", Date.now());
-    expect(sessionDate(session)).toBeNull();
-    expect(exportAdventureToMarkdown(es, "A", [session])).not.toContain("[Date]");
+    expect(sessionDate(session!)).toBeNull();
+    expect(exportAdventureToMarkdown(es, "A", [session!])).not.toContain("[Date]");
   });
 
   it("a session from before dates were kept uses the day it was opened", () => {
@@ -384,7 +384,7 @@ describe("Lonelog 1.6 core", () => {
       ["note", "\\---\nThe diary reads:\n\n@ not an action\n---\\"],
       ["note", "After"],
     ]);
-    expect(formatLine(parsed[1])).toBe(parsed[1].text);
+    expect(formatLine(parsed[1]!)).toBe(parsed[1]!.text);
   });
 
   it("escapes a note that would read as a roll symbol", () => {
@@ -558,7 +558,7 @@ describe("Lonelog 1.7", () => {
     const tag = "[PC:Jonah\n  | trait: friendly\n  | stat: HP 8\n]";
     const [only, ...rest] = parseMarkdownToEntries(tag, "a", 0);
     expect(rest).toEqual([]);
-    expect(read(exportAdventureToMarkdown(es, "A", [only]))).toEqual([["note", only.text]]);
+    expect(read(exportAdventureToMarkdown(es, "A", [only!]))).toEqual([["note", only!.text]]);
     expect(read("=> A broken sword [tbl]")).toEqual([["roll", "tbl: -> A broken sword"]]);
     expect(read("gen: NPC -> Merchant")).toEqual([["roll", "gen: NPC -> Merchant"]]);
     expect(read("T1+T2-S5 *Reunited*")).toEqual([["scene", "T1+T2-S5 *Reunited*"]]);
@@ -607,7 +607,7 @@ describe("whatever is written", () => {
   // A small fixed generator, so a failure can be repeated.
   let seed = 7;
   const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const pick = <T>(list: readonly T[]) => list[Math.floor(random() * list.length)];
+  const pick = <T>(list: readonly T[]) => list[Math.floor(random() * list.length)]!;
   const WORDS = [
     "I",
     "run",

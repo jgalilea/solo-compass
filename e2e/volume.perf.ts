@@ -34,7 +34,7 @@ const WORDS =
 
 function sentence(i: number, length = 14): string {
   const words: string[] = [];
-  for (let w = 0; w < length; w++) words.push(WORDS[(i * 7 + w * 3) % WORDS.length]);
+  for (let w = 0; w < length; w++) words.push(WORDS[(i * 7 + w * 3) % WORDS.length]!);
   return words.join(" ");
 }
 

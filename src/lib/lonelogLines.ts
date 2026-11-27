@@ -25,7 +25,7 @@ export type RollSymbol = "d" | "tbl" | "gen" | "result";
 export function splitRollSymbol(text: string): { symbol: RollSymbol; text: string } {
   const m = text.match(/^(tbl|gen):\s*/);
   if (m) return { symbol: m[1] as "tbl" | "gen", text: text.slice(m[0].length) };
-  if (/^->/.test(text)) return { symbol: "result", text };
+  if (text.startsWith("->")) return { symbol: "result", text };
   return { symbol: "d", text };
 }
 
@@ -43,7 +43,7 @@ export function isGenerator(text: string): boolean {
 export function isTableDefinition(text: string): boolean {
   const { symbol, text: body } = splitRollSymbol(text);
   // "tbl: draw=Qs" and "tbl: Loot d100=42" say what came up.
-  return symbol === "tbl" && !body.includes("->") && !/=\w/.test(body.split("\n", 1)[0]);
+  return symbol === "tbl" && !body.includes("->") && !/=\w/.test(body.split("\n", 1)[0]!);
 }
 
 const SCENE = new RegExp(`^(${SCENE_ID})(?:\\s+([\\s\\S]*))?$`);
@@ -60,7 +60,7 @@ export function parseScene(text: string): {
 } {
   const m = text.trim().match(SCENE);
   if (!m) return { id: "", context: text.trim(), combat: false };
-  const pov = m[2]?.match(POV)?.[1].trim();
+  const pov = m[2]?.match(POV)?.[1]?.trim();
   const rest = (m[2] ?? "").replace(POV, "");
   const combat = COMBAT_MARK.test(rest);
   // The context goes between asterisks (italics); a place tag or
@@ -70,7 +70,7 @@ export function parseScene(text: string): {
     .replace(/\*([^*]+)\*/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
-  return { id: m[1], context, combat, ...(pov ? { pov } : {}) };
+  return { id: m[1]!, context, combat, ...(pov ? { pov } : {}) };
 }
 
 /** The next scene's marker: one more than the highest "S" number in the adventure. */
@@ -89,7 +89,7 @@ export function formatScene(id: string, context: string): string {
   // Each run of spaces is tried from its start only (the lookbehind):
   // otherwise a long run without a line break took quadratic time.
   const line = context.replace(/(?<!\s)\s*\n\s*/g, " ").replace(/\*/g, "");
-  const pov = line.match(POV)?.[1].trim();
+  const pov = line.match(POV)?.[1]?.trim();
   const clean = line.replace(POV, "").trim();
   return [id, clean && `*${clean}*`, pov && `@(${pov})`].filter(Boolean).join(" ");
 }
@@ -124,7 +124,7 @@ export function formatExcerpt(text: string): string {
 /** `@(Jonah) Keeps watch` → Jonah and the action; null when it's the PC's own. */
 export function splitActor(text: string): { actor: string | null; text: string } {
   const m = text.match(/^\(([^()\n]+)\)\s*([\s\S]*)$/);
-  return m ? { actor: m[1].trim(), text: m[2] } : { actor: null, text };
+  return m ? { actor: m[1]!.trim(), text: m[2]! } : { actor: null, text };
 }
 
 /**
@@ -172,32 +172,32 @@ const BLOCK_NAME: Record<string, "combat" | "dungeon" | "resources"> = {
 export function noteForm(text: string): NoteForm {
   const trimmed = text.trim();
   const excerpt = trimmed.match(EXCERPT);
-  if (excerpt) return { form: "excerpt", text: excerpt[1] };
+  if (excerpt) return { form: "excerpt", text: excerpt[1]! };
   const block = trimmed.match(BLOCK) ?? trimmed.match(ANALOG_BLOCK);
   if (block)
-    return { form: "block", name: BLOCK_NAME[block[2].toLowerCase()], closing: !!block[1] };
+    return { form: "block", name: BLOCK_NAME[block[2]!.toLowerCase()]!, closing: !!block[1] };
   const round = trimmed.match(ROUND);
-  if (round) return { form: "round", round: round[1], text: round[2] };
+  if (round) return { form: "round", round: round[1]!, text: round[2]! };
   const dialogue = trimmed.match(DIALOGUE);
   if (dialogue && (dialogue[1] === "PC" || dialogue[2])) {
     const speaker = dialogue[2]?.trim();
     const pc = dialogue[1] === "PC";
     // "Alex, whisper" is Alex; an NPC's name may have a comma of its own.
-    const name = pc ? speaker?.split(",", 1)[0].trim() : speaker;
+    const name = pc ? speaker?.split(",", 1)[0]!.trim() : speaker;
     return {
       form: "dialogue",
       speaker: speaker ?? "PC",
       ...(name ? { name } : {}),
       pc,
-      text: dialogue[3],
+      text: dialogue[3]!,
     };
   }
   const meta = trimmed.match(META);
-  if (meta && balanced(meta[1])) {
-    const labelled = meta[1].match(META_LABEL);
+  if (meta && balanced(meta[1]!)) {
+    const labelled = meta[1]!.match(META_LABEL);
     return labelled
-      ? { form: "meta", label: labelled[1], text: labelled[2] }
-      : { form: "meta", label: null, text: meta[1] };
+      ? { form: "meta", label: labelled[1]!, text: labelled[2]! }
+      : { form: "meta", label: null, text: meta[1]! };
   }
   return { form: "plain" };
 }

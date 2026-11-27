@@ -35,7 +35,13 @@ for (const locale of LOCALES) {
 
   describe(`quick guide (${locale})`, () => {
     it("reads every notation example as it says", () => {
-      const read = (code: string) => parseMarkdownToEntries(code, "a", 0)[0];
+      // A row missing from the guide fails here, not as a type error.
+      const read = (code: string | undefined) => {
+        expect(code).toBeDefined();
+        const [entry] = parseMarkdownToEntries(code!, "a", 0);
+        expect(entry).toBeDefined();
+        return entry!;
+      };
       const [
         action,
         question,
@@ -101,7 +107,7 @@ for (const locale of LOCALES) {
       const [ally, , , mood, hp] = g.updates.map((r) => r.code.match(/\|([^\]]+)\]/)?.[1] ?? "");
       // Odile: the trait added stays, the one removed and the one swapped don't.
       expect(one("npc").tags).toEqual([ally, mood]);
-      expect(one("pc").tags.join()).toMatch(new RegExp(hp.replace(/-\d+$/, "")));
+      expect(one("pc").tags.join()).toMatch(new RegExp(hp!.replace(/-\d+$/, "")));
       expect(one("clock").progress).toEqual({ value: 3, max: 4 });
       expect(one("item").progress?.value).toBe(2);
       expect(threadStatus(one("thread"))).toBe("open");

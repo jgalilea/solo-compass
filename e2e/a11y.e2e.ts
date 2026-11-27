@@ -41,7 +41,7 @@ async function useTheme(page: Page, theme: string, mode: string) {
       storage.setItem("solo-compass:theme", theme);
       storage.setItem("solo-compass:mode", mode);
     },
-    [theme, mode],
+    [theme, mode] as [string, string],
   );
 }
 

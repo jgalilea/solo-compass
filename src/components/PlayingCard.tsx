@@ -14,7 +14,10 @@ import {
   IconSuitWands,
 } from "./icons/Icons";
 
-const SUIT_ICONS: Record<string, ComponentType<{ size?: number; x?: number; y?: number }>> = {
+const SUIT_ICONS: Record<
+  "h" | "d" | "c" | "s" | "Wa" | "Cu" | "Sw" | "Pe",
+  ComponentType<{ size?: number; x?: number; y?: number }>
+> = {
   h: IconSuitHearts,
   d: IconSuitDiamonds,
   c: IconSuitClubs,

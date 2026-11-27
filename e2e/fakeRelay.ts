@@ -1,5 +1,5 @@
 import type { BrowserContext, Route } from "@playwright/test";
-import { handleBox, type BoxRequest } from "../relay/src/box.ts";
+import { handleBox } from "../relay/src/box.ts";
 import { MemoryBoxStore } from "../relay/src/memoryStore.ts";
 import { decodeFrame, encodeFrame, parseSyncRequest } from "../src/lib/syncWire.ts";
 
@@ -43,7 +43,7 @@ export function fakeRelay() {
     const passHash = Buffer.from(digest).toString("hex");
     const store = boxes.get(parsed.box) ?? new MemoryBoxStore();
     boxes.set(parsed.box, store);
-    const result = handleBox(store, { ...rest, passHash } as BoxRequest, payload, {
+    const result = handleBox(store, { ...rest, passHash }, payload, {
       now: Date.now(),
       newEpoch: () => crypto.randomUUID(),
       wait: 0,

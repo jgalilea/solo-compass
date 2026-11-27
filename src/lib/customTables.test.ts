@@ -57,7 +57,7 @@ describe("custom tables: entry lines", () => {
 
   it("keeps a leading number as text when only a few lines have one", () => {
     const result = build("3 guardias dormidos\nUna puerta abierta\nUn perro\nNada");
-    expect(result.ok && result.entries[0].text).toBe("3 guardias dormidos");
+    expect(result.ok && result.entries[0]!.text).toBe("3 guardias dormidos");
   });
 
   it("rejects most-but-not-all lines with ranges, gaps and overlaps", () => {
@@ -77,7 +77,7 @@ describe("custom tables: entry lines", () => {
   it("d66 maps lines to 11–16, 21–26…", () => {
     const lines = Array.from({ length: 36 }, (_, i) => `R${i}`).join("\n");
     const result = build(lines, "d66");
-    expect(result.ok && result.entries[6].range).toEqual([21, 21]);
+    expect(result.ok && result.entries[6]!.range).toEqual([21, 21]);
     expect(build(Array.from({ length: 66 }, (_, i) => `R${i}`).join("\n")).ok).toBe(false);
   });
 
@@ -128,10 +128,10 @@ describe("custom tables: files", () => {
     });
     const md = exportTableToMarkdown(t, table);
     expect(md).toContain("Temática: Criaturas");
-    expect(parseTablesFile(t, md, "x.md")[0].theme).toBe("creatures");
-    expect(parseTablesFile(t, "# A\nTheme: Planets\nUno\nDos", "x.md")[0].theme).toBe("planets");
+    expect(parseTablesFile(t, md, "x.md")[0]!.theme).toBe("creatures");
+    expect(parseTablesFile(t, "# A\nTheme: Planets\nUno\nDos", "x.md")[0]!.theme).toBe("planets");
     const json = JSON.stringify({ name: "A", theme: "names", entries: ["x", "y"] });
-    expect(parseTablesFile(t, json, "x.json")[0].theme).toBe("names");
+    expect(parseTablesFile(t, json, "x.json")[0]!.theme).toBe("names");
     expect(toMeaningTable(table, t).theme).toBe("creatures");
   });
 
@@ -144,8 +144,8 @@ describe("custom tables: files", () => {
 
   it("a file without headings is one table named after the file", () => {
     const [table] = parseTablesFile(t, "Rata\nLobo\nOso", "bichos.txt");
-    expect(table.name).toBe("bichos");
-    expect(table.dice).toBe("d3");
+    expect(table!.name).toBe("bichos");
+    expect(table!.dice).toBe("d3");
   });
 
   it("several headings make several tables and invalid ones are skipped", () => {
@@ -172,7 +172,7 @@ describe("custom tables: files", () => {
         },
       ],
     };
-    expect(parseTablesFile(t, JSON.stringify(ranged), "x.json")[0].entries[1].range).toEqual([
+    expect(parseTablesFile(t, JSON.stringify(ranged), "x.json")[0]!.entries[1]!.range).toEqual([
       5, 6,
     ]);
     expect(parseTablesFile(t, "{ broken", "x.json")).toEqual([]);
@@ -235,7 +235,7 @@ describe("custom tables: what a file can't do", () => {
     const result = build("1-500000000 Todo\n500000001-999999999 Nada");
     expect(result).toEqual({ ok: false, error: t.tables.editor.errorTooBig });
     expect(performance.now() - started).toBeLessThan(500);
-    expect(build("A\nB", "d999999" as Parameters<typeof buildEntries>[2])).toEqual({
+    expect(build("A\nB", "d999999")).toEqual({
       ok: false,
       error: t.tables.editor.errorTooBig,
     });
@@ -281,8 +281,8 @@ describe("custom tables: what a file can't do", () => {
     expect(webAddress("data:text/html,<script>alert(1)</script>")).toBeUndefined();
     expect(webAddress("")).toBeUndefined();
     const [draft] = parseTablesFile(t, "# Tabla\nEnlace: javascript:alert(1)\n\nA\nB", "t.md");
-    expect(draft.source?.url).toBeUndefined();
-    const saved = createCustomTable({ ...draft, source: { url: "javascript:alert(1)" } });
+    expect(draft!.source?.url).toBeUndefined();
+    const saved = createCustomTable({ ...draft!, source: { url: "javascript:alert(1)" } });
     expect(toMeaningTable(saved, t).game.url).toBeUndefined();
   });
 });

@@ -23,9 +23,9 @@ export function matchesAllWords(text: string, query: string): boolean {
 export function highlightParts(text: string, query: string): { text: string; match: boolean }[] {
   const words = normalizeForSearch(query).split(/\s+/).filter(Boolean);
   if (words.length === 0) return [{ text, match: false }];
-  const chars = [...text];
+  const chars = Array.from(text);
   const folded = chars.map((c) => normalizeForSearch(c));
-  const marked = new Array<boolean>(chars.length).fill(false);
+  const marked = chars.map(() => false);
   for (const word of words) {
     for (let start = 0; start < chars.length; start++) {
       let i = start;
@@ -38,7 +38,7 @@ export function highlightParts(text: string, query: string): { text: string; mat
   chars.forEach((c, i) => {
     const last = parts.at(-1);
     if (last && last.match === marked[i]) last.text += c;
-    else parts.push({ text: c, match: marked[i] });
+    else parts.push({ text: c, match: marked[i]! });
   });
   return parts;
 }

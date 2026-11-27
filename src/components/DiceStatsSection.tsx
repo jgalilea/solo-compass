@@ -130,7 +130,7 @@ function DieChart({ die }: { die: DieStats }) {
   });
   // What each would get; only where every bar has the same chance.
   const width = (b: DieStats["bars"][number]) => b.to - b.from;
-  const even = die.bars.every((b) => width(b) === width(die.bars[0]));
+  const even = die.bars.every((b) => width(b) === width(die.bars[0]!));
   const share = die.count / die.bars.length;
   // With many faces, only the numbers that fit a phone.
   const runs = die.bars.some((b) => b.from !== b.to);
@@ -154,7 +154,7 @@ function DieChart({ die }: { die: DieStats }) {
         yLabel={s.diceChartY}
         xLabel={
           runs
-            ? interpolate(s.diceChartXRuns, { size: die.bars[0].to - die.bars[0].from + 1 })
+            ? interpolate(s.diceChartXRuns, { size: die.bars[0]!.to - die.bars[0]!.from + 1 })
             : s.diceChartX
         }
         bars={die.bars.map((b, i) => ({
