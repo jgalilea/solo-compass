@@ -35,7 +35,8 @@ export async function findTableDice(
   journal: readonly JournalEntry[],
 ): Promise<Map<string, DiceType>> {
   const logged = new Map<string, string>();
-  for (const e of journal) if (e.kind === "roll" && e.linkedRollId) logged.set(e.linkedRollId, e.text);
+  for (const e of journal)
+    if (e.kind === "roll" && e.linkedRollId) logged.set(e.linkedRollId, e.text);
 
   const found = new Map<string, DiceType>();
   const keep = (entry: TableRollEntry, die: string | null | undefined) => {
@@ -55,7 +56,8 @@ export async function findTableDice(
   if (left.some((e) => !gameOfTable(e.tableId))) sources.push(loadCustomTables(t));
   // A source that can't be read is tried again next time.
   for (const result of await Promise.allSettled(sources)) {
-    if (result.status === "fulfilled") for (const table of result.value) dice.set(table.id, table.dice);
+    if (result.status === "fulfilled")
+      for (const table of result.value) dice.set(table.id, table.dice);
   }
   for (const entry of left) keep(entry, dice.get(entry.tableId));
   return found;

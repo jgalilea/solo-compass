@@ -16,7 +16,8 @@ export function codeFromScan(text: string): string | null {
   try {
     const url = new URL(trimmed);
     const query = url.hash.indexOf("?");
-    const code = query >= 0 ? new URLSearchParams(url.hash.slice(query + 1)).get(SYNC_LINK_PARAM) : null;
+    const code =
+      query >= 0 ? new URLSearchParams(url.hash.slice(query + 1)).get(SYNC_LINK_PARAM) : null;
     return code && parseCode(code) ? code : null;
   } catch {
     // Not a link: maybe the code itself.

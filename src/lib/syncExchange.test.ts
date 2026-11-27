@@ -8,7 +8,15 @@ import { formatCode, newSecret, parseCode } from "./syncCode";
 import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import { emptyData, type Prints } from "./syncData";
 import type { SyncedDevice } from "./syncDevices";
-import { exchange, prepareChange, RECORDS_PER_PART, STALE_AFTER, type Relay, type SyncDevice, type SyncState } from "./syncExchange";
+import {
+  exchange,
+  prepareChange,
+  RECORDS_PER_PART,
+  STALE_AFTER,
+  type Relay,
+  type SyncDevice,
+  type SyncState,
+} from "./syncExchange";
 import type { HistoryEntry } from "./history";
 import { callRelay } from "./syncRelay";
 import { MAX_BOX_BYTES, MAX_REQUEST_BYTES, decodeFrame, parseSyncRequest } from "./syncWire";
@@ -22,7 +30,12 @@ const adventure = (id: string, extra: Partial<Adventure> = {}): Adventure => ({
   status: "ongoing",
   ...extra,
 });
-const entry = (id: string, adventureId: string, text: string, extra: Partial<JournalEntry> = {}): JournalEntry => ({
+const entry = (
+  id: string,
+  adventureId: string,
+  text: string,
+  extra: Partial<JournalEntry> = {},
+): JournalEntry => ({
   id,
   adventureId,
   timestamp: 10,
@@ -53,7 +66,9 @@ beforeEach(() => {
     const store = boxes.get(parsed.box) ?? new MemoryBoxStore();
     boxes.set(parsed.box, store);
     const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pass));
-    const passHash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    const passHash = [...new Uint8Array(digest)]
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     const result = handleBox(store, { ...rest, passHash } as BoxRequest, payload, {
       now: (clock += 4000),
       newEpoch: () => crypto.randomUUID(),
@@ -121,8 +136,14 @@ async function settle(...devices: Device[]) {
 describe("sync exchange", () => {
   it("brings two devices to the same journal", async () => {
     const code = formatCode(newSecret());
-    const phone = new Device(code, { adventures: [adventure("a1")], entries: [entry("e1", "a1", "En el móvil")] });
-    const laptop = new Device(code, { adventures: [adventure("a2")], entries: [entry("e2", "a2", "En el portátil")] });
+    const phone = new Device(code, {
+      adventures: [adventure("a1")],
+      entries: [entry("e1", "a1", "En el móvil")],
+    });
+    const laptop = new Device(code, {
+      adventures: [adventure("a2")],
+      entries: [entry("e2", "a2", "En el portátil")],
+    });
 
     expect((await phone.sync()).kind).toBe("ok");
     await laptop.sync();
@@ -139,10 +160,17 @@ describe("sync exchange", () => {
       adventures: [adventure("a1", { notes: "Pistas", notesUpdatedAt: 50, updatedAt: 5 })],
       entries: [entry("e1", "a1", "Uno")],
     });
-    const b = new Device(code, { adventures: [adventure("a1", { oracle: "loner", oracleUpdatedAt: 60, updatedAt: 7 })] });
+    const b = new Device(code, {
+      adventures: [adventure("a1", { oracle: "loner", oracleUpdatedAt: 60, updatedAt: 7 })],
+    });
     await settle(a, b);
     // Both took the newest of each part of the adventure.
-    for (const d of [a, b]) expect(d.data.adventures[0]).toMatchObject({ notes: "Pistas", oracle: "loner", updatedAt: 7 });
+    for (const d of [a, b])
+      expect(d.data.adventures[0]).toMatchObject({
+        notes: "Pistas",
+        oracle: "loner",
+        updatedAt: 7,
+      });
     const box = [...boxes.values()][0];
     const latest = box.lastChange();
     const written = box.rowsWritten;
@@ -156,7 +184,11 @@ describe("sync exchange", () => {
     const code = formatCode(newSecret());
     const named = (d: Device, id: string, name: string) => {
       const list: SyncedDevice[][] = [[]];
-      d.roster = { me: () => ({ id, name: d.name ?? name }), load: async () => list[0], save: async (l) => void (list[0] = l) };
+      d.roster = {
+        me: () => ({ id, name: d.name ?? name }),
+        load: async () => list[0],
+        save: async (l) => void (list[0] = l),
+      };
       return list;
     };
     const phone = new Device(code, { adventures: [adventure("a1")] });
@@ -179,7 +211,10 @@ describe("sync exchange", () => {
     expect(phoneList[0].find((d) => d.id === "l")?.name).toBe("Portátil del salón");
     // A device that starts from the snapshot knows them too.
     for (let i = 0; i < 105; i++) {
-      phone.data.entries = [...phone.data.entries, entry(`e${i}`, "a1", `E${i}`, { timestamp: 100 + i })];
+      phone.data.entries = [
+        ...phone.data.entries,
+        entry(`e${i}`, "a1", `E${i}`, { timestamp: 100 + i }),
+      ];
       await phone.sync();
     }
     const tablet = new Device(code);
@@ -230,12 +265,16 @@ describe("sync exchange", () => {
     // Leaving: sent at once; the exchange after it only takes the answer in.
     requests = 0;
     const inFlight = { change: ready, result: relay(ready.request, ready.op), sentAt: Date.now() };
-    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { inFlight });
+    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, {
+      inFlight,
+    });
     expect(outcome.kind).toBe("ok");
     if (outcome.kind === "ok") phone.state = outcome.state;
     expect(requests).toBe(1);
     // It's known to be sent: nothing more goes.
-    expect(await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { onlyToSend: true })).toMatchObject({ skipped: true });
+    expect(
+      await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { onlyToSend: true }),
+    ).toMatchObject({ skipped: true });
     await laptop.sync();
     expect(laptop.ids("entries")).toEqual(["e1"]);
   });
@@ -264,8 +303,14 @@ describe("sync exchange", () => {
     phone.data.entries.push(entry("e1", "a1", "Escrito antes de cerrar"));
     const ready = (await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024))!;
     // Sent ten minutes ago, the page frozen since: the answer is taken in now.
-    const inFlight = { change: ready, result: relay(ready.request, ready.op), sentAt: Date.now() - 10 * 60_000 };
-    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { inFlight });
+    const inFlight = {
+      change: ready,
+      result: relay(ready.request, ready.op),
+      sentAt: Date.now() - 10 * 60_000,
+    };
+    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, {
+      inFlight,
+    });
     expect(outcome).toMatchObject({ kind: "ok", skew: 0 });
   });
 
@@ -273,11 +318,20 @@ describe("sync exchange", () => {
     const code = formatCode(newSecret());
     const phone = new Device(code, { adventures: [adventure("a1")] });
     // Never synced: the first upload goes the usual way.
-    expect(await prepareChange(phone.device, (phone.keys ??= await deriveKeys(parseCode(code)!)), phone.state, 60 * 1024)).toBeNull();
+    expect(
+      await prepareChange(
+        phone.device,
+        (phone.keys ??= await deriveKeys(parseCode(code)!)),
+        phone.state,
+        60 * 1024,
+      ),
+    ).toBeNull();
     await phone.sync();
     expect(await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024)).toBeNull();
     // Text that doesn't compress, past what a request on leaving may carry.
-    const noise = Array.from(crypto.getRandomValues(new Uint8Array(4096)), (b) => b.toString(36)).join("");
+    const noise = Array.from(crypto.getRandomValues(new Uint8Array(4096)), (b) =>
+      b.toString(36),
+    ).join("");
     phone.data.entries.push(entry("e1", "a1", noise));
     expect(await prepareChange(phone.device, phone.keys, phone.state, 1024)).toBeNull();
     expect(await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024)).not.toBeNull();
@@ -292,7 +346,9 @@ describe("sync exchange", () => {
     const b = new Device(code);
     await settle(a, b);
 
-    b.data.entries = b.data.entries.map((e) => (e.id === "e1" ? { ...e, text: "Primera, corregida", editedAt: 99 } : e));
+    b.data.entries = b.data.entries.map((e) =>
+      e.id === "e1" ? { ...e, text: "Primera, corregida", editedAt: 99 } : e,
+    );
     a.data.entries = a.data.entries.filter((e) => e.id !== "e2");
     a.data.deleted = [{ id: "e2", at: Date.now() }];
     await settle(a, b);
@@ -308,7 +364,10 @@ describe("sync exchange", () => {
     const a = new Device(code, { adventures: [adventure("a1")] });
     await a.sync();
     for (let i = 0; i < 105; i++) {
-      a.data.entries = [...a.data.entries, entry(`e${i}`, "a1", `Entrada ${i}`, { timestamp: 100 + i })];
+      a.data.entries = [
+        ...a.data.entries,
+        entry(`e${i}`, "a1", `Entrada ${i}`, { timestamp: 100 + i }),
+      ];
       await a.sync();
     }
     const box = [...boxes.values()][0];
@@ -337,7 +396,10 @@ describe("sync exchange", () => {
 
   it("starts over with a box made again (it expired)", async () => {
     const code = formatCode(newSecret());
-    const a = new Device(code, { adventures: [adventure("a1")], entries: [entry("e1", "a1", "Uno")] });
+    const a = new Device(code, {
+      adventures: [adventure("a1")],
+      entries: [entry("e1", "a1", "Uno")],
+    });
     await a.sync();
     for (const box of boxes.values()) box.wipe();
     const outcome = await a.sync();
@@ -350,7 +412,10 @@ describe("sync exchange", () => {
 
   it("asks before merging on a device unsynced for most of a year", async () => {
     const code = formatCode(newSecret());
-    const a = new Device(code, { adventures: [adventure("a1")], entries: [entry("old", "a1", "Vieja")] });
+    const a = new Device(code, {
+      adventures: [adventure("a1")],
+      entries: [entry("old", "a1", "Vieja")],
+    });
     const b = new Device(code);
     await settle(a, b);
     // On A, "old" is deleted; B sleeps in a drawer for a year.
@@ -373,7 +438,10 @@ describe("sync exchange", () => {
     const a = new Device(code, { adventures: [adventure("a1")] });
     await a.sync();
     const { seal } = await import("./syncCrypto");
-    const sealed = await seal(a.keys, "op", { v: 999, data: { adventures: [adventure("future")] } });
+    const sealed = await seal(a.keys, "op", {
+      v: 999,
+      data: { adventures: [adventure("future")] },
+    });
     const store = [...boxes.values()][0];
     store.appendChange((store.lastChange() ?? 0) + 1, Date.now(), sealed);
     const b = new Device(code);
@@ -390,60 +458,92 @@ describe("sync exchange", () => {
     expect(await a.sync()).toMatchObject({ kind: "failed", error: "closed" });
   });
 
-  it("carries years of play, within the relay's limits, and then only what changed", { timeout: 120_000 }, async () => {
-    const data = yearsOfPlay();
-    const counts = `${data.entries!.length} entries, ${data.history!.length} rolls`;
-    const code = formatCode(newSecret());
-    const phone = new Device(code, data);
-    const laptop = new Device(code);
+  it(
+    "carries years of play, within the relay's limits, and then only what changed",
+    { timeout: 120_000 },
+    async () => {
+      const data = yearsOfPlay();
+      const counts = `${data.entries!.length} entries, ${data.history!.length} rolls`;
+      const code = formatCode(newSecret());
+      const phone = new Device(code, data);
+      const laptop = new Device(code);
 
-    let started = performance.now();
-    expect((await phone.sync()).kind).toBe("ok");
-    const upload = performance.now() - started;
-    expect(biggest).toBeLessThanOrEqual(MAX_REQUEST_BYTES + 16 * 1024);
-    const box = [...boxes.values()][0];
-    const stored = box.meta()!.snapshotBytes + box.changeStatsAfter(box.meta()!.upto).bytes;
-    expect(stored).toBeLessThan(MAX_BOX_BYTES / 4);
+      let started = performance.now();
+      expect((await phone.sync()).kind).toBe("ok");
+      const upload = performance.now() - started;
+      expect(biggest).toBeLessThanOrEqual(MAX_REQUEST_BYTES + 16 * 1024);
+      const box = [...boxes.values()][0];
+      const stored = box.meta()!.snapshotBytes + box.changeStatsAfter(box.meta()!.upto).bytes;
+      expect(stored).toBeLessThan(MAX_BOX_BYTES / 4);
 
-    started = performance.now();
-    expect((await laptop.sync()).kind).toBe("ok");
-    const download = performance.now() - started;
-    for (const kind of ["history", "adventures", "entries"] as const) expect(laptop.ids(kind)).toEqual(phone.ids(kind));
-    expect(laptop.data.entries.find((e) => e.id === "big-e4321")).toEqual(phone.data.entries.find((e) => e.id === "big-e4321"));
+      started = performance.now();
+      expect((await laptop.sync()).kind).toBe("ok");
+      const download = performance.now() - started;
+      for (const kind of ["history", "adventures", "entries"] as const)
+        expect(laptop.ids(kind)).toEqual(phone.ids(kind));
+      expect(laptop.data.entries.find((e) => e.id === "big-e4321")).toEqual(
+        phone.data.entries.find((e) => e.id === "big-e4321"),
+      );
 
-    // A normal day after that: one entry written, and only it travels.
-    phone.data.entries.push(entry("fresh", "big", "Una entrada más."));
-    requests = 0;
-    biggest = 0;
-    started = performance.now();
-    await phone.sync();
-    const steady = performance.now() - started;
-    expect(requests).toBe(1);
-    expect(biggest).toBeLessThan(2048);
-    await laptop.sync();
-    expect(laptop.data.entries.some((e) => e.id === "fresh")).toBe(true);
+      // A normal day after that: one entry written, and only it travels.
+      phone.data.entries.push(entry("fresh", "big", "Una entrada más."));
+      requests = 0;
+      biggest = 0;
+      started = performance.now();
+      await phone.sync();
+      const steady = performance.now() - started;
+      expect(requests).toBe(1);
+      expect(biggest).toBeLessThan(2048);
+      await laptop.sync();
+      expect(laptop.data.entries.some((e) => e.id === "fresh")).toBe(true);
 
-    console.log(
-      `Years of play: ${counts}; ` +
-        `${Math.round(stored / 1024)} KB on the relay; first upload ${Math.round(upload)} ms, ` +
-        `download ${Math.round(download)} ms, an exchange after one change ${Math.round(steady)} ms`,
-    );
-  });
+      console.log(
+        `Years of play: ${counts}; ` +
+          `${Math.round(stored / 1024)} KB on the relay; first upload ${Math.round(upload)} ms, ` +
+          `download ${Math.round(download)} ms, an exchange after one change ${Math.round(steady)} ms`,
+      );
+    },
+  );
 });
 
 /** Like e2e/volume.perf.ts: years of play, with words varied enough to compress like real writing. */
 function yearsOfPlay(): Partial<MergeData> {
   let seed = 42;
-  const random = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
-  const syllables = ["la", "ber", "tro", "mi", "son", "cal", "de", "ra", "go", "ne", "vi", "sa", "lu", "ter", "pon", "es", "quin", "dor"];
-  const word = () => Array.from({ length: 1 + Math.floor(random() * 3) }, () => syllables[Math.floor(random() * syllables.length)]).join("");
+  const random = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31;
+  const syllables = [
+    "la",
+    "ber",
+    "tro",
+    "mi",
+    "son",
+    "cal",
+    "de",
+    "ra",
+    "go",
+    "ne",
+    "vi",
+    "sa",
+    "lu",
+    "ter",
+    "pon",
+    "es",
+    "quin",
+    "dor",
+  ];
+  const word = () =>
+    Array.from(
+      { length: 1 + Math.floor(random() * 3) },
+      () => syllables[Math.floor(random() * syllables.length)],
+    ).join("");
   const sentence = (words: number) => Array.from({ length: words }, word).join(" ");
   const adventures: Adventure[] = [];
   const entries: JournalEntry[] = [];
   const history: HistoryEntry[] = [];
   let clock = Date.now() - 3 * 365 * 24 * 60 * 60 * 1000;
   const add = (id: string, count: number) => {
-    adventures.push(adventure(id, { name: sentence(3), createdAt: clock, updatedAt: clock, notes: sentence(60) }));
+    adventures.push(
+      adventure(id, { name: sentence(3), createdAt: clock, updatedAt: clock, notes: sentence(60) }),
+    );
     for (let i = 0; i < count; i++) {
       clock += 60_000;
       if (i % 10 === 3) {
@@ -461,8 +561,17 @@ function yearsOfPlay(): Partial<MergeData> {
           qualifier: null,
           favorite: false,
         } as HistoryEntry);
-        entries.push(entry(`${id}-e${i}`, id, `Recluse ${white}/${black} -> Sí`, { kind: "roll", timestamp: clock, linkedRollId: `${id}-r${i}` }));
-      } else entries.push(entry(`${id}-e${i}`, id, sentence(8 + Math.floor(random() * 40)), { timestamp: clock }));
+        entries.push(
+          entry(`${id}-e${i}`, id, `Recluse ${white}/${black} -> Sí`, {
+            kind: "roll",
+            timestamp: clock,
+            linkedRollId: `${id}-r${i}`,
+          }),
+        );
+      } else
+        entries.push(
+          entry(`${id}-e${i}`, id, sentence(8 + Math.floor(random() * 40)), { timestamp: clock }),
+        );
     }
   };
   add("big", 5000);

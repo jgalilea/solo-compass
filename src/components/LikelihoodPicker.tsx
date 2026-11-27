@@ -28,7 +28,10 @@ const SHORT: Record<Likelihood, { Icon: typeof IconPlus; count: number }> = {
 function ShortScale({ option, always = false }: { option: Likelihood; always?: boolean }) {
   const { Icon, count } = SHORT[option];
   return (
-    <span aria-hidden className={`flex items-center justify-center -space-x-0.5 ${always ? "" : "@md:hidden"}`}>
+    <span
+      aria-hidden
+      className={`flex items-center justify-center -space-x-0.5 ${always ? "" : "@md:hidden"}`}
+    >
       {Array.from({ length: count }, (_, i) => (
         <Icon key={i} size={15} strokeWidth={2.25} />
       ))}
@@ -54,7 +57,11 @@ export function LikelihoodPicker({
   if (inline) {
     return (
       <div className="flex min-w-0 items-center gap-2">
-        <div role="radiogroup" aria-label={t.likelihoodGroupLabel} className="flex shrink-0 gap-0.5 rounded-xl border border-ink-border bg-ink-900/60 p-0.5">
+        <div
+          role="radiogroup"
+          aria-label={t.likelihoodGroupLabel}
+          className="flex shrink-0 gap-0.5 rounded-xl border border-ink-border bg-ink-900/60 p-0.5"
+        >
           {levels.map((option) => {
             const active = option === value;
             return (
@@ -68,7 +75,9 @@ export function LikelihoodPicker({
                 onClick={() => onChange(option)}
                 className={[
                   "flex h-8 min-w-9 items-center justify-center rounded-lg px-1.5 transition pointer-coarse:h-10",
-                  active ? "bg-gold text-ink-950 shadow-sm" : "text-parchment-dim hover:text-parchment",
+                  active
+                    ? "bg-gold text-ink-950 shadow-sm"
+                    : "text-parchment-dim hover:text-parchment",
                 ].join(" ")}
               >
                 <ShortScale option={option} always />
@@ -76,7 +85,9 @@ export function LikelihoodPicker({
             );
           })}
         </div>
-        <span className="min-w-0 truncate text-xs font-medium text-parchment">{t.likelihood[value]}</span>
+        <span className="min-w-0 truncate text-xs font-medium text-parchment">
+          {t.likelihood[value]}
+        </span>
       </div>
     );
   }

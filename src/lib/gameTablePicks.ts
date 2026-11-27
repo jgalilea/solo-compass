@@ -22,13 +22,23 @@ export function gameTableDice(
   savedRolls: readonly SavedRoll[],
 ): { builtins: BuiltinDie[]; own: SavedRoll[] } {
   const ids = pickedIds(pick);
-  if (!ids) return { builtins: BUILTIN_DICE.filter((d) => favoriteBuiltins.has(d)), own: savedRolls.filter((r) => r.favorite) };
+  if (!ids)
+    return {
+      builtins: BUILTIN_DICE.filter((d) => favoriteBuiltins.has(d)),
+      own: savedRolls.filter((r) => r.favorite),
+    };
   const picked = new Set(ids);
-  return { builtins: BUILTIN_DICE.filter((d) => picked.has(d)), own: savedRolls.filter((r) => picked.has(r.id)) };
+  return {
+    builtins: BUILTIN_DICE.filter((d) => picked.has(d)),
+    own: savedRolls.filter((r) => picked.has(r.id)),
+  };
 }
 
 /** The ids of the tables on its game table. */
-export function gameTableIds(pick: AdventurePick | undefined, favorites: ReadonlySet<string>): Set<string> {
+export function gameTableIds(
+  pick: AdventurePick | undefined,
+  favorites: ReadonlySet<string>,
+): Set<string> {
   return new Set(pickedIds(pick) ?? favorites);
 }
 

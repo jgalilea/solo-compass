@@ -1,4 +1,15 @@
-import { Fragment, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCustomTablesContext } from "../hooks/useCustomTablesContext";
@@ -13,8 +24,21 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { sortedEntriesOf } from "../lib/journalOrder";
 import { exportAdventureToMarkdown, sectionToLonelog } from "../lib/lonelog";
-import { ADVENTURE_SEARCH_LIMIT, entryType, searchEntries, type EntryType } from "../lib/journalSearch";
-import { buildCast, castKey, combineSteps, findMember, mainPc, purseKey, renameInEntry } from "../lib/lonelogTags";
+import {
+  ADVENTURE_SEARCH_LIMIT,
+  entryType,
+  searchEntries,
+  type EntryType,
+} from "../lib/journalSearch";
+import {
+  buildCast,
+  castKey,
+  combineSteps,
+  findMember,
+  mainPc,
+  purseKey,
+  renameInEntry,
+} from "../lib/lonelogTags";
 import { isStoryEntry } from "../lib/zenMode";
 import { continuationOf } from "../lib/continueAdventure";
 import { withRollDrawings } from "./drawRolls";
@@ -33,15 +57,28 @@ import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { DiceTool, OracleTool, TableTool } from "./PlayTools";
 import { FoldingHeading } from "./FoldingHeading";
-import { loadFoldedNotebookSections, toggleFoldedNotebookSection, type PlayToolBlock } from "../lib/notebookSections";
+import {
+  loadFoldedNotebookSections,
+  toggleFoldedNotebookSection,
+  type PlayToolBlock,
+} from "../lib/notebookSections";
 import { EmptyState, LoadingState } from "./StateViews";
 import { Toast } from "./Toast";
 import { JournalSearchPanel } from "./JournalSearchPanel";
-import { EntryList, LineButtons, SESSION_BAR, SESSION_RAIL, SessionDate, SessionGroupRow, type EntryActions } from "./journalShared";
+import {
+  EntryList,
+  LineButtons,
+  SESSION_BAR,
+  SESSION_RAIL,
+  SessionDate,
+  SessionGroupRow,
+  type EntryActions,
+} from "./journalShared";
 import { SessionIndex } from "./SessionNavigation";
 import {
   downloadTextFile,
-  filterGroups, storylineViews,
+  filterGroups,
+  storylineViews,
   groupBySession,
   INPUT_CLASS,
   PRIMARY_BUTTON_CLASS,
@@ -65,7 +102,9 @@ import {
   IconZen,
 } from "./icons/Icons";
 
-const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
+const TableEditorDialog = lazy(() =>
+  import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })),
+);
 
 /**
  * One adventure: its journal and the "game table" to keep playing it.
@@ -126,7 +165,10 @@ export function AdventureDetailView() {
   // opening another one doesn't stay in it.
   const [zenFor, setZenFor] = useState<string | null>(null);
   const zen = zenFor === adventureId;
-  const shownEntries = useMemo(() => (zen ? adventureEntries.filter(isStoryEntry) : adventureEntries), [zen, adventureEntries]);
+  const shownEntries = useMemo(
+    () => (zen ? adventureEntries.filter(isStoryEntry) : adventureEntries),
+    [zen, adventureEntries],
+  );
   const groups = useMemo(() => groupBySession(shownEntries), [shownEntries]);
   const views = useMemo(() => storylineViews(groups), [groups]);
   const { load: loadTables, status: tablesStatus, addTables } = useCustomTablesContext();
@@ -150,7 +192,10 @@ export function AdventureDetailView() {
   // about one element until the filter is taken off.
   const [journalFilter, setJournalFilter] = useState<string | null>(null);
   const filterMember = journalFilter ? (cast.find((c) => c.key === journalFilter) ?? null) : null;
-  const filtered = useMemo(() => (filterMember ? filterGroups(groups, filterMember, mainPc(cast)?.name) : null), [groups, filterMember, cast]);
+  const filtered = useMemo(
+    () => (filterMember ? filterGroups(groups, filterMember, mainPc(cast)?.name) : null),
+    [groups, filterMember, cast],
+  );
 
   // The current session is the last one: always open. The earlier ones
   // (and the session-less "prologue", if any) are folded above it.
@@ -177,7 +222,10 @@ export function AdventureDetailView() {
   const [continuing, setContinuing] = useState(false);
   // The character/place chip last tapped in the journal; the tick makes
   // tapping the same one again scroll to it again.
-  const [castFocus, setCastFocus] = useState<{ key: string | null; tick: number }>({ key: null, tick: 0 });
+  const [castFocus, setCastFocus] = useState<{ key: string | null; tick: number }>({
+    key: null,
+    tick: 0,
+  });
 
   // Composer: the entry kind and the roll a consequence links to live
   // here because the desktop panel changes them too.
@@ -205,7 +253,12 @@ export function AdventureDetailView() {
       const entry = entries.find((e) => e.id === id);
       removeEntry(id);
       setSelectedEntryId(null);
-      if (entry) setUndoable({ key: `deleted-${entry.id}`, kind: "deleted", undo: () => restoreEntry(entry) });
+      if (entry)
+        setUndoable({
+          key: `deleted-${entry.id}`,
+          kind: "deleted",
+          undo: () => restoreEntry(entry),
+        });
     },
     [entries, removeEntry, restoreEntry, setSelectedEntryId],
   );
@@ -216,7 +269,11 @@ export function AdventureDetailView() {
       const entry = entries.find((e) => e.id === id);
       if (!entry || entry.text === text) return;
       editEntry(id, text);
-      setUndoable({ key: `edited-${id}-${Date.now()}`, kind: "edited", undo: () => editEntry(id, entry.text) });
+      setUndoable({
+        key: `edited-${id}-${Date.now()}`,
+        kind: "edited",
+        undo: () => editEntry(id, entry.text),
+      });
     },
     [entries, editEntry],
   );
@@ -226,7 +283,14 @@ export function AdventureDetailView() {
   useEffect(() => {
     if (!undoable) return;
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key.toLowerCase() !== "z" || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || isTypingTarget(e.target)) return;
+      if (
+        e.key.toLowerCase() !== "z" ||
+        !(e.ctrlKey || e.metaKey) ||
+        e.shiftKey ||
+        e.altKey ||
+        isTypingTarget(e.target)
+      )
+        return;
       e.preventDefault();
       undoable!.undo();
       setUndoable(null);
@@ -245,7 +309,9 @@ export function AdventureDetailView() {
 
   // A session, a scene or the whole adventure as Lonelog, to paste elsewhere.
   function copyToClipboard(text: string, done: string) {
-    void copyText(text).then((ok) => setNotice({ key: Date.now(), title: ok ? done : t.journal.copyFailed }));
+    void copyText(text).then((ok) =>
+      setNotice({ key: Date.now(), title: ok ? done : t.journal.copyFailed }),
+    );
   }
   const dismissExported = useCallback(() => setExportedFilename(null), []);
 
@@ -278,7 +344,9 @@ export function AdventureDetailView() {
     // (no search through thousands of entries each time).
     canMove: (id, direction) =>
       adventureEntries.length > 0 &&
-      id !== (direction === "up" ? adventureEntries[0] : adventureEntries[adventureEntries.length - 1]).id,
+      id !==
+        (direction === "up" ? adventureEntries[0] : adventureEntries[adventureEntries.length - 1])
+          .id,
     onInsertBelow: (id) => {
       const entry = adventureEntries.find((e) => e.id === id);
       setSelectedEntryId(null);
@@ -287,7 +355,8 @@ export function AdventureDetailView() {
       setLinkedRollId(entry?.kind === "roll" ? entry.linkedRollId : undefined);
       if (window.matchMedia("(pointer: fine)").matches) composerInputRef.current?.focus();
     },
-    onCopy: (id) => copyToClipboard(sectionToLonelog(adventureEntries, id), t.journal.copiedSection),
+    onCopy: (id) =>
+      copyToClipboard(sectionToLonelog(adventureEntries, id), t.journal.copiedSection),
     onTagClick: (key) => {
       setCastFocus((prev) => ({ key: findMember(cast, key)?.key ?? key, tick: prev.tick + 1 }));
       // From xl the notebook is always visible in the left column.
@@ -295,14 +364,22 @@ export function AdventureDetailView() {
     },
     // In zen mode an entry's neighbours may be hidden: moving it, or
     // writing below it, would land among what can't be seen.
-    ...(zen ? { story: true, onMove: undefined, canMove: undefined, onInsertBelow: undefined } : {}),
+    ...(zen
+      ? { story: true, onMove: undefined, canMove: undefined, onInsertBelow: undefined }
+      : {}),
   };
 
   const searchMatches = useMemo(
-    () => (searchOpen ? searchEntries(shownEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1, searchType) : []),
+    () =>
+      searchOpen
+        ? searchEntries(shownEntries, searchQuery, ADVENTURE_SEARCH_LIMIT + 1, searchType)
+        : [],
     [searchOpen, shownEntries, searchQuery, searchType],
   );
-  const searchTypes = useMemo(() => new Set(searchOpen ? shownEntries.map(entryType) : []), [searchOpen, shownEntries]);
+  const searchTypes = useMemo(
+    () => new Set(searchOpen ? shownEntries.map(entryType) : []),
+    [searchOpen, shownEntries],
+  );
 
   // Jumping to an entry (from the search): its session is unfolded
   // first, and the scroll happens once it's painted (next effect).
@@ -313,7 +390,9 @@ export function AdventureDetailView() {
   const highlightTimer = useRef<number | undefined>(undefined);
   const jumpToEntry = useCallback(
     (id: string) => {
-      const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
+      const index = groups.findIndex(
+        (g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id),
+      );
       if (index < 0) {
         // Hidden by zen mode (a tag-only note, from the notebook): out of
         // it, then there once the whole journal is drawn.
@@ -327,7 +406,8 @@ export function AdventureDetailView() {
       setJournalFilter(null);
       if (index < groups.length - 1) {
         setPreviousExpanded(true);
-        if (group.sessionEntry) setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
+        if (group.sessionEntry)
+          setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
       }
       setSearchOpen(false);
       setHighlightedId(id);
@@ -429,14 +509,19 @@ export function AdventureDetailView() {
   useEffect(() => {
     const id = revealRef.current === INSERTION ? insertionPoint?.afterId : revealRef.current;
     if (!id) return;
-    const index = groups.findIndex((g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id));
+    const index = groups.findIndex(
+      (g) => g.sessionEntry?.id === id || g.items.some((e) => e.id === id),
+    );
     const group = groups[index];
     if (!group) {
       revealRef.current = null;
       return;
     }
     const sessionId = group.sessionEntry?.id;
-    if (index < groups.length - 1 && (!previousExpanded || (sessionId && !expandedSessions.has(sessionId)))) {
+    if (
+      index < groups.length - 1 &&
+      (!previousExpanded || (sessionId && !expandedSessions.has(sessionId)))
+    ) {
       setPreviousExpanded(true);
       if (sessionId) setExpandedSessions((prev) => new Set(prev).add(sessionId));
       return;
@@ -480,7 +565,14 @@ export function AdventureDetailView() {
   }
 
   function handleExport() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions, adventure!);
+    const markdown = exportAdventureToMarkdown(
+      t,
+      adventure!.name,
+      adventureEntries,
+      adventure!.notes,
+      adventure!.descriptions,
+      adventure!,
+    );
     const filename = `${sanitizeFilename(adventure!.name)}.md`;
     downloadTextFile(filename, markdown);
     setExportedFilename(filename);
@@ -511,8 +603,17 @@ export function AdventureDetailView() {
   // The same Lonelog .md as the export, through the system's share
   // sheet; if it fails (not just cancelled), it's downloaded instead.
   function handleShare() {
-    const markdown = exportAdventureToMarkdown(t, adventure!.name, adventureEntries, adventure!.notes, adventure!.descriptions, adventure!);
-    shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(handleExport);
+    const markdown = exportAdventureToMarkdown(
+      t,
+      adventure!.name,
+      adventureEntries,
+      adventure!.notes,
+      adventure!.descriptions,
+      adventure!,
+    );
+    shareTextFile(`${sanitizeFilename(adventure!.name)}.md`, markdown, adventure!.name).catch(
+      handleExport,
+    );
   }
 
   // Written below an entry: what's kept in sight is that spot, not the end.
@@ -558,14 +659,19 @@ export function AdventureDetailView() {
     if (index < groups.length - 1) {
       flushSync(() => {
         setPreviousExpanded(true);
-        if (group.sessionEntry) setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
+        if (group.sessionEntry)
+          setExpandedSessions((prev) => new Set(prev).add(group.sessionEntry!.id));
       });
       if (!group.sessionEntry) target = "previous";
     }
-    document.getElementById(`session-${target}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
+    document
+      .getElementById(`session-${target}`)
+      ?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
   }
 
-  const hasSessionIndex = groups.some((g) => g.sessionEntry || g.items.some((e) => e.kind === "scene"));
+  const hasSessionIndex = groups.some(
+    (g) => g.sessionEntry || g.items.some((e) => e.kind === "scene"),
+  );
 
   const notebook = (
     <AdventureNotebook
@@ -590,7 +696,9 @@ export function AdventureDetailView() {
         for (const e of before) editEntry(e.id, renameInEntry(e, member, name));
         const description = adventure.descriptions?.[member.key];
         const newKey =
-          member.owner && member.key === purseKey(member.owner, member.name) ? purseKey(member.owner, name) : castKey(member.kind, name);
+          member.owner && member.key === purseKey(member.owner, member.name)
+            ? purseKey(member.owner, name)
+            : castKey(member.kind, name);
         if (description?.text && newKey !== member.key) {
           setCastDescription(adventure.id, newKey, description.text);
           setCastDescription(adventure.id, member.key, "");
@@ -621,7 +729,10 @@ export function AdventureDetailView() {
         // per tap (only at the end of the journal, and only shortly after).
         const last = adventureEntries.at(-1);
         const combined =
-          step && !inserting && last?.kind === "note" && Date.now() - (last.editedAt ?? last.timestamp) < STEP_JOIN_MS
+          step &&
+          !inserting &&
+          last?.kind === "note" &&
+          Date.now() - (last.editedAt ?? last.timestamp) < STEP_JOIN_MS
             ? combineSteps(last.text, text)
             : null;
         if (combined === "") removeEntry(last!.id);
@@ -654,7 +765,9 @@ export function AdventureDetailView() {
         {/* Wide desktop: sessions and notebook in their own column. Padded on
             both sides: it scrolls, so a selected item's ring would be clipped. */}
         <aside className={`${SIDE_COLUMN} hidden gap-8 px-1 xl:flex`}>
-          {hasSessionIndex && <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />}
+          {hasSessionIndex && (
+            <SessionIndex groups={groups} onJump={jumpToSession} onJumpToEntry={jumpToEntry} />
+          )}
           {!ultrawide && notebook}
         </aside>
         {ultrawide && (
@@ -693,7 +806,14 @@ export function AdventureDetailView() {
             onExport={handleExport}
             onCopy={() =>
               copyToClipboard(
-                exportAdventureToMarkdown(t, adventure.name, adventureEntries, adventure.notes, adventure.descriptions, adventure),
+                exportAdventureToMarkdown(
+                  t,
+                  adventure.name,
+                  adventureEntries,
+                  adventure.notes,
+                  adventure.descriptions,
+                  adventure,
+                ),
                 t.journal.copiedAdventure,
               )
             }
@@ -726,7 +846,10 @@ export function AdventureDetailView() {
 
           {zen && (
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-ink-border bg-ink-900/60 px-3 py-2 text-sm text-parchment-dim">
-              <IconZen size={16} className="shrink-0 self-start text-gold max-sm:mt-0.5 sm:self-center" />
+              <IconZen
+                size={16}
+                className="shrink-0 self-start text-gold max-sm:mt-0.5 sm:self-center"
+              />
               <div className="min-w-0 flex-1 basis-56">
                 <p>{t.journal.zenBar}</p>
                 {/* What's lost with the questions: said once, where it matters. */}
@@ -760,10 +883,13 @@ export function AdventureDetailView() {
               <div className="flex items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-parchment">
                 <IconFilter size={16} className="shrink-0 text-gold" />
                 <span className="min-w-0 flex-1">
-                  {interpolate(filtered.count === 1 ? t.journal.filterShowingOne : t.journal.filterShowing, {
-                    name: filterMember.name,
-                    count: filtered.count,
-                  })}
+                  {interpolate(
+                    filtered.count === 1 ? t.journal.filterShowingOne : t.journal.filterShowing,
+                    {
+                      name: filterMember.name,
+                      count: filtered.count,
+                    },
+                  )}
                 </span>
                 <button
                   type="button"
@@ -777,10 +903,15 @@ export function AdventureDetailView() {
                 </button>
               </div>
               {filtered.groups.length === 0 ? (
-                <p className="px-1 text-sm text-parchment-dim">{interpolate(t.journal.filterEmpty, { name: filterMember.name })}</p>
+                <p className="px-1 text-sm text-parchment-dim">
+                  {interpolate(t.journal.filterEmpty, { name: filterMember.name })}
+                </p>
               ) : (
                 filtered.groups.map((group, i) => (
-                  <section key={group.sessionEntry?.id ?? `prologue-${i}`} className="flex flex-col gap-2">
+                  <section
+                    key={group.sessionEntry?.id ?? `prologue-${i}`}
+                    className="flex flex-col gap-2"
+                  >
                     {group.sessionEntry && (
                       <div className={SESSION_BAR}>
                         <h2 className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-border px-4">
@@ -802,7 +933,10 @@ export function AdventureDetailView() {
           )}
 
           {!filtered && previousGroups.length > 0 && (
-            <section id="session-previous" className="flex scroll-mt-(--pin-session) flex-col gap-2">
+            <section
+              id="session-previous"
+              className="flex scroll-mt-(--pin-session) flex-col gap-2"
+            >
               <button
                 type="button"
                 onClick={() => setPreviousExpanded((v) => !v)}
@@ -859,7 +993,10 @@ export function AdventureDetailView() {
             />
           ) : (
             currentGroup && (
-              <section id={`session-${currentGroup.sessionEntry?.id ?? "current"}`} className="flex scroll-mt-(--pin-session) flex-col gap-2">
+              <section
+                id={`session-${currentGroup.sessionEntry?.id ?? "current"}`}
+                className="flex scroll-mt-(--pin-session) flex-col gap-2"
+              >
                 {currentGroup.sessionEntry &&
                   (editingEntryId === currentGroup.sessionEntry.id ? (
                     <div className="flex items-center gap-2 rounded-xl border border-gold/30 bg-ink-900 px-3 py-2">
@@ -873,7 +1010,11 @@ export function AdventureDetailView() {
                         }}
                         className={`${INPUT_CLASS} bg-ink-800/70`}
                       />
-                      <button type="button" onClick={commitSessionTitleEdit} className={PRIMARY_BUTTON_CLASS}>
+                      <button
+                        type="button"
+                        onClick={commitSessionTitleEdit}
+                        className={PRIMARY_BUTTON_CLASS}
+                      >
                         {t.common.save}
                       </button>
                     </div>
@@ -883,7 +1024,11 @@ export function AdventureDetailView() {
                     <div
                       data-entry
                       onClick={() =>
-                        setSelectedEntryId((id) => (id === currentGroup.sessionEntry!.id ? null : currentGroup.sessionEntry!.id))
+                        setSelectedEntryId((id) =>
+                          id === currentGroup.sessionEntry!.id
+                            ? null
+                            : currentGroup.sessionEntry!.id,
+                        )
                       }
                       className={`group ${SESSION_BAR}`}
                     >
@@ -902,12 +1047,20 @@ export function AdventureDetailView() {
                           }}
                           onDelete={() => deleteEntryWithUndo(currentGroup.sessionEntry!.id)}
                           onMoveUp={
-                            !zen && adventureEntries[0] !== currentGroup.sessionEntry ? () => moveCurrentSession("up") : undefined
+                            !zen && adventureEntries[0] !== currentGroup.sessionEntry
+                              ? () => moveCurrentSession("up")
+                              : undefined
                           }
                           onMoveDown={
-                            !zen && adventureEntries.at(-1) !== currentGroup.sessionEntry ? () => moveCurrentSession("down") : undefined
+                            !zen && adventureEntries.at(-1) !== currentGroup.sessionEntry
+                              ? () => moveCurrentSession("down")
+                              : undefined
                           }
-                          onInsertBelow={zen ? undefined : () => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)}
+                          onInsertBelow={
+                            zen
+                              ? undefined
+                              : () => entryActions.onInsertBelow!(currentGroup.sessionEntry!.id)
+                          }
                           onCopy={() => entryActions.onCopy!(currentGroup.sessionEntry!.id)}
                         />
                       </div>
@@ -966,19 +1119,22 @@ export function AdventureDetailView() {
         </aside>
 
         {notebookOpen && (
-          <Modal
-            sheet
-            onClose={() => setNotebookOpen(false)}
-            label={t.notebook.title}
-            size="lg"
-          >
-            <DialogHeader title={t.notebook.title} Icon={IconNotebook} onClose={() => setNotebookOpen(false)} />
+          <Modal sheet onClose={() => setNotebookOpen(false)} label={t.notebook.title} size="lg">
+            <DialogHeader
+              title={t.notebook.title}
+              Icon={IconNotebook}
+              onClose={() => setNotebookOpen(false)}
+            />
             <DialogBody>{notebook}</DialogBody>
           </Modal>
         )}
 
         {statsOpen && (
-          <AdventureStatsDialog name={adventure.name} entries={adventureEntries} onClose={() => setStatsOpen(false)} />
+          <AdventureStatsDialog
+            name={adventure.name}
+            entries={adventureEntries}
+            onClose={() => setStatsOpen(false)}
+          />
         )}
 
         {continuing && (
@@ -988,7 +1144,11 @@ export function AdventureDetailView() {
             onContinue={(name) => {
               const next = importAdventure(
                 name,
-                continuationOf(adventure, adventureEntries, interpolate(t.journal.continuedFrom, { name: adventure.name })),
+                continuationOf(
+                  adventure,
+                  adventureEntries,
+                  interpolate(t.journal.continuedFrom, { name: adventure.name }),
+                ),
               );
               // Played the same way: its oracle, and what its game table picked.
               if (adventure.oracle) setAdventureOracle(next.id, adventure.oracle);
@@ -1025,7 +1185,10 @@ export function AdventureDetailView() {
               onSave={(draft) => {
                 addTables([draft]);
                 setTableDraft(null);
-                setNotice({ key: Date.now(), title: interpolate(t.journal.tableSaved, { name: draft.name }) });
+                setNotice({
+                  key: Date.now(),
+                  title: interpolate(t.journal.tableSaved, { name: draft.name }),
+                });
               }}
               onClose={() => setTableDraft(null)}
             />
@@ -1113,4 +1276,3 @@ function PanelSection({
     </section>
   );
 }
-

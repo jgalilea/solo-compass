@@ -92,7 +92,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXVIII · Dos libretas, una historia",
-        intro: "Mara escribe en la libreta del barco y, al volver al faro, la de la mesa ya cuenta lo mismo.",
+        intro:
+          "Mara escribe en la libreta del barco y, al volver al faro, la de la mesa ya cuenta lo mismo.",
         items: [
           "Sincronizar dispositivos (Ajustes → Tus datos): el mismo diario en el móvil y en el ordenador, al día sin hacer nada. Sin cuenta: un código une tus dispositivos, con un QR que el otro escanea con «Escanear el QR», desde la propia app.",
           "Una nube junto a Ajustes dice de un vistazo cómo va: al día, enviando, con cambios por enviar, sin conexión o en pausa, o si hay algo que mirar.",
@@ -105,7 +106,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXVIII · Two notebooks, one story",
-        intro: "Mara writes in the ship's notebook and, back at the lighthouse, the one on the table already tells the same.",
+        intro:
+          "Mara writes in the ship's notebook and, back at the lighthouse, the one on the table already tells the same.",
         items: [
           "Sync your devices (Settings → Your data): the same journal on your phone and your computer, kept up to date by itself. No account: a code links your devices, with a QR code the other one scans with “Scan the QR code”, inside the app.",
           "A cloud beside Settings tells you at a glance how it's going: up to date, sending, changes to send, offline or paused, or something to look at.",
@@ -124,7 +126,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXVII · El relato en limpio",
-        intro: "Mara pasa a limpio la historia del faro: solo lo que ocurrió, sin dados ni preguntas, para leérsela a quien quiera escucharla.",
+        intro:
+          "Mara pasa a limpio la historia del faro: solo lo que ocurrió, sin dados ni preguntas, para leérsela a quien quiera escucharla.",
         items: [
           "En el modo zen, «Exportar el relato» guarda una página web con solo lo que se cuenta, junto a las notas fijas y quién y dónde aparece.",
           "La barra del modo zen aclara que las consecuencias sí se quedan: lo que respondió el oráculo se entiende si lo cuentas en ellas.",
@@ -136,7 +139,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXVII · The story, written up",
-        intro: "Mara writes up the lighthouse story: only what happened, without dice or questions, to read it to whoever wants to listen.",
+        intro:
+          "Mara writes up the lighthouse story: only what happened, without dice or questions, to read it to whoever wants to listen.",
         items: [
           "In zen mode, “Export the story” saves a web page with only what's told, beside the pinned notes and who and where appear.",
           "The zen mode bar makes it clear that consequences stay: what the oracle answered reads well if you tell it in them.",
@@ -172,7 +176,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXVI · El segundo libro",
-        intro: "Mara cierra el primer cuaderno con la tormenta aún a medias. Abre otro en blanco, pero Odile, el faro y el reloj de la tormenta siguen ahí, tal como los dejó.",
+        intro:
+          "Mara cierra el primer cuaderno con la tormenta aún a medias. Abre otro en blanco, pero Odile, el faro y el reloj de la tormenta siguen ahí, tal como los dejó.",
         items: [
           "«Continuar en una aventura nueva», en el menú ⋯ de una aventura: empieza un diario en blanco y se lleva el cuaderno tal como está (notas fijas, personajes, lugares, hilos, relojes, inventario y descripciones), además del oráculo y la mesa de juego. La aventura de antes no cambia.",
           "Modo zen, en el mismo menú (o con la tecla Z en el ordenador): el diario se lee como un relato, sin preguntas, tiradas ni apuntes del cuaderno, y sin la mesa de juego a la vista.",
@@ -185,7 +190,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXVI · The second book",
-        intro: "Mara closes the first notebook with the storm still half-way. She opens a blank one, but Odile, the lighthouse and the storm's clock are all there, just as she left them.",
+        intro:
+          "Mara closes the first notebook with the storm still half-way. She opens a blank one, but Odile, the lighthouse and the storm's clock are all there, just as she left them.",
         items: [
           "“Carry on in a new adventure”, in an adventure's ⋯ menu: it starts a blank journal and takes the notebook as it is (pinned notes, characters, places, threads, clocks, inventory and descriptions), as well as the oracle and the game table. The adventure before stays as it was.",
           "Zen mode, in the same menu (or the Z key on a computer): the journal reads as a story, without questions, rolls or the notebook's bookkeeping, and without the game table in sight.",
@@ -228,7 +234,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXV · Lo que hay en cada mesa",
-        intro: "En la mesa de Ironsworn, los d10 y las tablas de asentamientos; en la del castillo, el d20 y los nombres de nobles. Mara ya no recoge los dados al cambiar de partida.",
+        intro:
+          "En la mesa de Ironsworn, los d10 y las tablas de asentamientos; en la del castillo, el d20 y los nombres de nobles. Mara ya no recoge los dados al cambiar de partida.",
         items: [
           "Cada aventura tiene sus dados y sus tablas a mano en la mesa de juego: «Elegir dados» y «Elegir tablas» abren la lista para quitar y poner los que quieras.",
           "Mientras no elijas nada, salen tus favoritos de siempre, como hasta ahora. En cuanto cambias uno, son solo de esa aventura; «Volver a mis favoritos» lo deshace.",
@@ -238,7 +245,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXV · What's on each table",
-        intro: "On the Ironsworn table, the d10s and the settlement tables; on the castle's, the d20 and the nobles' names. Mara no longer packs the dice away when she switches games.",
+        intro:
+          "On the Ironsworn table, the d10s and the settlement tables; on the castle's, the d20 and the nobles' names. Mara no longer packs the dice away when she switches games.",
         items: [
           "Each adventure keeps its own dice and tables at hand on the game table: “Pick dice” and “Pick tables” open the list to take out and put in whichever you like.",
           "Until you pick anything, your usual favorites are there, as before. As soon as you change one, they're that adventure's own; “Back to my favorites” undoes it.",
@@ -254,7 +262,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXIV · Cada mesa con su oráculo",
-        intro: "Mara lleva dos campañas a la vez y ya no cambia de oráculo cada vez que pasa de una a otra: cada cuaderno guarda el suyo entre las páginas.",
+        intro:
+          "Mara lleva dos campañas a la vez y ya no cambia de oráculo cada vez que pasa de una a otra: cada cuaderno guarda el suyo entre las páginas.",
         items: [
           "Cada aventura recuerda su oráculo: el último que elegiste o usaste en ella. Entras en tu campaña de Ironsworn y está Ironsworn; en la otra, el suyo.",
           "La pantalla del Oráculo usa el de la aventura activa, y al cambiarlo allí cambias el de esa aventura. Al elegir, la ventana te dice para qué aventura es.",
@@ -264,7 +273,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXIV · Each table its oracle",
-        intro: "Mara plays two campaigns at once and no longer switches oracles every time she moves between them: each notebook keeps its own between the pages.",
+        intro:
+          "Mara plays two campaigns at once and no longer switches oracles every time she moves between them: each notebook keeps its own between the pages.",
         items: [
           "Each adventure remembers its oracle: the last one you picked or used in it. Open your Ironsworn campaign and Ironsworn is there; in the other one, its own.",
           "The Oracle screen uses the active adventure's, and changing it there changes that adventure's. When you pick, the window says which adventure it's for.",
@@ -346,7 +356,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXIII · Cada cosa a mano",
-        intro: "Mara despeja la mesa: el cuaderno junto al mapa, los dados al alcance del pulgar, y el diario abierto por la última página.",
+        intro:
+          "Mara despeja la mesa: el cuaderno junto al mapa, los dados al alcance del pulgar, y el diario abierto por la última página.",
         items: [
           "Una aventura se abre donde la dejaste: por la última entrada, con la casilla para escribir justo debajo. La de ejemplo, que es para leerla, se sigue abriendo por el principio.",
           "En el móvil y la tableta, la barra de la aventura se queda arriba mientras lees: volver, buscar, las sesiones, el cuaderno y el menú (⋯), donde ahora también están los Ajustes. Así la barra de abajo deja más sitio para escribir.",
@@ -363,7 +374,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXIII · Everything within reach",
-        intro: "Mara clears the table: the notebook beside the map, the dice by her thumb, and the journal open at the last page.",
+        intro:
+          "Mara clears the table: the notebook beside the map, the dice by her thumb, and the journal open at the last page.",
         items: [
           "An adventure opens where you left it: at the last entry, with the box to write in right below. The sample, which is there to be read, still opens at the beginning.",
           "On phone and tablet, the adventure's bar stays at the top as you read: back, search, sessions, the notebook and the menu (⋯), where Settings now are too. That leaves the bottom bar more room to write.",
@@ -436,7 +448,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXII · La gramática de los cronistas",
-        intro: "El gremio de cronistas ha puesto en limpio su notación, y Mara repasa su diario a la luz del candil. Nada de lo ya escrito cambia.",
+        intro:
+          "El gremio de cronistas ha puesto en limpio su notación, y Mara repasa su diario a la luz del candil. Nada de lo ya escrito cambia.",
         items: [
           "El diario habla Lonelog 1.7 y sus complementos. Lo que escribiste con versiones anteriores se sigue leyendo igual.",
           "Al editar, copiar o exportar, tus tiradas salen como pide Lonelog (2d6+3[4, 2]=9) y las cartas e «Inspírame», como contenido (tbl:). Al volver a importarlas, regresan tal cual.",
@@ -454,7 +467,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXII · The chroniclers' grammar",
-        intro: "The chroniclers' guild has written its notation out fair, and Mara goes over the journal by lamplight. Nothing already written changes.",
+        intro:
+          "The chroniclers' guild has written its notation out fair, and Mara goes over the journal by lamplight. Nothing already written changes.",
         items: [
           "The journal speaks Lonelog 1.7 and its add-ons. What you wrote with earlier versions still reads the same.",
           "Edited, copied or exported, your rolls come out the way Lonelog asks (2d6+3[4, 2]=9), and cards and quick inspiration as content (tbl:). Imported again, they come back as they were.",
@@ -478,7 +492,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XXI · Hueso y tinta negra",
-        intro: "Mara cambia la capa de oro viejo por una negra y, ya puesta, pone en orden sus dados.",
+        intro:
+          "Mara cambia la capa de oro viejo por una negra y, ya puesta, pone en orden sus dados.",
         items: [
           "OSR es ahora la cara de Solo Compass: el icono y el tema de quien llega nuevo, en claro u oscuro según su dispositivo. Si ya jugabas, conservas el tuyo.",
           "En el diario, «La suerte de tus dados» junta los de todas tus aventuras y dice cuál ha sido la bendita y cuál la maldita.",
@@ -490,7 +505,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XXI · Bone and black ink",
-        intro: "Mara trades the old gold cloak for a black one and, while at it, puts the dice in order.",
+        intro:
+          "Mara trades the old gold cloak for a black one and, while at it, puts the dice in order.",
         items: [
           "OSR is now the face of Solo Compass: its icon, and the theme for whoever is new, light or dark as their device. If you already played, you keep yours.",
           "In the journal, “The luck of your dice” brings together those of all your adventures and says which was the blessed one and which the cursed.",
@@ -528,11 +544,15 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Interludio · Cinco dados bastan",
-        items: ["En las estadísticas, cada tipo de dado enseña su gráfica desde que ha caído 5 veces: no hace falta una campaña entera para verla."],
+        items: [
+          "En las estadísticas, cada tipo de dado enseña su gráfica desde que ha caído 5 veces: no hace falta una campaña entera para verla.",
+        ],
       },
       en: {
         title: "Interlude · Five dice will do",
-        items: ["In the statistics, each kind of die shows its chart once it has fallen 5 times: no need for a whole campaign to see it."],
+        items: [
+          "In the statistics, each kind of die shows its chart once it has fallen 5 times: no need for a whole campaign to see it.",
+        ],
       },
     },
   },
@@ -564,7 +584,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XX · Lo que cuentan los dados",
-        intro: "Entre viaje y viaje, Mara abre su cuaderno y se ríe: ya sabía ella que aquel d20 le tenía manía.",
+        intro:
+          "Entre viaje y viaje, Mara abre su cuaderno y se ríe: ya sabía ella que aquel d20 le tenía manía.",
         items: [
           "Las estadísticas de cada aventura miran la suerte de tus dados: si están benditos o malditos, sus rachas, sus golpes de gloria y de infortunio, tu número del destino y cómo se reparten las caras.",
           "También cuentan qué sesiones fueron más extensas, qué personajes y lugares se nombran más y si el oráculo ha sido generoso o tozudo con lo que le preguntaste.",
@@ -576,7 +597,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XX · What the dice tell",
-        intro: "Between journeys, Mara opens her notebook and laughs: she knew that d20 held a grudge.",
+        intro:
+          "Between journeys, Mara opens her notebook and laughs: she knew that d20 held a grudge.",
         items: [
           "Each adventure's statistics look at the luck of your dice: whether they're blessed or cursed, their runs, their strokes of glory and misfortune, your number of fate and how the faces fall.",
           "They also tell which sessions were the longest, which characters and places are named the most, and whether the oracle was generous or stubborn with what you asked.",
@@ -790,7 +812,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Interludio · Marcha atrás",
-        intro: "Mara aprende a desandar sus pasos sin perder el sitio, y a borrar lo escrito sin miedo.",
+        intro:
+          "Mara aprende a desandar sus pasos sin perder el sitio, y a borrar lo escrito sin miedo.",
         items: [
           "En el móvil, ir atrás (el gesto o el botón) con una ventana o un menú abierto lo cierra y te deja donde estabas, en vez de cambiar la pantalla de detrás.",
           "Al editar una entrada o el título de una sesión aparece «Deshacer» un momento, por si te arrepientes: vuelve el texto que tenía. En el ordenador, también con Ctrl+Z.",
@@ -799,7 +822,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Interlude · Retracing steps",
-        intro: "Mara learns to retrace her steps without losing her place, and to rub out what she wrote without fear.",
+        intro:
+          "Mara learns to retrace her steps without losing her place, and to rub out what she wrote without fear.",
         items: [
           "On phones, going back (the gesture or the button) with a window or a menu open closes it and leaves you where you were, instead of changing the screen behind it.",
           "Editing an entry or a session's title shows “Undo” for a moment, in case you change your mind: the text it had comes back. On a computer, Ctrl+Z works too.",
@@ -834,7 +858,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XVII · La vela que no se apaga",
-        intro: "Mara aligera el equipaje, deja una vela encendida junto a los dados y, por fin, firma su diario con un número: el primero de verdad.",
+        intro:
+          "Mara aligera el equipaje, deja una vela encendida junto a los dados y, por fin, firma su diario con un número: el primero de verdad.",
         items: [
           "Nuevas tablas de Ironsmith, de Eric Bright: los oráculos de Ironsworn ampliados (acción, tema, lugares, personajes, problemas del asentamiento, nombres) y tablas propias para la corrupción, misiones, juramentos de misterio, partidas de una sola sesión y la caza de monstruos. En inglés y en español, en su propio bloque.",
           "Quien actúa o habla en el diario («@(Odile) …», «N (Odile): …») lleva a su ficha del cuaderno al tocar su nombre, como las etiquetas; con varios personajes («@(Elara > Jonah)», «@(Elara+Jonah)»), cada nombre lleva a la suya. Y al escribir «@(» o «N (» aparece la lista de personajes para elegir.",
@@ -853,7 +878,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XVII · The candle that stays lit",
-        intro: "Mara travels lighter, leaves a candle burning beside the dice and, at last, signs her journal with a number: the first true one.",
+        intro:
+          "Mara travels lighter, leaves a candle burning beside the dice and, at last, signs her journal with a number: the first true one.",
         items: [
           "New tables from Ironsmith, by Eric Bright: Ironsworn's oracles expanded (action, theme, places, characters, settlement trouble, names) and tables of its own for corruption, quests, mystery vows, one-shots and monster hunting. In English and Spanish, in their own block.",
           "Whoever acts or speaks in the journal (“@(Odile) …”, “N (Odile): …”) opens their notebook entry when you tap their name, like tags do; with several characters (“@(Elara > Jonah)”, “@(Elara+Jonah)”), each name opens its own. And typing “@(” or “N (” brings up the list of characters to pick from.",
@@ -878,7 +904,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XVI · La bolsa de dados y la baraja",
-        intro: "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre, lleva una baraja para los presagios y el diario a su ritmo.",
+        intro:
+          "Mara ya no busca cada vez el dado que necesita: guarda en la bolsa las tiradas de siempre, lleva una baraja para los presagios y el diario a su ritmo.",
         items: [
           "Nueva pestaña «Dados»: los dados de serie, las fórmulas y tus propios dados, con un texto opcional que va delante en el diario (Atletismo 4dF+2, Ataque d20+5). Marca con la estrella tus dados favoritos, de serie o tuyos: son los que salen en la mesa de juego del diario. Una fórmula que escribas allí se guarda como dado con la estrella.",
           "Cartas en la mesa de juego: en los dados, cambia a «Cartas» y saca de una baraja de póker (con comodines si quieres) o de un tarot (con cartas invertidas). Sin repetir, cada carta sale una vez por aventura hasta que barajas; o deja que se repitan. Se apuntan como cualquier tirada, en la notación de cartas de Lonelog.",
@@ -913,7 +940,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XVI · The dice bag and the deck",
-        intro: "Mara no longer hunts for the die she needs: the usual rolls are in her bag, a deck for omens beside them, and the journal keeps up with her.",
+        intro:
+          "Mara no longer hunts for the die she needs: the usual rolls are in her bag, a deck for omens beside them, and the journal keeps up with her.",
         items: [
           "A new “Dice” tab: built-in dice, formulas and dice of your own, with an optional text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Star your favorite dice, built-in or yours: they're the ones on the journal's game table. A formula you type there is saved as a die with the star.",
           "Cards on the game table: in the dice, switch to “Cards” and draw from a deck of playing cards (with jokers if you like) or a tarot (with reversed cards). With no repeats, each card comes out once per adventure until you shuffle; or let them repeat. They're logged like any roll, in Lonelog's card notation.",
@@ -954,7 +982,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XV · Cuatro voces en la niebla",
-        intro: "Mara ya no consulta a un solo oráculo: en la encrucijada la esperan cuatro, cada uno con su manera de responder.",
+        intro:
+          "Mara ya no consulta a un solo oráculo: en la encrucijada la esperan cuatro, cada uno con su manera de responder.",
         items: [
           "Tres oráculos nuevos, además de Recluse: Loner (dados de oportunidad y riesgo, con giros cuando salen dobles), el «Pregunta al oráculo» de Ironsworn (un d100) y One Page Solo Engine (dos d6, el más sencillo). Se cambian tocando el nombre del oráculo junto al título.",
           "En Loner, el tercer doble trae un giro: se tiran solas sus tablas de giro y el resultado va al diario con la respuesta.",
@@ -964,7 +993,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "Si quieres, el oráculo pone a prueba cada escena nueva: al crearla, activa «Probar la escena» y tu oráculo dirá si va como esperabas, cambia o se interrumpe. Es opcional y la app recuerda si lo usas.",
           "Escenas dentro de las sesiones: «Nueva escena» en el selector del diario las numera solas (S1, S2…) y aparecen en el índice de sesiones. Un diario importado también trae sus recuerdos (S5a), montajes (S7.1) y tramas paralelas (T2-S1).",
           "El diario entiende todo Lonelog: lo que hace otro personaje (@(Jonah) …), diálogos, comentarios fuera del juego entre paréntesis, textos de la historia entre \\--- y ---\\, tiradas en tablas (tbl:) y generadores (gen:) y respuestas sueltas (-> Sí).",
-          "Nuevo tipo de entrada, «Diálogo»: eliges quién habla (tu personaje, un PNJ del cuaderno u otro cualquiera) y escribes solo sus palabras. Los nombrados hace poco están a un toque y «Otro…» busca entre todos los demás. Se apunta como en Lonelog, N (Odile): \"…\".",
+          'Nuevo tipo de entrada, «Diálogo»: eliges quién habla (tu personaje, un PNJ del cuaderno u otro cualquiera) y escribes solo sus palabras. Los nombrados hace poco están a un toque y «Otro…» busca entre todos los demás. Se apunta como en Lonelog, N (Odile): "…".',
           "Otro tipo de entrada, «Texto de la historia», para lo que se lee dentro del juego (una carta, una inscripción): lo escribes tal cual y se apunta aparte, entre \\--- y ---\\ como en Lonelog.",
           "Mazmorras, combates y recursos: las salas [R:4|despejada], los enemigos [F:Matón|PV 6], los objetos [Inv:Antorcha|3] y el dinero [Wealth:Oro 45] aparecen en el cuaderno con su estado. El inventario tiene −/+ para gastar o conseguir uno.",
           "Los dados entienden todas las fórmulas de Lonelog: descartar (4d6dl1), explosiones acumuladas y penetrantes (d6!!, d6!p), repetir unos (d20ro), mínimos y máximos (4d6min2), críticos marcados (d20cs), multiplicar y paréntesis ((1d6+2)*3), grupos ({d8!!, d6!!}k1) y una descripción tras // («4d6dl1 // Fuerza»). La ayuda «?» las explica una a una.",
@@ -986,7 +1015,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XV · Four voices in the fog",
-        intro: "Mara no longer asks a single oracle: four wait at the crossroads, each with its own way of answering.",
+        intro:
+          "Mara no longer asks a single oracle: four wait at the crossroads, each with its own way of answering.",
         items: [
           "Three new oracles besides Recluse: Loner (Chance and Risk dice, with twists on doubles), Ironsworn's “Ask the Oracle” (a d100) and the One Page Solo Engine (two d6, the simplest). Switch by tapping the oracle's name next to the title.",
           "With Loner, the third double brings a twist: its twist tables are rolled for you and the result goes into the journal with the answer.",
@@ -996,7 +1026,7 @@ export const CHANGELOG: ChangelogEntry[] = [
           "If you like, the oracle tests each new scene: when you create it, turn on “Test the scene” and your oracle says whether it goes as expected, changes or is interrupted. It's optional and the app remembers whether you use it.",
           "Scenes within sessions: “New scene” in the journal's picker numbers them for you (S1, S2…) and they show in the session index. An imported journal brings its flashbacks (S5a), montages (S7.1) and parallel threads (T2-S1) too.",
           "The journal understands all of Lonelog: another character acting (@(Jonah) …), dialogue, out-of-game asides in brackets, in-world text between \\--- and ---\\, table (tbl:) and generator (gen:) rolls and bare answers (-> Yes).",
-          "A new entry type, “Dialogue”: pick who speaks (your character, an NPC from the notebook or anyone else) and type just their words. The ones named lately are one tap away and “Someone else…” searches all the rest. It's logged as in Lonelog, N (Odile): \"…\".",
+          'A new entry type, “Dialogue”: pick who speaks (your character, an NPC from the notebook or anyone else) and type just their words. The ones named lately are one tap away and “Someone else…” searches all the rest. It\'s logged as in Lonelog, N (Odile): "…".',
           "Another entry type, “In-world text”, for what's read inside the game (a letter, an inscription): type it as written and it's logged set apart, between \\--- and ---\\ as in Lonelog.",
           "Dungeons, fights and resources: rooms [R:4|cleared], foes [F:Thug|HP 6], items [Inv:Torch|3] and money [Wealth:Gold 45] show in the notebook with their state. The inventory has −/+ to use up or gain one.",
           "The dice understand every Lonelog formula: dropping (4d6dl1), compounding and penetrating explosions (d6!!, d6!p), rerolling ones (d20ro), minimums and maximums (4d6min2), marked criticals (d20cs), multiplying and parentheses ((1d6+2)*3), groups ({d8!!, d6!!}k1) and a description after // (“4d6dl1 // Strength”). The “?” help explains them one by one.",
@@ -1024,7 +1054,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XIV · Dos velas, un mismo diario",
-        intro: "Mara escribe en la posada y en el camino a la vez, y ninguna de las dos plumas borra lo que anota la otra.",
+        intro:
+          "Mara escribe en la posada y en el camino a la vez, y ninguna de las dos plumas borra lo que anota la otra.",
         items: [
           "Si tienes Solo Compass abierto en dos sitios a la vez (la app instalada y una pestaña del navegador, por ejemplo), lo que apuntas en uno ya no borra lo del otro, y cada uno ve al momento lo que escribes en el otro.",
           "Una copia de seguridad dañada o editada a mano se restaura sin lo que no se pueda leer, en vez de dejar el diario sin abrir.",
@@ -1041,7 +1072,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XIV · Two candles, one journal",
-        intro: "Mara writes at the inn and on the road at once, and neither quill erases what the other wrote.",
+        intro:
+          "Mara writes at the inn and on the road at once, and neither quill erases what the other wrote.",
         items: [
           "With Solo Compass open in two places at once (the installed app and a browser tab, say), what you log in one no longer erases the other's, and each shows what you write in the other right away.",
           "A damaged or hand-edited backup is restored without what can't be read, instead of leaving the journal unable to open.",
@@ -1064,7 +1096,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XIII · Lo que se quedó en el tintero",
-        intro: "Mara repasa el diario a la luz de la vela y se da cuenta de que se saltó algo en el molino.",
+        intro:
+          "Mara repasa el diario a la luz de la vela y se da cuenta de que se saltó algo en el molino.",
         items: [
           "Escribe debajo de cualquier entrada: en su menú «⋯», «Escribir debajo», y lo siguiente que apuntes (también tiradas del oráculo, tablas y dados) va ahí, una tras otra. «Volver al final» te devuelve al presente.",
           "Sube o baja una entrada desde el mismo menú; pasando por encima del título de una sesión cambia de sesión.",
@@ -1077,7 +1110,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XIII · What was left unwritten",
-        intro: "Reading her journal by candlelight, Mara realises she skipped something at the mill.",
+        intro:
+          "Reading her journal by candlelight, Mara realises she skipped something at the mill.",
         items: [
           "Write below any entry: in its “⋯” menu, “Write below”, and whatever you log next (oracle, table and dice rolls too) goes there, one after another. “Back to the end” returns you to the present.",
           "Move an entry up or down from the same menu; stepping past a session's title moves it into that session.",
@@ -1096,7 +1130,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XII · Hilos sueltos y relojes que corren",
-        intro: "En el cuaderno de Mara ya no caben solo nombres: también las preguntas sin respuesta y lo que se agota.",
+        intro:
+          "En el cuaderno de Mara ya no caben solo nombres: también las preguntas sin respuesta y lo que se agota.",
         items: [
           "Hilos y relojes en el cuaderno: tramas abiertas ([Thread:La caja sellada|Abierto]), relojes de amenaza ([Clock:Alarma 2/6]), progresos ([Track:Huida 3/8]) y cuentas atrás ([Timer:Amanecer 3]). Súmales o réstales uno con un toque, y cierra un hilo cuando se resuelva.",
           "Tirar en la lista: un dado junto a Personajes, Lugares e Hilos elige uno al azar para cuando el oráculo pregunta «¿quién?» o «¿cuál?».",
@@ -1111,7 +1146,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XII · Loose threads and ticking clocks",
-        intro: "Mara's notebook no longer holds just names: also the unanswered questions and what's running out.",
+        intro:
+          "Mara's notebook no longer holds just names: also the unanswered questions and what's running out.",
         items: [
           "Threads and clocks in the notebook: open plot threads ([Thread:The sealed box|Open]), threat clocks ([Clock:Alarm 2/6]), tracks ([Track:Escape 3/8]) and timers ([Timer:Dawn 3]). Add or take one with a tap, and close a thread once it's resolved.",
           "Roll on the list: a die beside Characters, Places and Threads picks one at random, for when the oracle asks “who?” or “which?”.",
@@ -1132,7 +1168,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo XI · El cuaderno del viajero",
-        intro: "Mara se compró un cuaderno en el mercado del cruce. Ahí apunta a quién ha conocido, dónde ha estado y lo que no quiere olvidar.",
+        intro:
+          "Mara se compró un cuaderno en el mercado del cruce. Ahí apunta a quién ha conocido, dónde ha estado y lo que no quiere olvidar.",
         items: [
           "Cada aventura tiene ahora su cuaderno: en pantallas anchas, a la izquierda del diario; en el móvil, en el botón del cuaderno de la cabecera.",
           "Notas fijas: lo que quieras tener a mano (inventario, pistas, cabos sueltos), siempre a la vista y sin fecha. Una línea que empieza por «- [ ]» se convierte en una casilla que puedes marcar.",
@@ -1144,7 +1181,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter XI · The traveller's notebook",
-        intro: "Mara bought a notebook at the crossroads market. In it she writes down who she's met, where she's been and what she doesn't want to forget.",
+        intro:
+          "Mara bought a notebook at the crossroads market. In it she writes down who she's met, where she's been and what she doesn't want to forget.",
         items: [
           "Every adventure now has its notebook: on wide screens, to the left of the journal; on phones, behind the notebook button in the header.",
           "Pinned notes: what you want at hand (inventory, clues, loose ends), always in sight and undated. A line starting with “- [ ]” becomes a checkbox you can tick.",
@@ -1162,7 +1200,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo X · La biblioteca del viajero",
-        intro: "Llegaron más viajeros a la posada, cada uno con su libro de tablas bajo el brazo, y el posadero les hizo sitio en la estantería.",
+        intro:
+          "Llegaron más viajeros a la posada, cada uno con su libro de tablas bajo el brazo, y el posadero les hizo sitio en la estantería.",
         items: [
           "Más de seiscientas tablas nuevas, en inglés y en español: Ironsworn: Delve (sitios, amenazas, trampas, monstruos), Ironsworn: Starforged y Starsmith (ciencia ficción: planetas, naves, facciones, pecios), Loner (ganchos de aventura, giros y el creador de aventuras), Knave (rasgos de personaje) y el Lazy GM's Resource Document (inicios fuertes, secretos, misiones, mazmorras y pueblos).",
           "Cada juego tiene su bloque en Tablas y solo se carga cuando lo abres o buscas, así que la app sigue arrancando igual de rápido.",
@@ -1172,7 +1211,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter X · The traveller's library",
-        intro: "More travellers came to the inn, each with a book of tables under their arm, and the innkeeper made room for them on the shelf.",
+        intro:
+          "More travellers came to the inn, each with a book of tables under their arm, and the innkeeper made room for them on the shelf.",
         items: [
           "Over six hundred new tables, in English and Spanish: Ironsworn: Delve (sites, threats, traps, monsters), Ironsworn: Starforged and Starsmith (science fiction: planets, starships, factions, derelicts), Loner (adventure hooks, twists and the adventure maker), Knave (character traits) and the Lazy GM's Resource Document (strong starts, secrets, quests, dungeons and towns).",
           "Each game has its own block in Tables and is only loaded when you open it or search, so the app still starts just as fast.",
@@ -1188,7 +1228,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo IX · Juramentos de hierro",
-        intro: "Una viajera de las Tierras de Hierro dejó en la posada su libro de oráculos, traducido a nuestra lengua.",
+        intro:
+          "Una viajera de las Tierras de Hierro dejó en la posada su libro de oráculos, traducido a nuestra lengua.",
         items: [
           "Las tablas de oráculo de Ironsworn, de Shawn Tomkin: Acción y Tema, lugares, asentamientos, personajes, nombres, giros argumentales, Pagar el precio y más. Treinta tablas, en inglés y en español.",
           "Cada juego tiene su propio bloque en Tablas (las tuyas, las de Solo Compass y las de Ironsworn), que se pliega y se despliega. La búsqueda las encuentra todas aunque estén plegadas.",
@@ -1242,7 +1283,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo VII · El cartógrafo y sus tablas",
-        intro: "Un viejo cartógrafo llegó a la posada con un fajo de tablas bajo el brazo… y dejó papel en blanco para las tuyas.",
+        intro:
+          "Un viejo cartógrafo llegó a la posada con un fajo de tablas bajo el brazo… y dejó papel en blanco para las tuyas.",
         items: [
           "Crea tus propias tablas: un resultado por línea, el dado que quieras (o uno con tantas caras como líneas) y rangos como «1-3 Ratas» para que algo salga más a menudo.",
           "Importa tablas desde un archivo o pégalas tal cual, incluso como tabla de Markdown. Puedes exportarlas, compartirlas y anotar de qué juego o libro vienen.",
@@ -1256,7 +1298,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter VII · The cartographer and his tables",
-        intro: "An old cartographer walked into the inn with a bundle of tables under his arm… and left blank pages for yours.",
+        intro:
+          "An old cartographer walked into the inn with a bundle of tables under his arm… and left blank pages for yours.",
         items: [
           "Make your own tables: one result per line, any die you like (or one with as many faces as lines) and ranges like “1-3 Rats” so something comes up more often.",
           "Import tables from a file or paste them as they are, even as a Markdown table. Export them, share them and note which game or book they come from.",
@@ -1440,7 +1483,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter III · Ink and parchment",
-        intro: "Mara asked for quill and parchment: what happens on the road deserves to be written down.",
+        intro:
+          "Mara asked for quill and parchment: what happens on the road deserves to be written down.",
         items: [
           "The adventure journal is born, written in Lonelog notation.",
           "Oracle and table rolls are logged automatically in your active adventure.",
@@ -1456,7 +1500,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     text: {
       es: {
         title: "Capítulo II · Mapas y lenguas",
-        intro: "Un mercader trajo mapas de otras tierras, y en la posada aprendimos a hablar su lengua.",
+        intro:
+          "Un mercader trajo mapas de otras tierras, y en la posada aprendimos a hablar su lengua.",
         items: [
           "Las tablas muestran a qué juego pertenecen, todos sus resultados posibles, un buscador y tus favoritas.",
           "La app habla español e inglés, y elige sola según tu navegador.",
@@ -1465,7 +1510,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       en: {
         title: "Chapter II · Maps and tongues",
-        intro: "A merchant brought maps from other lands, and at the inn we learned to speak his tongue.",
+        intro:
+          "A merchant brought maps from other lands, and at the inn we learned to speak his tongue.",
         items: [
           "Tables show which game they belong to, every possible result, a search box and your favorites.",
           "The app speaks Spanish and English, and picks one based on your browser.",

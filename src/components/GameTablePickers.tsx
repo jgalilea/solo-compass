@@ -28,7 +28,13 @@ const SHOWN = 30;
  * the favourites (and the dialog says so); the first change makes them
  * the adventure's own, "Back to my favorites" undoes that.
  */
-export function GameDicePicker({ adventureId, onClose }: { adventureId: string; onClose: () => void }) {
+export function GameDicePicker({
+  adventureId,
+  onClose,
+}: {
+  adventureId: string;
+  onClose: () => void;
+}) {
   const { t } = useLocaleContext();
   const { adventures, setAdventurePick } = useJournalContext();
   const { rolls: savedRolls, load } = useSavedRollsContext();
@@ -44,9 +50,15 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
     <Modal onClose={onClose} label={t.gameTable.diceTitle} size="lg">
       <DialogHeader title={t.gameTable.diceTitle} Icon={IconDice} onClose={onClose} />
       <DialogBody>
-        <SourceNote tool="dice" source={following ? "favorite" : "adventure"} name={adventure?.name ?? ""} />
+        <SourceNote
+          tool="dice"
+          source={following ? "favorite" : "adventure"}
+          name={adventure?.name ?? ""}
+        />
         <section className="flex flex-col gap-2">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.gameTable.builtin}</h3>
+          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            {t.gameTable.builtin}
+          </h3>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
             {BUILTIN_DICE.map((die) => (
               <button
@@ -56,7 +68,9 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
                 onClick={() => toggle(die)}
                 className={[
                   "relative flex h-16 flex-col items-center justify-center gap-0.5 rounded-xl border text-sm font-medium transition active:scale-95",
-                  on.has(die) ? "border-gold bg-gold/15 text-gold" : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-parchment",
+                  on.has(die)
+                    ? "border-gold bg-gold/15 text-gold"
+                    : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-parchment",
                 ].join(" ")}
               >
                 {on.has(die) && <IconCheck size={13} className="absolute right-1.5 top-1.5" />}
@@ -67,7 +81,9 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
           </div>
         </section>
         <section className="flex flex-col gap-2">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.gameTable.own}</h3>
+          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            {t.gameTable.own}
+          </h3>
           {savedRolls.length === 0 ? (
             <p className="text-sm text-parchment-dim">{t.gameTable.noOwn}</p>
           ) : (
@@ -81,7 +97,9 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
                   title={roll.formula}
                   className={[
                     "flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition active:scale-95 pointer-coarse:h-11",
-                    on.has(roll.id) ? "border-gold bg-gold/15 text-gold" : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-parchment",
+                    on.has(roll.id)
+                      ? "border-gold bg-gold/15 text-gold"
+                      : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-parchment",
                   ].join(" ")}
                 >
                   {on.has(roll.id) && <IconCheck size={14} className="shrink-0" />}
@@ -107,7 +125,13 @@ export function GameDicePicker({ adventureId, onClose }: { adventureId: string; 
  * each with its ×, and a search over every table to add more (the same
  * shape as the generator's editor). Favourites until one is changed.
  */
-export function GameTablesPicker({ adventureId, onClose }: { adventureId: string; onClose: () => void }) {
+export function GameTablesPicker({
+  adventureId,
+  onClose,
+}: {
+  adventureId: string;
+  onClose: () => void;
+}) {
   const { t } = useLocaleContext();
   const { adventures, setAdventurePick } = useJournalContext();
   const [favorites] = useState(loadFavoriteTableIds);
@@ -119,7 +143,14 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
   // Only the games of what's on it, until there's something to search for.
   const onKey = [...on].join(" ");
   const games = useMemo(
-    () => [...new Set(onKey.split(" ").map(gameOfTable).filter((id): id is GameId => id !== undefined))],
+    () => [
+      ...new Set(
+        onKey
+          .split(" ")
+          .map(gameOfTable)
+          .filter((id): id is GameId => id !== undefined),
+      ),
+    ],
     [onKey],
   );
   const { all, blocks } = useMeaningTables(q ? "all" : games);
@@ -140,7 +171,11 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
     <Modal onClose={onClose} label={t.gameTable.tablesTitle} size="lg">
       <DialogHeader title={t.gameTable.tablesTitle} Icon={IconTable} onClose={onClose} />
       <DialogBody>
-        <SourceNote tool="tables" source={following ? "favorite" : "adventure"} name={adventure?.name ?? ""} />
+        <SourceNote
+          tool="tables"
+          source={following ? "favorite" : "adventure"}
+          name={adventure?.name ?? ""}
+        />
         <section className="flex flex-col gap-1.5">
           <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
             {interpolate(t.gameTable.onTable, { count: on.size })}
@@ -152,7 +187,10 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
           ) : (
             <ul className="grid gap-1.5 md:grid-cols-2">
               {chosen.map((table) => (
-                <li key={table.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-border bg-ink-900/50 py-1.5 pl-3 pr-1.5 text-sm">
+                <li
+                  key={table.id}
+                  className="flex min-w-0 items-center gap-2 rounded-xl border border-ink-border bg-ink-900/50 py-1.5 pl-3 pr-1.5 text-sm"
+                >
                   <TableName table={table} />
                   <button
                     type="button"
@@ -169,9 +207,14 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
           )}
         </section>
         <section className="flex flex-col gap-1.5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.gameTable.searchLabel}</h3>
+          <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            {t.gameTable.searchLabel}
+          </h3>
           <div className="relative flex">
-            <IconSearch size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint" />
+            <IconSearch
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint"
+            />
             <input
               type="search"
               value={query}
@@ -184,7 +227,9 @@ export function GameTablesPicker({ adventureId, onClose }: { adventureId: string
           {q &&
             (matches.length === 0 ? (
               <p className="px-1 text-xs text-parchment-faint">
-                {loading ? t.common.loading : interpolate(t.tables.noResultsDescription, { query: query.trim() })}
+                {loading
+                  ? t.common.loading
+                  : interpolate(t.tables.noResultsDescription, { query: query.trim() })}
               </p>
             ) : (
               <ul className="grid gap-1 rounded-xl border border-ink-border/70 p-1 md:grid-cols-2">
@@ -250,7 +295,9 @@ function TableName({ table }: { table: MeaningTable }) {
   return (
     <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
       <span className="truncate text-parchment">{table.name}</span>
-      <span className="shrink-0 text-xs text-parchment-faint">{[table.game.tag, table.dice].filter(Boolean).join(" · ")}</span>
+      <span className="shrink-0 text-xs text-parchment-faint">
+        {[table.game.tag, table.dice].filter(Boolean).join(" · ")}
+      </span>
     </span>
   );
 }

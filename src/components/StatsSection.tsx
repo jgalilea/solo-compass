@@ -1,5 +1,9 @@
 import { useState, type ReactNode } from "react";
-import { loadFoldedNotebookSections, toggleFoldedNotebookSection, type StatsBlock } from "../lib/notebookSections";
+import {
+  loadFoldedNotebookSections,
+  toggleFoldedNotebookSection,
+  type StatsBlock,
+} from "../lib/notebookSections";
 import { IconChevronRight } from "./icons/Icons";
 
 /** A block of the statistics: its heading folds it, and that's kept per device. */

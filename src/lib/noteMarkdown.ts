@@ -45,15 +45,29 @@ export function parseInline(text: string): InlineNode[] {
   };
   let last = 0;
   for (const match of text.matchAll(INLINE)) {
-    const [whole, escaped, code, linkText, href, strong, strongUnderscore, struck, em, emUnderscore, url] = match;
+    const [
+      whole,
+      escaped,
+      code,
+      linkText,
+      href,
+      strong,
+      strongUnderscore,
+      struck,
+      em,
+      emUnderscore,
+      url,
+    ] = match;
     push(text.slice(last, match.index));
     if (escaped !== undefined) push(escaped);
     else if (code !== undefined) nodes.push({ kind: "code", text: code });
-    else if (href !== undefined) nodes.push({ kind: "link", href, children: parseInline(linkText) });
+    else if (href !== undefined)
+      nodes.push({ kind: "link", href, children: parseInline(linkText) });
     else if (strong !== undefined || strongUnderscore !== undefined)
       nodes.push({ kind: "strong", children: parseInline(strong ?? strongUnderscore) });
     else if (struck !== undefined) nodes.push({ kind: "del", children: parseInline(struck) });
-    else if (em !== undefined || emUnderscore !== undefined) nodes.push({ kind: "em", children: parseInline(em ?? emUnderscore) });
+    else if (em !== undefined || emUnderscore !== undefined)
+      nodes.push({ kind: "em", children: parseInline(em ?? emUnderscore) });
     else nodes.push({ kind: "link", href: url, children: [{ kind: "text", text: url }] });
     last = match.index + whole.length;
   }
@@ -63,7 +77,9 @@ export function parseInline(text: string): InlineNode[] {
 
 /** The text without its marks, as it reads. */
 export function inlinePlainText(nodes: InlineNode[]): string {
-  return nodes.map((node) => ("children" in node ? inlinePlainText(node.children) : node.text)).join("");
+  return nodes
+    .map((node) => ("children" in node ? inlinePlainText(node.children) : node.text))
+    .join("");
 }
 
 export type NoteLine =
@@ -86,14 +102,26 @@ function depthOf(lead: string): number {
 /** What one line of a note is. */
 export function readNoteLine(line: string): NoteLine {
   const box = line.match(CHECKBOX_LINE);
-  if (box) return { kind: "check", checked: box[2] !== " ", text: box[3], depth: depthOf(box[1].match(/^\s*/)![0]) };
+  if (box)
+    return {
+      kind: "check",
+      checked: box[2] !== " ",
+      text: box[3],
+      depth: depthOf(box[1].match(/^\s*/)![0]),
+    };
   if (/^\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) return { kind: "rule" };
   const bullet = line.match(/^(\s*)[-*+] (.*)$/);
   if (bullet) return { kind: "bullet", text: bullet[2], depth: depthOf(bullet[1]) };
   const ordered = line.match(/^(\s*)(\d{1,3}[.)]) (.*)$/);
-  if (ordered) return { kind: "ordered", marker: ordered[2], text: ordered[3], depth: depthOf(ordered[1]) };
+  if (ordered)
+    return { kind: "ordered", marker: ordered[2], text: ordered[3], depth: depthOf(ordered[1]) };
   const heading = line.match(/^\s{0,3}(#{1,6}) (.*)$/);
-  if (heading) return { kind: "heading", level: Math.min(3, heading[1].length) as 1 | 2 | 3, text: heading[2] };
+  if (heading)
+    return {
+      kind: "heading",
+      level: Math.min(3, heading[1].length) as 1 | 2 | 3,
+      text: heading[2],
+    };
   const quote = line.match(/^\s{0,3}> ?(.*)$/);
   if (quote) return { kind: "quote", text: quote[1] };
   return line.trim() ? { kind: "text", text: line } : { kind: "gap" };
@@ -103,8 +131,9 @@ export function readNoteLine(line: string): NoteLine {
 export function toggleNoteCheckbox(notes: string, index: number): string {
   const lines = notes.split("\n");
   if (index < 0 || index >= lines.length) return notes;
-  lines[index] = lines[index].replace(CHECKBOX_LINE, (_, lead: string, mark: string, rest: string) =>
-    `${lead}[${mark === " " ? "x" : " "}] ${rest}`,
+  lines[index] = lines[index].replace(
+    CHECKBOX_LINE,
+    (_, lead: string, mark: string, rest: string) => `${lead}[${mark === " " ? "x" : " "}] ${rest}`,
   );
   return lines.join("\n");
 }

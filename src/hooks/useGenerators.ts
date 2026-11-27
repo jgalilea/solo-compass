@@ -25,11 +25,13 @@ export function useGenerators() {
   const [status, setStatus] = useState<GeneratorsStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const failSave = useCallback(
-    (err: unknown) => setError(err instanceof GeneratorsStorageError ? err.message : t.history.genericSaveError),
+    (err: unknown) =>
+      setError(err instanceof GeneratorsStorageError ? err.message : t.history.genericSaveError),
     [t],
   );
   const save = useCallback(
-    (prev: Generator[], next: Generator[]) => saveGeneratorChanges(t, prev, next).then(() => announceChange("generators")),
+    (prev: Generator[], next: Generator[]) =>
+      saveGeneratorChanges(t, prev, next).then(() => announceChange("generators")),
     [t],
   );
   const { items, version, setLoaded, update: updateStored } = useStoredList(save, failSave);
@@ -105,7 +107,14 @@ export function useGenerators() {
     (id: string, draft: GeneratorDraft) => {
       update((prev) =>
         prev.map((x) =>
-          x.id === id ? { ...x, name: draft.name.trim(), tableIds: [...new Set(draft.tableIds)], updatedAt: Date.now() } : x,
+          x.id === id
+            ? {
+                ...x,
+                name: draft.name.trim(),
+                tableIds: [...new Set(draft.tableIds)],
+                updatedAt: Date.now(),
+              }
+            : x,
         ),
       );
     },
@@ -129,5 +138,14 @@ export function useGenerators() {
     [update],
   );
 
-  return { status, error, generators: items, load, addGenerator, updateGenerator, removeGenerator, restoreGenerator };
+  return {
+    status,
+    error,
+    generators: items,
+    load,
+    addGenerator,
+    updateGenerator,
+    removeGenerator,
+    restoreGenerator,
+  };
 }

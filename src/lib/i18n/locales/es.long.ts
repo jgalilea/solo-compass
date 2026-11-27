@@ -14,14 +14,18 @@ export const esLong: LongTexts = {
     linkFromUrlTitle: "¿Vincular este dispositivo?",
     linkFromUrl:
       "Has abierto un enlace con un código de sincronización. Vincula solo si el código es tuyo: lo que hay en este dispositivo se juntará con lo de ese código, y podrá leerlo quien lo tenga.",
-    alreadyLinked: "Este dispositivo ya se sincroniza con otro código: si vinculas este, dejará de usar el anterior.",
+    alreadyLinked:
+      "Este dispositivo ya se sincroniza con otro código: si vinculas este, dejará de usar el anterior.",
     linkFromScan:
       "Has escaneado un código de sincronización. Vincula solo si es tuyo: lo que hay en este dispositivo se juntará con lo de ese código, y podrá leerlo quien lo tenga.",
     scanQr: "Escanear el QR",
     scanTitle: "Escanea el QR de tu otro dispositivo",
-    scanHint: "Apunta la cámara al QR que muestra tu otro dispositivo en Ajustes → Sincronizar dispositivos → «Ver el código». La imagen no sale de este dispositivo.",
-    scanNotCode: "Ese QR no es un código de sincronización de Solo Compass. Apunta al que muestra tu otro dispositivo.",
-    scanDenied: "Solo Compass no tiene permiso para usar la cámara. Dáselo en los ajustes del navegador, o escribe el código con «Ya tengo un código».",
+    scanHint:
+      "Apunta la cámara al QR que muestra tu otro dispositivo en Ajustes → Sincronizar dispositivos → «Ver el código». La imagen no sale de este dispositivo.",
+    scanNotCode:
+      "Ese QR no es un código de sincronización de Solo Compass. Apunta al que muestra tu otro dispositivo.",
+    scanDenied:
+      "Solo Compass no tiene permiso para usar la cámara. Dáselo en los ajustes del navegador, o escribe el código con «Ya tengo un código».",
     scanUnavailable: "No se ha podido abrir la cámara. Escribe el código con «Ya tengo un código».",
     scanCancel: "Cancelar",
     saveTitle: "Guarda este código en un sitio seguro",
@@ -44,7 +48,8 @@ export const esLong: LongTexts = {
     syncing: "Sincronizando…",
     synced: "Sincronizado {when}",
     notYet: "Aún sin sincronizar",
-    pendingNote: "Hay cambios por enviar: salen solos en unos minutos o al salir de la app, o ahora con «Sincronizar ahora».",
+    pendingNote:
+      "Hay cambios por enviar: salen solos en unos minutos o al salir de la app, o ahora con «Sincronizar ahora».",
     offlineTitle: "Sin conexión",
     offline: "Lo que cambies se guarda aquí y se enviará cuando vuelva la conexión.",
     pausedTitle: "Sincronización en pausa",
@@ -56,12 +61,15 @@ export const esLong: LongTexts = {
     pausedDaily:
       "Este dispositivo ha sincronizado hoy muchas más veces de lo normal, así que espera para no gastar el cupo que comparten todos. «Sincronizar ahora» sigue funcionando.",
     backBy: "Volverá sola, como muy tarde a medianoche UTC ({reset} en tu hora).",
-    meanwhile: "Mientras tanto, puedes pasar tus cambios a mano: «Enviar» aquí y, en el otro dispositivo, restaurar con «Juntar».",
+    meanwhile:
+      "Mientras tanto, puedes pasar tus cambios a mano: «Enviar» aquí y, en el otro dispositivo, restaurar con «Juntar».",
     errorTitle: "La sincronización se ha detenido",
     errorFull:
       "La copia del servidor ha llegado a su tamaño máximo y no admite más cambios. Tus datos siguen aquí; cuéntamelo en el formulario de ideas y errores.",
-    errorUpdate: "Otro dispositivo usa una versión más nueva de Solo Compass: actualiza la app aquí para seguir sincronizando.",
-    errorDamaged: "El código guardado en este dispositivo está dañado. Deja de sincronizar aquí y vuelve a vincularlo con tu código.",
+    errorUpdate:
+      "Otro dispositivo usa una versión más nueva de Solo Compass: actualiza la app aquí para seguir sincronizando.",
+    errorDamaged:
+      "El código guardado en este dispositivo está dañado. Deja de sincronizar aquí y vuelve a vincularlo con tu código.",
     errorUnexpected:
       "Algo ha fallado en este dispositivo al sincronizar (quizá su almacenamiento). No se ha perdido nada: lo que falte por enviar o recibir se calcula de nuevo en el siguiente intento.",
     retryAt: "Lo volverá a intentar sola a las {time}, o ahora con «Sincronizar ahora».",
@@ -69,20 +77,24 @@ export const esLong: LongTexts = {
     reportCopied: "Informe copiado",
     reportHint:
       "Si se repite, pégalo en el formulario de ideas y errores (Acerca de). Solo lleva la versión de la app, tu navegador y dónde falló: nada de tu diario.",
-    actionFailed: "No se ha podido hacer: el almacenamiento de este navegador no responde. Vuelve a intentarlo o recarga la app.",
+    actionFailed:
+      "No se ha podido hacer: el almacenamiento de este navegador no responde. Vuelve a intentarlo o recarga la app.",
     staleTitle: "Este dispositivo lleva casi un año sin sincronizar",
     staleText:
       "Lo que borraste en tus otros dispositivos hace tanto ya no se recuerda, y al juntar podría volver. ¿Qué prefieres?",
     staleMerge: "Juntar lo de este dispositivo",
     staleMergeHint: "No se pierde nada, pero puede volver algo que borraste.",
     staleServer: "Quedarme con lo del servidor",
-    staleServerHint: "Lo que solo esté en este dispositivo se pierde: exporta antes una copia si lo quieres.",
+    staleServerHint:
+      "Lo que solo esté en este dispositivo se pierde: exporta antes una copia si lo quieres.",
     closedTitle: "Este dispositivo ya no se sincroniza",
     closed:
       "La sincronización se cerró desde otro dispositivo (quizá cambiaste el código). Tus datos siguen aquí. Para volver, vincúlalo con el código nuevo.",
     closedOk: "Entendido",
-    clockAhead: "La hora de este dispositivo va {minutes} min adelantada: corrígela para que la sincronización sepa qué cambio es el último.",
-    clockBehind: "La hora de este dispositivo va {minutes} min atrasada: corrígela para que la sincronización sepa qué cambio es el último.",
+    clockAhead:
+      "La hora de este dispositivo va {minutes} min adelantada: corrígela para que la sincronización sepa qué cambio es el último.",
+    clockBehind:
+      "La hora de este dispositivo va {minutes} min atrasada: corrígela para que la sincronización sepa qué cambio es el último.",
     moreOptions: "Más opciones",
     changeCode: "Cambiar el código",
     changeCodeTitle: "¿Cambiar el código?",
@@ -90,7 +102,8 @@ export const esLong: LongTexts = {
       "Este dispositivo pasa a un código nuevo y se cierra la copia del anterior. Tus otros dispositivos dejarán de sincronizarse hasta que los vincules con el código nuevo.",
     unlink: "Dejar de sincronizar aquí",
     unlinkTitle: "¿Dejar de sincronizar este dispositivo?",
-    unlinkText: "Tus datos se quedan aquí, y la copia del servidor y tus otros dispositivos siguen como están. Podrás volver con tu código.",
+    unlinkText:
+      "Tus datos se quedan aquí, y la copia del servidor y tus otros dispositivos siguen como están. Podrás volver con tu código.",
     deleteServer: "Borrar la copia del servidor",
     deleteServerTitle: "¿Borrar la copia del servidor?",
     deleteServerText:
@@ -104,7 +117,8 @@ export const esLong: LongTexts = {
     seen: "visto {when}",
     rename: "Cambiar nombre",
     renameLabel: "Nombre de este dispositivo",
-    noOthers: "Aún no ha llegado nada de otro dispositivo: aparecerán aquí cuando sincronicen. Los nombres viajan cifrados, y uno que deja de sincronizar desaparece de la lista a los dos meses.",
+    noOthers:
+      "Aún no ha llegado nada de otro dispositivo: aparecerán aquí cuando sincronicen. Los nombres viajan cifrados, y uno que deja de sincronizar desaparece de la lista a los dos meses.",
     learnMore: "Cómo funciona, seguridad y privacidad",
     help: {
       title: "Cómo funciona la sincronización",
@@ -196,148 +210,333 @@ export const esLong: LongTexts = {
       "[PC:Mara] Mensajera del gremio, rápida y testaruda. Nunca deja un encargo a medias.\n[N:Odile] Posadera del cruce. No se fía del gremio desde que uno de sus mensajeros le dejó una deuda.\n[N:Capa Gris] Alto, voz educada, guantes de cuero fino. Paga en oro y no deja huellas… casi nunca.\n[L:Molino] Molino de agua junto al río, parado desde la crecida de primavera.",
     script: [
       { kind: "session", text: "Sesión 1 · Lluvia en el cruce", date: "2026-10-03" },
-      { kind: "note", text: "(guía: esta aventura enseña todo lo que cabe en un diario. Los comentarios como este explican lo que acabas de ver. Toca una entrada y el lápiz para ver cómo está escrita.)" },
+      {
+        kind: "note",
+        text: "(guía: esta aventura enseña todo lo que cabe en un diario. Los comentarios como este explican lo que acabas de ver. Toca una entrada y el lápiz para ver cómo está escrita.)",
+      },
       { kind: "scene", text: "S1 *La posada del cruce, de noche*" },
-      { kind: "note", text: "[PC:Mara\n| mensajera del gremio\n| PV 8\n| Aceite d8\n| ánimo:alerta\n]" },
-      { kind: "note", text: "(guía: una ficha en varias líneas es el estado completo de alguien. Las palabras sueltas se suman, los números se fijan y lo que va tras dos puntos solo puede ser una cosa a la vez.)" },
-      { kind: "note", text: "Llega empapada a la [L:Posada del cruce]. Lleva [Wealth:Mara|Plata 9|Oro 1], un [Inv:Farol|×1], [Inv:Raciones|×3|días] y [Inv:Cuerda|×1|15 m|dueño:gremio]. El mensajero que debía relevarla, [N:Tobías|mensajero del gremio|desaparecido], no está." },
-      { kind: "note", text: "(guía: personajes, lugares, objetos y dinero van entre corchetes y se reúnen en el cuaderno. El dinero dice de quién es y los objetos, cuántos hay: si no dicen dueño, son de quien lleva el diario.)" },
+      {
+        kind: "note",
+        text: "[PC:Mara\n| mensajera del gremio\n| PV 8\n| Aceite d8\n| ánimo:alerta\n]",
+      },
+      {
+        kind: "note",
+        text: "(guía: una ficha en varias líneas es el estado completo de alguien. Las palabras sueltas se suman, los números se fijan y lo que va tras dos puntos solo puede ser una cosa a la vez.)",
+      },
+      {
+        kind: "note",
+        text: "Llega empapada a la [L:Posada del cruce]. Lleva [Wealth:Mara|Plata 9|Oro 1], un [Inv:Farol|×1], [Inv:Raciones|×3|días] y [Inv:Cuerda|×1|15 m|dueño:gremio]. El mensajero que debía relevarla, [N:Tobías|mensajero del gremio|desaparecido], no está.",
+      },
+      {
+        kind: "note",
+        text: "(guía: personajes, lugares, objetos y dinero van entre corchetes y se reúnen en el cuaderno. El dinero dice de quién es y los objetos, cuántos hay: si no dicen dueño, son de quien lleva el diario.)",
+      },
       { kind: "action", text: "Entro y busco al mensajero con la mirada." },
       { kind: "question", text: "¿Hay alguien despierto a estas horas?" },
       { oracle: [5, 2] },
-      { kind: "consequence", text: "La posadera, [N:Odile|desconfiada], seca jarras tras la barra. Nadie más." },
-      { kind: "note", text: "(guía: pregunta, oráculo y consecuencia van juntas en una tarjeta. Si la respuesta es más o menos probable, se apunta tras la pregunta.)" },
+      {
+        kind: "consequence",
+        text: "La posadera, [N:Odile|desconfiada], seca jarras tras la barra. Nadie más.",
+      },
+      {
+        kind: "note",
+        text: "(guía: pregunta, oráculo y consecuencia van juntas en una tarjeta. Si la respuesta es más o menos probable, se apunta tras la pregunta.)",
+      },
       { table: "descriptor-escena", roll: [5] },
-      { kind: "consequence", text: "El fuego casi apagado, olor a humo viejo. Hace días que aquí no entra nadie." },
-      { kind: "note", text: "PC: \"Busco a Tobías, del gremio. ¿Lo has visto?\"" },
-      { kind: "note", text: "N (Odile): \"Quizá. Dejó una cuenta sin pagar.\"" },
+      {
+        kind: "consequence",
+        text: "El fuego casi apagado, olor a humo viejo. Hace días que aquí no entra nadie.",
+      },
+      { kind: "note", text: 'PC: "Busco a Tobías, del gremio. ¿Lo has visto?"' },
+      { kind: "note", text: 'N (Odile): "Quizá. Dejó una cuenta sin pagar."' },
       { kind: "question", text: "¿Sabe Odile algo del mensajero? (Probable)" },
       { oracle: [[2, 3], 1] },
-      { kind: "consequence", text: "Lo vio salir hace dos noches hacia el [L:Molino|parado], pero no quiere decir con quién." },
+      {
+        kind: "consequence",
+        text: "Lo vio salir hace dos noches hacia el [L:Molino|parado], pero no quiere decir con quién.",
+      },
       { table: "accion-pnj", roll: [5] },
-      { kind: "consequence", text: "Si pago la cuenta que dejó [#N:Tobías], [#N:Odile] me cuenta el resto." },
-      { kind: "note", text: "(guía: con almohadilla solo se nombra a alguien: enlaza con su ficha sin cambiarla. Para cambiarla se escribe su etiqueta sin almohadilla, con el cambio.)" },
+      {
+        kind: "consequence",
+        text: "Si pago la cuenta que dejó [#N:Tobías], [#N:Odile] me cuenta el resto.",
+      },
+      {
+        kind: "note",
+        text: "(guía: con almohadilla solo se nombra a alguien: enlaza con su ficha sin cambiarla. Para cambiarla se escribe su etiqueta sin almohadilla, con el cambio.)",
+      },
       { kind: "action", text: "Intento rebajar la cuenta." },
       { kind: "roll", text: "Regatear +[sonrisa] -[empapada] d20+1=8 vs 12 -> Fallo" },
       { kind: "consequence", text: "No cede. Pago la cuenta entera. [Wealth:Mara|Plata-7]" },
-      { kind: "note", text: "(retcon: la cuenta eran seis monedas, no siete; recupero una y me quedan tres. [Wealth:Mara|Plata+1])" },
-      { kind: "note", text: "(guía: una errata no se borra: se deja la línea como estaba y la corrección va justo debajo.)" },
-      { kind: "note", text: "(guía: lo que va delante de los dados cuenta qué ayuda y qué estorba. Es solo para recordarlo: no cambia la tirada. Detrás, contra qué fue y cómo acabó: el veredicto lo añades tú al editarla.)" },
-      { kind: "note", text: "[#N:Odile] baja la voz: [#N:Tobías] iba con un hombre de capa gris [N:Capa Gris|misterioso].\nSe llevaron una caja sellada. [Thread:La caja sellada|Abierto]" },
+      {
+        kind: "note",
+        text: "(retcon: la cuenta eran seis monedas, no siete; recupero una y me quedan tres. [Wealth:Mara|Plata+1])",
+      },
+      {
+        kind: "note",
+        text: "(guía: una errata no se borra: se deja la línea como estaba y la corrección va justo debajo.)",
+      },
+      {
+        kind: "note",
+        text: "(guía: lo que va delante de los dados cuenta qué ayuda y qué estorba. Es solo para recordarlo: no cambia la tirada. Detrás, contra qué fue y cómo acabó: el veredicto lo añades tú al editarla.)",
+      },
+      {
+        kind: "note",
+        text: "[#N:Odile] baja la voz: [#N:Tobías] iba con un hombre de capa gris [N:Capa Gris|misterioso].\nSe llevaron una caja sellada. [Thread:La caja sellada|Abierto]",
+      },
       { kind: "note", text: "[N:Odile|desconfiada>aliada|debe:favor, posada gratis]" },
       { kind: "note", text: "(todo: preguntar a Odile por el sello de la caja.)" },
-      { kind: "action", text: "Antes de dormir, saco una carta para ver qué me espera en el molino." },
+      {
+        kind: "action",
+        text: "Antes de dormir, saco una carta para ver qué me espera en el molino.",
+      },
       { kind: "note", text: "[Deck:Tarot|×78]" },
       { kind: "roll", text: "tbl: Presagio draw=M16r -> La Torre, invertida" },
       { kind: "note", text: "[Deck:Tarot|×-1|fuera:+M16]" },
-      { kind: "consequence", text: "Algo que debía caer sigue en pie… por ahora. Duermo mal. [PC:Mara|ánimo:inquieta]" },
-      { kind: "note", text: "(guía: la baraja de la app ya sabe qué cartas han salido. La etiqueta de un mazo es para otros mazos tuyos, o para dejarlo escrito, y la llevas tú.)" },
+      {
+        kind: "consequence",
+        text: "Algo que debía caer sigue en pie… por ahora. Duermo mal. [PC:Mara|ánimo:inquieta]",
+      },
+      {
+        kind: "note",
+        text: "(guía: la baraja de la app ya sabe qué cartas han salido. La etiqueta de un mazo es para otros mazos tuyos, o para dejarlo escrito, y la llevas tú.)",
+      },
       { kind: "scene", text: "S1a *Recuerdo: el gremio, hace diez años*" },
-      { kind: "note", text: "N (Tobías): \"Una carta se entrega, aunque arda el puente.\"" },
-      { kind: "note", text: "(guía: una escena con letra es un recuerdo; con un punto y un número, un montaje de momentos sueltos.)" },
+      { kind: "note", text: 'N (Tobías): "Una carta se entrega, aunque arda el puente."' },
+      {
+        kind: "note",
+        text: "(guía: una escena con letra es un recuerdo; con un punto y un número, un montaje de momentos sueltos.)",
+      },
       { kind: "session", text: "Sesión 2 · El molino", date: "2026-10-10" },
       { kind: "scene", text: "S2 *Camino del molino, al alba*" },
       { kind: "question", text: "¿La escena va como esperaba? (Probable)" },
       { oracle: [[3, 1], 5] },
-      { kind: "consequence", text: "Alterada: la crecida se ha llevado el puente y hay que rodear por el bosque. [E:Cae el puente del molino] [Track:Rastro de Tobías 0/4]" },
-      { kind: "note", text: "(guía: un suceso marca un giro de la historia para encontrarlo luego en el cuaderno; un progreso avanza hacia una meta.)" },
+      {
+        kind: "consequence",
+        text: "Alterada: la crecida se ha llevado el puente y hay que rodear por el bosque. [E:Cae el puente del molino] [Track:Rastro de Tobías 0/4]",
+      },
+      {
+        kind: "note",
+        text: "(guía: un suceso marca un giro de la historia para encontrarlo luego en el cuaderno; un progreso avanza hacia una meta.)",
+      },
       { kind: "scene", text: "S2.1 *El bosque, por la mañana*" },
       { table: "clima", roll: [4] },
-      { kind: "consequence", text: "Desayuno algo antes de meterme en la niebla. [Inv:Raciones|×-1]" },
+      {
+        kind: "consequence",
+        text: "Desayuno algo antes de meterme en la niebla. [Inv:Raciones|×-1]",
+      },
       { kind: "action", text: "Enciendo el farol para no perder el sendero." },
       { kind: "roll", text: "Aceite d8=2 -> Baja" },
-      { kind: "consequence", text: "Arde deprisa: queda menos del que creía. [PC:Mara|Aceite d8>d6]" },
-      { kind: "note", text: "(guía: lo que no se cuenta por unidades puede ser un dado: se tira al usarlo y, si sale bajo, pasa al siguiente más pequeño.)" },
-      { kind: "note", text: "(guía: las cuentas van por el nombre del objeto, sea de quien sea. Si otro personaje lleva las suyas, ponles otro nombre, como «Raciones de Nela».)" },
+      {
+        kind: "consequence",
+        text: "Arde deprisa: queda menos del que creía. [PC:Mara|Aceite d8>d6]",
+      },
+      {
+        kind: "note",
+        text: "(guía: lo que no se cuenta por unidades puede ser un dado: se tira al usarlo y, si sale bajo, pasa al siguiente más pequeño.)",
+      },
+      {
+        kind: "note",
+        text: "(guía: las cuentas van por el nombre del objeto, sea de quien sea. Si otro personaje lleva las suyas, ponles otro nombre, como «Raciones de Nela».)",
+      },
       { kind: "scene", text: "S2.2 *La orilla, a mediodía*" },
       { table: "evento-aleatorio", roll: [1, 4] },
-      { kind: "consequence", text: "Huellas de dos personas en el barro, ¿[#N:Tobías] y [#N:Capa Gris]? Y las roderas de un carro pesado. [Track:Rastro de Tobías+1]" },
-      { kind: "roll", text: "tbl: Quién vive en la orilla (d4) [Pescador, Contrabandista, Barquera, Nadie]" },
+      {
+        kind: "consequence",
+        text: "Huellas de dos personas en el barro, ¿[#N:Tobías] y [#N:Capa Gris]? Y las roderas de un carro pesado. [Track:Rastro de Tobías+1]",
+      },
+      {
+        kind: "roll",
+        text: "tbl: Quién vive en la orilla (d4) [Pescador, Contrabandista, Barquera, Nadie]",
+      },
       { kind: "roll", text: "tbl: Quién vive en la orilla d4=3 -> Barquera" },
-      { kind: "note", text: "(guía: una tabla sin resultado es una tabla escrita en el diario: se lee, pero no se tira sola. Con su botón la pasas a tus tablas y la tiras desde la app cuando quieras. Si no, tira tú el dado y apunta lo que sale, como en la línea anterior.)" },
-      { kind: "roll", text: "tbl: La barquera\nAspecto: d6=3 -> Curtida\nQuiere: d6=5 -> Compañía en el viaje\nEsconde: d6=1 -> Un mapa" },
-      { kind: "consequence", text: "Se llama Nela y conoce cada recodo del río. Se viene conmigo. [PC:Nela|barquera|PV 6]" },
-      { kind: "note", text: "PC (Nela): \"Por un techo esta noche, os cruzo.\"" },
-      { kind: "note", text: "PC (Mara, en voz baja): \"Trato hecho.\"" },
+      {
+        kind: "note",
+        text: "(guía: una tabla sin resultado es una tabla escrita en el diario: se lee, pero no se tira sola. Con su botón la pasas a tus tablas y la tiras desde la app cuando quieras. Si no, tira tú el dado y apunta lo que sale, como en la línea anterior.)",
+      },
+      {
+        kind: "roll",
+        text: "tbl: La barquera\nAspecto: d6=3 -> Curtida\nQuiere: d6=5 -> Compañía en el viaje\nEsconde: d6=1 -> Un mapa",
+      },
+      {
+        kind: "consequence",
+        text: "Se llama Nela y conoce cada recodo del río. Se viene conmigo. [PC:Nela|barquera|PV 6]",
+      },
+      { kind: "note", text: 'PC (Nela): "Por un techo esta noche, os cruzo."' },
+      { kind: "note", text: 'PC (Mara, en voz baja): "Trato hecho."' },
       { kind: "note", text: "(guía: con varios personajes tuyos, el diálogo dice cuál habla.)" },
-      { inspiration: [[2, 6], [4, 3]] },
-      { kind: "consequence", text: "Una idea: Capa Gris no quiere a Tobías, quiere lo que esconde la caja. Algo antiguo." },
+      {
+        inspiration: [
+          [2, 6],
+          [4, 3],
+        ],
+      },
+      {
+        kind: "consequence",
+        text: "Una idea: Capa Gris no quiere a Tobías, quiere lo que esconde la caja. Algo antiguo.",
+      },
       { kind: "note", text: "(interp: «antiguo» puede ser el emblema, no el objeto.)" },
       { kind: "scene", text: "T1-S1 *El patio del molino* @(Mara)" },
       { kind: "question", text: "¿El molino está abandonado?" },
       { oracle: [4, 4] },
-      { kind: "consequence", text: "La pregunta partía de una idea falsa: el [L:Molino|parado>habitado] lleva meses sin moler, pero alguien vive en él. Sale humo de la chimenea." },
+      {
+        kind: "consequence",
+        text: "La pregunta partía de una idea falsa: el [L:Molino|parado>habitado] lleva meses sin moler, pero alguien vive en él. Sale humo de la chimenea.",
+      },
       { kind: "question", text: "¿Me han visto llegar? (Improbable)" },
       { oracle: [4, [6, 2]] },
-      { kind: "consequence", text: "Nadie me ha visto y, además, la puerta trasera está entornada. [Clock:Alerta en el molino 0/4]" },
+      {
+        kind: "consequence",
+        text: "Nadie me ha visto y, además, la puerta trasera está entornada. [Clock:Alerta en el molino 0/4]",
+      },
       { kind: "action", text: "Me cuelo por la puerta trasera, pegada a la pared." },
       { kind: "roll", text: "Sigilo 2d20kh1 -> 17 (17, 4✗)" },
-      { kind: "consequence", text: "Dentro, la [R:1|estado:explorada|sala de la rueda|salidas:Arriba R2, Abajo R3]. En un clavo cuelga la bufanda del gremio de Tobías. [Track:Rastro de Tobías+1]" },
-      { kind: "note", text: "(guía: con ventaja se tiran dos dados y se queda el mejor. Al editarla verás la tirada como la escribe Lonelog.)" },
+      {
+        kind: "consequence",
+        text: "Dentro, la [R:1|estado:explorada|sala de la rueda|salidas:Arriba R2, Abajo R3]. En un clavo cuelga la bufanda del gremio de Tobías. [Track:Rastro de Tobías+1]",
+      },
+      {
+        kind: "note",
+        text: "(guía: con ventaja se tiran dos dados y se queda el mejor. Al editarla verás la tirada como la escribe Lonelog.)",
+      },
       { kind: "scene", text: "T2-S1 *El embarcadero, a la vez* @(Nela)" },
       { kind: "action", text: "Vigilo el río por si alguien huye por el agua." },
       { kind: "question", text: "¿Pasa alguna barcaza?" },
       { kind: "roll", text: "-> Yb (3)" },
-      { kind: "consequence", text: "Una, pero está amarrada, cargando. [Timer:Días para la barcaza 4]" },
-      { kind: "note", text: "(guía: con dos tramas a la vez, la T dice cuál es y el nombre del final, quién la vive: sus acciones son de ese personaje. La respuesta de arriba se apuntó abreviada, de un oráculo en papel.)" },
+      {
+        kind: "consequence",
+        text: "Una, pero está amarrada, cargando. [Timer:Días para la barcaza 4]",
+      },
+      {
+        kind: "note",
+        text: "(guía: con dos tramas a la vez, la T dice cuál es y el nombre del final, quién la vive: sus acciones son de ese personaje. La respuesta de arriba se apuntó abreviada, de un oráculo en papel.)",
+      },
       { kind: "scene", text: "T1-S2 *La sala de la rueda*" },
       { kind: "action", text: "(Capa Gris) Baja al sótano con un farol, sin verme." },
       { kind: "roll", text: "tbl: Qué esconde la sala d6=2 -> Una trampilla" },
-      { kind: "consequence", text: "Bajo la rueda, una trampilla huele a río. [R:1|salidas:+Trampilla R4] [R:2|estado:sin explorar]" },
+      {
+        kind: "consequence",
+        text: "Bajo la rueda, una trampilla huele a río. [R:1|salidas:+Trampilla R4] [R:2|estado:sin explorar]",
+      },
       { kind: "session", text: "Sesión 3 · La caja sellada", date: "2026-10-17" },
       { kind: "note", text: "[DUNGEON STATUS]" },
-      { kind: "note", text: "[R:1|estado:explorada|sala de la rueda]\n[R:2|estado:sin explorar|altillo]\n[R:3|estado:cerrada|sótano]\n[R:4|estado:sin explorar|paso al río]" },
+      {
+        kind: "note",
+        text: "[R:1|estado:explorada|sala de la rueda]\n[R:2|estado:sin explorar|altillo]\n[R:3|estado:cerrada|sótano]\n[R:4|estado:sin explorar|paso al río]",
+      },
       { kind: "note", text: "[/DUNGEON STATUS]" },
-      { kind: "note", text: "(guía: el estado de la mazmorra es una foto de todas las salas, para retomarla sin releer. Es opcional.)" },
+      {
+        kind: "note",
+        text: "(guía: el estado de la mazmorra es una foto de todas las salas, para retomarla sin releer. Es opcional.)",
+      },
       { kind: "scene", text: "S3 *La puerta del sótano*" },
-      { kind: "note", text: "(nota: las dos tramas se juntan; desde aquí, cada cual con su nombre.)" },
-      { kind: "action", text: "(Nela > Mara) Nela sostiene el farol mientras Mara busca cómo abrir la puerta." },
+      {
+        kind: "note",
+        text: "(nota: las dos tramas se juntan; desde aquí, cada cual con su nombre.)",
+      },
+      {
+        kind: "action",
+        text: "(Nela > Mara) Nela sostiene el farol mientras Mara busca cómo abrir la puerta.",
+      },
       { kind: "roll", text: "Registrar d20=16 vs 12 -> Éxito" },
       { kind: "consequence", text: "Las bisagras están podridas." },
       { kind: "action", text: "(Mara+Nela) Fuerzan juntas la puerta." },
       { kind: "roll", text: "Fuerza 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)" },
-      { kind: "consequence", text: "La puerta cede con un crujido. [R:3|estado:activa|lleno de sacos|salidas:Arriba R1, Río R4] [Clock:Alerta en el molino+1]" },
-      { kind: "note", text: "(guía: con un signo mayor, la primera ayuda y la segunda tira; con un más, tiran las dos a la vez.)" },
+      {
+        kind: "consequence",
+        text: "La puerta cede con un crujido. [R:3|estado:activa|lleno de sacos|salidas:Arriba R1, Río R4] [Clock:Alerta en el molino+1]",
+      },
+      {
+        kind: "note",
+        text: "(guía: con un signo mayor, la primera ayuda y la segunda tira; con un más, tiran las dos a la vez.)",
+      },
       { kind: "scene", text: "S4 *Pelea entre los sacos* [COMBAT]" },
-      { kind: "note", text: "[PC:Mara|PV 8] [PC:Nela|PV 6]\n[F:Matón|PV 6|pos:Lejos|armado]\n[F:Ratas|×4|pos:Cerca]" },
+      {
+        kind: "note",
+        text: "[PC:Mara|PV 8] [PC:Nela|PV 6]\n[F:Matón|PV 6|pos:Lejos|armado]\n[F:Ratas|×4|pos:Cerca]",
+      },
       { kind: "roll", text: "Iniciativa d20 -> 14, Matón d20 -> 9" },
-      { kind: "note", text: "(guía: si la escena entera es una pelea, se dice en su título y al terminar se cierra. Antes del primer asalto, quién pelea y cómo está.)" },
+      {
+        kind: "note",
+        text: "(guía: si la escena entera es una pelea, se dice en su título y al terminar se cierra. Antes del primer asalto, quién pelea y cómo está.)",
+      },
       { kind: "note", text: "Rd1" },
       { kind: "action", text: "(Mara) Le lanza el farol apagado a la cara." },
       { kind: "roll", text: "Ataque d20=15 vs 12 -> Acierto" },
       { kind: "roll", text: "Daño 1d6+1 -> 5 (4 + 1)" },
-      { kind: "consequence", text: "Le abre la ceja y las ratas se dispersan. [F:Matón|PV-5] [F:Ratas|×-2]" },
+      {
+        kind: "consequence",
+        text: "Le abre la ceja y las ratas se dispersan. [F:Matón|PV-5] [F:Ratas|×-2]",
+      },
       { kind: "action", text: "(Matón) Se le echa encima, garrote en mano." },
       { kind: "roll", text: "Garrote d20=17 vs 12 -> Acierto" },
       { kind: "roll", text: "Daño 1d4 -> 2" },
-      { kind: "consequence", text: "El garrote le alcanza el hombro. [F:Matón|pos:Cerca] [PC:Mara|PV-2|herida]" },
+      {
+        kind: "consequence",
+        text: "El garrote le alcanza el hombro. [F:Matón|pos:Cerca] [PC:Mara|PV-2|herida]",
+      },
       { kind: "note", text: "Rd2" },
       { kind: "action", text: "(Nela) Derriba una pila de sacos sobre él." },
       { kind: "roll", text: "Esquiva d20=6 vs 12 -> Fallo" },
-      { kind: "consequence", text: "Cae bajo los sacos. [F:Matón|derrotado] [F:Ratas|×0] [R:3|estado:despejada]" },
+      {
+        kind: "consequence",
+        text: "Cae bajo los sacos. [F:Matón|derrotado] [F:Ratas|×0] [R:3|estado:despejada]",
+      },
       { table: "complicacion", roll: [13] },
-      { kind: "consequence", text: "El estrépito llega arriba: se oyen pasos. [Clock:Alerta en el molino+2]" },
+      {
+        kind: "consequence",
+        text: "El estrépito llega arriba: se oyen pasos. [Clock:Alerta en el molino+2]",
+      },
       { kind: "note", text: "[/COMBAT]" },
-      { kind: "note", text: "(guía: en cada asalto, quién actúa, su tirada con el veredicto y, aparte, el daño. Lo que cambia se apunta con − y el total se deja para las fotos.)" },
+      {
+        kind: "note",
+        text: "(guía: en cada asalto, quién actúa, su tirada con el veredicto y, aparte, el daño. Lo que cambia se apunta con − y el total se deja para las fotos.)",
+      },
       { kind: "question", text: "¿Está Tobías aquí abajo? (Muy probable)" },
       { oracle: [[1, 6, 4], 2] },
-      { kind: "consequence", text: "Atado junto a la caja: [N:Tobías|-desaparecido|herido]. [#N:Capa Gris] ha huido por el paso del río, [#R:4]. [Track:Rastro de Tobías+2]" },
+      {
+        kind: "consequence",
+        text: "Atado junto a la caja: [N:Tobías|-desaparecido|herido]. [#N:Capa Gris] ha huido por el paso del río, [#R:4]. [Track:Rastro de Tobías+2]",
+      },
       { kind: "action", text: "(Mara) Rompe el sello de la caja." },
       { table: "hallazgo", roll: [12] },
-      { kind: "consequence", text: "Dentro, envuelto en lino, un ciervo de plata: el emblema de una casa noble. Y una carta. [E:Aparece el ciervo de plata] [R:3|estado:+saqueada]" },
-      { kind: "note", text: "\\---\nEl ciervo debe llegar a la capital antes de la luna nueva. El gremio no debe saber nada. La barcaza espera en el embarcadero.\n---\\" },
+      {
+        kind: "consequence",
+        text: "Dentro, envuelto en lino, un ciervo de plata: el emblema de una casa noble. Y una carta. [E:Aparece el ciervo de plata] [R:3|estado:+saqueada]",
+      },
+      {
+        kind: "note",
+        text: "\\---\nEl ciervo debe llegar a la capital antes de la luna nueva. El gremio no debe saber nada. La barcaza espera en el embarcadero.\n---\\",
+      },
       { kind: "note", text: "(guía: un texto de la historia, como esta carta, se lee aparte.)" },
-      { kind: "note", text: "La caja ya no es un misterio. [Thread:La caja sellada|Abierto>Cerrado] Pero alguien paga a Capa Gris. [Thread:¿Quién paga a Capa Gris?|Abierto] [Timer:Días para la barcaza-1]" },
+      {
+        kind: "note",
+        text: "La caja ya no es un misterio. [Thread:La caja sellada|Abierto>Cerrado] Pero alguien paga a Capa Gris. [Thread:¿Quién paga a Capa Gris?|Abierto] [Timer:Días para la barcaza-1]",
+      },
       { kind: "roll", text: "tbl: PNJ d3=2 -> Odile" },
       { kind: "consequence", text: "¿Y si fuera ella quien sabe de quién es el emblema?" },
-      { kind: "note", text: "(guía: el dado de una lista del cuaderno saca uno al azar: un PNJ (los PJ no entran), un lugar o un hilo abierto.)" },
-      { kind: "note", text: "Dejamos la cuerda atada a la trampilla. [Inv:Cuerda|lugar:el molino] [#PC:Nela] cuenta lo que le queda. [PC:Nela|ánimo:cansada] [Wealth:Nela|Plata 2]" },
+      {
+        kind: "note",
+        text: "(guía: el dado de una lista del cuaderno saca uno al azar: un PNJ (los PJ no entran), un lugar o un hilo abierto.)",
+      },
+      {
+        kind: "note",
+        text: "Dejamos la cuerda atada a la trampilla. [Inv:Cuerda|lugar:el molino] [#PC:Nela] cuenta lo que le queda. [PC:Nela|ánimo:cansada] [Wealth:Nela|Plata 2]",
+      },
       { kind: "note", text: "[RESOURCES]" },
-      { kind: "note", text: "[PC:Mara|PV 6|Aceite d6|ánimo:inquieta|herida]\n[PC:Nela|PV 6|ánimo:cansada]\n[Wealth:Mara|Plata 3|Oro 1]\n[Wealth:Nela|Plata 2]\n[Inv:Farol|×1]\n[Inv:Raciones|×2|días]\n[Inv:Cuerda|×1|15 m|dueño:gremio|lugar:el molino]" },
+      {
+        kind: "note",
+        text: "[PC:Mara|PV 6|Aceite d6|ánimo:inquieta|herida]\n[PC:Nela|PV 6|ánimo:cansada]\n[Wealth:Mara|Plata 3|Oro 1]\n[Wealth:Nela|Plata 2]\n[Inv:Farol|×1]\n[Inv:Raciones|×2|días]\n[Inv:Cuerda|×1|15 m|dueño:gremio|lugar:el molino]",
+      },
       { kind: "note", text: "[/RESOURCES]" },
-      { kind: "note", text: "(guía: los recursos son una foto de cómo estáis y lo que lleváis, para cerrar la sesión y retomarla sin releer. Es opcional: el cuaderno ya lleva la cuenta. El texto entre [RESOURCES] y [/RESOURCES] solo la abre y la cierra.)" },
+      {
+        kind: "note",
+        text: "(guía: los recursos son una foto de cómo estáis y lo que lleváis, para cerrar la sesión y retomarla sin releer. Es opcional: el cuaderno ya lleva la cuenta. El texto entre [RESOURCES] y [/RESOURCES] solo la abre y la cierra.)",
+      },
       { kind: "note", text: "(reflexión: el reloj de alerta ha dado emoción al sótano.)" },
-      { kind: "note", text: "Continuará… ¿Llegaré al embarcadero a tiempo?\nPuedes seguir jugando esta aventura escribiendo abajo, o borrarla desde el menú de opciones (⋯). Toca los nombres resaltados para verlos en el cuaderno, o escribe «[» para nombrar uno; allí también están los hilos, los sucesos, los relojes y lo que lleváis, con − y + para llevar la cuenta. La lista entera de la notación está en la guía rápida." },
+      {
+        kind: "note",
+        text: "Continuará… ¿Llegaré al embarcadero a tiempo?\nPuedes seguir jugando esta aventura escribiendo abajo, o borrarla desde el menú de opciones (⋯). Toca los nombres resaltados para verlos en el cuaderno, o escribe «[» para nombrar uno; allí también están los hilos, los sucesos, los relojes y lo que lleváis, con − y + para llevar la cuenta. La lista entera de la notación está en la guía rápida.",
+      },
     ],
   },
   diceHelp: {
@@ -354,13 +553,25 @@ export const esLong: LongTexts = {
     buttons: [
       { label: "d4 … d20", text: "un dado de ese tamaño; d% es un d100." },
       { label: "4dF", text: "cuatro dados Fudge o Fate (−, 0, +), sumados." },
-      { label: "Ventaja · Desventaja", text: "actívalas y la próxima tirada, sea un dado o una fórmula, se hace dos veces y te quedas con la mayor o la menor: un d20 queda 2d20kh1; 2d6+3, {2d6+3,2d6+3}kh1." },
+      {
+        label: "Ventaja · Desventaja",
+        text: "actívalas y la próxima tirada, sea un dado o una fórmula, se hace dos veces y te quedas con la mayor o la menor: un d20 queda 2d20kh1; 2d6+3, {2d6+3,2d6+3}kh1.",
+      },
     ],
     symbolsHeading: "Cómo se lee una tirada",
     symbols: [
-      { symbol: "=", text: "separa la fórmula del total. «->» va después, si quieres decir cómo acaba: «-> Éxito»." },
-      { symbol: "[ ]", text: "lo que sacó cada dado. En pantalla se ve bajo el total, con los números que se sumaron." },
-      { symbol: "✗ · 2d", text: "dado descartado (kh, kl, dl, dh) o fallo en una reserva: no cuenta." },
+      {
+        symbol: "=",
+        text: "separa la fórmula del total. «->» va después, si quieres decir cómo acaba: «-> Éxito».",
+      },
+      {
+        symbol: "[ ]",
+        text: "lo que sacó cada dado. En pantalla se ve bajo el total, con los números que se sumaron.",
+      },
+      {
+        symbol: "✗ · 2d",
+        text: "dado descartado (kh, kl, dl, dh) o fallo en una reserva: no cuenta.",
+      },
       { symbol: "✓", text: "dado que cuenta como éxito." },
       { symbol: "6!+2", text: "un dado que explotó: sacó 6, se repitió y salió 2; vale 8." },
       { symbol: "1→4", text: "un dado repetido (r, u): sacó 1, se volvió a tirar y vale 4." },
@@ -381,15 +592,22 @@ export const esLong: LongTexts = {
         text: "La tirada de casi todos los juegos: tira los dados, súmalos y añade o resta números. Puedes encadenar tantos términos como quieras, de dados distintos.",
         parts: [
           { token: "2", text: "cuántos dados. Si no pones nada es uno: d20 es 1d20." },
-          { token: "d6", text: "cuántas caras: d4, d6, d8, d10, d12, d20, d100 (o d%), o cualquier otro número." },
-          { token: "+3", text: "un número que se suma; con - se resta. También vale sumar más dados: +1d4." },
+          {
+            token: "d6",
+            text: "cuántas caras: d4, d6, d8, d10, d12, d20, d100 (o d%), o cualquier otro número.",
+          },
+          {
+            token: "+3",
+            text: "un número que se suma; con - se resta. También vale sumar más dados: +1d4.",
+          },
         ],
         examples: [
           { line: "2d6+3 -> 9 (4+2 + 3)", text: "dos d6 (4 y 2) y +3." },
           { line: "d20+5 -> 17 (12 + 5)", text: "un d20 con un bonificador de +5." },
           { line: "1d8+1d6-1 -> 7 (5 + 3 − 1)", text: "dados distintos sumados y un −1." },
         ],
-        usedIn: "D&D y los juegos d20 (d20+5), Powered by the Apocalypse (2d6+2), el daño de casi cualquier arma (1d8+3).",
+        usedIn:
+          "D&D y los juegos d20 (d20+5), Powered by the Apocalypse (2d6+2), el daño de casi cualquier arma (1d8+3).",
       },
       {
         name: "Quedarse con los mayores o los menores",
@@ -399,15 +617,22 @@ export const esLong: LongTexts = {
           { token: "4d6", text: "los dados que tiras: cuatro d6." },
           { token: "kh3", text: "keep highest: quédate con los 3 mayores (k3 es lo mismo)." },
           { token: "kl1", text: "keep lowest: quédate con el menor (o los N menores)." },
-          { token: "dl1 · dh1", text: "drop lowest / drop highest: descarta el menor o el mayor (o los N). 4d6dl1 es lo mismo que 4d6kh3." },
+          {
+            token: "dl1 · dh1",
+            text: "drop lowest / drop highest: descarta el menor o el mayor (o los N). 4d6dl1 es lo mismo que 4d6kh3.",
+          },
         ],
         examples: [
           { line: "4d6kh3 -> 14 (6+5+3, 2✗)", text: "el 2 se descarta y suman los otros tres." },
           { line: "2d20kh1 -> 17 (17, 4✗)", text: "ventaja: el mayor de dos d20." },
           { line: "2d20kl1 -> 4 (4, 17✗)", text: "desventaja: el menor de dos d20." },
-          { line: "4d6dl1 -> 14 (6+5+3, 2✗)", text: "lo mismo dicho al revés: se descarta el menor." },
+          {
+            line: "4d6dl1 -> 14 (6+5+3, 2✗)",
+            text: "lo mismo dicho al revés: se descarta el menor.",
+          },
         ],
-        usedIn: "Crear características en D&D (4d6kh3), ventaja y desventaja (2d20kh1, 2d20kl1), Blades in the Dark (el mayor de tus d6: 3d6kh1).",
+        usedIn:
+          "Crear características en D&D (4d6kh3), ventaja y desventaja (2d20kh1, 2d20kl1), Blades in the Dark (el mayor de tus d6: 3d6kh1).",
       },
       {
         name: "Contar éxitos (reserva de dados)",
@@ -415,8 +640,14 @@ export const esLong: LongTexts = {
         text: "Los dados no se suman: el resultado es cuántos llegan al objetivo. Cada éxito lleva ✓.",
         parts: [
           { token: "5d6", text: "la reserva: cinco d6." },
-          { token: ">=5", text: "es éxito el dado que saque 5 o más. Va detrás de los dados (y de kh, dl…), pero antes de ! o r: pegado a ellos sería su condición." },
-          { token: "> <= <", text: "más que, como mucho y menos que: <=3 cuenta los que sacan 3 o menos." },
+          {
+            token: ">=5",
+            text: "es éxito el dado que saque 5 o más. Va detrás de los dados (y de kh, dl…), pero antes de ! o r: pegado a ellos sería su condición.",
+          },
+          {
+            token: "> <= <",
+            text: "más que, como mucho y menos que: <=3 cuenta los que sacan 3 o menos.",
+          },
           { token: "f<3", text: "tras el objetivo: cada dado por debajo de 3 quita un éxito (✗)." },
         ],
         examples: [
@@ -425,7 +656,8 @@ export const esLong: LongTexts = {
           { line: "4d6<=2 -> 1 (5 2✓ 6 4)", text: "por debajo: cuenta los que sacan 2 o menos." },
           { line: "4d6>4f<3 -> 1 (6✓ 5✓ 2✗ 4)", text: "dos éxitos menos un fallo." },
         ],
-        usedIn: "Shadowrun (Xd6>=5), Vampiro y Mundo de Tinieblas (Xd10>=8 o >=6), Mouse Guard y Burning Wheel (Xd6>=4).",
+        usedIn:
+          "Shadowrun (Xd6>=5), Vampiro y Mundo de Tinieblas (Xd10>=8 o >=6), Mouse Guard y Burning Wheel (Xd6>=4).",
       },
       {
         name: "Dados que explotan",
@@ -434,56 +666,107 @@ export const esLong: LongTexts = {
         parts: [
           { token: "3d6", text: "los dados que tiras." },
           { token: "!", text: "detrás de las caras: esos dados explotan con su cara más alta." },
-          { token: "!>4", text: "con una condición pegada, explotan con lo que la cumpla: aquí, con 5 o 6." },
-          { token: "!!", text: "explosión acumulada: las repeticiones se suman al mismo dado, que cuenta una sola vez." },
+          {
+            token: "!>4",
+            text: "con una condición pegada, explotan con lo que la cumpla: aquí, con 5 o 6.",
+          },
+          {
+            token: "!!",
+            text: "explosión acumulada: las repeticiones se suman al mismo dado, que cuenta una sola vez.",
+          },
           { token: "!p", text: "explosión penetrante: cada repetición vale uno menos." },
         ],
         examples: [
-          { line: "3d6! -> 13 (6!+2+4+1)", text: "el primer dado sacó 6, se repitió y salió 2: vale 8." },
-          { line: "1d8!+1d6! -> 13 (8!+3 + 2)", text: "dos dados distintos que explotan y se suman." },
-          { line: "3d10>=8! -> 3 (10!✓ 9✓ 4 8✓)", text: "éxitos con 8 o más y el 10 explota: su repetición es un éxito más." },
+          {
+            line: "3d6! -> 13 (6!+2+4+1)",
+            text: "el primer dado sacó 6, se repitió y salió 2: vale 8.",
+          },
+          {
+            line: "1d8!+1d6! -> 13 (8!+3 + 2)",
+            text: "dos dados distintos que explotan y se suman.",
+          },
+          {
+            line: "3d10>=8! -> 3 (10!✓ 9✓ 4 8✓)",
+            text: "éxitos con 8 o más y el 10 explota: su repetición es un éxito más.",
+          },
           { line: "d6!! -> 14 (6!+6!+2)", text: "dos seises seguidos: un solo dado que vale 14." },
         ],
-        usedIn: "Savage Worlds (el daño, 1d8!+1d6!, y {d8!!, d6!!}k1 para un rasgo d8 con su dado salvaje), Mundo de Tinieblas (3d10>=8!, «otra vez con 10»), HackMaster (!p).",
+        usedIn:
+          "Savage Worlds (el daño, 1d8!+1d6!, y {d8!!, d6!!}k1 para un rasgo d8 con su dado salvaje), Mundo de Tinieblas (3d10>=8!, «otra vez con 10»), HackMaster (!p).",
       },
       {
         name: "Repetir, limitar y marcar",
         formula: "d6r",
         text: "Retoques sobre lo que sale antes de sumar o contar: repetir los resultados que no quieres, poner un suelo o un techo a los dados y señalar los críticos.",
         parts: [
-          { token: "r · ro", text: "repite el dado mientras saque 1 (ro: solo una vez). Con condición, otros valores: r<3 repite el 1 y el 2." },
-          { token: "u", text: "repite los resultados que ya han salido, hasta que todos sean distintos (uo: solo una vez)." },
-          { token: "min2 · max5", text: "un dado que saque menos de 2 cuenta como 2 (↑); uno que saque más de 5, como 5 (↓)." },
-          { token: "cs · cf", text: "marca los críticos: cs la cara más alta (▲) y cf la más baja (▼); cs>=19, desde 19. No cambian el resultado." },
-          { token: "s · sd", text: "escribe los dados ordenados de menor a mayor (sd: de mayor a menor)." },
+          {
+            token: "r · ro",
+            text: "repite el dado mientras saque 1 (ro: solo una vez). Con condición, otros valores: r<3 repite el 1 y el 2.",
+          },
+          {
+            token: "u",
+            text: "repite los resultados que ya han salido, hasta que todos sean distintos (uo: solo una vez).",
+          },
+          {
+            token: "min2 · max5",
+            text: "un dado que saque menos de 2 cuenta como 2 (↑); uno que saque más de 5, como 5 (↓).",
+          },
+          {
+            token: "cs · cf",
+            text: "marca los críticos: cs la cara más alta (▲) y cf la más baja (▼); cs>=19, desde 19. No cambian el resultado.",
+          },
+          {
+            token: "s · sd",
+            text: "escribe los dados ordenados de menor a mayor (sd: de mayor a menor).",
+          },
         ],
         examples: [
           { line: "d6r -> 4 (1→4)", text: "salió 1, se repitió y salió 4." },
-          { line: "2d10u -> 11 (7+7→4)", text: "el segundo 7 repetía el primero: se volvió a tirar." },
+          {
+            line: "2d10u -> 11 (7+7→4)",
+            text: "el segundo 7 repetía el primero: se volvió a tirar.",
+          },
           { line: "4d6min2 -> 13 (2↑+5+2↑+4)", text: "los dos unos cuentan como 2." },
           { line: "2d20cs>=19 -> 25 (19▲+6)", text: "el 19 es un crítico." },
           { line: "4d6sd -> 15 (6+5+3+1)", text: "los mismos dados, de mayor a menor." },
         ],
-        usedIn: "D&D 5e (el «afortunado» de los medianos, d20ro, y luchar con arma a dos manos, 2d6ro<3), críticos de cualquier d20 (d20cs, d20cf) y tiradas sin repetidos (u).",
+        usedIn:
+          "D&D 5e (el «afortunado» de los medianos, d20ro, y luchar con arma a dos manos, 2d6ro<3), críticos de cualquier d20 (d20cs, d20cf) y tiradas sin repetidos (u).",
       },
       {
         name: "Operaciones, paréntesis y grupos",
         formula: "(1d6+2)*3",
         text: "Para cuentas que no son solo sumar: multiplicar, dividir, agrupar con paréntesis o tirar varias cosas a la vez y comparar sus totales.",
         parts: [
-          { token: "* / % ^", text: "multiplica, divide, resto de la división y potencia. Van antes que + y −, como en el colegio." },
-          { token: "( )", text: "lo de dentro va primero. También deciden cuántos dados o caras: (1d4)d6, 3d(2*6)." },
+          {
+            token: "* / % ^",
+            text: "multiplica, divide, resto de la división y potencia. Van antes que + y −, como en el colegio.",
+          },
+          {
+            token: "( )",
+            text: "lo de dentro va primero. También deciden cuántos dados o caras: (1d4)d6, 3d(2*6).",
+          },
           { token: "{2d6, 1d8}", text: "un grupo: tira cada parte y las suma." },
-          { token: "{…}k1", text: "con k o d detrás, se queda con las partes de mayor total (o descarta las de menor)." },
+          {
+            token: "{…}k1",
+            text: "con k o d detrás, se queda con las partes de mayor total (o descarta las de menor).",
+          },
           { token: "{…}>=15", text: "con un objetivo, cuenta cuántas partes llegan a él." },
         ],
         examples: [
           { line: "(1d6+2)*3 -> 18 ((4 + 2) × 3)", text: "primero el paréntesis, luego por 3." },
           { line: "1d6*10 -> 40 (4 × 10)", text: "un d6 de decenas." },
-          { line: "{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})", text: "dos tiradas enteras; cuenta la de mayor total." },
-          { line: "{3d20+5}>=40 -> 1 ({(11+17+19 + 5)✓})", text: "si el total llega a 40, es un éxito." },
+          {
+            line: "{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})",
+            text: "dos tiradas enteras; cuenta la de mayor total.",
+          },
+          {
+            line: "{3d20+5}>=40 -> 1 ({(11+17+19 + 5)✓})",
+            text: "si el total llega a 40, es un éxito.",
+          },
         ],
-        usedIn: "Daño multiplicado en los críticos de algunos juegos, monedas o distancias a escala (1d6*10), quedarse con la mejor de dos tiradas completas ({…}k1) o contar cuántos ataques superan una defensa.",
+        usedIn:
+          "Daño multiplicado en los críticos de algunos juegos, monedas o distancias a escala (1d6*10), quedarse con la mejor de dos tiradas completas ({…}k1) o contar cuántos ataques superan una defensa.",
       },
       {
         name: "Dados Fudge y d100",
@@ -493,30 +776,44 @@ export const esLong: LongTexts = {
           { token: "4dF", text: "cuatro dados Fudge o Fate." },
           { token: "+2", text: "tu habilidad o aspecto, como en cualquier suma." },
           { token: "d%", text: "un d100, de 1 a 100." },
-          { token: "dF.1", text: "variante del dado Fudge: cuatro caras en blanco, una + y una −." },
+          {
+            token: "dF.1",
+            text: "variante del dado Fudge: cuatro caras en blanco, una + y una −.",
+          },
         ],
         examples: [
           { line: "4dF+1 -> +2 ((+ 0 + −) + 1)", text: "+1 de los dados y +1 de habilidad." },
           { line: "d% -> 42", text: "un d100 suelto: solo el resultado." },
         ],
-        usedIn: "Fate y Fudge (4dF+2), La llamada de Cthulhu, Mythras y otros juegos de porcentaje (d%).",
+        usedIn:
+          "Fate y Fudge (4dF+2), La llamada de Cthulhu, Mythras y otros juegos de porcentaje (d%).",
       },
       {
         name: "Dados especiales",
         formula: "d66 · d7 · d(66)",
         text: "Vale un dado de cualquier número de caras, aunque no exista de verdad. Solo hay una excepción: d66 no es un dado de 66 caras, sino el d66 de toda la vida, dos d6.",
         parts: [
-          { token: "d66", text: "dos d6: el primero son las decenas y el segundo las unidades (del 11 al 66, sin 7, 8, 9 ni 0)." },
+          {
+            token: "d66",
+            text: "dos d6: el primero son las decenas y el segundo las unidades (del 11 al 66, sin 7, 8, 9 ni 0).",
+          },
           { token: "2d66", text: "dos tiradas de d66, sumadas." },
-          { token: "d7", text: "un dado de 7 caras; cambia el 7 por las que quieras: d3, d30, d1000." },
-          { token: "d(66)", text: "con paréntesis, un dado de exactamente esas caras: aquí, del 1 al 66. Para las demás da igual: d(50) es lo mismo que d50." },
+          {
+            token: "d7",
+            text: "un dado de 7 caras; cambia el 7 por las que quieras: d3, d30, d1000.",
+          },
+          {
+            token: "d(66)",
+            text: "con paréntesis, un dado de exactamente esas caras: aquí, del 1 al 66. Para las demás da igual: d(50) es lo mismo que d50.",
+          },
         ],
         examples: [
           { line: "d66 -> 34", text: "un 3 y un 4." },
           { line: "d7 -> 5", text: "un dado de 7 caras." },
           { line: "d(66) -> 47", text: "un solo dado de 66 caras." },
         ],
-        usedIn: "Tablas y sucesos de muchos juegos con d66 y dados raros, como los d3, d5 o d7 de Dungeon Crawl Classics.",
+        usedIn:
+          "Tablas y sucesos de muchos juegos con d66 y dados raros, como los d3, d5 o d7 de Dungeon Crawl Classics.",
       },
     ],
     rulesHeading: "Detalles y límites",
@@ -532,7 +829,8 @@ export const esLong: LongTexts = {
     ],
   },
   guide: {
-    intro: "Cómo escribir en el diario, la mesa de juego de cada aventura, la notación Lonelog que entiende y los atajos de teclado.",
+    intro:
+      "Cómo escribir en el diario, la mesa de juego de cada aventura, la notación Lonelog que entiende y los atajos de teclado.",
     writingHeading: "Escribir en el diario",
     writing: [
       "Elige el tipo de entrada en el selector junto a la casilla: nota, acción, diálogo, consecuencia o texto de la historia; aparte, nueva sesión o nueva escena. En «Diálogo» eliges quién habla y escribes solo sus palabras; en «Texto de la historia», una carta o una inscripción tal cual.",
@@ -558,68 +856,135 @@ export const esLong: LongTexts = {
     notationIntro:
       "El diario se guarda en Lonelog, una notación de texto abierta: lo que escribas así se dibuja a su manera y se exporta tal cual. Lo que no sea notación queda como nota.",
     notation: [
-      { code: "@ Fuerzo la puerta", text: "Una acción de tu personaje (el selector la pone por ti)." },
-      { code: "? ¿Hay alguien dentro? (Probable)", text: "Una pregunta al oráculo y, si quieres, lo probable que es." },
+      {
+        code: "@ Fuerzo la puerta",
+        text: "Una acción de tu personaje (el selector la pone por ti).",
+      },
+      {
+        code: "? ¿Hay alguien dentro? (Probable)",
+        text: "Una pregunta al oráculo y, si quieres, lo probable que es.",
+      },
       { code: "d: 2d6+3=9", text: "Una tirada y su total; con «-> Éxito» detrás, cómo acaba." },
       { code: "=> La puerta cede", text: "La consecuencia de lo anterior." },
       { code: "=== Sesión 2 ===", text: "Una sesión nueva." },
-      { code: "S3 *El sótano, de noche*", text: "Una escena nueva; con [COMBAT] detrás, una pelea. T2-S1 *La ciudad* @(Odile) es otra trama y quién la vive." },
+      {
+        code: "S3 *El sótano, de noche*",
+        text: "Una escena nueva; con [COMBAT] detrás, una pelea. T2-S1 *La ciudad* @(Odile) es otra trama y quién la vive.",
+      },
       { code: "@(Odile) Cierra la puerta", text: "Lo que hace otro personaje." },
-      { code: "N (Odile): \"¿Quién va?\"", text: "Lo que dice un PNJ; «PC:» para el tuyo, o «PC (Mara):» si llevas varios." },
-      { code: "(nota: repasar las reglas)", text: "Un comentario fuera del juego. Con «retcon:» corriges algo ya apuntado sin borrarlo; también «todo:», «house:» o lo que quieras." },
-      { code: "\\--- … ---\\", text: "Texto de la historia, en líneas aparte: una carta, una inscripción." },
-      { code: "tbl: Clima d6=4 -> Niebla", text: "Una tirada que da contenido: de una tabla, de un generador o de varias tablas a la vez." },
-      { code: "tbl: draw=Qs -> Reina de picas", text: "Una carta sacada de la baraja (en los dados, «Cartas»); M16r es La Torre invertida." },
-      { code: "S4 @Me cuelo d:2<4 ->F => hago ruido", text: "Forma compacta: todo en una línea. Al importarla, cada parte es una entrada." },
+      {
+        code: 'N (Odile): "¿Quién va?"',
+        text: "Lo que dice un PNJ; «PC:» para el tuyo, o «PC (Mara):» si llevas varios.",
+      },
+      {
+        code: "(nota: repasar las reglas)",
+        text: "Un comentario fuera del juego. Con «retcon:» corriges algo ya apuntado sin borrarlo; también «todo:», «house:» o lo que quieras.",
+      },
+      {
+        code: "\\--- … ---\\",
+        text: "Texto de la historia, en líneas aparte: una carta, una inscripción.",
+      },
+      {
+        code: "tbl: Clima d6=4 -> Niebla",
+        text: "Una tirada que da contenido: de una tabla, de un generador o de varias tablas a la vez.",
+      },
+      {
+        code: "tbl: draw=Qs -> Reina de picas",
+        text: "Una carta sacada de la baraja (en los dados, «Cartas»); M16r es La Torre invertida.",
+      },
+      {
+        code: "S4 @Me cuelo d:2<4 ->F => hago ruido",
+        text: "Forma compacta: todo en una línea. Al importarla, cada parte es una entrada.",
+      },
       { code: "[COMBAT] · Rd1 · [/COMBAT]", text: "Un combate, ronda a ronda." },
     ],
     tagsHeading: "Etiquetas del cuaderno",
-    tagsIntro: "Van entre corchetes dentro de cualquier entrada. El cuaderno las reúne y lleva el estado de cada una.",
+    tagsIntro:
+      "Van entre corchetes dentro de cualquier entrada. El cuaderno las reúne y lleva el estado de cada una.",
     tags: [
       { code: "[PC:Mara|herida]", text: "Tu personaje." },
       { code: "[N:Odile|desconfiada]", text: "Un personaje no jugador." },
       { code: "[L:Molino|parado]", text: "Un lugar." },
       { code: "[#N:Odile]", text: "Nombrar a alguien ya presentado, sin repetir su estado." },
-      { code: "[Thread:La caja|Abierto]", text: "Un hilo de la trama: Abierto, Cerrado o Abandonado." },
-      { code: "[Clock:Alerta 2/4]", text: "Un reloj que se llena; [Track:Huida 3/8] es un progreso." },
+      {
+        code: "[Thread:La caja|Abierto]",
+        text: "Un hilo de la trama: Abierto, Cerrado o Abandonado.",
+      },
+      {
+        code: "[Clock:Alerta 2/4]",
+        text: "Un reloj que se llena; [Track:Huida 3/8] es un progreso.",
+      },
       { code: "[Timer:Amanecer 3]", text: "Una cuenta atrás." },
-      { code: "[R:3|estado:despejada|sótano|salidas:N R2]", text: "Una sala: su estado, cómo es y sus salidas." },
-      { code: "[F:Matón|PV 6|pos:Cerca]", text: "Un enemigo («×4» para un grupo); «derrotado» o «huido» lo saca de la pelea." },
+      {
+        code: "[R:3|estado:despejada|sótano|salidas:N R2]",
+        text: "Una sala: su estado, cómo es y sus salidas.",
+      },
+      {
+        code: "[F:Matón|PV 6|pos:Cerca]",
+        text: "Un enemigo («×4» para un grupo); «derrotado» o «huido» lo saca de la pelea.",
+      },
       { code: "[E:Cae el puente]", text: "Un suceso: un giro que querrás encontrar." },
       { code: "[Inv:Antorcha|×3]", text: "Un objeto y cuántos llevas." },
       { code: "[Wealth:Mara|Plata 9]", text: "Dinero: de quién y cuánto de cada moneda." },
       { code: "[Deck:Principal|×52]", text: "Un mazo de cartas y las que quedan." },
     ],
     updatesHeading: "Cambiar su estado",
-    updatesIntro: "Vuelve a escribir la etiqueta con el cambio: el cuaderno lo suma todo en el orden del diario.",
+    updatesIntro:
+      "Vuelve a escribir la etiqueta con el cambio: el cuaderno lo suma todo en el orden del diario.",
     updates: [
       { code: "[N:Odile|aliada]", text: "Añade un rasgo (también con «+aliada»)." },
       { code: "[N:Odile|-desconfiada]", text: "Quita un rasgo." },
       { code: "[N:Odile|desconfiada>aliada]", text: "Cambia uno por otro (también con «→»)." },
-      { code: "[N:Odile|ánimo:contenta]", text: "Con nombre y dos puntos, solo vale lo último; «ánimo:+cansada» añade y «ánimo:-contenta» quita." },
+      {
+        code: "[N:Odile|ánimo:contenta]",
+        text: "Con nombre y dos puntos, solo vale lo último; «ánimo:+cansada» añade y «ánimo:-contenta» quita.",
+      },
       { code: "[PC:Mara|PV-2]", text: "Resta a un valor, o suma con «+»; «PV 6» lo fija." },
-      { code: "[Clock:Alerta 3/4]", text: "Un reloj o contador en su nuevo valor (el − y + del cuaderno lo escriben por ti); «Alerta+1» lo avanza." },
-      { code: "[Inv:Antorcha|×-1]", text: "Gasta o consigue objetos; el dinero, con [Wealth:Mara|Plata-6]." },
+      {
+        code: "[Clock:Alerta 3/4]",
+        text: "Un reloj o contador en su nuevo valor (el − y + del cuaderno lo escriben por ti); «Alerta+1» lo avanza.",
+      },
+      {
+        code: "[Inv:Antorcha|×-1]",
+        text: "Gasta o consigue objetos; el dinero, con [Wealth:Mara|Plata-6].",
+      },
     ],
     scopeHeading: "Qué se usa de Lonelog",
-    scopeIntro: "Lonelog es una notación con un núcleo y documentos aparte. Esto es lo que entiende la app (versión 1.7).",
+    scopeIntro:
+      "Lonelog es una notación con un núcleo y documentos aparte. Esto es lo que entiende la app (versión 1.7).",
     scopeUsedLabel: "Se usa",
     scopeUsed: [
-      { code: "Lonelog 1.7", text: "El núcleo, entero: acciones, preguntas, tiradas, tablas, consecuencias, escenas y etiquetas." },
+      {
+        code: "Lonelog 1.7",
+        text: "El núcleo, entero: acciones, preguntas, tiradas, tablas, consecuencias, escenas y etiquetas.",
+      },
       { code: "Combat 1.2", text: "Combates por asaltos y enemigos: [COMBAT], Rd1, [F:…]." },
       { code: "Dungeon Crawling 1.2", text: "Salas y su estado: [R:…], [DUNGEON STATUS]." },
-      { code: "Resource Tracking 1.2", text: "Objetos y dinero: [Inv:…], [Wealth:…], [RESOURCES]." },
+      {
+        code: "Resource Tracking 1.2",
+        text: "Objetos y dinero: [Inv:…], [Wealth:…], [RESOURCES].",
+      },
       { code: "Dice Notation 1.1", text: "Las fórmulas de dados." },
       { code: "Card Notation 1.1", text: "Baraja, tarot y mazos: draw=Qs, [Deck:…]." },
     ],
     scopeApartLabel: "Queda aparte",
     scopeApart: [
-      { code: "Partylog", text: "Partidas en grupo, con director o varios jugadores: «!» y [Party:…]." },
-      { code: "Lorelog", text: "Hechos y saber del mundo (borrador): facciones, rumores, secretos." },
+      {
+        code: "Partylog",
+        text: "Partidas en grupo, con director o varios jugadores: «!» y [Party:…].",
+      },
+      {
+        code: "Lorelog",
+        text: "Hechos y saber del mundo (borrador): facciones, rumores, secretos.",
+      },
       { code: "Maplog", text: "Dibujar mapas durante la partida (borrador)." },
-      { code: "Solo Wargaming", text: "Unidades, batallas y campañas: [Unit:…], [Force:…], [Scenario:…]." },
+      {
+        code: "Solo Wargaming",
+        text: "Unidades, batallas y campañas: [Unit:…], [Force:…], [Scenario:…].",
+      },
     ],
-    scopeNote: "Lo que traiga un diario con esas notaciones no se pierde: lo propio de ellas queda como texto y sale igual al exportar, pero el cuaderno no lo recoge ni lo cuenta.",
+    scopeNote:
+      "Lo que traiga un diario con esas notaciones no se pierde: lo propio de ellas queda como texto y sale igual al exportar, pero el cuaderno no lo recoge ni lo cuenta.",
   },
   oracleHelp: {
     intro: "Cuando no sabes qué pasa en la historia, no lo decidas tú: pregúntaselo al oráculo.",
@@ -638,17 +1003,26 @@ export const esLong: LongTexts = {
       recluse: {
         heading: "Cómo responde Recluse",
         text: "Se tira un dado blanco contra uno negro: si gana el blanco, «Sí»; si gana el negro, «No». Si los dos son bajos (1–3) se añade «pero»; si los dos son altos (4–6), «y además». Lo probable suma dados blancos y lo improbable, negros: cuenta el mayor de cada color.",
-        special: { label: "Contradicción", text: "si empatan, algo que dabas por hecho no es cierto. Replantea la escena." },
+        special: {
+          label: "Contradicción",
+          text: "si empatan, algo que dabas por hecho no es cierto. Replantea la escena.",
+        },
       },
       loner: {
         heading: "Cómo responde Loner",
         text: "Se tira un dado de oportunidad contra uno de riesgo: si gana oportunidad, «Sí»; si gana riesgo, «No». Los dos bajos (1–3), «pero»; los dos altos (4–6), «y además». «Probable» es tener ventaja (un dado de oportunidad más) e «Improbable», desventaja (uno de riesgo más): cuenta el mayor.",
-        special: { label: "Dobles", text: "si empatan es «Sí, pero» y suma uno al contador de giros. Al tercero llega un giro: tira «Giro: sujeto» y «Giro: acción», y el contador vuelve a cero. El contador es uno para todas tus partidas." },
+        special: {
+          label: "Dobles",
+          text: "si empatan es «Sí, pero» y suma uno al contador de giros. Al tercero llega un giro: tira «Giro: sujeto» y «Giro: acción», y el contador vuelve a cero. El contador es uno para todas tus partidas.",
+        },
       },
       ironsworn: {
         heading: "Cómo responde Ironsworn",
         text: "Se tira un d100: es «Sí» si sacas al menos 11 (muy probable, «casi seguro» en el libro), 26 (probable), 51 (equilibrado, «50/50»), 76 (improbable) o 91 (muy improbable, «poca probabilidad»). No tiene «pero» ni «y además».",
-        special: { label: "Coincidencia", text: "si las dos cifras son iguales (11, 22… 99 y 100), ha pasado algo extremo o un giro." },
+        special: {
+          label: "Coincidencia",
+          text: "si las dos cifras son iguales (11, 22… 99 y 100), ha pasado algo extremo o un giro.",
+        },
       },
       opse: {
         heading: "Cómo responde One Page Solo Engine",
@@ -659,7 +1033,8 @@ export const esLong: LongTexts = {
     oddsIntro: "Lo que sale con cada probabilidad, contando todas las tiradas posibles.",
     oddsColumns: { likelihood: "Probabilidad", yes: "Sí", no: "No", and: "y", but: "pero" },
     oddsSpecial: { recluse: "Contradicción", loner: "Dobles", ironsworn: "Coincidencia" },
-    stuck: "¿No se te ocurre nada? Tira la inspiración rápida (Acción + Tema) en Tablas y búscale el sentido.",
+    stuck:
+      "¿No se te ocurre nada? Tira la inspiración rápida (Acción + Tema) en Tablas y búscale el sentido.",
     credit: "{name} es de {author} ({license}). Sus reglas completas, en el original.",
   },
 };

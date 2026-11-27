@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { initialOracleId, loadFavoriteOracleId, saveFavoriteOracleId, saveOracleId } from "./oracles";
+import {
+  initialOracleId,
+  loadFavoriteOracleId,
+  saveFavoriteOracleId,
+  saveOracleId,
+} from "./oracles";
 
 describe("the favorite oracle", () => {
   beforeEach(() => {

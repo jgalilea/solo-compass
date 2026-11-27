@@ -24,9 +24,11 @@ describe("sync code", () => {
 
   it("catches any one character wrong and any two neighbours swapped", () => {
     const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-    const codes = [new Uint8Array(16), new Uint8Array(16).fill(0xff), ...Array.from({ length: 30 }, newSecret)].map((s) =>
-      compactCode(formatCode(s)),
-    );
+    const codes = [
+      new Uint8Array(16),
+      new Uint8Array(16).fill(0xff),
+      ...Array.from({ length: 30 }, newSecret),
+    ].map((s) => compactCode(formatCode(s)));
     // "0Z0…": Luhn mod 32 let a 0 and a Z side by side through, swapped.
     const zeroZed = new Uint8Array(16);
     zeroZed.set([0x07, 0xc0]);

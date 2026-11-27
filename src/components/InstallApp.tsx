@@ -58,7 +58,9 @@ export function InstallAppSettings() {
         </button>
       )}
       {state === "manual" && (
-        <p className="text-sm text-parchment-dim">{isIos() ? t.install.manualIos : t.install.manual}</p>
+        <p className="text-sm text-parchment-dim">
+          {isIos() ? t.install.manualIos : t.install.manual}
+        </p>
       )}
     </div>
   );

@@ -10,7 +10,15 @@
 import { interpolate, LOCALES, type Dictionary } from "./i18n";
 import { TABLE_THEME_NAMES } from "./i18n/tableThemeNames";
 import { normalizeForSearch } from "./text";
-import { diceSides, diceValues, formatRange, TABLE_THEMES, type DiceType, type TableEntry, type TableTheme } from "./tables";
+import {
+  diceSides,
+  diceValues,
+  formatRange,
+  TABLE_THEMES,
+  type DiceType,
+  type TableEntry,
+  type TableTheme,
+} from "./tables";
 import {
   EDITOR_DICE,
   isTableDie,
@@ -34,15 +42,37 @@ export function definitionDraft(t: Dictionary, text: string): CustomTableDraft {
   const list = first.match(/^(.*?)\s*\[(.+)\]\s*$/);
   const head = (list ? list[1] : first).trim();
   const name = head.replace(/\s*\([^()]*\)$/, "").trim() || t.tables.editor.newTitle;
-  const die = head.match(/\(\s*\d*(d(?:\d+|%))\s*\)$/i)?.[1].toLowerCase().replace("%", "100") as DiceType | undefined;
+  const die = head
+    .match(/\(\s*\d*(d(?:\d+|%))\s*\)$/i)?.[1]
+    .toLowerCase()
+    .replace("%", "100") as DiceType | undefined;
   const parsed = list
-    ? { lines: list[2].split(",").map((x) => ({ text: x.trim() })).filter((l) => l.text), mixedRanges: false }
+    ? {
+        lines: list[2]
+          .split(",")
+          .map((x) => ({ text: x.trim() }))
+          .filter((l) => l.text),
+        mixedRanges: false,
+      }
     : parseEntryLines(rest.join("\n"));
-  const attempts = [...(die ? [buildEntries(t, parsed, die)] : []), buildEntries(t, parsed, "auto"), buildEntries(t, { lines: parsed.lines.map((l) => ({ text: l.text })), mixedRanges: false }, "auto")];
+  const attempts = [
+    ...(die ? [buildEntries(t, parsed, die)] : []),
+    buildEntries(t, parsed, "auto"),
+    buildEntries(
+      t,
+      { lines: parsed.lines.map((l) => ({ text: l.text })), mixedRanges: false },
+      "auto",
+    ),
+  ];
   const built = attempts.find((b) => b.ok);
   return built?.ok
     ? { name, description: "", dice: built.dice, entries: built.entries }
-    : { name, description: "", dice: "d1" as DiceType, entries: parsed.lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })) };
+    : {
+        name,
+        description: "",
+        dice: "d1" as DiceType,
+        entries: parsed.lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })),
+      };
 }
 
 /**
@@ -54,7 +84,8 @@ export function parseTheme(value: string | undefined): TableTheme | undefined {
   const wanted = normalizeForSearch(value.trim());
   return TABLE_THEMES.find(
     (theme) =>
-      theme === wanted || LOCALES.some((l) => normalizeForSearch(TABLE_THEME_NAMES[l][theme]) === wanted),
+      theme === wanted ||
+      LOCALES.some((l) => normalizeForSearch(TABLE_THEME_NAMES[l][theme]) === wanted),
   );
 }
 
@@ -71,7 +102,10 @@ const RANGE_CELL = /^(\d+)(?:\s*[-–—]\s*(\d+))?$/;
 
 /** Splits a Markdown table row on unescaped "|" ("\|" is a literal bar). */
 function splitRow(line: string): string[] {
-  const inner = line.trim().replace(/^\|/, "").replace(/(?<!\\)\|$/, "");
+  const inner = line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/(?<!\\)\|$/, "");
   return inner.split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
 }
 
@@ -87,7 +121,11 @@ function toRange(from: string, to: string | undefined): [number, number] {
  * one: otherwise "3 sleepy guards" keeps its number as part of the text.
  * Returns the die found in a Markdown table header ("| d20 | … |"), if any.
  */
-export function parseEntryLines(text: string): { lines: ParsedLine[]; dice?: DiceType; mixedRanges: boolean } {
+export function parseEntryLines(text: string): {
+  lines: ParsedLine[];
+  dice?: DiceType;
+  mixedRanges: boolean;
+} {
   const raw: { ranged?: ParsedLine; plain: string }[] = [];
   let dice: DiceType | undefined;
   let tableRows = 0;
@@ -159,17 +197,29 @@ export function buildEntries(
       if (lines.length === 66) return { ok: false, error: e.errorD66Lines };
       if (lines.length > MAX_TABLE_SIDES) return { ok: false, error: e.errorTooBig };
       const dice = `d${lines.length}` as DiceType;
-      return { ok: true, dice, entries: lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })) };
+      return {
+        ok: true,
+        dice,
+        entries: lines.map((l, i) => ({ range: [i + 1, i + 1], text: l.text })),
+      };
     }
     if (!isTableDie(choice)) return { ok: false, error: e.errorTooBig };
     const values = diceValues(choice);
     if (values.length !== lines.length) {
       return {
         ok: false,
-        error: interpolate(e.errorCount, { dice: choice, expected: values.length, count: lines.length }),
+        error: interpolate(e.errorCount, {
+          dice: choice,
+          expected: values.length,
+          count: lines.length,
+        }),
       };
     }
-    return { ok: true, dice: choice, entries: lines.map((l, i) => ({ range: [values[i], values[i]], text: l.text })) };
+    return {
+      ok: true,
+      dice: choice,
+      entries: lines.map((l, i) => ({ range: [values[i], values[i]], text: l.text })),
+    };
   }
 
   const entries = lines
@@ -229,7 +279,8 @@ export function entriesToText(table: Pick<CustomTable, "dice" | "entries">): str
 export function diceChoiceFor(table: Pick<CustomTable, "dice" | "entries">): DiceChoice {
   const sides = diceSides(table.dice);
   const oneFacePerLine =
-    sides === table.entries.length && table.entries.every((e, i) => e.range[0] === i + 1 && e.range[1] === i + 1);
+    sides === table.entries.length &&
+    table.entries.every((e, i) => e.range[0] === i + 1 && e.range[1] === i + 1);
   return oneFacePerLine && !EDITOR_DICE.includes(table.dice) ? "auto" : table.dice;
 }
 
@@ -344,16 +395,25 @@ function parseJsonTables(t: Dictionary, data: unknown, fallbackName: string): Cu
     }
     // All or none with ranges, as in the text format.
     const usable = lines.every((l) => l.range) ? lines : lines.map((l) => ({ text: l.text }));
-    const dice = typeof v.dice === "string" && (v.dice === "d66" || diceSides(v.dice) > 0) ? (v.dice as DiceType) : "auto";
+    const dice =
+      typeof v.dice === "string" && (v.dice === "d66" || diceSides(v.dice) > 0)
+        ? (v.dice as DiceType)
+        : "auto";
     const built = buildEntries(t, { lines: usable, mixedRanges: false }, dice);
     if (!built.ok) continue;
-    const str = (key: string) => (typeof v[key] === "string" ? (v[key] as string).trim() : undefined);
+    const str = (key: string) =>
+      typeof v[key] === "string" ? (v[key] as string).trim() : undefined;
     drafts.push({
       name: str("name") || fallbackName,
       description: str("description") ?? "",
       dice: built.dice,
       entries: built.entries,
-      source: cleanSource({ name: str("source"), author: str("author"), license: str("license"), url: str("url") }),
+      source: cleanSource({
+        name: str("source"),
+        author: str("author"),
+        license: str("license"),
+        url: str("url"),
+      }),
       theme: parseTheme(str("theme")),
     });
   }

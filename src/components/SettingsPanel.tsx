@@ -1,4 +1,14 @@
-import { Suspense, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
+import {
+  Suspense,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import {
   IconAction,
   IconCast,
@@ -53,7 +63,12 @@ import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { GITHUB_URL, KOFI_URL, feedbackUrl } from "../lib/support";
 import { versionLabel } from "../lib/appVersion";
-import { canKeepScreenOn, isKeepScreenOn, setKeepScreenOn, subscribeKeepScreenOn } from "../lib/wakeLock";
+import {
+  canKeepScreenOn,
+  isKeepScreenOn,
+  setKeepScreenOn,
+  subscribeKeepScreenOn,
+} from "../lib/wakeLock";
 import { smoothBehavior } from "../lib/scrolling";
 import { Switch } from "./Switch";
 
@@ -104,19 +119,20 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
     clearTimeout(jumping.current);
     // Cleared by the scroll it starts; this only covers a jump that doesn't move.
     jumping.current = window.setTimeout(() => (jumping.current = undefined), 300);
-    document.getElementById(`settings-${part}`)?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
+    document
+      .getElementById(`settings-${part}`)
+      ?.scrollIntoView({ behavior: smoothBehavior(), block: "start" });
   }
 
   return (
-    <Modal
-      onClose={onClose}
-      label={t.settings.title}
-      size="lg"
-    >
+    <Modal onClose={onClose} label={t.settings.title} size="lg">
       <DialogHeader title={t.settings.title} onClose={onClose} />
       {/* One column is a long way down: straight to each part, and the
           one being read is marked (filled, like the game table's tabs). */}
-      <nav aria-label={t.settings.title} className="shrink-0 border-b border-ink-border/70 px-3 py-1.5 sm:px-5 lg:hidden">
+      <nav
+        aria-label={t.settings.title}
+        className="shrink-0 border-b border-ink-border/70 px-3 py-1.5 sm:px-5 lg:hidden"
+      >
         <div className="grid grid-cols-4 gap-1 rounded-xl bg-ink-900/60 p-1">
           {PARTS.map((part) => (
             <button
@@ -126,7 +142,9 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
               aria-current={part === current ? "true" : undefined}
               className={[
                 "h-9 truncate rounded-lg px-1 text-[13px] font-medium transition",
-                part === current ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
+                part === current
+                  ? "bg-gold text-ink-950"
+                  : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
             >
               {
@@ -142,49 +160,49 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         </div>
       </nav>
       <DialogBody ref={bodyRef} className="block">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-            <div className="flex flex-col gap-6">
-              <Section part="appearance" title={t.settings.appearanceHeading}>
-                <AppearanceSettings />
-              </Section>
-              <Section title={t.settings.languageHeading}>
-                <LanguageSettings />
-              </Section>
-              <Section title={t.guide.title}>
-                <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
-                  <p className="text-sm text-parchment-dim">{t.guide.settingsText}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      openGuide();
-                    }}
-                    aria-keyshortcuts="?"
-                    className="mt-3 flex items-center gap-1.5 rounded-xl border border-gold/50 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/10"
-                  >
-                    <IconHelp size={16} />
-                    {t.guide.settingsButton}
-                  </button>
-                </div>
-              </Section>
-            </div>
-            <div className="flex flex-col gap-6">
-              <Section part="app" title={t.install.sectionTitle}>
-                <InstallAppSettings />
-              </Section>
-              <Section part="data" title={t.storage.sectionTitle}>
-                <StorageProtectionSettings />
-                <BackupSettings />
-                {/* Its texts are long ones (useLongTexts): a moment, if they aren't here yet. */}
-                <Suspense fallback={null}>
-                  <SyncSettings />
-                </Suspense>
-              </Section>
-              <Section part="about" title={t.settings.aboutHeading}>
-                <AboutSettings />
-              </Section>
-            </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+          <div className="flex flex-col gap-6">
+            <Section part="appearance" title={t.settings.appearanceHeading}>
+              <AppearanceSettings />
+            </Section>
+            <Section title={t.settings.languageHeading}>
+              <LanguageSettings />
+            </Section>
+            <Section title={t.guide.title}>
+              <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+                <p className="text-sm text-parchment-dim">{t.guide.settingsText}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openGuide();
+                  }}
+                  aria-keyshortcuts="?"
+                  className="mt-3 flex items-center gap-1.5 rounded-xl border border-gold/50 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/10"
+                >
+                  <IconHelp size={16} />
+                  {t.guide.settingsButton}
+                </button>
+              </div>
+            </Section>
           </div>
+          <div className="flex flex-col gap-6">
+            <Section part="app" title={t.install.sectionTitle}>
+              <InstallAppSettings />
+            </Section>
+            <Section part="data" title={t.storage.sectionTitle}>
+              <StorageProtectionSettings />
+              <BackupSettings />
+              {/* Its texts are long ones (useLongTexts): a moment, if they aren't here yet. */}
+              <Suspense fallback={null}>
+                <SyncSettings />
+              </Suspense>
+            </Section>
+            <Section part="about" title={t.settings.aboutHeading}>
+              <AboutSettings />
+            </Section>
+          </div>
+        </div>
       </DialogBody>
     </Modal>
   );
@@ -241,7 +259,9 @@ function AppearanceSettings() {
               onClick={() => setMode(option)}
               className={[
                 "rounded-xl px-2 py-2 text-sm font-medium transition",
-                active ? "bg-gold text-ink-950 shadow-sm" : "text-parchment-dim hover:text-parchment",
+                active
+                  ? "bg-gold text-ink-950 shadow-sm"
+                  : "text-parchment-dim hover:text-parchment",
               ].join(" ")}
             >
               {t.modeSwitcher[option]}
@@ -250,7 +270,11 @@ function AppearanceSettings() {
         })}
       </div>
 
-      <div role="radiogroup" aria-label={t.themeSwitcher.dialogTitle} className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+      <div
+        role="radiogroup"
+        aria-label={t.themeSwitcher.dialogTitle}
+        className="grid grid-cols-2 gap-2 lg:grid-cols-1"
+      >
         {THEMES.map((themeInfo) => {
           const active = themeInfo.id === theme;
           const label = t.theme[themeInfo.id];
@@ -274,7 +298,9 @@ function AppearanceSettings() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-parchment">{label.name}</span>
-                <span className="block truncate text-xs text-parchment-dim max-sm:hidden">{label.tagline}</span>
+                <span className="block truncate text-xs text-parchment-dim max-sm:hidden">
+                  {label.tagline}
+                </span>
               </span>
               {active && <IconCheck size={18} className="shrink-0 text-gold" />}
             </button>
@@ -296,7 +322,9 @@ function KeepScreenOnSetting() {
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-900/60 p-4">
       <Switch checked={on} onChange={setKeepScreenOn} describedBy={hintId} className="text-sm">
-        <span className={on ? "font-medium text-parchment" : ""}>{t.settings.keepScreenOnLabel}</span>
+        <span className={on ? "font-medium text-parchment" : ""}>
+          {t.settings.keepScreenOnLabel}
+        </span>
       </Switch>
       <p id={hintId} className="mt-1.5 text-xs text-parchment-faint">
         {t.settings.keepScreenOnHint}
@@ -339,12 +367,21 @@ function BackupSettings() {
   const [lastBackupAt, setLastBackupAt] = useState(loadLastBackupAt);
   // Same rule as the header dot, without the "already seen" snooze.
   const stale = useMemo(
-    () => shouldNudgeBackup(entries.map((e) => e.timestamp), undefined, lastBackupAt, null),
+    () =>
+      shouldNudgeBackup(
+        entries.map((e) => e.timestamp),
+        undefined,
+        lastBackupAt,
+        null,
+      ),
     [entries, lastBackupAt],
   );
   const [exportedFilename, setExportedFilename] = useState<string | null>(null);
   // The backup file just picked, waiting for "merge" or "replace".
-  const [pendingRestore, setPendingRestore] = useState<{ text: string; date: string | null } | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<{
+    text: string;
+    date: string | null;
+  } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -368,7 +405,14 @@ function BackupSettings() {
     const payload = await buildBackup(t);
     const filename = backupFilename();
     try {
-      if ((await shareTextFile(filename, backupText(payload), t.about.shareAllTitle, "application/json")) === "shared") {
+      if (
+        (await shareTextFile(
+          filename,
+          backupText(payload),
+          t.about.shareAllTitle,
+          "application/json",
+        )) === "shared"
+      ) {
         markBackedUp();
       }
     } catch {
@@ -392,7 +436,9 @@ function BackupSettings() {
       const date =
         found.exportedAt === null
           ? null
-          : new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(found.exportedAt);
+          : new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(
+              found.exportedAt,
+            );
       setPendingRestore({ text: found.text, date });
     }
   }
@@ -495,7 +541,9 @@ function AboutSettings() {
     <>
       <p className="text-sm text-parchment-dim">
         {t.about.description}{" "}
-        <span className="whitespace-nowrap text-parchment-faint">{interpolate(t.about.version, { version: versionLabel() })}</span>
+        <span className="whitespace-nowrap text-parchment-faint">
+          {interpolate(t.about.version, { version: versionLabel() })}
+        </span>
       </p>
 
       <ChangelogDialog />

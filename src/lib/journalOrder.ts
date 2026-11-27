@@ -29,7 +29,8 @@ export function compareEntries(a: JournalEntry, b: JournalEntry): number {
 export function appendEntry(entries: JournalEntry[], entry: JournalEntry): JournalEntry[] {
   let timestamp = entry.timestamp;
   for (const e of entries) {
-    if (e.adventureId === entry.adventureId && e.timestamp >= timestamp) timestamp = e.timestamp + 1;
+    if (e.adventureId === entry.adventureId && e.timestamp >= timestamp)
+      timestamp = e.timestamp + 1;
   }
   return [...entries, timestamp === entry.timestamp ? entry : { ...entry, timestamp }];
 }
@@ -92,7 +93,11 @@ export function placeAfter(
  * already at that end. Session titles are entries too, so stepping past
  * one moves the entry into the next or previous session.
  */
-export function placeMoved(sorted: JournalEntry[], id: string, direction: "up" | "down"): Placement | null {
+export function placeMoved(
+  sorted: JournalEntry[],
+  id: string,
+  direction: "up" | "down",
+): Placement | null {
   const index = sorted.findIndex((e) => e.id === id);
   if (index < 0) return null;
   if (direction === "up") {
@@ -109,7 +114,11 @@ export function sortedEntriesOf(entries: JournalEntry[], adventureId: string): J
 }
 
 /** The entries nudged forward to make room (see placeAfter); a nudge counts as an edit. */
-function applyPlacement(entries: JournalEntry[], placement: Placement, now: number): JournalEntry[] {
+function applyPlacement(
+  entries: JournalEntry[],
+  placement: Placement,
+  now: number,
+): JournalEntry[] {
   if (placement.nudged.size === 0) return entries;
   return entries.map((e) => {
     const timestamp = placement.nudged.get(e.id);
@@ -121,7 +130,12 @@ function applyPlacement(entries: JournalEntry[], placement: Placement, now: numb
  * Every entry with `entry` added right after `afterId` in its
  * adventure ("Write below"), or at the end if that entry is gone.
  */
-export function insertEntryAfter(entries: JournalEntry[], entry: JournalEntry, afterId: string, now: number): JournalEntry[] {
+export function insertEntryAfter(
+  entries: JournalEntry[],
+  entry: JournalEntry,
+  afterId: string,
+  now: number,
+): JournalEntry[] {
   const sorted = sortedEntriesOf(entries, entry.adventureId);
   if (!sorted.some((e) => e.id === afterId)) return appendEntry(entries, entry);
   const placement = placeAfter(sorted, afterId, undefined, now);
@@ -133,7 +147,12 @@ export function insertEntryAfter(entries: JournalEntry[], entry: JournalEntry, a
  * list if it can't move. A move counts as an edit (editedAt), so a
  * merged backup keeps the newer order.
  */
-export function moveEntryIn(entries: JournalEntry[], id: string, direction: "up" | "down", now: number): JournalEntry[] {
+export function moveEntryIn(
+  entries: JournalEntry[],
+  id: string,
+  direction: "up" | "down",
+  now: number,
+): JournalEntry[] {
   const moving = entries.find((e) => e.id === id);
   if (!moving) return entries;
   const placement = placeMoved(sortedEntriesOf(entries, moving.adventureId), id, direction);

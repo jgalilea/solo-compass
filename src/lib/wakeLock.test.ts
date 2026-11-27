@@ -43,10 +43,12 @@ function fakeBrowser() {
     /** The browser hides the app (and drops the lock itself), or shows it again. */
     setVisible(visible: boolean) {
       document.visibilityState = visible ? "visible" : "hidden";
-      if (!visible) for (const lock of held) if (!lock.released) {
-        lock.released = true;
-        lock.fire();
-      }
+      if (!visible)
+        for (const lock of held)
+          if (!lock.released) {
+            lock.released = true;
+            lock.fire();
+          }
       for (const listener of docListeners) listener();
     },
   };

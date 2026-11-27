@@ -24,7 +24,8 @@ async function expectNoViolations(page: Page, where: string) {
     .disableRules(DISABLED_RULES)
     .analyze();
   const found = results.violations.map(
-    (v) => `${where}: ${v.id} (${v.impact}) ${v.help}\n${v.nodes.map((n) => `  ${n.target.join(" ")}: ${n.failureSummary?.split("\n").slice(1).join(" ")}`).join("\n")}`,
+    (v) =>
+      `${where}: ${v.id} (${v.impact}) ${v.help}\n${v.nodes.map((n) => `  ${n.target.join(" ")}: ${n.failureSummary?.split("\n").slice(1).join(" ")}`).join("\n")}`,
   );
   expect(found, found.join("\n\n")).toEqual([]);
 }
@@ -34,7 +35,9 @@ async function useTheme(page: Page, theme: string, mode: string) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(
     ([theme, mode]) => {
-      const storage = (globalThis as unknown as { localStorage: { setItem(k: string, v: string): void } }).localStorage;
+      const storage = (
+        globalThis as unknown as { localStorage: { setItem(k: string, v: string): void } }
+      ).localStorage;
       storage.setItem("solo-compass:theme", theme);
       storage.setItem("solo-compass:mode", mode);
     },
@@ -47,14 +50,21 @@ async function openSample(page: Page) {
   await page.goto("./#/diario");
   await expect(page.getByText("Todavía no tienes ninguna aventura")).toBeVisible();
   await expectNoViolations(page, "journal list");
-  await page.getByRole("button", { name: "¿Primera vez? Echa un vistazo a una aventura de ejemplo" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Ejemplo: La posada del cruce" })).toBeVisible();
+  await page
+    .getByRole("button", { name: "¿Primera vez? Echa un vistazo a una aventura de ejemplo" })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Ejemplo: La posada del cruce" }),
+  ).toBeVisible();
 }
 
 for (const theme of THEMES) {
   for (const mode of MODES) {
     test(`main screens pass axe in ${theme}, ${mode}`, async ({ page }, testInfo) => {
-      test.skip(testInfo.project.name === "phone" && theme !== "osr", "every theme on the desktop; OSR on the phone");
+      test.skip(
+        testInfo.project.name === "phone" && theme !== "osr",
+        "every theme on the desktop; OSR on the phone",
+      );
       await useTheme(page, theme, mode);
 
       await page.goto("./");
@@ -113,15 +123,24 @@ test("dialogs pass axe", async ({ page }) => {
   await page.keyboard.press("Escape");
 
   // A backup dropped on the window, and "Replace everything" asking again.
-  const transfer = await page.evaluateHandle((text) => {
-    const page = globalThis as unknown as {
-      DataTransfer: new () => { items: { add(file: object): void } };
-      File: new (parts: unknown[], name: string, options: { type: string }) => object;
-    };
-    const t = new page.DataTransfer();
-    t.items.add(new page.File([text], "copia.json", { type: "application/json" }));
-    return t;
-  }, JSON.stringify({ app: "solo-compass", schemaVersion: 6, exportedAt: "", history: [], journal: { adventures: [], entries: [] } }));
+  const transfer = await page.evaluateHandle(
+    (text) => {
+      const page = globalThis as unknown as {
+        DataTransfer: new () => { items: { add(file: object): void } };
+        File: new (parts: unknown[], name: string, options: { type: string }) => object;
+      };
+      const t = new page.DataTransfer();
+      t.items.add(new page.File([text], "copia.json", { type: "application/json" }));
+      return t;
+    },
+    JSON.stringify({
+      app: "solo-compass",
+      schemaVersion: 6,
+      exportedAt: "",
+      history: [],
+      journal: { adventures: [], entries: [] },
+    }),
+  );
   await page.dispatchEvent("main", "drop", { dataTransfer: transfer });
   await page.getByRole("button", { name: /Sustituir todo/ }).click();
   await expect(page.getByText(/No se puede deshacer/)).toBeVisible();
@@ -131,7 +150,9 @@ test("dialogs pass axe", async ({ page }) => {
 test("the header passes axe in English, with and without an active adventure", async ({ page }) => {
   await useTheme(page, "osr", "dark");
   await page.addInitScript(() => {
-    (globalThis as unknown as { localStorage: { setItem(k: string, v: string): void } }).localStorage.setItem("solo-compass:locale", "en");
+    (
+      globalThis as unknown as { localStorage: { setItem(k: string, v: string): void } }
+    ).localStorage.setItem("solo-compass:locale", "en");
   });
   // No active adventure: the chip says so, and its name starts with what it shows.
   await page.goto("./");
@@ -143,6 +164,8 @@ test("the header passes axe in English, with and without an active adventure", a
   await page.getByPlaceholder("Adventure name").fill("The ford");
   await page.getByRole("button", { name: "Create" }).click();
   await page.goto("./");
-  await expect(page.getByRole("link", { name: /^The ford: go to the active adventure/ })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /^The ford: go to the active adventure/ }),
+  ).toBeVisible();
   await expectNoViolations(page, "header, an adventure active (en)");
 });

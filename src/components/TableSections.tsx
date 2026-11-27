@@ -6,7 +6,15 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import { IconChevronRight, IconClose } from "./icons/Icons";
 
-export function TableSection({ title, actions, children }: { title: ReactNode; actions?: ReactNode; children: ReactNode }) {
+export function TableSection({
+  title,
+  actions,
+  children,
+}: {
+  title: ReactNode;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -25,7 +33,13 @@ export function TableSection({ title, actions, children }: { title: ReactNode; a
  * to that theme. On phones the row scrolls sideways instead of wrapping
  * into several lines.
  */
-export function ThemeFilter({ value, onChange }: { value: TableTheme | null; onChange: (theme: TableTheme | null) => void }) {
+export function ThemeFilter({
+  value,
+  onChange,
+}: {
+  value: TableTheme | null;
+  onChange: (theme: TableTheme | null) => void;
+}) {
   const { t } = useLocaleContext();
   return (
     <FilterChips
@@ -90,7 +104,8 @@ export function FoldingSection({
     onToggle();
     if (open) return;
     requestAnimationFrame(() => {
-      const delta = (panelRef.current?.getBoundingClientRect().top ?? 0) - window.innerHeight * 0.55;
+      const delta =
+        (panelRef.current?.getBoundingClientRect().top ?? 0) - window.innerHeight * 0.55;
       if (delta > 0) window.scrollBy({ top: delta, behavior: smoothBehavior() });
     });
   }
@@ -111,10 +126,18 @@ export function FoldingSection({
           aria-expanded={open}
           className="flex min-h-13 w-full items-center gap-2.5 rounded-2xl px-4 py-2.5 text-left transition hover:bg-ink-800/60"
         >
-          <IconChevronRight size={16} className={`shrink-0 text-gold transition-transform ${open ? "rotate-90" : ""}`} />
-          <span className="min-w-0 flex-1 font-display text-lg leading-snug text-parchment">{title}</span>
+          <IconChevronRight
+            size={16}
+            className={`shrink-0 text-gold transition-transform ${open ? "rotate-90" : ""}`}
+          />
+          <span className="min-w-0 flex-1 font-display text-lg leading-snug text-parchment">
+            {title}
+          </span>
           <span className="shrink-0 text-xs text-parchment-faint">
-            {countText ?? interpolate(count === 1 ? t.tables.sectionCountOne : t.tables.sectionCount, { count })}
+            {countText ??
+              interpolate(count === 1 ? t.tables.sectionCountOne : t.tables.sectionCount, {
+                count,
+              })}
           </span>
         </button>
       </h3>

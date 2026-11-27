@@ -80,7 +80,8 @@ export function loneRoll(text: string): OwnRolls | null {
   const m = text.match(LONE_ROLL);
   if (!m) return null;
   const [, label = "", die, result] = m;
-  if (!die.startsWith("draw=") && !/^[+-]?\d+(?:\.\d+)?(?:\s+\(.+\))?$/.test(result.trim())) return null;
+  if (!die.startsWith("draw=") && !/^[+-]?\d+(?:\.\d+)?(?:\s+\(.+\))?$/.test(result.trim()))
+    return null;
   return { label: label.trim(), rolls: [{ label: "", die, result: result.trim() }] };
 }
 
@@ -91,7 +92,9 @@ const KEEP_DROP = /^\d*d\d+(?:k|d)[hl]?\d+$/;
 const TOTAL = String.raw`[+−-]?\d+(?:\.\d+)?`;
 const RESULT = new RegExp(String.raw`^(${TOTAL})(?: \((.+)\))?$`);
 // "Attack 2d6+2[4, 3]=9", with a space before "=" after a compare point ("5d10>=7 =3").
-const LINE_SEGMENT = new RegExp(String.raw`^(?:(.*\S)\s+)?([^\s[\]]*d[^\s[\]]*?)(?:\[([^\]]*)\])?\s?=(${TOTAL})$`);
+const LINE_SEGMENT = new RegExp(
+  String.raw`^(?:(.*\S)\s+)?([^\s[\]]*d[^\s[\]]*?)(?:\[([^\]]*)\])?\s?=(${TOTAL})$`,
+);
 // Compare points and the modifiers that take one: what follows "=" could be theirs.
 const TAKES_COMPARE = /[<>=!ru]|c[sf]/;
 
@@ -110,7 +113,9 @@ function longDice(formula: string, dice: string): string {
   const list = dice.trim().split(/\s*,\s*/);
   if (KEEP_DROP.test(formula) && list.every((d) => /^\d+d?$/.test(d))) {
     const dropped = list.filter((d) => d.endsWith("d")).map((d) => d.replace("d", "✗"));
-    return [list.filter((d) => !d.endsWith("d")).join("+"), dropped.join(" ")].filter(Boolean).join(", ");
+    return [list.filter((d) => !d.endsWith("d")).join("+"), dropped.join(" ")]
+      .filter(Boolean)
+      .join(", ");
   }
   const m = formula.match(SIMPLE);
   if (!m || !/^\d+(?:\s*,\s*\d+)*$/.test(dice.trim())) return dice.trim();
@@ -127,7 +132,9 @@ export function toRollLine(text: string): string {
     const m = result.match(RESULT);
     if (!m || die.startsWith("draw=")) return text;
     const dice = m[2] ? `[${shortDice(die, m[2])}]` : "";
-    parts.push(`${label ? `${label} ` : ""}${die}${dice}${TAKES_COMPARE.test(die) ? " " : ""}=${m[1]}`);
+    parts.push(
+      `${label ? `${label} ` : ""}${die}${dice}${TAKES_COMPARE.test(die) ? " " : ""}=${m[1]}`,
+    );
   }
   const line = [own.label, parts.join(", ")].filter(Boolean).join(" ");
   // Only if it comes back the same.
@@ -172,7 +179,9 @@ export function fromRollLine(line: string): string {
     const [, label = "", formula, dice, total] = segment.match(LINE_SEGMENT)!;
     // The right dice, or it's something else ("Armoured=3").
     if (rollFormula(formula, () => 0.5) === null) return line;
-    rolls.push(`${label ? `${label} ` : ""}${formula} -> ${total}${dice ? ` (${longDice(formula, dice)})` : ""}`);
+    rolls.push(
+      `${label ? `${label} ` : ""}${formula} -> ${total}${dice ? ` (${longDice(formula, dice)})` : ""}`,
+    );
   }
   return rolls.join(", ");
 }
@@ -181,5 +190,7 @@ export function fromRollLine(line: string): string {
 export function diceInDetail(detail: string): string | null {
   if (detail.length > MAX_ROLL_TEXT) return null;
   const m = detail.match(/(?:^|\s)(\S*d\S*?)\[([^\]]+)\]\s?=([+-]?\d+)/);
-  return m && !m[1].includes("=>") && rollFormula(m[1], () => 0.5) ? `${m[1]} -> ${m[3]} (${longDice(m[1], m[2])})` : null;
+  return m && !m[1].includes("=>") && rollFormula(m[1], () => 0.5)
+    ? `${m[1]} -> ${m[3]} (${longDice(m[1], m[2])})`
+    : null;
 }

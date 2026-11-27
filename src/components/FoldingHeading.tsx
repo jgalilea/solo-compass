@@ -33,7 +33,9 @@ export function FoldingHeading({
           {title}
         </span>
         {folded && count !== undefined && count > 0 && (
-          <span className="shrink-0 font-normal normal-case tracking-normal text-parchment-faint">{count}</span>
+          <span className="shrink-0 font-normal normal-case tracking-normal text-parchment-faint">
+            {count}
+          </span>
         )}
         <IconChevronRight
           size={14}

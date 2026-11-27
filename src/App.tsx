@@ -18,12 +18,18 @@ import { preloadable } from "./lib/preloadable";
 // fetched once the first screen is up (preloadAll, from Layout).
 const TablesView = preloadable(() => import("./components/TablesView").then((m) => m.TablesView));
 const DiceView = preloadable(() => import("./components/DiceView").then((m) => m.DiceView));
-const JournalListView = preloadable(() => import("./components/JournalListView").then((m) => m.JournalListView));
+const JournalListView = preloadable(() =>
+  import("./components/JournalListView").then((m) => m.JournalListView),
+);
 const AdventureDetailView = preloadable(() =>
   import("./components/AdventureDetailView").then((m) => m.AdventureDetailView),
 );
-const HistoryView = preloadable(() => import("./components/HistoryView").then((m) => m.HistoryView));
-const NotFoundView = preloadable(() => import("./components/NotFoundView").then((m) => m.NotFoundView));
+const HistoryView = preloadable(() =>
+  import("./components/HistoryView").then((m) => m.HistoryView),
+);
+const NotFoundView = preloadable(() =>
+  import("./components/NotFoundView").then((m) => m.NotFoundView),
+);
 
 function App() {
   // LocaleProvider goes outside the error boundary so that, if something

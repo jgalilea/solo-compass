@@ -16,13 +16,19 @@ import type { JournalEntry, LonelogImport } from "./lonelog";
 import { buildCast, snapshotTag } from "./lonelogTags";
 
 /** What the new adventure starts with; `intro` heads its first note ("Carries on from…"). */
-export function continuationOf(from: Adventure, entries: JournalEntry[], intro: string): LonelogImport {
+export function continuationOf(
+  from: Adventure,
+  entries: JournalEntry[],
+  intro: string,
+): LonelogImport {
   const text = [intro, ...buildCast(entries).map(snapshotTag)].join("\n");
   return {
     notes: from.notes ?? "",
     descriptions: { ...from.descriptions },
     // An id of its own, not an imported one's (isImportedEntry): it's
     // written today, and its day is today's.
-    entries: (adventureId, timestamp) => [{ id: makeId(), adventureId, timestamp, kind: "note", text }],
+    entries: (adventureId, timestamp) => [
+      { id: makeId(), adventureId, timestamp, kind: "note", text },
+    ],
   };
 }

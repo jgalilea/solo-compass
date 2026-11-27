@@ -4,7 +4,5 @@ import { HistoryContext } from "./historyContextInstance";
 
 export function HistoryProvider({ children }: { children: ReactNode }) {
   const value = useHistory();
-  return (
-    <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>
-  );
+  return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;
 }

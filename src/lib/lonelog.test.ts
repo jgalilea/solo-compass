@@ -40,12 +40,18 @@ describe("formatLine", () => {
   });
 
   it("writes someone else's action with no space, as the spec does", () => {
-    expect(formatLine({ kind: "action", text: "(Jonah) Keeps watch" })).toBe("@(Jonah) Keeps watch");
-    expect(formatLine({ kind: "action", text: "(Elara > Jonah) Boosts the climb" })).toBe("@(Elara > Jonah) Boosts the climb");
+    expect(formatLine({ kind: "action", text: "(Jonah) Keeps watch" })).toBe(
+      "@(Jonah) Keeps watch",
+    );
+    expect(formatLine({ kind: "action", text: "(Elara > Jonah) Boosts the climb" })).toBe(
+      "@(Elara > Jonah) Boosts the climb",
+    );
   });
 
   it("reads it back as that character's action", () => {
-    expect(parseMarkdownToEntries("@(Jonah) Keeps watch", "a", 0).map((e) => [e.kind, e.text])).toEqual([["action", "(Jonah) Keeps watch"]]);
+    expect(
+      parseMarkdownToEntries("@(Jonah) Keeps watch", "a", 0).map((e) => [e.kind, e.text]),
+    ).toEqual([["action", "(Jonah) Keeps watch"]]);
   });
 });
 
@@ -75,7 +81,7 @@ describe("parseMarkdownToEntries", () => {
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([["action", "Algo"]]);
   });
 
-  it("recognises sessions in \"## Title\" as well as \"=== Title ===\"", () => {
+  it('recognises sessions in "## Title" as well as "=== Title ==="', () => {
     const parsed = parseMarkdownToEntries("## Capítulo 1\n=== Capítulo 2 ===", "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["session", "Capítulo 1"],
@@ -84,7 +90,11 @@ describe("parseMarkdownToEntries", () => {
   });
 
   it("accepts symbols with no space after them", () => {
-    const parsed = parseMarkdownToEntries("@Corro\n?¿Me siguen?\nd:2d6 -> 7\n=>Me alcanzan", "a", 0);
+    const parsed = parseMarkdownToEntries(
+      "@Corro\n?¿Me siguen?\nd:2d6 -> 7\n=>Me alcanzan",
+      "a",
+      0,
+    );
     expect(parsed.map((e) => e.kind)).toEqual(["action", "question", "roll", "consequence"]);
     expect(parsed.map((e) => e.text)).toEqual(["Corro", "¿Me siguen?", "2d6 -> 7", "Me alcanzan"]);
   });
@@ -104,13 +114,27 @@ describe("parseMarkdownToEntries", () => {
       ["consequence", "La losa cede\n@ y algo respira al otro lado\n? quién anda ahí"],
       ["roll", "d20 -> 3\n(con desventaja)"],
     ];
-    const md = exportAdventureToMarkdown(es, "Aventura", original.map(([k, t], i) => entry(k, t, i)));
+    const md = exportAdventureToMarkdown(
+      es,
+      "Aventura",
+      original.map(([k, t], i) => entry(k, t, i)),
+    );
     const parsed = parseMarkdownToEntries(md, "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual(original);
   });
 
   it("notes that start like a symbol or a Markdown heading survive the round trip", () => {
-    const notes = ["#pista: la llave estaba en el pozo", "> Cita de un libro", "@ no es una acción", "? tampoco una pregunta", "d: ni una tirada", "=> ni una consecuencia", "=== ni una sesión ===", "## ni un encabezado", "\\barra inicial"];
+    const notes = [
+      "#pista: la llave estaba en el pozo",
+      "> Cita de un libro",
+      "@ no es una acción",
+      "? tampoco una pregunta",
+      "d: ni una tirada",
+      "=> ni una consecuencia",
+      "=== ni una sesión ===",
+      "## ni un encabezado",
+      "\\barra inicial",
+    ];
     const original = notes.map((text, i) => entry("note", text, i));
     const md = exportAdventureToMarkdown(es, "Aventura", original);
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text])).toEqual(
@@ -118,8 +142,12 @@ describe("parseMarkdownToEntries", () => {
     );
   });
 
-  it("in a foreign file, \"#\" and \">\" are only ignored in the header", () => {
-    const parsed = parseMarkdownToEntries("# Mi aventura\n> intro\n\n@ Entro\n#etiqueta\n> una cita", "a", 0);
+  it('in a foreign file, "#" and ">" are only ignored in the header', () => {
+    const parsed = parseMarkdownToEntries(
+      "# Mi aventura\n> intro\n\n@ Entro\n#etiqueta\n> una cita",
+      "a",
+      0,
+    );
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["action", "Entro"],
       ["note", "#etiqueta"],
@@ -128,7 +156,8 @@ describe("parseMarkdownToEntries", () => {
   });
 
   it("an indented line that opens an entry is one, as in Lonelog's own examples", () => {
-    const md = "```\n@ Search the archives\n    d: Investigation d6=5 vs TN 4 -> Success\n    => I find the manifests. [L:Archive|searched]\n    [N:Viktor|implicated]\n```\n";
+    const md =
+      "```\n@ Search the archives\n    d: Investigation d6=5 vs TN 4 -> Success\n    => I find the manifests. [L:Archive|searched]\n    [N:Viktor|implicated]\n```\n";
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text])).toEqual([
       ["action", "Search the archives"],
       ["roll", "Investigation d6=5 vs TN 4 -> Success"],
@@ -144,7 +173,11 @@ describe("parseMarkdownToEntries", () => {
 
   it("in a foreign file, an indented line continues the previous entry", () => {
     // "->" is a symbol of its own (§3.2.2): indented, it's still a new line.
-    const parsed = parseMarkdownToEntries("d: 2d6 -> 4\n    -> Fallo\nTexto suelto\n=== S1 ===\n  sangrado tras sesión", "a", 0);
+    const parsed = parseMarkdownToEntries(
+      "d: 2d6 -> 4\n    -> Fallo\nTexto suelto\n=== S1 ===\n  sangrado tras sesión",
+      "a",
+      0,
+    );
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["roll", "2d6 -> 4"],
       ["roll", "-> Fallo"],
@@ -155,7 +188,9 @@ describe("parseMarkdownToEntries", () => {
   });
 
   it("a session title with line breaks is exported on a single line", () => {
-    expect(formatLine({ kind: "session", text: "Sesión 3:\nEl regreso" })).toBe("=== Sesión 3: El regreso ===");
+    expect(formatLine({ kind: "session", text: "Sesión 3:\nEl regreso" })).toBe(
+      "=== Sesión 3: El regreso ===",
+    );
   });
 
   it("assigns sequential timestamps and unique ids to keep the order", () => {
@@ -179,15 +214,26 @@ describe("session dates", () => {
   });
 
   it("reads every form of Lonelog's date line, keeping the rest", () => {
-    const parse = (md: string) => parseMarkdownToEntries(md, "a1", 0).map((e) => [e.kind, e.text, e.date]);
+    const parse = (md: string) =>
+      parseMarkdownToEntries(md, "a1", 0).map((e) => [e.kind, e.text, e.date]);
     expect(parse("=== Session 1 ===\nDate: 2025-09-03 | Duration: 1h30")).toEqual([
       ["session", "Session 1", "2025-09-03"],
       ["note", "Duration: 1h30", undefined],
     ]);
-    expect(parse("## Session 2\n*Date: 2025-09-10 | Duration: 2h*")[0]).toEqual(["session", "Session 2", "2025-09-10"]);
-    expect(parse("=== Session 3 ===\n[Date]        2025-09-17")).toEqual([["session", "Session 3", "2025-09-17"]]);
+    expect(parse("## Session 2\n*Date: 2025-09-10 | Duration: 2h*")[0]).toEqual([
+      "session",
+      "Session 2",
+      "2025-09-10",
+    ]);
+    expect(parse("=== Session 3 ===\n[Date]        2025-09-17")).toEqual([
+      ["session", "Session 3", "2025-09-17"],
+    ]);
     // Only right below a session.
-    expect(parse("=== S ===\nAlgo\n[Date] 2025-09-17").map((e) => e[0])).toEqual(["session", "note", "note"]);
+    expect(parse("=== S ===\nAlgo\n[Date] 2025-09-17").map((e) => e[0])).toEqual([
+      "session",
+      "note",
+      "note",
+    ]);
   });
 
   it("an imported session without a date has none, not the day of the import", () => {
@@ -202,18 +248,21 @@ describe("session dates", () => {
 });
 
 describe("pinned notes (front matter)", () => {
-  const notes = "Inventory:\n- [x] rope\n- [ ] lantern\n\n  indented line\nAsk Odile: \"why?\"";
+  const notes = 'Inventory:\n- [x] rope\n- [ ] lantern\n\n  indented line\nAsk Odile: "why?"';
 
   it("are exported as the front matter's notes field and read back as written", () => {
     const md = exportAdventureToMarkdown(es, "Mi aventura", [entry("note", "Hola", 1)], notes);
-    expect(md.startsWith('---\ntitle: "Mi aventura"\nnotes: |\n  Inventory:\n  - [x] rope\n')).toBe(true);
+    expect(md.startsWith('---\ntitle: "Mi aventura"\nnotes: |\n  Inventory:\n  - [x] rope\n')).toBe(
+      true,
+    );
     expect(parseNotesFromMarkdown(md)).toBe(notes);
     // The entries don't change because of it.
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
   });
 
   it("keep their Markdown as written, a divider line too (it doesn't end the front matter)", () => {
-    const marked = "# Leads\n**Stag** seal, *house unknown*\n---\n> “Gold leaves no tracks.”\n1. Ask Odile";
+    const marked =
+      "# Leads\n**Stag** seal, *house unknown*\n---\n> “Gold leaves no tracks.”\n1. Ask Odile";
     const md = exportAdventureToMarkdown(es, "Mi aventura", [entry("note", "Hola", 1)], marked);
     expect(parseNotesFromMarkdown(md)).toBe(marked);
     expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.text)).toEqual(["Hola"]);
@@ -226,23 +275,36 @@ describe("pinned notes (front matter)", () => {
   });
 
   it("reads other YAML styles and ignores the other fields", () => {
-    const md = (front: string) => `---\ntitle: Clearview\n${front}\nruleset: Loner\n---\n\n# Clearview\n`;
-    expect(parseNotesFromMarkdown(md("notes: Inspired by 80s shows"))).toBe("Inspired by 80s shows");
+    const md = (front: string) =>
+      `---\ntitle: Clearview\n${front}\nruleset: Loner\n---\n\n# Clearview\n`;
+    expect(parseNotesFromMarkdown(md("notes: Inspired by 80s shows"))).toBe(
+      "Inspired by 80s shows",
+    );
     expect(parseNotesFromMarkdown(md('notes: "Line \\"one\\""'))).toBe('Line "one"');
     expect(parseNotesFromMarkdown(md("notes: 'It''s here'"))).toBe("It's here");
-    expect(parseNotesFromMarkdown(md("notes: >\n  folded\n  text\n\n  next"))).toBe("folded text\n\nnext");
+    expect(parseNotesFromMarkdown(md("notes: >\n  folded\n  text\n\n  next"))).toBe(
+      "folded text\n\nnext",
+    );
     expect(parseNotesFromMarkdown(md(""))).toBe("");
   });
 
   it("a log that opens with a --- rule isn't taken for front matter", () => {
     const md = "---\n@ I open the door\n---\n=> It creaks\n";
     expect(parseNotesFromMarkdown(md)).toBe("");
-    expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.kind)).toEqual(["note", "action", "note", "consequence"]);
+    expect(parseMarkdownToEntries(md, "a", 0).map((e) => e.kind)).toEqual([
+      "note",
+      "action",
+      "note",
+      "consequence",
+    ]);
   });
 });
 
 describe("descriptions (front matter)", () => {
-  const entries = [entry("note", "Llego a la [L:Posada del cruce]. [N:Bram|tuerto] me mira.", 1), entry("note", "[N:Odile] calla.", 2)];
+  const entries = [
+    entry("note", "Llego a la [L:Posada del cruce]. [N:Bram|tuerto] me mira.", 1),
+    entry("note", "[N:Odile] calla.", 2),
+  ];
   const descriptions = {
     "npc:bram": { text: "Posadero. Debe dinero al gremio.\nNo se fía de nadie.", updatedAt: 5 },
     "place:posada del cruce": { text: "Dos plantas, establo detrás.", updatedAt: 5 },
@@ -268,7 +330,9 @@ describe("descriptions (front matter)", () => {
     expect(md.startsWith('---\ntitle: "Aventura"\ndescriptions: |\n')).toBe(true);
     expect(parseNotesFromMarkdown(md)).toBe("");
     const handWritten = "---\ndescriptions: |\n  [N:Jonah|friendly] Old sailor\n---\n\n# X\n";
-    expect(parseDescriptionsFromMarkdown(handWritten, 1)).toEqual({ "npc:jonah": { text: "Old sailor", updatedAt: 1 } });
+    expect(parseDescriptionsFromMarkdown(handWritten, 1)).toEqual({
+      "npc:jonah": { text: "Old sailor", updatedAt: 1 },
+    });
   });
 });
 
@@ -277,7 +341,9 @@ describe("Lonelog 1.6 core", () => {
 
   it("reads scenes in every form, Markdown heading included", () => {
     expect(
-      kinds("S1 *School library*\n### S2 *Hall*\nS5a *Flashback*\nS7.1 *Day 1*\nT2-S1 *Meanwhile*\nS3\nS1 is not a scene marker"),
+      kinds(
+        "S1 *School library*\n### S2 *Hall*\nS5a *Flashback*\nS7.1 *Day 1*\nT2-S1 *Meanwhile*\nS3\nS1 is not a scene marker",
+      ),
     ).toEqual([
       ["scene", "S1 *School library*"],
       ["scene", "S2 *Hall*"],
@@ -291,7 +357,8 @@ describe("Lonelog 1.6 core", () => {
   });
 
   it("keeps tbl:, gen: and bare -> lines as rolls, written back as they were", () => {
-    const md = "? What's in the chest?\ntbl: d100=42 -> \"A broken sword\"\ngen: NPC\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n? Anyone home?\n-> Yes, but... (d6=4)";
+    const md =
+      '? What\'s in the chest?\ntbl: d100=42 -> "A broken sword"\ngen: NPC\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n? Anyone home?\n-> Yes, but... (d6=4)';
     const parsed = parseMarkdownToEntries(md, "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["question", "What's in the chest?"],
@@ -304,11 +371,13 @@ describe("Lonelog 1.6 core", () => {
     expect(again).toContain('\n\ntbl: d100=42 -> "A broken sword"\n');
     expect(again).toContain("\n\ngen: NPC\n  Role: d6=3 -> Merchant\n");
     expect(again).toContain("\n\n-> Yes, but... (d6=4)\n");
-    expect(parseMarkdownToEntries(again, "a", 0).map((e) => [e.kind, e.text])).toEqual(parsed.map((e) => [e.kind, e.text]));
+    expect(parseMarkdownToEntries(again, "a", 0).map((e) => [e.kind, e.text])).toEqual(
+      parsed.map((e) => [e.kind, e.text]),
+    );
   });
 
   it("keeps a narrative block whole, blank lines and symbols inside included", () => {
-    const md = 'Before\n\\---\nThe diary reads:\n\n@ not an action\n---\\\nAfter';
+    const md = "Before\n\\---\nThe diary reads:\n\n@ not an action\n---\\\nAfter";
     const parsed = parseMarkdownToEntries(md, "a", 0);
     expect(parsed.map((e) => [e.kind, e.text])).toEqual([
       ["note", "Before"],
@@ -321,23 +390,41 @@ describe("Lonelog 1.6 core", () => {
   it("escapes a note that would read as a roll symbol", () => {
     const note = entry("note", "-> not a result", 1);
     expect(formatLine(note)).toBe("\\-> not a result");
-    expect(parseMarkdownToEntries(formatLine(note), "a", 0).map((e) => [e.kind, e.text])).toEqual([["note", "-> not a result"]]);
+    expect(parseMarkdownToEntries(formatLine(note), "a", 0).map((e) => [e.kind, e.text])).toEqual([
+      ["note", "-> not a result"],
+    ]);
   });
 
   it("writes and reads the campaign header", () => {
-    const md = exportAdventureToMarkdown(es, 'La "Cripta"', [], "", {}, { createdAt: new Date(2025, 8, 3).getTime(), updatedAt: new Date(2025, 9, 28).getTime() });
-    expect(md.startsWith('---\ntitle: "La \\"Cripta\\""\nstart_date: 2025-09-03\nlast_update: 2025-10-28\n---')).toBe(true);
+    const md = exportAdventureToMarkdown(
+      es,
+      'La "Cripta"',
+      [],
+      "",
+      {},
+      { createdAt: new Date(2025, 8, 3).getTime(), updatedAt: new Date(2025, 9, 28).getTime() },
+    );
+    expect(
+      md.startsWith(
+        '---\ntitle: "La \\"Cripta\\""\nstart_date: 2025-09-03\nlast_update: 2025-10-28\n---',
+      ),
+    ).toBe(true);
     expect(parseTitleFromMarkdown(md)).toBe('La "Cripta"');
     expect(parseTitleFromMarkdown("# Clearview Mystery\n\n@ a")).toBe("Clearview Mystery");
-    expect(parseTitleFromMarkdown("=== Campaign Log: Clearview Mystery ===\n[Ruleset] Loner")).toBe("Clearview Mystery");
+    expect(parseTitleFromMarkdown("=== Campaign Log: Clearview Mystery ===\n[Ruleset] Loner")).toBe(
+      "Clearview Mystery",
+    );
     expect(parseTitleFromMarkdown("@ just play")).toBe("");
     // The analog header's first line isn't a session.
-    expect(kinds("=== Campaign Log: Clearview ===\n=== Session 1 ===").map(([k]) => k)).toEqual(["session"]);
+    expect(kinds("=== Campaign Log: Clearview ===\n=== Session 1 ===").map(([k]) => k)).toEqual([
+      "session",
+    ]);
   });
 });
 
 describe("a full Lonelog 1.6 log with the add-ons", () => {
-  const LOG = "---\ntitle: Clearview Mystery\nruleset: Loner + Mythic Oracle\n---\n\n# Clearview Mystery\n\n## Session 1\n\n### S1 *School library after hours*\n\n```\n@ Sneak inside to check the archives\nd: Stealth d6=5 vs TN 4 -> Success\n=> I slip inside unnoticed. [L:Library|dark|quiet]\n@(Jonah) Keeps watch at the door\n? Is anyone inside?\n-> Yes, but... (d6=4)\n=> Someone is here, but they're distracted. [N:Guard|watchful]\nN (Guard): \"Who's there?\"\nPC: \"Stay calm... just stay calm.\"\n(note: testing alternate stealth rule)\ntbl: Forest Encounter d6=5 -> Traveler on the road\ngen: NPC (custom)\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n```\n\n\\---\nThe diary reads:\n\"Day 47: The tides no longer obey the moon.\"\n---\\\n\nS2 [R:1|active|entry cave|exits N:R2, E:R3] *The crypt below*\n\n[DUNGEON STATUS]\n[R:2|unexplored]\n[R:3|locked|heavy door]\n[/DUNGEON STATUS]\n\nS3 *Dockside ambush* [COMBAT]\n[F:Pirate Captain|HP 10|Close] [F:Pirate×2|HP 4|Medium]\nRd1\n@ Slash Captain\nd: 1d8=6 damage\n=> [F:Pirate Captain|HP-6|staggered]\n@(Pirate Captain) Desperate swing\nRd2\n=> [F:Pirate Captain|fled] [F:Pirate×1|Close]\n[/COMBAT]\n\n[RESOURCES]\n[Inv:Torch|3] [Inv:Rope|1|50ft] [Wealth:Gold 45|Silver 12]\n[/RESOURCES]\n=> I light a torch. [Inv:Torch-1] [Wealth:Gold+15] [R:1|cleared, looted]\n[PC:Kael|Supply d8|HP 8]\n[PC:Kael|Supply d8→d6]\n";
+  const LOG =
+    '---\ntitle: Clearview Mystery\nruleset: Loner + Mythic Oracle\n---\n\n# Clearview Mystery\n\n## Session 1\n\n### S1 *School library after hours*\n\n```\n@ Sneak inside to check the archives\nd: Stealth d6=5 vs TN 4 -> Success\n=> I slip inside unnoticed. [L:Library|dark|quiet]\n@(Jonah) Keeps watch at the door\n? Is anyone inside?\n-> Yes, but... (d6=4)\n=> Someone is here, but they\'re distracted. [N:Guard|watchful]\nN (Guard): "Who\'s there?"\nPC: "Stay calm... just stay calm."\n(note: testing alternate stealth rule)\ntbl: Forest Encounter d6=5 -> Traveler on the road\ngen: NPC (custom)\n  Role: d6=3 -> Merchant\n  Trait: d6=5 -> Secretive\n```\n\n\\---\nThe diary reads:\n"Day 47: The tides no longer obey the moon."\n---\\\n\nS2 [R:1|active|entry cave|exits N:R2, E:R3] *The crypt below*\n\n[DUNGEON STATUS]\n[R:2|unexplored]\n[R:3|locked|heavy door]\n[/DUNGEON STATUS]\n\nS3 *Dockside ambush* [COMBAT]\n[F:Pirate Captain|HP 10|Close] [F:Pirate×2|HP 4|Medium]\nRd1\n@ Slash Captain\nd: 1d8=6 damage\n=> [F:Pirate Captain|HP-6|staggered]\n@(Pirate Captain) Desperate swing\nRd2\n=> [F:Pirate Captain|fled] [F:Pirate×1|Close]\n[/COMBAT]\n\n[RESOURCES]\n[Inv:Torch|3] [Inv:Rope|1|50ft] [Wealth:Gold 45|Silver 12]\n[/RESOURCES]\n=> I light a torch. [Inv:Torch-1] [Wealth:Gold+15] [R:1|cleared, looted]\n[PC:Kael|Supply d8|HP 8]\n[PC:Kael|Supply d8→d6]\n';
 
   it("survives being imported, exported and imported again, entry for entry", () => {
     const first = parseMarkdownToEntries(LOG, "a", 0);
@@ -357,7 +444,9 @@ describe("Lonelog 1.7", () => {
   const read = (md: string) => parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text]);
 
   it("splits the compact form into its elements", () => {
-    expect(read("S1 @Sneak d:4<5 ->F => noise [Clock:Alert 1/6] ?Seen? ->Nb (3) => distracted")).toEqual([
+    expect(
+      read("S1 @Sneak d:4<5 ->F => noise [Clock:Alert 1/6] ?Seen? ->Nb (3) => distracted"),
+    ).toEqual([
       ["scene", "S1"],
       ["action", "Sneak"],
       ["roll", "4<5 -> F"],
@@ -366,7 +455,11 @@ describe("Lonelog 1.7", () => {
       ["roll", "-> Nb (3)"],
       ["consequence", "distracted"],
     ]);
-    expect(read("Rd1 @Slash Dock Rat d:17≥10 ->Hit =>[F:Dock Rat|dead] @(Pirate Captain)Cutlass d:19≥14 ->Hit d:Damage 1d8+2=7 =>[PC:Alex|HP-7]")).toEqual([
+    expect(
+      read(
+        "Rd1 @Slash Dock Rat d:17≥10 ->Hit =>[F:Dock Rat|dead] @(Pirate Captain)Cutlass d:19≥14 ->Hit d:Damage 1d8+2=7 =>[PC:Alex|HP-7]",
+      ),
+    ).toEqual([
       ["note", "Rd1"],
       ["action", "Slash Dock Rat"],
       ["roll", "17≥10 -> Hit"],
@@ -376,17 +469,36 @@ describe("Lonelog 1.7", () => {
       ["roll", "Damage 1d8+2 -> 7"],
       ["consequence", "[PC:Alex|HP-7]"],
     ]);
-    expect(read("[/COMBAT] =>Captain escapes")).toEqual([["note", "[/COMBAT]"], ["consequence", "Captain escapes"]]);
-    expect(read("[F:Thug A|pos:Close] @(A) Slash d:14<15 ->Miss").map(([k]) => k)).toEqual(["note", "action", "roll"]);
-    expect(read("d: d20+4=17 vs AC 10 -> Hit => [F:Dock Rat|dead]").map(([k]) => k)).toEqual(["roll", "consequence"]);
+    expect(read("[/COMBAT] =>Captain escapes")).toEqual([
+      ["note", "[/COMBAT]"],
+      ["consequence", "Captain escapes"],
+    ]);
+    expect(read("[F:Thug A|pos:Close] @(A) Slash d:14<15 ->Miss").map(([k]) => k)).toEqual([
+      "note",
+      "action",
+      "roll",
+    ]);
+    expect(read("d: d20+4=17 vs AC 10 -> Hit => [F:Dock Rat|dead]").map(([k]) => k)).toEqual([
+      "roll",
+      "consequence",
+    ]);
     expect(read("? Seen? -> Nb (3)").map(([k]) => k)).toEqual(["question", "roll"]);
   });
 
   it("leaves prose, brackets and quotes whole", () => {
     for (const line of [
-      "The sign reads => this way", "=> She writes to @odile ", "? Quoi ?", '=> He says "go => there"', "@ Wait (d: nothing)",
-      "T2-S1 *City archives* @(Jordan)", "S7 *Entrance* (note: storylines T1 and T2 merge)", "S9 *Ambush* [COMBAT]", "@ Show the arrow -> to them", "Rd3 Roster: [PC:Alex|HP 3]",
-    ]) expect(read(line), line).toHaveLength(1);
+      "The sign reads => this way",
+      "=> She writes to @odile ",
+      "? Quoi ?",
+      '=> He says "go => there"',
+      "@ Wait (d: nothing)",
+      "T2-S1 *City archives* @(Jordan)",
+      "S7 *Entrance* (note: storylines T1 and T2 merge)",
+      "S9 *Ambush* [COMBAT]",
+      "@ Show the arrow -> to them",
+      "Rd3 Roster: [PC:Alex|HP 3]",
+    ])
+      expect(read(line), line).toHaveLength(1);
   });
 
   it("gives back whatever the player wrote, symbols and all", () => {
@@ -412,7 +524,10 @@ describe("Lonelog 1.7", () => {
       ["5d10>=7 -> 2 (8✓ 7✓ 3 2 1)", "d: 5d10>=7[8✓ 7✓ 3 2 1] =2"],
       ["2d6! -> 13 (6!+6!+1)", "d: 2d6![6!+6!+1] =13"],
       ["4dF -> +1 (+ 0 − +)", "d: 4dF[+ 0 − +]=+1"],
-      ["Ataque, con cuidado d20 -> 15, Daño 1d6+1 -> 5 (4 + 1)", "d: Ataque, con cuidado d20=15, Daño 1d6+1[4]=5"],
+      [
+        "Ataque, con cuidado d20 -> 15, Daño 1d6+1 -> 5 (4 + 1)",
+        "d: Ataque, con cuidado d20=15, Daño 1d6+1[4]=5",
+      ],
       ["+[flanking] -[wounded] 2d6+2 -> 9 (4+3 + 2)", "d: +[flanking] -[wounded] 2d6+2[4, 3]=9"],
     ];
     for (const [text, line] of rolls) {
@@ -420,14 +535,22 @@ describe("Lonelog 1.7", () => {
       expect(read(line)).toEqual([["roll", text]]);
     }
     // A verdict, an oracle and prose stay as they are.
-    for (const text of ["Stealth d6=5 vs TN 4 -> Success", "Recluse: white 3 / black 5 -> No", "d100=60 vs 35 -> No", "1d8=6 damage", "Hack (spend 1 Gear) -> Success"]) {
+    for (const text of [
+      "Stealth d6=5 vs TN 4 -> Success",
+      "Recluse: white 3 / black 5 -> No",
+      "d100=60 vs 35 -> No",
+      "1d8=6 damage",
+      "Hack (spend 1 Gear) -> Success",
+    ]) {
       expect(formatLine({ kind: "roll", text })).toBe(`d: ${text}`);
       expect(read(`d: ${text}`)).toEqual([["roll", text]]);
     }
     // As other tools write them.
     expect(read("d: 4d6dl1[6, 4d, 5, 3]=14")).toEqual([["roll", "4d6dl1 -> 14 (6+5+3, 4✗)"]]);
     expect(read("d: 4d6dl1 // STR=15")).toEqual([["roll", "4d6dl1 // STR=15"]]);
-    expect(read("d: Fighting {d8!, d6!}kh1 =12 -> Hit")).toEqual([["roll", "Fighting {d8!, d6!}kh1 =12 -> Hit"]]);
+    expect(read("d: Fighting {d8!, d6!}kh1 =12 -> Hit")).toEqual([
+      ["roll", "Fighting {d8!, d6!}kh1 =12 -> Hit"],
+    ]);
     expect(read("d: Damage 1d8=5")).toEqual([["roll", "Damage 1d8 -> 5"]]);
   });
 
@@ -443,9 +566,13 @@ describe("Lonelog 1.7", () => {
 
   it("keeps the description of a currency in someone's purse", () => {
     const entries = [entry("note", "[Wealth:Mara|Silver 9] [Wealth:Kael|Silver 2]", 1)];
-    const md = exportAdventureToMarkdown(es, "A", entries, "", { [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 } });
+    const md = exportAdventureToMarkdown(es, "A", entries, "", {
+      [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 },
+    });
     expect(md).toContain("[Wealth:Kael|Silver] Stolen");
-    expect(parseDescriptionsFromMarkdown(md, 1)).toEqual({ [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 } });
+    expect(parseDescriptionsFromMarkdown(md, 1)).toEqual({
+      [purseKey("Kael", "Silver")]: { text: "Stolen", updatedAt: 1 },
+    });
   });
 });
 
@@ -476,15 +603,48 @@ describe("sectionToLonelog", () => {
   });
 });
 
-
 describe("whatever is written", () => {
   // A small fixed generator, so a failure can be repeated.
   let seed = 7;
   const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const pick = <T,>(list: readonly T[]) => list[Math.floor(random() * list.length)];
+  const pick = <T>(list: readonly T[]) => list[Math.floor(random() * list.length)];
   const WORDS = [
-    "I", "run", "=>", "=>there", "->", "d:", "d:4", "tbl:", "gen:", "@", "@(Odile)", "@pepe", "?", "?Why", "S1", "Rd2", "[N:Odile|wary]", "[#L:Mill]",
-    "[COMBAT]", '"hi', 'there"', "(note:", "ok)", "[", "]", "|", "\\", "===", "#", ">", "*x*", "T1-S2", "¿Quién?", "PC:", "d20", "=5",
+    "I",
+    "run",
+    "=>",
+    "=>there",
+    "->",
+    "d:",
+    "d:4",
+    "tbl:",
+    "gen:",
+    "@",
+    "@(Odile)",
+    "@pepe",
+    "?",
+    "?Why",
+    "S1",
+    "Rd2",
+    "[N:Odile|wary]",
+    "[#L:Mill]",
+    "[COMBAT]",
+    '"hi',
+    'there"',
+    "(note:",
+    "ok)",
+    "[",
+    "]",
+    "|",
+    "\\",
+    "===",
+    "#",
+    ">",
+    "*x*",
+    "T1-S2",
+    "¿Quién?",
+    "PC:",
+    "d20",
+    "=5",
   ] as const;
   const words = (n: number) => Array.from({ length: n }, () => pick(WORDS)).join(" ");
 
@@ -494,31 +654,86 @@ describe("whatever is written", () => {
       const text = `${pick(["", "Word "])}${words(1 + Math.floor(random() * 7))}`.trim();
       // A heading, a fence or a narrative block are Markdown's own; not what's tested here.
       if (kind === "note" && /^\\---|^---/.test(text)) continue;
-      const md = exportAdventureToMarkdown(es, "A", [entry("note", "Before", 1), entry(kind, text, 2), entry("note", "After", 3)]);
+      const md = exportAdventureToMarkdown(es, "A", [
+        entry("note", "Before", 1),
+        entry(kind, text, 2),
+        entry("note", "After", 3),
+      ]);
       const read = parseMarkdownToEntries(md, "a", 0).map((e) => [e.kind, e.text]);
-      expect(read, `${kind}: ${text}`).toEqual([["note", "Before"], [kind, text], ["note", "After"]]);
+      expect(read, `${kind}: ${text}`).toEqual([
+        ["note", "Before"],
+        [kind, text],
+        ["note", "After"],
+      ]);
     }
   });
 
   it("any dice roll comes back the same from the .md", () => {
     const formulas = [
-      "d20", "d%", "d66", "d(66)", "2d6+3", "1d8+1d6-2", "4dF", "4dF+2", "d6min3", "3d6!", "3d6!!", "3d6!p", "4d6r", "4d6ro<3", "3d6u", "4d6kh3", "4d6dl1",
-      "2d20kl1", "5d10>=7", "4d6>4f<3", "2d20cs>18", "4d6s", "(1d6+2)*3", "{4d6,2d10}k1", "{2d6+3,2d6+3}kh1", "3d(2*6)", "10d6=6", "-2d6", "{d8!,d6!}kh1",
+      "d20",
+      "d%",
+      "d66",
+      "d(66)",
+      "2d6+3",
+      "1d8+1d6-2",
+      "4dF",
+      "4dF+2",
+      "d6min3",
+      "3d6!",
+      "3d6!!",
+      "3d6!p",
+      "4d6r",
+      "4d6ro<3",
+      "3d6u",
+      "4d6kh3",
+      "4d6dl1",
+      "2d20kl1",
+      "5d10>=7",
+      "4d6>4f<3",
+      "2d20cs>18",
+      "4d6s",
+      "(1d6+2)*3",
+      "{4d6,2d10}k1",
+      "{2d6+3,2d6+3}kh1",
+      "3d(2*6)",
+      "10d6=6",
+      "-2d6",
+      "{d8!,d6!}kh1",
     ];
     for (const formula of formulas)
       for (let i = 0; i < 60; i++) {
         const roll = rollFormula(formula, random);
         expect(roll, formula).not.toBeNull();
-        for (const text of [roll!, `Attack ${roll}`, `Attack, again ${roll}, Fire d6 -> 3`, `+[cover] -[hurt] ${roll}`])
-          expect(parseMarkdownToEntries(formatLine({ kind: "roll", text }), "a", 0).map((e) => [e.kind, e.text]), text).toEqual([["roll", text]]);
+        for (const text of [
+          roll!,
+          `Attack ${roll}`,
+          `Attack, again ${roll}, Fire d6 -> 3`,
+          `+[cover] -[hurt] ${roll}`,
+        ])
+          expect(
+            parseMarkdownToEntries(formatLine({ kind: "roll", text }), "a", 0).map((e) => [
+              e.kind,
+              e.text,
+            ]),
+            text,
+          ).toEqual([["roll", text]]);
       }
   });
 });
 
 it("keeps what the notations left apart write as text, out of the notebook and the rolls", () => {
-  const lines = ["! The bridge collapses behind the party", "[Party:Crew|Gold 150]", "[Faction:Guild|rising]", "[Unit:Spearmen|×10|status:steady]", "[Force:Red|points 500]", "[Scenario:Dawn raid]"];
+  const lines = [
+    "! The bridge collapses behind the party",
+    "[Party:Crew|Gold 150]",
+    "[Faction:Guild|rising]",
+    "[Unit:Spearmen|×10|status:steady]",
+    "[Force:Red|points 500]",
+    "[Scenario:Dawn raid]",
+  ];
   const entries = parseMarkdownToEntries(lines.join("\n\n"), "a", 0);
   expect(entries.map((e) => [e.kind, e.text])).toEqual(lines.map((l) => ["note", l]));
   expect(buildCast(entries)).toEqual([]);
-  expect(parseMarkdownToEntries(exportAdventureToMarkdown(es, "A", entries), "a", 0).map((e) => e.text)).toEqual(lines);
+  expect(
+    parseMarkdownToEntries(exportAdventureToMarkdown(es, "A", entries), "a", 0).map((e) => e.text),
+  ).toEqual(lines);
 });

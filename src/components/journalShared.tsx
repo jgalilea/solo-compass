@@ -5,14 +5,44 @@ import { RollResult } from "./RollResult";
 import type { EntryMatch } from "../lib/journalSearch";
 import { highlightParts } from "../lib/text";
 import { sessionDate, type JournalEntry, type JournalLineKind } from "../lib/lonelog";
-import { castKey, characterNamed, mainPc, progressDone, progressText, showDetail, splitTags, tagKey, type CastMember } from "../lib/lonelogTags";
-import { actorParts, isGenerator, isTableDefinition, noteForm, parseScene, splitActor, splitRollSymbol, type NoteForm } from "../lib/lonelogLines";
+import {
+  castKey,
+  characterNamed,
+  mainPc,
+  progressDone,
+  progressText,
+  showDetail,
+  splitTags,
+  tagKey,
+  type CastMember,
+} from "../lib/lonelogTags";
+import {
+  actorParts,
+  isGenerator,
+  isTableDefinition,
+  noteForm,
+  parseScene,
+  splitActor,
+  splitRollSymbol,
+  type NoteForm,
+} from "../lib/lonelogLines";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { CastIcon } from "./CastIcon";
 import { TagSuggestions } from "./TagSuggestions";
 import { interpolate } from "../lib/i18n";
 import type { Answer } from "../lib/oracle";
-import { BLOCK_PAGE, INPUT_CLASS, PRIMARY_BUTTON_CLASS, type BlockWindow, type EntryGroup, buildEntryBlocks, fitBlockWindow, formatIsoDay, splitOwnRolls, splitRollText } from "../lib/journalUi";
+import {
+  BLOCK_PAGE,
+  INPUT_CLASS,
+  PRIMARY_BUTTON_CLASS,
+  type BlockWindow,
+  type EntryGroup,
+  buildEntryBlocks,
+  fitBlockWindow,
+  formatIsoDay,
+  splitOwnRolls,
+  splitRollText,
+} from "../lib/journalUi";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { expandAnswer } from "../lib/i18n/answerText";
 import { fromRollLine, toRollLine } from "../lib/rollLine";
@@ -135,7 +165,11 @@ const BLOCK_ICON: Record<"combat" | "dungeon" | "resources", IconType> = {
 function entryIcon(entry: JournalEntry): IconType {
   if (entry.kind === "roll") {
     const { symbol } = splitRollSymbol(entry.text);
-    if (isCardDraw(entry.text) || (symbol !== "result" && readCards(splitRollText(entry.text).detail))) return IconCards;
+    if (
+      isCardDraw(entry.text) ||
+      (symbol !== "result" && readCards(splitRollText(entry.text).detail))
+    )
+      return IconCards;
     if (isGenerator(entry.text)) return IconGenerator;
     return symbol === "tbl" ? IconTable : IconDice;
   }
@@ -163,7 +197,8 @@ const ANSWER_CHIP: Record<Answer, string> = {
 export const SESSION_BAR =
   "session-bar sticky top-(--pin-session) z-20 -mx-4 flex h-session items-center bg-ink-950 px-4 sm:mx-0 sm:px-0";
 /** The rail down the left that marks a session's entries (and pins its scenes below its bar). */
-export const SESSION_RAIL = "session-entries flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3";
+export const SESSION_RAIL =
+  "session-entries flex flex-col gap-2 border-l-2 border-gold/25 pl-2.5 sm:pl-3";
 
 /** A session's entries, grouping question → roll → consequences. */
 export function EntryList({ items, actions }: { items: JournalEntry[]; actions: EntryActions }) {
@@ -171,10 +206,18 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
   const blocks = buildEntryBlocks(items);
   // The window is kept by the id of the first block after it, so it
   // stays put while entries are added or removed elsewhere.
-  const [view, setView] = useState<{ shown: number; endId: string | null }>({ shown: BLOCK_PAGE, endId: null });
-  const endIndex = view.endId ? blocks.findIndex((block) => block.some((e) => e.id === view.endId)) : -1;
+  const [view, setView] = useState<{ shown: number; endId: string | null }>({
+    shown: BLOCK_PAGE,
+    endId: null,
+  });
+  const endIndex = view.endId
+    ? blocks.findIndex((block) => block.some((e) => e.id === view.endId))
+    : -1;
   const current: BlockWindow = { shown: view.shown, end: endIndex >= 0 ? endIndex : null };
-  const toView = (w: BlockWindow) => ({ shown: w.shown, endId: w.end === null ? null : blocks[w.end][0].id });
+  const toView = (w: BlockWindow) => ({
+    shown: w.shown,
+    endId: w.end === null ? null : blocks[w.end][0].id,
+  });
 
   // A new entry at the end of the session (the composer's) takes the
   // view back there, so what was just written is on screen, even while
@@ -196,7 +239,9 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
   // edited, selected or written below) is always drawn.
   const highlighted = actions.highlightedId === leftHighlight ? null : actions.highlightedId;
   const targetIds = [highlighted, actions.editingId, actions.selectedId, actions.anchorId];
-  const targets = blocks.flatMap((block, i) => (block.some((e) => targetIds.includes(e.id)) ? [i] : []));
+  const targets = blocks.flatMap((block, i) =>
+    block.some((e) => targetIds.includes(e.id)) ? [i] : [],
+  );
   const fitted = fitBlockWindow(blocks.length, current, targets);
   if (fitted !== current) setView(toView(fitted));
 
@@ -227,7 +272,8 @@ export function EntryList({ items, actions }: { items: JournalEntry[]; actions: 
           <li key={block[0].id} className="scene-bar mt-2 bg-ink-950 px-1 py-1 first:mt-0">
             <EntryLine entry={block[0]} actions={actions} />
           </li>
-        ) : actions.story || (block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question") ? (
+        ) : actions.story ||
+          (block.length === 1 && block[0].kind !== "roll" && block[0].kind !== "question") ? (
           // What's told (notes, actions, dialogue…) is text on the page;
           // only what the dice and the oracle say is framed, so it stands
           // out and the journal reads as one. In zen mode there's nothing
@@ -330,7 +376,10 @@ export function SessionGroupRow({
       ) : (
         // Pinned while it's open, like the current session's.
         <div className={expanded ? SESSION_BAR : "flex"}>
-          <div data-entry className="group relative flex h-10 min-w-0 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50">
+          <div
+            data-entry
+            className="group relative flex h-10 min-w-0 flex-1 items-center gap-1 rounded-xl border border-gold/30 bg-gold/[0.06] px-4 transition hover:border-gold/50"
+          >
             {/* A heading to jump between sessions with a screen reader;
                 the button inside folds it (its name is the session's). */}
             <h2 className="flex min-w-0 flex-1">
@@ -351,8 +400,12 @@ export function SessionGroupRow({
                   {session.text}
                 </span>
                 <SessionDate session={session} />
-                <span aria-hidden className="shrink-0 text-xs text-parchment-faint">{group.items.length}</span>
-                <span className="sr-only">{interpolate(t.journal.sessionEntryCount, { count: group.items.length })}</span>
+                <span aria-hidden className="shrink-0 text-xs text-parchment-faint">
+                  {group.items.length}
+                </span>
+                <span className="sr-only">
+                  {interpolate(t.journal.sessionEntryCount, { count: group.items.length })}
+                </span>
               </button>
             </h2>
             {/* Expanding it with a tap selects it: that way its
@@ -417,7 +470,10 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
   const icon = createElement(Icon, {
     size: 18,
     "aria-label": kindLabel,
-    className: ["mt-0.5 shrink-0", entry.kind === "note" ? "text-parchment-faint" : "text-gold"].join(" "),
+    className: [
+      "mt-0.5 shrink-0",
+      entry.kind === "note" ? "text-parchment-faint" : "text-gold",
+    ].join(" "),
   } as { size: number; className: string });
 
   if (editing) {
@@ -444,7 +500,11 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
           />
           <TagSuggestions state={tags.suggestions} placement="below" />
         </div>
-        <button type="button" onClick={commit} className="-m-2 shrink-0 p-2 text-sm font-medium text-gold">
+        <button
+          type="button"
+          onClick={commit}
+          className="-m-2 shrink-0 p-2 text-sm font-medium text-gold"
+        >
           {t.common.save}
         </button>
       </div>
@@ -466,7 +526,13 @@ function EntryLine({ entry, actions }: { entry: JournalEntry; actions: EntryActi
       {icon}
       {/* Never longer than a comfortable line, whatever the screen's width. */}
       <div className="min-w-0 max-w-[48rem] flex-1">
-        <EntryContent entry={entry} answer={actions.answerFor(entry.linkedRollId)} onTagClick={actions.onTagClick} cast={actions.cast} view={actions.viewOf?.(entry.id)} />
+        <EntryContent
+          entry={entry}
+          answer={actions.answerFor(entry.linkedRollId)}
+          onTagClick={actions.onTagClick}
+          cast={actions.cast}
+          view={actions.viewOf?.(entry.id)}
+        />
         {entry.kind === "roll" && actions.onSaveTable && isTableDefinition(entry.text) && (
           <button
             type="button"
@@ -541,7 +607,11 @@ export function EntryContent({
               part.name === undefined ? (
                 part.text
               ) : (
-                <CharacterName key={i} member={characterNamed(cast, part.name)} onTagClick={onTagClick}>
+                <CharacterName
+                  key={i}
+                  member={characterNamed(cast, part.name)}
+                  onTagClick={onTagClick}
+                >
                   {part.text}
                 </CharacterName>
               ),
@@ -555,7 +625,8 @@ export function EntryContent({
 
   if (entry.kind === "note") {
     const form = noteForm(entry.text);
-    if (form.form !== "plain") return <NoteContent form={form} onTagClick={onTagClick} cast={cast} view={view} />;
+    if (form.form !== "plain")
+      return <NoteContent form={form} onTagClick={onTagClick} cast={cast} view={view} />;
   }
 
   if (entry.kind === "roll" && entry.text.includes("\n")) {
@@ -563,8 +634,16 @@ export function EntryContent({
     const [first, ...rest] = entry.text.split("\n");
     return (
       <div className="flex flex-col gap-1">
-        <EntryContent entry={{ ...entry, text: first }} whole={entry.text} answer={answer} onTagClick={onTagClick} cast={cast} />
-        <p className="whitespace-pre-wrap border-l border-ink-border pl-2.5 text-sm text-parchment/90">{rest.join("\n")}</p>
+        <EntryContent
+          entry={{ ...entry, text: first }}
+          whole={entry.text}
+          answer={answer}
+          onTagClick={onTagClick}
+          cast={cast}
+        />
+        <p className="whitespace-pre-wrap border-l border-ink-border pl-2.5 text-sm text-parchment/90">
+          {rest.join("\n")}
+        </p>
       </div>
     );
   }
@@ -624,7 +703,11 @@ export function EntryContent({
     }
     return (
       <div className="flex flex-col gap-1">
-        {(detail || kind) && <p className="text-xs text-parchment-dim">{[kind, showDraws(detail)].filter(Boolean).join(" · ")}</p>}
+        {(detail || kind) && (
+          <p className="text-xs text-parchment-dim">
+            {[kind, showDraws(detail)].filter(Boolean).join(" · ")}
+          </p>
+        )}
         {knownAnswer ? (
           <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <RollDrawing detail={detail} result={result} />
@@ -667,13 +750,22 @@ function SceneContent({ text, onTagClick }: { text: string; onTagClick?: (key: s
     // past its box and was clipped).
     // A heading inside its session's (h2), to jump between scenes.
     <h3 className="flex min-w-0 items-baseline gap-x-2">
-      <span className="shrink-0 rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">{id || text}</span>
+      <span className="shrink-0 rounded-md border border-gold/40 bg-gold/10 px-1.5 text-sm font-semibold tabular-nums text-gold">
+        {id || text}
+      </span>
       {context && (
-        <span onMouseEnter={titleIfCut(context)} className="min-w-0 truncate pr-1.5 font-display text-base italic text-parchment">
+        <span
+          onMouseEnter={titleIfCut(context)}
+          className="min-w-0 truncate pr-1.5 font-display text-base italic text-parchment"
+        >
           <TaggedText text={context} onTagClick={onTagClick} />
         </span>
       )}
-      {pov && <span className="shrink-0 self-center rounded-md bg-ink-700/70 px-1.5 text-sm font-semibold text-gold">{pov}</span>}
+      {pov && (
+        <span className="shrink-0 self-center rounded-md bg-ink-700/70 px-1.5 text-sm font-semibold text-gold">
+          {pov}
+        </span>
+      )}
       {combat && (
         <span className="inline-flex shrink-0 items-center gap-1 self-center text-xs font-medium uppercase tracking-wide text-no">
           <IconCombat size={13} />
@@ -709,7 +801,9 @@ function CharacterName({
         e.stopPropagation();
         onTagClick(castKey(member.kind, member.name));
       }}
-      title={interpolate(t.notebook.tagChipLabel, { name: `${t.notebook.kinds[member.kind]} ${member.name}` })}
+      title={interpolate(t.notebook.tagChipLabel, {
+        name: `${t.notebook.kinds[member.kind]} ${member.name}`,
+      })}
       className={`${className ?? ""} underline decoration-gold/40 decoration-dotted underline-offset-4 transition hover:decoration-gold`}
     >
       {children}
@@ -743,7 +837,10 @@ function NoteContent({
       return (
         <p className="whitespace-pre-wrap text-base text-parchment">
           <span className="mr-1.5 font-semibold text-gold">
-            <CharacterName member={name ? characterNamed(cast, name) : mainPc(cast)} onTagClick={onTagClick}>
+            <CharacterName
+              member={name ? characterNamed(cast, name) : mainPc(cast)}
+              onTagClick={onTagClick}
+            >
               {form.pc && !form.name ? (view ?? t.journal.dialoguePc) : form.speaker}
             </CharacterName>
             :
@@ -769,7 +866,9 @@ function NoteContent({
     case "round":
       return (
         <p className="flex flex-wrap items-baseline gap-x-2 text-base text-parchment">
-          <span className="rounded-md bg-no/15 px-1.5 text-sm font-semibold tabular-nums text-no">{form.round}</span>
+          <span className="rounded-md bg-no/15 px-1.5 text-sm font-semibold tabular-nums text-no">
+            {form.round}
+          </span>
           {form.text && <TaggedText text={form.text} onTagClick={onTagClick} />}
         </p>
       );
@@ -784,7 +883,13 @@ const LONG_TAG = 36;
  * and its traits smaller) instead of the raw "[N:Jonah|friendly]".
  * Tapping one opens that element in the adventure's notebook.
  */
-export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (key: string) => void }) {
+export function TaggedText({
+  text,
+  onTagClick,
+}: {
+  text: string;
+  onTagClick?: (key: string) => void;
+}) {
   const { t } = useLocaleContext();
   const parts = splitTags(text);
   if (parts.length === 1 && !parts[0].tag) return text;
@@ -804,13 +909,18 @@ export function TaggedText({ text, onTagClick }: { text: string; onTagClick?: (k
         </span>
         <span className="font-medium text-parchment">{name.slice(firstWord.length)}</span>
         {progress && (
-          <span className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}>
+          <span
+            className={`text-[0.85em] font-medium ${progressDone(kind, progress) ? "text-no" : "text-gold"}`}
+          >
             {" "}
             {progressText(progress)}
-            {progressDone(kind, progress) && ` · ${kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
+            {progressDone(kind, progress) &&
+              ` · ${kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
           </span>
         )}
-        {details.length > 0 && <span className="text-[0.85em] text-parchment-dim"> {details.join(" · ")}</span>}
+        {details.length > 0 && (
+          <span className="text-[0.85em] text-parchment-dim"> {details.join(" · ")}</span>
+        )}
       </>
     );
     // A short tag is one piece, moved whole to the next line if it
@@ -872,14 +982,25 @@ interface LineButtonsProps {
  * session or scene, move up or down, write below), so the buttons
  * don't cover half the line.
  */
-export function LineButtons({ inline = false, visible, onEdit, onDelete, onMoveUp, onMoveDown, onInsertBelow, onCopy }: LineButtonsProps) {
+export function LineButtons({
+  inline = false,
+  visible,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  onInsertBelow,
+  onCopy,
+}: LineButtonsProps) {
   const { t } = useLocaleContext();
   const size = inline ? "p-2 pointer-coarse:px-3" : "p-2 pointer-coarse:p-3";
   const more: ActionMenuItem[] = [];
   if (onCopy) more.push({ label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy });
-  if (onInsertBelow) more.push({ label: t.journal.insertBelow, Icon: IconInsertBelow, onSelect: onInsertBelow });
+  if (onInsertBelow)
+    more.push({ label: t.journal.insertBelow, Icon: IconInsertBelow, onSelect: onInsertBelow });
   if (onMoveUp) more.push({ label: t.journal.moveUp, Icon: IconArrowUp, onSelect: onMoveUp });
-  if (onMoveDown) more.push({ label: t.journal.moveDown, Icon: IconArrowDown, onSelect: onMoveDown });
+  if (onMoveDown)
+    more.push({ label: t.journal.moveDown, Icon: IconArrowDown, onSelect: onMoveDown });
   return (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -964,7 +1085,9 @@ export function SearchResultList({
                     ),
                   )}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-parchment-dim">{where.join(" · ")}</span>
+                <span className="mt-0.5 block truncate text-xs text-parchment-dim">
+                  {where.join(" · ")}
+                </span>
               </span>
             </button>
           </li>

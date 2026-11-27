@@ -29,6 +29,11 @@ describe("imported rolls", () => {
   it("leave out what was rolled here: the history has it", () => {
     const own = entries.map((e, i) => ({ ...e, id: `own-id-${i}` }));
     expect(importedRolls(own, "a")).toEqual([]);
-    expect(importedRolls(entries.map((e) => ({ ...e, linkedRollId: "h" })), "a")).toEqual([]);
+    expect(
+      importedRolls(
+        entries.map((e) => ({ ...e, linkedRollId: "h" })),
+        "a",
+      ),
+    ).toEqual([]);
   });
 });

@@ -13,7 +13,12 @@ const adventure = (id: string, extra: Partial<Adventure> = {}): Adventure => ({
   status: "ongoing",
   ...extra,
 });
-const entry = (id: string, adventureId: string, text: string, extra: Partial<JournalEntry> = {}): JournalEntry => ({
+const entry = (
+  id: string,
+  adventureId: string,
+  text: string,
+  extra: Partial<JournalEntry> = {},
+): JournalEntry => ({
   id,
   adventureId,
   timestamp: 10,
@@ -21,7 +26,8 @@ const entry = (id: string, adventureId: string, text: string, extra: Partial<Jou
   text,
   ...extra,
 });
-const roll = (id: string, timestamp: number) => ({ id, timestamp, kind: "tabla" }) as unknown as HistoryEntry;
+const roll = (id: string, timestamp: number) =>
+  ({ id, timestamp, kind: "tabla" }) as unknown as HistoryEntry;
 const data = (d: Partial<MergeData>): MergeData => ({
   history: [],
   adventures: [],
@@ -36,8 +42,16 @@ const data = (d: Partial<MergeData>): MergeData => ({
 describe("mergeData", () => {
   it("keeps what's only on either side", () => {
     const merged = mergeData(
-      data({ adventures: [adventure("a")], entries: [entry("e1", "a", "phone")], history: [roll("r1", 5)] }),
-      data({ adventures: [adventure("a"), adventure("b")], entries: [entry("e2", "a", "pc"), entry("e3", "b", "pc")], history: [roll("r2", 9)] }),
+      data({
+        adventures: [adventure("a")],
+        entries: [entry("e1", "a", "phone")],
+        history: [roll("r1", 5)],
+      }),
+      data({
+        adventures: [adventure("a"), adventure("b")],
+        entries: [entry("e2", "a", "pc"), entry("e3", "b", "pc")],
+        history: [roll("r2", 9)],
+      }),
     );
     expect(merged.adventures.map((a) => a.id)).toEqual(["a", "b"]);
     expect(merged.entries.map((e) => e.id)).toEqual(["e1", "e2", "e3"]);
@@ -47,11 +61,20 @@ describe("mergeData", () => {
   it("the newer change wins: entry edits, adventures and their notes apart", () => {
     const merged = mergeData(
       data({
-        adventures: [adventure("a", { name: "Old", updatedAt: 1, notes: "new notes", notesUpdatedAt: 50 })],
+        adventures: [
+          adventure("a", { name: "Old", updatedAt: 1, notes: "new notes", notesUpdatedAt: 50 }),
+        ],
         entries: [entry("e1", "a", "edited here", { editedAt: 30 })],
       }),
       data({
-        adventures: [adventure("a", { name: "Renamed", updatedAt: 40, notes: "old notes", notesUpdatedAt: 20 })],
+        adventures: [
+          adventure("a", {
+            name: "Renamed",
+            updatedAt: 40,
+            notes: "old notes",
+            notesUpdatedAt: 20,
+          }),
+        ],
         entries: [entry("e1", "a", "edited there", { editedAt: 20 })],
       }),
     );
@@ -61,27 +84,77 @@ describe("mergeData", () => {
 
   it("the oracle picked last wins, whichever side was edited later", () => {
     const merged = mergeData(
-      data({ adventures: [adventure("a", { name: "Renamed", updatedAt: 40, oracle: "loner", oracleUpdatedAt: 5 })] }),
-      data({ adventures: [adventure("a", { name: "Old", updatedAt: 1, oracle: "ironsworn", oracleUpdatedAt: 9 })] }),
+      data({
+        adventures: [
+          adventure("a", { name: "Renamed", updatedAt: 40, oracle: "loner", oracleUpdatedAt: 5 }),
+        ],
+      }),
+      data({
+        adventures: [
+          adventure("a", { name: "Old", updatedAt: 1, oracle: "ironsworn", oracleUpdatedAt: 9 }),
+        ],
+      }),
     );
-    expect(merged.adventures[0]).toMatchObject({ name: "Renamed", oracle: "ironsworn", oracleUpdatedAt: 9 });
+    expect(merged.adventures[0]).toMatchObject({
+      name: "Renamed",
+      oracle: "ironsworn",
+      oracleUpdatedAt: 9,
+    });
     // Only one side has picked one: it stays.
-    const one = mergeData(data({ adventures: [adventure("a", { updatedAt: 9 })] }), data({ adventures: [adventure("a", { oracle: "opse", oracleUpdatedAt: 2 })] }));
+    const one = mergeData(
+      data({ adventures: [adventure("a", { updatedAt: 9 })] }),
+      data({ adventures: [adventure("a", { oracle: "opse", oracleUpdatedAt: 2 })] }),
+    );
     expect(one.adventures[0].oracle).toBe("opse");
   });
 
   it("the game table's dice and tables: each the one picked last", () => {
     const merged = mergeData(
-      data({ adventures: [adventure("a", { gameDice: { ids: ["d20"], updatedAt: 9 }, gameTables: { ids: ["x"], updatedAt: 1 } })] }),
-      data({ adventures: [adventure("a", { gameDice: { ids: ["d6"], updatedAt: 3 }, gameTables: { ids: null, updatedAt: 7 } })] }),
+      data({
+        adventures: [
+          adventure("a", {
+            gameDice: { ids: ["d20"], updatedAt: 9 },
+            gameTables: { ids: ["x"], updatedAt: 1 },
+          }),
+        ],
+      }),
+      data({
+        adventures: [
+          adventure("a", {
+            gameDice: { ids: ["d6"], updatedAt: 3 },
+            gameTables: { ids: null, updatedAt: 7 },
+          }),
+        ],
+      }),
     );
-    expect(merged.adventures[0]).toMatchObject({ gameDice: { ids: ["d20"] }, gameTables: { ids: null } });
+    expect(merged.adventures[0]).toMatchObject({
+      gameDice: { ids: ["d20"] },
+      gameTables: { ids: null },
+    });
   });
 
   it("each description apart: the newer wins, and what's only on one side stays", () => {
     const merged = mergeData(
-      data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "new", updatedAt: 9 }, "npc:odile": { text: "mine", updatedAt: 1 } } })] }),
-      data({ adventures: [adventure("a", { descriptions: { "npc:bram": { text: "old", updatedAt: 3 }, "place:mill": { text: "theirs", updatedAt: 2 } } })] }),
+      data({
+        adventures: [
+          adventure("a", {
+            descriptions: {
+              "npc:bram": { text: "new", updatedAt: 9 },
+              "npc:odile": { text: "mine", updatedAt: 1 },
+            },
+          }),
+        ],
+      }),
+      data({
+        adventures: [
+          adventure("a", {
+            descriptions: {
+              "npc:bram": { text: "old", updatedAt: 3 },
+              "place:mill": { text: "theirs", updatedAt: 2 },
+            },
+          }),
+        ],
+      }),
     );
     expect(merged.adventures[0].descriptions).toEqual({
       "npc:bram": { text: "new", updatedAt: 9 },
@@ -91,18 +164,28 @@ describe("mergeData", () => {
   });
 
   it("notes from before they had a date aren't lost to empty ones", () => {
-    const merged = mergeData(data({ adventures: [adventure("a")] }), data({ adventures: [adventure("a", { notes: "x" })] }));
+    const merged = mergeData(
+      data({ adventures: [adventure("a")] }),
+      data({ adventures: [adventure("a", { notes: "x" })] }),
+    );
     expect(merged.adventures[0].notes).toBe("x");
   });
 
   it("what either side deleted stays deleted, with its adventure's entries", () => {
     const merged = mergeData(
-      data({ adventures: [adventure("a")], entries: [entry("e1", "a", "1"), entry("e2", "a", "2")], deleted: [{ id: "e2", at: 5 }] }),
+      data({
+        adventures: [adventure("a")],
+        entries: [entry("e1", "a", "1"), entry("e2", "a", "2")],
+        deleted: [{ id: "e2", at: 5 }],
+      }),
       data({
         adventures: [adventure("a"), adventure("b")],
         entries: [entry("e1", "a", "1"), entry("e2", "a", "2"), entry("e3", "b", "3")],
         history: [roll("r1", 1)],
-        deleted: [{ id: "b", at: 7 }, { id: "r1", at: 7 }],
+        deleted: [
+          { id: "b", at: 7 },
+          { id: "r1", at: 7 },
+        ],
       }),
     );
     expect(merged.adventures.map((a) => a.id)).toEqual(["a"]);
@@ -113,11 +196,21 @@ describe("mergeData", () => {
 });
 
 describe("mergeData: saved rolls", () => {
-  const saved = (id: string, name: string, updatedAt: number) => ({ id, name, formula: "4dF+2", favorite: false, createdAt: 1, updatedAt });
+  const saved = (id: string, name: string, updatedAt: number) => ({
+    id,
+    name,
+    formula: "4dF+2",
+    favorite: false,
+    createdAt: 1,
+    updatedAt,
+  });
   it("joins them by id, the newer edit wins, and deleted ones stay deleted", () => {
     const merged = mergeData(
       data({ savedRolls: [saved("s1", "Athletics", 5), saved("s2", "Fight", 1)] }),
-      data({ savedRolls: [saved("s1", "Athletics +3", 9), saved("s3", "Notice", 1)], deleted: [{ id: "s2", at: 2 }] }),
+      data({
+        savedRolls: [saved("s1", "Athletics +3", 9), saved("s3", "Notice", 1)],
+        deleted: [{ id: "s2", at: 2 }],
+      }),
     );
     expect(merged.savedRolls.map((r) => [r.id, r.name])).toEqual([
       ["s1", "Athletics +3"],
@@ -126,13 +219,21 @@ describe("mergeData: saved rolls", () => {
   });
 });
 
-
 describe("mergeData: generators", () => {
-  const gen = (id: string, name: string, updatedAt: number) => ({ id, name, tableIds: ["tipo-lugar", "estado-lugar"], createdAt: 1, updatedAt });
+  const gen = (id: string, name: string, updatedAt: number) => ({
+    id,
+    name,
+    tableIds: ["tipo-lugar", "estado-lugar"],
+    createdAt: 1,
+    updatedAt,
+  });
   it("joins them by id, the newer edit wins, and deleted ones stay deleted", () => {
     const merged = mergeData(
       data({ generators: [gen("g1", "Place", 5), gen("g2", "NPC", 1)] }),
-      data({ generators: [gen("g1", "New place", 9), gen("g3", "Encounter", 1)], deleted: [{ id: "g2", at: 2 }] }),
+      data({
+        generators: [gen("g1", "New place", 9), gen("g3", "Encounter", 1)],
+        deleted: [{ id: "g2", at: 2 }],
+      }),
     );
     expect(merged.generators.map((g) => [g.id, g.name])).toEqual([
       ["g1", "New place"],

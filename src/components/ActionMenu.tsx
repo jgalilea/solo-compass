@@ -20,9 +20,20 @@ export interface ActionMenuItem {
  * screen's edge: the page doesn't scroll while it's open, so a long
  * menu on a small phone scrolls inside itself instead.
  */
-export function ActionMenu({ label, items, compact = false }: { label: string; items: ActionMenuItem[]; compact?: boolean }) {
+export function ActionMenu({
+  label,
+  items,
+  compact = false,
+}: {
+  label: string;
+  items: ActionMenuItem[];
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const [place, setPlace] = useState<{ upwards: boolean; maxHeight: number }>({ upwards: false, maxHeight: 0 });
+  const [place, setPlace] = useState<{ upwards: boolean; maxHeight: number }>({
+    upwards: false,
+    maxHeight: 0,
+  });
   const rootRef = useRef<HTMLDivElement>(null);
 
   function toggle() {
@@ -50,8 +61,14 @@ export function ActionMenu({ label, items, compact = false }: { label: string; i
         aria-haspopup="menu"
         aria-expanded={open}
         className={[
-          compact ? "p-2 transition pointer-coarse:px-3" : "flex size-10 items-center justify-center rounded-full transition",
-          open ? (compact ? "text-gold" : "bg-ink-700 text-parchment") : "text-parchment-dim hover:text-gold",
+          compact
+            ? "p-2 transition pointer-coarse:px-3"
+            : "flex size-10 items-center justify-center rounded-full transition",
+          open
+            ? compact
+              ? "text-gold"
+              : "bg-ink-700 text-parchment"
+            : "text-parchment-dim hover:text-gold",
         ].join(" ")}
       >
         <IconMore size={compact ? 15 : 22} />

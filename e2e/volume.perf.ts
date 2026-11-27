@@ -28,7 +28,9 @@ const DAY = 24 * 60 * 60 * 1000;
 const NPCS = ["Odile", "Tobías", "Capa Gris", "Bram", "Ysolde", "Merek", "la Viuda", "Hal"];
 const PLACES = ["Posada del cruce", "Torre vieja", "Bosque de ceniza", "Puerto gris", "Cripta"];
 const WORDS =
-  "la lluvia golpea los postigos mientras el fuego se apaga y alguien sube por la escalera con una carta sellada que nadie debería haber abierto".split(" ");
+  "la lluvia golpea los postigos mientras el fuego se apaga y alguien sube por la escalera con una carta sellada que nadie debería haber abierto".split(
+    " ",
+  );
 
 function sentence(i: number, length = 14): string {
   const words: string[] = [];
@@ -47,15 +49,24 @@ function buildVolumeBackup() {
   const entries: object[] = [];
 
   function addAdventure(id: string, name: string, count: number, sessions = true) {
-    adventures.push({ id, name, createdAt: clock, updatedAt: clock, favorite: false, status: "ongoing" });
+    adventures.push({
+      id,
+      name,
+      createdAt: clock,
+      updatedAt: clock,
+      favorite: false,
+      status: "ongoing",
+    });
     for (let i = 0; i < count; i++) {
       const timestamp = tick();
       const entry = (kind: string, text: string, extra: object = {}) =>
         entries.push({ id: `${id}-e${i}`, adventureId: id, timestamp, kind, text, ...extra });
       const step = i % 10;
       if (i === 0 && !sessions) entry("note", "Primera página del diario importado");
-      else if (sessions && i % 100 === 0) entry("session", `Sesión ${i / 100 + 1} · ${sentence(i, 3)}`);
-      else if (step === 1) entry("action", `Busco a [N:${NPCS[i % NPCS.length]}] en [L:${PLACES[i % PLACES.length]}]`);
+      else if (sessions && i % 100 === 0)
+        entry("session", `Sesión ${i / 100 + 1} · ${sentence(i, 3)}`);
+      else if (step === 1)
+        entry("action", `Busco a [N:${NPCS[i % NPCS.length]}] en [L:${PLACES[i % PLACES.length]}]`);
       else if (step === 2) entry("question", `¿${sentence(i, 6)}?`);
       else if (step === 3) {
         const rollId = `${id}-r${i}`;
@@ -72,7 +83,9 @@ function buildVolumeBackup() {
           qualifier: null,
           favorite: false,
         });
-        entry("roll", `Recluse ${white}/${black} -> ${white > black ? "Sí" : "No"}`, { linkedRollId: rollId });
+        entry("roll", `Recluse ${white}/${black} -> ${white > black ? "Sí" : "No"}`, {
+          linkedRollId: rollId,
+        });
       } else if (step === 4) entry("consequence", sentence(i));
       else if (step === 7) entry("note", `[Clock:Alarma ${i % 6}/6] ${sentence(i, 8)}`);
       else entry("note", `${sentence(i, 30)}\n${sentence(i + 1, 20)}`);
@@ -81,7 +94,8 @@ function buildVolumeBackup() {
 
   addAdventure("big", "La gran campaña", BIG_ADVENTURE_ENTRIES);
   addAdventure("unsplit", "Diario importado sin sesiones", UNSPLIT_ENTRIES, false);
-  for (let a = 0; a < OTHER_ADVENTURES; a++) addAdventure(`adv${a}`, `Aventura ${a + 1}`, OTHER_ADVENTURE_ENTRIES);
+  for (let a = 0; a < OTHER_ADVENTURES; a++)
+    addAdventure(`adv${a}`, `Aventura ${a + 1}`, OTHER_ADVENTURE_ENTRIES);
 
   // Loose rolls (oracle screen, tables) up to the history's size.
   while (history.length < HISTORY_ROLLS) {
@@ -179,78 +193,136 @@ test("stays usable with years of play on a modest phone", async ({ page }) => {
   await restoreVolume(page);
   await slowDownCpu(page);
 
-  await timed("Cold start to the journal list", async () => {
-    await page.reload();
-    await expect(page.getByText("La gran campaña").first()).toBeVisible({ timeout: 30_000 });
-  }, 4000);
+  await timed(
+    "Cold start to the journal list",
+    async () => {
+      await page.reload();
+      await expect(page.getByText("La gran campaña").first()).toBeVisible({ timeout: 30_000 });
+    },
+    4000,
+  );
 
-  await timed("Search across every journal", async () => {
-    await page.getByLabel("Buscar aventuras y entradas del diario").fill("carta sellada postigos");
-    await expect(page.getByText("En los diarios").first()).toBeVisible({ timeout: 30_000 });
-  }, 3000);
+  await timed(
+    "Search across every journal",
+    async () => {
+      await page
+        .getByLabel("Buscar aventuras y entradas del diario")
+        .fill("carta sellada postigos");
+      await expect(page.getByText("En los diarios").first()).toBeVisible({ timeout: 30_000 });
+    },
+    3000,
+  );
   await page.getByLabel("Buscar aventuras y entradas del diario").fill("");
 
-  await timed("Open the 5,000-entry adventure", async () => {
-    await page.getByText("La gran campaña").first().click();
-    await expect(page.locator("[data-composer] textarea")).toBeVisible({ timeout: 30_000 });
-    await expect(page.locator("[id^=entry-]").last()).toBeVisible({ timeout: 30_000 });
-  }, 4000);
+  await timed(
+    "Open the 5,000-entry adventure",
+    async () => {
+      await page.getByText("La gran campaña").first().click();
+      await expect(page.locator("[data-composer] textarea")).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("[id^=entry-]").last()).toBeVisible({ timeout: 30_000 });
+    },
+    4000,
+  );
 
-  await timed("Write an entry in it", async () => {
-    await page.locator("[data-composer] textarea").fill("Una entrada más al final de todo.");
-    await page.getByRole("button", { name: "Añadir al diario" }).click();
-    await expect(page.locator("[id^=entry-]").getByText("Una entrada más al final de todo.")).toBeVisible({
-      timeout: 30_000,
-    });
-  }, 1500);
+  await timed(
+    "Write an entry in it",
+    async () => {
+      await page.locator("[data-composer] textarea").fill("Una entrada más al final de todo.");
+      await page.getByRole("button", { name: "Añadir al diario" }).click();
+      await expect(
+        page.locator("[id^=entry-]").getByText("Una entrada más al final de todo."),
+      ).toBeVisible({
+        timeout: 30_000,
+      });
+    },
+    1500,
+  );
 
-  await timed("Open a 2,000-entry single session", async () => {
-    await page.getByRole("link", { name: "Volver al diario" }).click();
-    await page.getByText("Diario importado sin sesiones").first().click();
-    await expect(page.locator("[id^=entry-]").last()).toBeVisible({ timeout: 30_000 });
-  }, 4000);
+  await timed(
+    "Open a 2,000-entry single session",
+    async () => {
+      await page.getByRole("link", { name: "Volver al diario" }).click();
+      await page.getByText("Diario importado sin sesiones").first().click();
+      await expect(page.locator("[id^=entry-]").last()).toBeVisible({ timeout: 30_000 });
+    },
+    4000,
+  );
 
-  await timed("Write an entry in that session", async () => {
-    await page.locator("[data-composer] textarea").fill("Otra entrada en el bloque largo.");
-    await page.getByRole("button", { name: "Añadir al diario" }).click();
-    await expect(page.locator("[id^=entry-]").getByText("Otra entrada en el bloque largo.")).toBeVisible({
-      timeout: 30_000,
-    });
-  }, 1500);
+  await timed(
+    "Write an entry in that session",
+    async () => {
+      await page.locator("[data-composer] textarea").fill("Otra entrada en el bloque largo.");
+      await page.getByRole("button", { name: "Añadir al diario" }).click();
+      await expect(
+        page.locator("[id^=entry-]").getByText("Otra entrada en el bloque largo."),
+      ).toBeVisible({
+        timeout: 30_000,
+      });
+    },
+    1500,
+  );
 
-  await timed("Type 40 characters in that session", async () => {
-    await page.locator("[data-composer] textarea").pressSequentially("La puerta del sótano cruje al abrirse.", { delay: 0 });
-  }, 1500);
+  await timed(
+    "Type 40 characters in that session",
+    async () => {
+      await page
+        .locator("[data-composer] textarea")
+        .pressSequentially("La puerta del sótano cruje al abrirse.", { delay: 0 });
+    },
+    1500,
+  );
 
   // Its first entry is far above what's drawn: the search still gets
   // there, drawing a stretch around it rather than all 2,000 below.
   await page.locator("[data-composer] textarea").fill("");
   await page.getByRole("button", { name: "Buscar en el diario" }).click();
   await page.getByRole("textbox", { name: "Buscar en el diario" }).fill("primera página");
-  await timed("Jump from the search to that session's first entry", async () => {
-    await page.getByRole("textbox", { name: "Buscar en el diario" }).press("Enter");
-    await expect(page.locator("#entry-unsplit-e0")).toBeInViewport({ timeout: 10_000 });
-  }, 1500);
+  await timed(
+    "Jump from the search to that session's first entry",
+    async () => {
+      await page.getByRole("textbox", { name: "Buscar en el diario" }).press("Enter");
+      await expect(page.locator("#entry-unsplit-e0")).toBeInViewport({ timeout: 10_000 });
+    },
+    1500,
+  );
   await expect(page.getByRole("button", { name: /Ver entradas posteriores/ })).toBeVisible();
 
   // Writing from there goes back to the end, where the entry lands.
-  await timed("Write an entry after jumping back", async () => {
-    await page.locator("[data-composer] textarea").fill("De vuelta al final.");
-    await page.getByRole("button", { name: "Añadir al diario" }).click();
-    await expect(page.locator("[id^=entry-]").getByText("De vuelta al final.")).toBeInViewport({ timeout: 30_000 });
-  }, 1500);
+  await timed(
+    "Write an entry after jumping back",
+    async () => {
+      await page.locator("[data-composer] textarea").fill("De vuelta al final.");
+      await page.getByRole("button", { name: "Añadir al diario" }).click();
+      await expect(page.locator("[id^=entry-]").getByText("De vuelta al final.")).toBeInViewport({
+        timeout: 30_000,
+      });
+    },
+    1500,
+  );
 
   await page.goto("./#/");
-  await timed("Ask the oracle (10,000 rolls behind)", async () => {
-    await page.getByLabel("Pregunta para el oráculo").fill("¿Sigue en pie la torre?");
-    await page.getByRole("button", { name: "Lanzar los dados" }).click();
-    await expect(page.getByText("¿Sigue en pie la torre?").first()).toBeVisible({ timeout: 30_000 });
-  }, 1500);
+  await timed(
+    "Ask the oracle (10,000 rolls behind)",
+    async () => {
+      await page.getByLabel("Pregunta para el oráculo").fill("¿Sigue en pie la torre?");
+      await page.getByRole("button", { name: "Lanzar los dados" }).click();
+      await expect(page.getByText("¿Sigue en pie la torre?").first()).toBeVisible({
+        timeout: 30_000,
+      });
+    },
+    1500,
+  );
 
-  await timed("Open the roll history", async () => {
-    await page.goto("./#/historial");
-    await expect(page.getByText("¿Sigue en pie la torre?").first()).toBeVisible({ timeout: 30_000 });
-  }, 3000);
+  await timed(
+    "Open the roll history",
+    async () => {
+      await page.goto("./#/historial");
+      await expect(page.getByText("¿Sigue en pie la torre?").first()).toBeVisible({
+        timeout: 30_000,
+      });
+    },
+    3000,
+  );
 
   expect(errors).toEqual([]);
 });
@@ -281,16 +353,24 @@ test("syncs years of play without stalling a modest phone", async ({ page }) => 
   // The watch sees a stall made on purpose (so a 0 below means none, not a blind watch).
   await longestTask(page);
   // (As a task of the page's own: one run from the test isn't counted.)
-  await page.evaluate("setTimeout(() => { const end = performance.now() + 120; while (performance.now() < end); })");
+  await page.evaluate(
+    "setTimeout(() => { const end = performance.now() + 120; while (performance.now() < end); })",
+  );
   expect(await longestTask(page)).toBeGreaterThanOrEqual(100);
 
-  await timed("Sync: first upload of everything", async () => {
-    await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
-    await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
-    await expect(card.getByText(/^Sincronizado/)).toBeVisible({ timeout: 120_000 });
-  }, 30_000);
+  await timed(
+    "Sync: first upload of everything",
+    async () => {
+      await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
+      await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
+      await expect(card.getByText(/^Sincronizado/)).toBeVisible({ timeout: 120_000 });
+    },
+    30_000,
+  );
   const firstLongest = await longestTask(page);
-  console.log(`${"Sync: longest stall in the first upload".padEnd(36)} ${String(firstLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  console.log(
+    `${"Sync: longest stall in the first upload".padEnd(36)} ${String(firstLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`,
+  );
   expect(firstLongest).toBeLessThan(STALL_BUDGET);
 
   // A normal moment of play: an entry written, then the exchange that sends it.
@@ -298,24 +378,34 @@ test("syncs years of play without stalling a modest phone", async ({ page }) => 
   await page.getByText("La gran campaña").first().click();
   await page.locator("[data-composer] textarea").fill("Una entrada que viaja.");
   await page.getByRole("button", { name: "Añadir al diario" }).click();
-  await expect(page.locator("[id^=entry-]").getByText("Una entrada que viaja.")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator("[id^=entry-]").getByText("Una entrada que viaja.")).toBeVisible({
+    timeout: 30_000,
+  });
   // A moment after the entry, the change is prepared for leaving (read and sealed): never a stall either.
   await longestTask(page);
   await page.waitForTimeout(4000);
   const preparing = await longestTask(page);
-  console.log(`${"Sync: longest stall preparing it".padEnd(36)} ${String(preparing).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  console.log(
+    `${"Sync: longest stall preparing it".padEnd(36)} ${String(preparing).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`,
+  );
   expect(preparing).toBeLessThan(STALL_BUDGET);
   await page.goto("./#/diario");
   await settings.click();
   await card.scrollIntoViewIfNeeded();
   await longestTask(page);
-  await timed("Sync: an exchange after one entry", async () => {
-    await card.getByRole("button", { name: "Sincronizar ahora" }).click();
-    await expect(card.getByText("Sincronizando…").first()).toBeHidden({ timeout: 60_000 });
-    await expect(card.getByText(/^Sincronizado/)).toBeVisible();
-  }, 10_000);
+  await timed(
+    "Sync: an exchange after one entry",
+    async () => {
+      await card.getByRole("button", { name: "Sincronizar ahora" }).click();
+      await expect(card.getByText("Sincronizando…").first()).toBeHidden({ timeout: 60_000 });
+      await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+    },
+    10_000,
+  );
   const steadyLongest = await longestTask(page);
-  console.log(`${"Sync: longest stall in that exchange".padEnd(36)} ${String(steadyLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`);
+  console.log(
+    `${"Sync: longest stall in that exchange".padEnd(36)} ${String(steadyLongest).padStart(6)} ms  (budget ${STALL_BUDGET} ms)`,
+  );
   expect(steadyLongest).toBeLessThan(STALL_BUDGET);
 
   expect(errors).toEqual([]);

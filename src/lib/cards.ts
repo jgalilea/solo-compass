@@ -35,7 +35,22 @@ export interface DeckOptions {
 
 const POKER_RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"] as const;
 const POKER_SUITS = ["h", "d", "c", "s"] as const;
-const TAROT_RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Pg", "Kn", "Q", "K"] as const;
+const TAROT_RANKS = [
+  "A",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "Pg",
+  "Kn",
+  "Q",
+  "K",
+] as const;
 const TAROT_SUITS = ["Wa", "Cu", "Sw", "Pe"] as const;
 
 /** Every card in a deck, by identity (no reversal: that's decided on drawing). */
@@ -85,30 +100,126 @@ const WORDS: Record<
   }
 > = {
   es: {
-    pokerRanks: { A: "As", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco", 6: "Seis", 7: "Siete", 8: "Ocho", 9: "Nueve", 10: "Diez", J: "Jota", Q: "Reina", K: "Rey" },
+    pokerRanks: {
+      A: "As",
+      2: "Dos",
+      3: "Tres",
+      4: "Cuatro",
+      5: "Cinco",
+      6: "Seis",
+      7: "Siete",
+      8: "Ocho",
+      9: "Nueve",
+      10: "Diez",
+      J: "Jota",
+      Q: "Reina",
+      K: "Rey",
+    },
     pokerSuits: { h: "corazones", d: "diamantes", c: "tréboles", s: "picas" },
     jokers: { RJkr: "Comodín rojo", BJkr: "Comodín negro" },
     major: [
-      "El Loco", "El Mago", "La Sacerdotisa", "La Emperatriz", "El Emperador", "El Hierofante", "Los Enamorados",
-      "El Carro", "La Fuerza", "El Ermitaño", "La Rueda de la Fortuna", "La Justicia", "El Colgado", "La Muerte",
-      "La Templanza", "El Diablo", "La Torre", "La Estrella", "La Luna", "El Sol", "El Juicio", "El Mundo",
+      "El Loco",
+      "El Mago",
+      "La Sacerdotisa",
+      "La Emperatriz",
+      "El Emperador",
+      "El Hierofante",
+      "Los Enamorados",
+      "El Carro",
+      "La Fuerza",
+      "El Ermitaño",
+      "La Rueda de la Fortuna",
+      "La Justicia",
+      "El Colgado",
+      "La Muerte",
+      "La Templanza",
+      "El Diablo",
+      "La Torre",
+      "La Estrella",
+      "La Luna",
+      "El Sol",
+      "El Juicio",
+      "El Mundo",
     ],
-    tarotRanks: { A: "As", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco", 6: "Seis", 7: "Siete", 8: "Ocho", 9: "Nueve", 10: "Diez", Pg: "Sota", Kn: "Caballo", Q: "Reina", K: "Rey" },
+    tarotRanks: {
+      A: "As",
+      2: "Dos",
+      3: "Tres",
+      4: "Cuatro",
+      5: "Cinco",
+      6: "Seis",
+      7: "Siete",
+      8: "Ocho",
+      9: "Nueve",
+      10: "Diez",
+      Pg: "Sota",
+      Kn: "Caballo",
+      Q: "Reina",
+      K: "Rey",
+    },
     tarotSuits: { Wa: "bastos", Cu: "copas", Sw: "espadas", Pe: "oros" },
     of: "de",
     reversed: "invertida",
   },
   en: {
-    pokerRanks: { A: "Ace", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten", J: "Jack", Q: "Queen", K: "King" },
+    pokerRanks: {
+      A: "Ace",
+      2: "Two",
+      3: "Three",
+      4: "Four",
+      5: "Five",
+      6: "Six",
+      7: "Seven",
+      8: "Eight",
+      9: "Nine",
+      10: "Ten",
+      J: "Jack",
+      Q: "Queen",
+      K: "King",
+    },
     pokerSuits: { h: "Hearts", d: "Diamonds", c: "Clubs", s: "Spades" },
     jokers: { RJkr: "Red Joker", BJkr: "Black Joker" },
     // Rider-Waite-Smith numbering, as the add-on (Strength 8, Justice 11).
     major: [
-      "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lovers",
-      "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death",
-      "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World",
+      "The Fool",
+      "The Magician",
+      "The High Priestess",
+      "The Empress",
+      "The Emperor",
+      "The Hierophant",
+      "The Lovers",
+      "The Chariot",
+      "Strength",
+      "The Hermit",
+      "Wheel of Fortune",
+      "Justice",
+      "The Hanged Man",
+      "Death",
+      "Temperance",
+      "The Devil",
+      "The Tower",
+      "The Star",
+      "The Moon",
+      "The Sun",
+      "Judgement",
+      "The World",
     ],
-    tarotRanks: { A: "Ace", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten", Pg: "Page", Kn: "Knight", Q: "Queen", K: "King" },
+    tarotRanks: {
+      A: "Ace",
+      2: "Two",
+      3: "Three",
+      4: "Four",
+      5: "Five",
+      6: "Six",
+      7: "Seven",
+      8: "Eight",
+      9: "Nine",
+      10: "Ten",
+      Pg: "Page",
+      Kn: "Knight",
+      Q: "Queen",
+      K: "King",
+    },
     tarotSuits: { Wa: "Wands", Cu: "Cups", Sw: "Swords", Pe: "Pentacles" },
     of: "of",
     reversed: "reversed",
@@ -124,7 +235,8 @@ export function cardName(id: string, locale: Locale): string | null {
   const w = WORDS[locale];
   if (id === "RJkr" || id === "BJkr") return w.jokers[id];
   const poker = id.match(POKER_ID);
-  if (poker) return `${w.pokerRanks[poker[1] as keyof typeof w.pokerRanks]} ${w.of} ${w.pokerSuits[poker[2] as keyof typeof w.pokerSuits]}`;
+  if (poker)
+    return `${w.pokerRanks[poker[1] as keyof typeof w.pokerRanks]} ${w.of} ${w.pokerSuits[poker[2] as keyof typeof w.pokerSuits]}`;
   const major = id.match(MAJOR_ID);
   const minor = id.match(MINOR_ID);
   const name = major
@@ -133,7 +245,7 @@ export function cardName(id: string, locale: Locale): string | null {
       ? `${w.tarotRanks[minor[1] as keyof typeof w.tarotRanks]} ${w.of} ${w.tarotSuits[minor[2] as keyof typeof w.tarotSuits]}`
       : null;
   if (!name) return null;
-  return (major?.[2] || minor?.[3]) ? `${name}, ${w.reversed}` : name;
+  return major?.[2] || minor?.[3] ? `${name}, ${w.reversed}` : name;
 }
 
 /**
@@ -155,7 +267,13 @@ const TAROT_COURT_LETTERS: Record<Locale, Record<"Pg" | "Kn" | "Q" | "K", string
 
 function romanNumeral(n: number): string {
   if (n === 0) return "0";
-  const parts: [number, string][] = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+  const parts: [number, string][] = [
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
   let left = n;
   let out = "";
   for (const [value, letters] of parts) {
@@ -172,12 +290,18 @@ export function cardLook(id: string, locale: Locale): CardLook | null {
   const poker = id.match(POKER_ID);
   if (poker) return { kind: "poker", rank: poker[1], suit: poker[2] as "h" | "d" | "c" | "s" };
   const major = id.match(MAJOR_ID);
-  if (major) return { kind: "major", numeral: romanNumeral(Number(major[1])), reversed: !!major[2] };
+  if (major)
+    return { kind: "major", numeral: romanNumeral(Number(major[1])), reversed: !!major[2] };
   const minor = id.match(MINOR_ID);
   if (!minor) return null;
   const rank = minor[1] as (typeof TAROT_RANKS)[number];
   const court = TAROT_COURT_LETTERS[locale][rank as keyof (typeof TAROT_COURT_LETTERS)["es"]];
-  return { kind: "minor", rank: court ?? rank, suit: minor[2] as "Wa" | "Cu" | "Sw" | "Pe", reversed: !!minor[3] };
+  return {
+    kind: "minor",
+    rank: court ?? rank,
+    suit: minor[2] as "Wa" | "Cu" | "Sw" | "Pe",
+    reversed: !!minor[3],
+  };
 }
 
 const SUIT_SYMBOLS: Record<string, string> = { h: "♥", d: "♦", c: "♣", s: "♠" };
@@ -205,7 +329,10 @@ export function showDraws(text: string): string {
 /** What a draw was for, before it ("Omen draw=Qs -> …"); empty if nothing. */
 export function cardPurpose(text: string): string {
   const arrow = text.lastIndexOf(" -> ");
-  return text.slice(0, Math.max(arrow, 0)).replace(/\bdraw=\S+$/, "").trim();
+  return text
+    .slice(0, Math.max(arrow, 0))
+    .replace(/\bdraw=\S+$/, "")
+    .trim();
 }
 
 /**
@@ -214,11 +341,16 @@ export function cardPurpose(text: string): string {
  * there are none.
  */
 export function readCards(text: string): string[] | null {
-  const ids = [...text.matchAll(/=([A-Za-z0-9]+)(?![\w+-])/g)].map((m) => m[1]).filter((id) => cardLook(id, "en"));
+  const ids = [...text.matchAll(/=([A-Za-z0-9]+)(?![\w+-])/g)]
+    .map((m) => m[1])
+    .filter((id) => cardLook(id, "en"));
   return ids.length > 0 ? ids : null;
 }
 
 /** Whether a roll's text is only cards drawn ("draw=Qs -> …, draw=3h -> …", with a description or not). */
 export function isCardDraw(text: string): boolean {
-  return /\bdraw=[A-Za-z0-9]+ ->/.test(text) && !/(^|\s)[-({\d]*d(\d|%|F)/.test(text.replace(/\bdraw=\S+/g, ""));
+  return (
+    /\bdraw=[A-Za-z0-9]+ ->/.test(text) &&
+    !/(^|\s)[-({\d]*d(\d|%|F)/.test(text.replace(/\bdraw=\S+/g, ""))
+  );
 }

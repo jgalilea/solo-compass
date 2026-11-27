@@ -5,7 +5,12 @@ import { useJournalContext } from "../hooks/useJournalContext";
 import { markBackupNudgeSeen, shouldNudgeBackup } from "../lib/backupReminder";
 import { preloadable } from "../lib/preloadable";
 import { settingsOpen } from "../lib/settingsOpen";
-import { loadSyncStatus, PAUSE_DOT_AFTER, subscribeSyncStatus, syncNeedsAttention } from "../lib/syncStatus";
+import {
+  loadSyncStatus,
+  PAUSE_DOT_AFTER,
+  subscribeSyncStatus,
+  syncNeedsAttention,
+} from "../lib/syncStatus";
 
 const SettingsPanel = preloadable(() => import("./SettingsPanel").then((m) => m.SettingsPanel));
 
@@ -30,7 +35,10 @@ export function SettingsDialog() {
   // A pause gets its dot once it has lasted a while: drawn again then.
   useEffect(() => {
     if (syncStatus?.state !== "paused" || syncDot) return;
-    const id = setTimeout(() => setTick((n) => n + 1), syncStatus.since + PAUSE_DOT_AFTER - Date.now() + 1000);
+    const id = setTimeout(
+      () => setTick((n) => n + 1),
+      syncStatus.since + PAUSE_DOT_AFTER - Date.now() + 1000,
+    );
     return () => clearTimeout(id);
   }, [syncStatus, syncDot]);
 

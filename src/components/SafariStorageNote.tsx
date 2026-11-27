@@ -26,7 +26,9 @@ export function SafariStorageNote() {
       <IconInstall size={18} className="mt-0.5 shrink-0 text-gold" />
       <div className="flex flex-col gap-1 text-sm text-parchment-dim">
         <p>{t.safariNote.text}</p>
-        <p className="text-xs text-parchment-dim">{syncAvailable() ? t.safariNote.moveDataSync : t.safariNote.moveData}</p>
+        <p className="text-xs text-parchment-dim">
+          {syncAvailable() ? t.safariNote.moveDataSync : t.safariNote.moveData}
+        </p>
       </div>
       <button
         type="button"

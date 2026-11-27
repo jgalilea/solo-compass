@@ -26,10 +26,16 @@ export function fakeRelay() {
       "Content-Type": "application/octet-stream",
     };
     if (failWith) {
-      return route.fulfill({ status: 503, headers, body: Buffer.from(encodeFrame({ ok: false, error: failWith, now: Date.now() })) });
+      return route.fulfill({
+        status: 503,
+        headers,
+        body: Buffer.from(encodeFrame({ ok: false, error: failWith, now: Date.now() })),
+      });
     }
     if (LIVE_RELAY) return route.continue();
-    const { header, payload } = decodeFrame(new Uint8Array(request.postDataBuffer() ?? Buffer.alloc(0)));
+    const { header, payload } = decodeFrame(
+      new Uint8Array(request.postDataBuffer() ?? Buffer.alloc(0)),
+    );
     const parsed = parseSyncRequest(header, payload.length);
     if (!parsed) return route.fulfill({ status: 400, headers, body: "" });
     const { pass, ...rest } = parsed;
@@ -55,4 +61,3 @@ export function fakeRelay() {
     rowsWritten: () => [...boxes.values()].reduce((sum, box) => sum + box.rowsWritten, 0),
   };
 }
-

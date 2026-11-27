@@ -40,7 +40,13 @@ describe("oracleOdds", () => {
   });
 
   it("gives Ironsworn's thresholds exactly, with a match one time in ten", () => {
-    const expected = { "muy-improbable": 0.1, improbable: 0.25, equilibrado: 0.5, probable: 0.75, "muy-probable": 0.9 };
+    const expected = {
+      "muy-improbable": 0.1,
+      improbable: 0.25,
+      equilibrado: 0.5,
+      probable: 0.75,
+      "muy-probable": 0.9,
+    };
     for (const [level, yes] of Object.entries(expected)) {
       const odds = oracleOdds("ironsworn", level as keyof typeof expected);
       expect(odds.yes).toBeCloseTo(yes);
@@ -70,9 +76,19 @@ describe("oracleOdds", () => {
 
 describe("throwOracle", () => {
   it("reads Loner's chance and risk dice", () => {
-    expect(throwOracle("loner", "equilibrado", fixed(5, 4))).toMatchObject({ answer: "si", qualifier: "y" });
-    expect(throwOracle("loner", "equilibrado", fixed(2, 3))).toMatchObject({ answer: "no", qualifier: "pero" });
-    expect(throwOracle("loner", "equilibrado", fixed(3, 3))).toMatchObject({ answer: "si", qualifier: "pero", special: "double" });
+    expect(throwOracle("loner", "equilibrado", fixed(5, 4))).toMatchObject({
+      answer: "si",
+      qualifier: "y",
+    });
+    expect(throwOracle("loner", "equilibrado", fixed(2, 3))).toMatchObject({
+      answer: "no",
+      qualifier: "pero",
+    });
+    expect(throwOracle("loner", "equilibrado", fixed(3, 3))).toMatchObject({
+      answer: "si",
+      qualifier: "pero",
+      special: "double",
+    });
     // Disadvantage: two risk dice, the highest counts.
     const roll = throwOracle("loner", "improbable", fixed(4, 2, 5));
     expect(roll.dice[1]).toMatchObject({ role: "risk", rolls: [2, 5], kept: 5 });
@@ -88,9 +104,18 @@ describe("throwOracle", () => {
   });
 
   it("reads One Page Solo Engine's modifier die", () => {
-    expect(throwOracle("opse", "equilibrado", fixed(4, 1))).toMatchObject({ answer: "si", qualifier: "pero" });
-    expect(throwOracle("opse", "equilibrado", fixed(3, 6))).toMatchObject({ answer: "no", qualifier: "y" });
-    expect(throwOracle("opse", "probable", fixed(3, 3))).toMatchObject({ answer: "si", qualifier: null });
+    expect(throwOracle("opse", "equilibrado", fixed(4, 1))).toMatchObject({
+      answer: "si",
+      qualifier: "pero",
+    });
+    expect(throwOracle("opse", "equilibrado", fixed(3, 6))).toMatchObject({
+      answer: "no",
+      qualifier: "y",
+    });
+    expect(throwOracle("opse", "probable", fixed(3, 3))).toMatchObject({
+      answer: "si",
+      qualifier: null,
+    });
   });
 });
 

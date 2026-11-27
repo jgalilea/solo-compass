@@ -63,7 +63,10 @@ export function RecentRolls({
       </div>
       <ul className="flex flex-col divide-y divide-ink-border/60 rounded-2xl border border-ink-border bg-ink-900/40">
         {recent.map((entry, i) => (
-          <li key={entry.id} className={`${i < limit ? "flex" : "hidden 2xl:flex"} items-center gap-3 px-4 py-2.5 text-sm`}>
+          <li
+            key={entry.id}
+            className={`${i < limit ? "flex" : "hidden 2xl:flex"} items-center gap-3 px-4 py-2.5 text-sm`}
+          >
             {entry.kind === "oraculo" ? (
               <>
                 <span className="-mx-1.5 -my-1 flex shrink-0 gap-1">
@@ -86,9 +89,7 @@ export function RecentRolls({
                 <span className="line-clamp-2 min-w-0 flex-1 break-words italic text-parchment/85">
                   {entry.question && `“${entry.question}”`}
                 </span>
-                <span
-                  className={`shrink-0 font-semibold ${ANSWER_COLOR[entry.answer]}`}
-                >
+                <span className={`shrink-0 font-semibold ${ANSWER_COLOR[entry.answer]}`}>
                   {formatAnswer(t, entry)}
                 </span>
               </>
@@ -100,7 +101,10 @@ export function RecentRolls({
                   <span className="-mx-[3px] -my-1.5 flex shrink-0">
                     <PlayingCard id={entry.card.id} small />
                   </span>
-                  <OwnRoll what={cardPurpose(entry.text)} result={entry.text.slice(entry.text.lastIndexOf(" -> ") + 4)} />
+                  <OwnRoll
+                    what={cardPurpose(entry.text)}
+                    result={entry.text.slice(entry.text.lastIndexOf(" -> ") + 4)}
+                  />
                 </>
               ) : (
                 <DiceRow text={entry.text} />
@@ -112,7 +116,10 @@ export function RecentRolls({
                   {entry.tableName}
                   {/* A lone die already says it. */}
                   {!(tableRollDie(entry) ?? "d66").match(/^d(?!66$)/) && (
-                    <span className="whitespace-nowrap tabular-nums text-parchment-faint"> · {entry.total}</span>
+                    <span className="whitespace-nowrap tabular-nums text-parchment-faint">
+                      {" "}
+                      · {entry.total}
+                    </span>
                   )}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-right text-parchment/85">
@@ -165,7 +172,9 @@ function OwnRoll({ what, result }: { what: string; result: string }) {
   return (
     <>
       <span className="min-w-0 shrink truncate text-parchment-dim">{what}</span>
-      <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">{result}</span>
+      <span className="min-w-0 flex-1 truncate text-right font-medium text-parchment/85">
+        {result}
+      </span>
     </>
   );
 }

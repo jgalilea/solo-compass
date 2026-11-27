@@ -1,6 +1,13 @@
 import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { IconCoffee, IconCompass, IconDice, IconJournal, IconOracle, IconTable } from "./icons/Icons";
+import {
+  IconCoffee,
+  IconCompass,
+  IconDice,
+  IconJournal,
+  IconOracle,
+  IconTable,
+} from "./icons/Icons";
 import { SettingsDialog } from "./SettingsDialog";
 import { Announcer } from "./Announcer";
 import { IncomingFiles } from "./IncomingFiles";
@@ -45,18 +52,23 @@ export function Layout() {
   // that section for highlighting). Dice sit with the other tools,
   // before the journal.
   // The history reached from the Tables or Dice screen counts as part of it.
-  const historyOf = location.pathname.startsWith("/historial") ? new URLSearchParams(location.search).get("tipo") : null;
+  const historyOf = location.pathname.startsWith("/historial")
+    ? new URLSearchParams(location.search).get("tipo")
+    : null;
   const fromDice = historyOf === "dados";
   const fromTables = historyOf === "tabla";
   // ...and from an adventure's menu, part of the journal.
-  const fromAdventure = location.pathname.startsWith("/historial") && new URLSearchParams(location.search).has("aventura");
+  const fromAdventure =
+    location.pathname.startsWith("/historial") &&
+    new URLSearchParams(location.search).has("aventura");
   const tabs = [
     {
       to: "/",
       label: t.nav.oracle,
       Icon: IconOracle,
       isActive:
-        location.pathname === "/" || (location.pathname.startsWith("/historial") && !fromDice && !fromTables && !fromAdventure),
+        location.pathname === "/" ||
+        (location.pathname.startsWith("/historial") && !fromDice && !fromTables && !fromAdventure),
       hotkey: "1",
     },
     {
@@ -155,7 +167,9 @@ export function Layout() {
       <header
         className={`border-b border-ink-border/70 py-2 lg:sticky lg:top-0 lg:z-40 lg:flex lg:h-14 lg:items-center lg:bg-ink-950 lg:py-0 ${inAdventure ? "max-lg:hidden" : ""}`}
       >
-        <div className={`${PAGE_WIDTH} flex items-center justify-between gap-3 px-4 text-parchment lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-6`}>
+        <div
+          className={`${PAGE_WIDTH} flex items-center justify-between gap-3 px-4 text-parchment lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-6`}
+        >
           <div className="flex shrink-0 items-center gap-2.5">
             <IconCompass size={26} className="text-gold" />
             {/* On phones only the logo, so the adventure chip has room

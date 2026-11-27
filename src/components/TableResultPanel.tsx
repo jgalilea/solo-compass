@@ -47,7 +47,9 @@ export function ResultPanel({
         {/* A generator's detail is long: it wraps under the title. */}
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-xs uppercase tracking-wide text-parchment-dim">
           <span className="max-w-full truncate">
-            {inline && last.total !== undefined ? interpolate(t.tables.resultLabel, { n: last.total }) : last.title}
+            {inline && last.total !== undefined
+              ? interpolate(t.tables.resultLabel, { n: last.total })
+              : last.title}
           </span>
           <span className="min-w-0 break-words">
             {last.detail}
@@ -56,7 +58,9 @@ export function ResultPanel({
         </div>
         <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 ${inline ? "mt-2" : "mt-3"}`}>
           {last.dice && <TableDiceRow groups={last.dice} size="sm" animate />}
-          <p className={`min-w-32 flex-1 ${inline ? "text-parchment" : "text-lg font-medium leading-snug text-parchment"}`}>
+          <p
+            className={`min-w-32 flex-1 ${inline ? "text-parchment" : "text-lg font-medium leading-snug text-parchment"}`}
+          >
             {last.text}
           </p>
         </div>

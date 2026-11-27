@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { JournalEntry } from "./lonelog";
 import { isStoryEntry } from "./zenMode";
 
-const entry = (kind: JournalEntry["kind"], text: string): JournalEntry => ({ id: text, adventureId: "a", timestamp: 0, kind, text });
+const entry = (kind: JournalEntry["kind"], text: string): JournalEntry => ({
+  id: text,
+  adventureId: "a",
+  timestamp: 0,
+  kind,
+  text,
+});
 
 describe("zen mode: what's part of the story", () => {
   it("keeps what's told", () => {

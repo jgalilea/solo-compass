@@ -114,7 +114,8 @@ export function CastItem({
   // A closed thread or a foe out of the fight: dimmed and struck through.
   const done = (status && status !== "open") || (member.kind === "foe" && foeIsOut(member));
 
-  const quantity = (amount: string) => formatQuantity(member.kind, member.name, amount, member.owner ?? purseOwner);
+  const quantity = (amount: string) =>
+    formatQuantity(member.kind, member.name, amount, member.owner ?? purseOwner);
 
   // −/+ on a clock writes its new value as a journal entry (the log is
   // a record: nothing is edited in place). Clocks and tracks stay
@@ -136,9 +137,18 @@ export function CastItem({
     // Money is only its amount: "in the chest" has nowhere to go.
     else if (member.kind === "wealth") return;
     else {
-      const details = change.split(",").map((d) => d.trim()).filter(Boolean);
+      const details = change
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean);
       if (details.length === 0) return;
-      onLog(formatTag(member.kind, member.name, writeDetails(member.kind, details, t.notebook.categories)));
+      onLog(
+        formatTag(
+          member.kind,
+          member.name,
+          writeDetails(member.kind, details, t.notebook.categories),
+        ),
+      );
     }
     setChange("");
     setChanging(false);
@@ -161,7 +171,11 @@ export function CastItem({
           aria-expanded={open}
           className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-ink-700/50"
         >
-          <CastIcon kind={member.kind} size={16} className={`shrink-0 ${done ? "text-parchment-dim" : "text-gold"}`} />
+          <CastIcon
+            kind={member.kind}
+            size={16}
+            className={`shrink-0 ${done ? "text-parchment-dim" : "text-gold"}`}
+          />
           <span className="min-w-0 flex-1">
             <span
               onMouseEnter={titleIfCut(member.name)}
@@ -176,7 +190,10 @@ export function CastItem({
               <ProgressBar kind={member.kind} progress={progress} />
             ) : (
               member.tags.length > 0 && (
-                <span onMouseEnter={titleIfCut(tags.join(" · "))} className="block truncate text-xs text-parchment-dim">
+                <span
+                  onMouseEnter={titleIfCut(tags.join(" · "))}
+                  className="block truncate text-xs text-parchment-dim"
+                >
                   {tags.join(" · ")}
                 </span>
               )
@@ -190,11 +207,15 @@ export function CastItem({
               ].join(" ")}
             >
               {(isProgress || isQuantity) && progress ? progressText(progress) : kindLabel}
-              {complete && ` · ${member.kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
+              {complete &&
+                ` · ${member.kind === "timer" ? t.notebook.timerDone : t.notebook.progressFull}`}
             </span>
           )}
           {!isProgress && !isQuantity && (
-            <IconChevronRight size={14} className={`shrink-0 text-parchment-dim transition-transform ${open ? "rotate-90" : ""}`} />
+            <IconChevronRight
+              size={14}
+              className={`shrink-0 text-parchment-dim transition-transform ${open ? "rotate-90" : ""}`}
+            />
           )}
         </button>
         {(isProgress || isQuantity) && (
@@ -227,7 +248,10 @@ export function CastItem({
           {!isProgress && member.tags.length > 0 && (
             <ul className="flex flex-wrap gap-1">
               {member.tags.map((tag) => (
-                <li key={tag} className="rounded-md border border-ink-border px-1.5 py-0.5 text-xs text-parchment">
+                <li
+                  key={tag}
+                  className="rounded-md border border-ink-border px-1.5 py-0.5 text-xs text-parchment"
+                >
                   {showDetail(tag, t.notebook.categories)}
                 </li>
               ))}
@@ -235,7 +259,9 @@ export function CastItem({
           )}
 
           <p className="text-[0.7rem] text-parchment-faint">
-            {count === 1 ? t.notebook.mentionCountOne : interpolate(t.notebook.mentionCount, { count })}
+            {count === 1
+              ? t.notebook.mentionCountOne
+              : interpolate(t.notebook.mentionCount, { count })}
           </p>
           <ul className="flex max-h-48 flex-col gap-0.5 overflow-y-auto overscroll-contain">
             {member.mentions.map((id) => {
@@ -249,12 +275,17 @@ export function CastItem({
                     className="w-full rounded-md px-1.5 py-1 text-left text-xs text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
                   >
                     {/* Clamped inside: on the padded button a third line peeked out. */}
-                    <span onMouseEnter={titleIfCut(tagsToPlainText(entry.text))} className="line-clamp-2">
+                    <span
+                      onMouseEnter={titleIfCut(tagsToPlainText(entry.text))}
+                      className="line-clamp-2"
+                    >
                       {tagsToPlainText(entry.text)}
                     </span>
                     {/* Where it is, as in the journal search. */}
                     <span className="mt-0.5 block truncate text-[0.65rem] text-parchment-faint">
-                      {[sessionOf.get(id)?.title ?? t.journal.prologueLabel, dayOf(id)].filter(Boolean).join(" · ")}
+                      {[sessionOf.get(id)?.title ?? t.journal.prologueLabel, dayOf(id)]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   </button>
                 </li>
@@ -309,7 +340,9 @@ export function CastItem({
                       setChanging(false);
                     }
                   }}
-                  placeholder={isQuantity ? t.notebook.quantityChangePlaceholder : t.notebook.changePlaceholder}
+                  placeholder={
+                    isQuantity ? t.notebook.quantityChangePlaceholder : t.notebook.changePlaceholder
+                  }
                   aria-label={t.notebook.changeButton}
                   className={`${INPUT_CLASS} bg-ink-900/70 py-1.5 text-sm`}
                 />
@@ -331,7 +364,14 @@ export function CastItem({
                 <button
                   type="button"
                   onClick={() =>
-                    onLog(formatTag("thread", member.name, [threadChange(member, t.notebook.statuses[status === "open" ? "closed" : "open"])]))
+                    onLog(
+                      formatTag("thread", member.name, [
+                        threadChange(
+                          member,
+                          t.notebook.statuses[status === "open" ? "closed" : "open"],
+                        ),
+                      ]),
+                    )
                   }
                   className="flex items-center gap-1 rounded-lg border border-ink-border px-2 py-1 text-xs text-parchment-dim transition hover:border-gold/50 hover:text-gold"
                 >
@@ -384,7 +424,15 @@ export function CastItem({
  * An element's description: read as text, tapped to edit, saved after
  * a short pause and when leaving the field (like the pinned notes).
  */
-function DescriptionField({ name, text, onChange }: { name: string; text: string; onChange: (text: string) => void }) {
+function DescriptionField({
+  name,
+  text,
+  onChange,
+}: {
+  name: string;
+  text: string;
+  onChange: (text: string) => void;
+}) {
   const { t } = useLocaleContext();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);

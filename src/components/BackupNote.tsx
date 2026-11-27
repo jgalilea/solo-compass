@@ -17,7 +17,10 @@ export function BackupNote() {
   const { t } = useLocaleContext();
   const [hidden, setHidden] = useState(false);
   const [failed, setFailed] = useState(false);
-  const due = useMemo(() => shouldShowBackupNote(entries.map((e) => e.editedAt ?? e.timestamp)), [entries]);
+  const due = useMemo(
+    () => shouldShowBackupNote(entries.map((e) => e.editedAt ?? e.timestamp)),
+    [entries],
+  );
   if (hidden || !due) return null;
 
   async function exportAll() {
@@ -33,7 +36,10 @@ export function BackupNote() {
   }
 
   return (
-    <div role="note" className="rounded-2xl border border-no/50 bg-no/10 px-3.5 py-3 text-sm text-parchment">
+    <div
+      role="note"
+      className="rounded-2xl border border-no/50 bg-no/10 px-3.5 py-3 text-sm text-parchment"
+    >
       <button
         type="button"
         onClick={() => {
@@ -50,7 +56,8 @@ export function BackupNote() {
         <IconAlertTriangle size={16} className="mr-1.5 inline align-[-0.15em] text-no" />
         {isSyncEnabled() ? (
           <>
-            <span className="font-semibold">{t.backupNote.syncedTitle}</span> {t.backupNote.syncedText}
+            <span className="font-semibold">{t.backupNote.syncedTitle}</span>{" "}
+            {t.backupNote.syncedText}
           </>
         ) : (
           <>

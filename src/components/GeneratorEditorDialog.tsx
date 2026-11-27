@@ -71,7 +71,11 @@ export function GeneratorEditorDialog({
 
   return (
     <Modal onClose={onClose} labelledBy={titleId} size="lg">
-      <DialogHeader id={titleId} title={editing ? t.tables.generatorEditTitle : t.tables.generatorNewTitle} onClose={onClose} />
+      <DialogHeader
+        id={titleId}
+        title={editing ? t.tables.generatorEditTitle : t.tables.generatorNewTitle}
+        onClose={onClose}
+      />
       <DialogBody>
         <form
           id={formId}
@@ -91,7 +95,9 @@ export function GeneratorEditorDialog({
               aria-invalid={tried && nameMissing}
               className={`${INPUT_CLASS} flex-none py-2.5`}
             />
-            {tried && nameMissing && <span className="text-xs text-no">{t.tables.generatorNameError}</span>}
+            {tried && nameMissing && (
+              <span className="text-xs text-no">{t.tables.generatorNameError}</span>
+            )}
           </label>
 
           <div className="flex flex-col gap-1.5">
@@ -103,7 +109,9 @@ export function GeneratorEditorDialog({
                     key={table.id}
                     className="flex items-center gap-2 rounded-xl border border-ink-border bg-ink-900/50 py-1.5 pl-3 pr-1.5 text-sm"
                   >
-                    <span className="w-4 shrink-0 text-xs tabular-nums text-parchment-faint">{i + 1}</span>
+                    <span className="w-4 shrink-0 text-xs tabular-nums text-parchment-faint">
+                      {i + 1}
+                    </span>
                     <TableName table={table} />
                     <span className="flex shrink-0">
                       <RowButton
@@ -132,7 +140,9 @@ export function GeneratorEditorDialog({
                 ))}
               </ol>
             )}
-            {tried && tooFew && <span className="text-xs text-no">{t.tables.generatorTablesError}</span>}
+            {tried && tooFew && (
+              <span className="text-xs text-no">{t.tables.generatorTablesError}</span>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -140,7 +150,10 @@ export function GeneratorEditorDialog({
               {t.tables.generatorSearchLabel}
             </label>
             <div className="relative flex">
-              <IconSearch size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint" />
+              <IconSearch
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint"
+              />
               <input
                 id={searchId}
                 type="search"
@@ -175,7 +188,6 @@ export function GeneratorEditorDialog({
               </ul>
             )}
           </div>
-
         </form>
       </DialogBody>
       <DialogFooter>

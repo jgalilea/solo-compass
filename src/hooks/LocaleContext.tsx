@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { loadDictionary, loadedDictionary, loadLocale, saveLocale, type Dictionary, type Locale } from "../lib/i18n";
+import {
+  loadDictionary,
+  loadedDictionary,
+  loadLocale,
+  saveLocale,
+  type Dictionary,
+  type Locale,
+} from "../lib/i18n";
 import { LocaleContext } from "./localeContextInstance";
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
@@ -30,7 +37,5 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
-  return (
-    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
-  );
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

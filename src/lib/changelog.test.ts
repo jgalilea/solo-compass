@@ -17,9 +17,12 @@ describe("changelog", () => {
   });
 
   it("goes from newest to oldest, one version per chapter", () => {
-    for (const entry of CHANGELOG) expect(entry.version, entry.text.en.title).toMatch(/^\d+\.\d+\.\d+$/);
+    for (const entry of CHANGELOG)
+      expect(entry.version, entry.text.en.title).toMatch(/^\d+\.\d+\.\d+$/);
     for (let i = 1; i < CHANGELOG.length; i++) {
-      expect(newer(CHANGELOG[i - 1].version, CHANGELOG[i].version), CHANGELOG[i].version).toBe(true);
+      expect(newer(CHANGELOG[i - 1].version, CHANGELOG[i].version), CHANGELOG[i].version).toBe(
+        true,
+      );
       expect(CHANGELOG[i - 1].date >= CHANGELOG[i].date, CHANGELOG[i].version).toBe(true);
     }
   });

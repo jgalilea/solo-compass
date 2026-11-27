@@ -37,17 +37,31 @@ function base64url(bytes: ArrayBuffer): string {
 }
 
 export async function deriveKeys(secret: Uint8Array<ArrayBuffer>): Promise<SyncKeys> {
-  const base = await crypto.subtle.importKey("raw", secret, "HKDF", false, ["deriveBits", "deriveKey"]);
-  const params = (info: string): HkdfParams => ({ name: "HKDF", hash: "SHA-256", salt: SALT, info: encoder.encode(info) });
+  const base = await crypto.subtle.importKey("raw", secret, "HKDF", false, [
+    "deriveBits",
+    "deriveKey",
+  ]);
+  const params = (info: string): HkdfParams => ({
+    name: "HKDF",
+    hash: "SHA-256",
+    salt: SALT,
+    info: encoder.encode(info),
+  });
   const [box, pass, key] = await Promise.all([
     crypto.subtle.deriveBits(params("box"), base, 128),
     crypto.subtle.deriveBits(params("pass"), base, 256),
-    crypto.subtle.deriveKey(params("data"), base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]),
+    crypto.subtle.deriveKey(params("data"), base, { name: "AES-GCM", length: 256 }, false, [
+      "encrypt",
+      "decrypt",
+    ]),
   ]);
   return { box: hex(box), pass: base64url(pass), key };
 }
 
-async function through(bytes: Uint8Array<ArrayBuffer>, stream: CompressionStream | DecompressionStream): Promise<Uint8Array<ArrayBuffer>> {
+async function through(
+  bytes: Uint8Array<ArrayBuffer>,
+  stream: CompressionStream | DecompressionStream,
+): Promise<Uint8Array<ArrayBuffer>> {
   const piped = new Blob([bytes]).stream().pipeThrough(stream);
   return new Uint8Array(await new Response(piped).arrayBuffer());
 }
@@ -56,10 +70,21 @@ function boundTo(keys: SyncKeys, kind: SealedKind): Uint8Array<ArrayBuffer> {
   return encoder.encode(`${keys.box}:${kind}`);
 }
 
-export async function seal(keys: SyncKeys, kind: SealedKind, value: unknown): Promise<Uint8Array<ArrayBuffer>> {
-  const packed = await through(encoder.encode(JSON.stringify(value)), new CompressionStream("gzip"));
+export async function seal(
+  keys: SyncKeys,
+  kind: SealedKind,
+  value: unknown,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const packed = await through(
+    encoder.encode(JSON.stringify(value)),
+    new CompressionStream("gzip"),
+  );
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: boundTo(keys, kind) }, keys.key, packed);
+  const cipher = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv, additionalData: boundTo(keys, kind) },
+    keys.key,
+    packed,
+  );
   const sealed = new Uint8Array(1 + iv.length + cipher.byteLength);
   sealed[0] = FORMAT;
   sealed.set(iv, 1);
@@ -67,8 +92,13 @@ export async function seal(keys: SyncKeys, kind: SealedKind, value: unknown): Pr
   return sealed;
 }
 
-export async function unseal(keys: SyncKeys, kind: SealedKind, sealed: Uint8Array): Promise<unknown> {
-  if (sealed.length < 1 + 12 + 16 || sealed[0] !== FORMAT) throw new SyncDataError("unknown format");
+export async function unseal(
+  keys: SyncKeys,
+  kind: SealedKind,
+  sealed: Uint8Array,
+): Promise<unknown> {
+  if (sealed.length < 1 + 12 + 16 || sealed[0] !== FORMAT)
+    throw new SyncDataError("unknown format");
   const copy = new Uint8Array(sealed);
   let plain: ArrayBuffer;
   try {

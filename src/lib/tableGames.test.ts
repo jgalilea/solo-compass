@@ -35,7 +35,9 @@ const NAMES_ONLY = new Set([
   "ironsmith-troll-names",
 ]);
 
-const loaded = await Promise.all(TABLE_GAMES.map(async (game) => ({ game, data: await game.load() })));
+const loaded = await Promise.all(
+  TABLE_GAMES.map(async (game) => ({ game, data: await game.load() })),
+);
 
 describe.each(loaded)("built-in tables: $game.id", ({ game, data }) => {
   it("the index knows how many tables it has and which ids are its own", () => {
@@ -80,7 +82,11 @@ describe("built-in tables, all games", () => {
 
   it("every table has a known theme, and every theme has tables", () => {
     for (const table of all) expect(TABLE_THEMES, table.id).toContain(table.theme);
-    for (const theme of TABLE_THEMES) expect(all.some((t) => t.theme === theme), theme).toBe(true);
+    for (const theme of TABLE_THEMES)
+      expect(
+        all.some((t) => t.theme === theme),
+        theme,
+      ).toBe(true);
   });
 
   // A game that reprints another's table (Starsmith with Starforged's)
@@ -91,7 +97,8 @@ describe("built-in tables, all games", () => {
       for (const table of data) {
         const key = JSON.stringify(table.rows.map((r) => r.slice(0, 3)));
         const other = owners.get(key);
-        if (other && !other.startsWith(game.id + ":")) throw new Error(`${table.id} repeats ${other}`);
+        if (other && !other.startsWith(game.id + ":"))
+          throw new Error(`${table.id} repeats ${other}`);
         owners.set(key, `${game.id}:${table.id}`);
       }
     }

@@ -5,7 +5,12 @@ import { createCollection, diffById } from "./collectionStore";
 
 type Item = { id: string; v: number };
 const normalize = (x: unknown): Item | null =>
-  !!x && typeof x === "object" && typeof (x as Item).id === "string" && typeof (x as Item).v === "number" ? (x as Item) : null;
+  !!x &&
+  typeof x === "object" &&
+  typeof (x as Item).id === "string" &&
+  typeof (x as Item).v === "number"
+    ? (x as Item)
+    : null;
 let count = 0;
 const nextName = () => `test-${++count}`;
 
@@ -33,7 +38,13 @@ describe("createCollection", () => {
 
   it("removes only the ids it's told to", async () => {
     const store = createCollection({ name: nextName(), normalize });
-    await store.save({ put: [{ id: "a", v: 1 }, { id: "b", v: 1 }], remove: [] });
+    await store.save({
+      put: [
+        { id: "a", v: 1 },
+        { id: "b", v: 1 },
+      ],
+      remove: [],
+    });
     await store.save({ put: [{ id: "c", v: 1 }], remove: ["a"] });
     expect((await store.load()).map((x) => x.id).sort()).toEqual(["b", "c"]);
   });
@@ -62,7 +73,13 @@ describe("createCollection", () => {
 
   it("replaces everything with the given records", async () => {
     const store = createCollection({ name: nextName(), normalize });
-    await store.save({ put: [{ id: "a", v: 1 }, { id: "b", v: 1 }], remove: [] });
+    await store.save({
+      put: [
+        { id: "a", v: 1 },
+        { id: "b", v: 1 },
+      ],
+      remove: [],
+    });
     await store.replace([{ id: "c", v: 3 }]);
     expect(await store.load()).toEqual([{ id: "c", v: 3 }]);
   });

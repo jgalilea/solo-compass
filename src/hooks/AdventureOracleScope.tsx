@@ -11,7 +11,13 @@ import { useOracleContext } from "./useOracleContext";
  * the device's last used. Picking another one in the switcher changes
  * that adventure's alone. With no adventure, the device's, as it was.
  */
-export function AdventureOracleScope({ adventureId, children }: { adventureId: string | null | undefined; children: ReactNode }) {
+export function AdventureOracleScope({
+  adventureId,
+  children,
+}: {
+  adventureId: string | null | undefined;
+  children: ReactNode;
+}) {
   const parent = useOracleContext();
   const { adventures, setAdventureOracle } = useJournalContext();
   const adventure = adventureId ? adventures.find((a) => a.id === adventureId) : undefined;

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK_PAGE, buildEntryBlocks, composerShortcut, fitBlockWindow, filterGroups, groupBySession, splitRollText, splitOwnRolls } from "./journalUi";
+import {
+  BLOCK_PAGE,
+  buildEntryBlocks,
+  composerShortcut,
+  fitBlockWindow,
+  filterGroups,
+  groupBySession,
+  splitRollText,
+  splitOwnRolls,
+} from "./journalUi";
 import { buildCast } from "./lonelogTags";
 import { splitRollSeries } from "./rollLine";
 import { DICTIONARIES } from "./i18n/allDictionaries";
@@ -58,12 +67,25 @@ describe("buildEntryBlocks", () => {
   });
 
   it("a standalone roll also gathers its consequences", () => {
-    const blocks = buildEntryBlocks([entry("roll"), entry("consequence"), entry("action"), entry("consequence")]);
-    expect(kinds(blocks)).toEqual([["roll", "consequence"], ["action", "consequence"]]);
+    const blocks = buildEntryBlocks([
+      entry("roll"),
+      entry("consequence"),
+      entry("action"),
+      entry("consequence"),
+    ]);
+    expect(kinds(blocks)).toEqual([
+      ["roll", "consequence"],
+      ["action", "consequence"],
+    ]);
   });
 
   it("a consequence always joins the entry right before it", () => {
-    const blocks = buildEntryBlocks([entry("note"), entry("consequence"), entry("consequence"), entry("action")]);
+    const blocks = buildEntryBlocks([
+      entry("note"),
+      entry("consequence"),
+      entry("consequence"),
+      entry("action"),
+    ]);
     expect(kinds(blocks)).toEqual([["note", "consequence", "consequence"], ["action"]]);
   });
 
@@ -108,7 +130,9 @@ describe("splitRollText", () => {
       result: "Sí, y además.",
       answer: "si",
     });
-    expect(splitRollText("Recluse: white 1 / black 1 -> Contradiction").answer).toBe("contradiccion");
+    expect(splitRollText("Recluse: white 1 / black 1 -> Contradiction").answer).toBe(
+      "contradiccion",
+    );
     expect(splitRollText("Recluse: white 2 / black 4 -> No, but.").answer).toBe("no");
   });
 
@@ -117,14 +141,22 @@ describe("splitRollText", () => {
     expect(splitRollText("Sigilo -> Sí")).toMatchObject({ answer: undefined });
   });
 
-  it("without \"->\" everything is detail", () => {
-    expect(splitRollText("tiro dados")).toEqual({ detail: "tiro dados", result: null, answer: undefined });
+  it('without "->" everything is detail', () => {
+    expect(splitRollText("tiro dados")).toEqual({
+      detail: "tiro dados",
+      result: null,
+      answer: undefined,
+    });
   });
 });
 
 describe("splitRollSeries", () => {
   it("reads dice formulas too", () => {
-    expect(splitRollSeries("Ataque 2d20kh1 -> 17 (17, 5✗), 1d8+3 -> 7 (4 + 3), 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)")).toEqual({
+    expect(
+      splitRollSeries(
+        "Ataque 2d20kh1 -> 17 (17, 5✗), 1d8+3 -> 7 (4 + 3), 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)",
+      ),
+    ).toEqual({
       label: "Ataque",
       rolls: [
         { label: "", die: "2d20kh1", result: "17 (17, 5✗)" },
@@ -136,7 +168,9 @@ describe("splitRollSeries", () => {
 
   it("reads the whole dice notation: arithmetic, groups and new marks", () => {
     expect(
-      splitRollSeries("(1d6+2)*3 -> 18 ((4 + 2) × 3), {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), d6r -> 4 (1→4), 4dF.1 -> 0 (0 0 0 0)"),
+      splitRollSeries(
+        "(1d6+2)*3 -> 18 ((4 + 2) × 3), {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), d6r -> 4 (1→4), 4dF.1 -> 0 (0 0 0 0)",
+      ),
     ).toEqual({
       label: "",
       rolls: [
@@ -149,7 +183,11 @@ describe("splitRollSeries", () => {
   });
 
   it("keeps the description of a roll in the middle of the list", () => {
-    expect(splitRollSeries("2d6 -> 7 (3+4), Mejor tirada {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), Fuerza 4d6dl1 -> 14 (6+5+3, 2✗)")).toEqual({
+    expect(
+      splitRollSeries(
+        "2d6 -> 7 (3+4), Mejor tirada {4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗}), Fuerza 4d6dl1 -> 14 (6+5+3, 2✗)",
+      ),
+    ).toEqual({
       label: "",
       rolls: [
         { label: "", die: "2d6", result: "7 (3+4)" },
@@ -159,7 +197,7 @@ describe("splitRollSeries", () => {
     });
   });
 
-  it("leaves table rolls alone: \"d66=25\" is a rolled value, not a formula", () => {
+  it('leaves table rolls alone: "d66=25" is a rolled value, not a formula', () => {
     expect(splitRollSeries("Acción d66=34 -> Atacar, Tema d66=25 -> Muerte")).toBeNull();
   });
 
@@ -192,29 +230,65 @@ describe("splitRollSeries", () => {
 });
 
 describe("Lonelog 1.6 lines", () => {
-  const e = (kind: JournalLineKind, text: string, i: number): JournalEntry => ({ id: `e${i}`, adventureId: "a", timestamp: i, kind, text });
+  const e = (kind: JournalLineKind, text: string, i: number): JournalEntry => ({
+    id: `e${i}`,
+    adventureId: "a",
+    timestamp: i,
+    kind,
+    text,
+  });
 
   it("reads tbl:, gen: and a bare result, colouring an oracle's answer", () => {
-    expect(splitRollText("tbl: Forest Encounter d6=5 -> Traveler")).toEqual({ detail: "Forest Encounter d6=5", result: "Traveler", answer: undefined });
+    expect(splitRollText("tbl: Forest Encounter d6=5 -> Traveler")).toEqual({
+      detail: "Forest Encounter d6=5",
+      result: "Traveler",
+      answer: undefined,
+    });
     expect(splitRollText("gen: NPC -> Merchant / Secretive").detail).toBe("NPC");
-    expect(splitRollText("-> Yes, but... (d6=4)")).toEqual({ detail: "", result: "Yes, but... (d6=4)", answer: "si" });
+    expect(splitRollText("-> Yes, but... (d6=4)")).toEqual({
+      detail: "",
+      result: "Yes, but... (d6=4)",
+      answer: "si",
+    });
   });
 
   it("keeps a scene apart: a consequence right after it isn't joined to it", () => {
-    const blocks = buildEntryBlocks([e("scene", "S1 *Mill*", 1), e("consequence", "I find the journal.", 2), e("question", "Locked?", 3), e("roll", "-> No", 4)]);
+    const blocks = buildEntryBlocks([
+      e("scene", "S1 *Mill*", 1),
+      e("consequence", "I find the journal.", 2),
+      e("question", "Locked?", 3),
+      e("roll", "-> No", 4),
+    ]);
     expect(blocks.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"], ["e3", "e4"]]);
-    const afterBlock = buildEntryBlocks([e("note", "[/RESOURCES]", 1), e("consequence", "I light a torch.", 2)]);
+    const afterBlock = buildEntryBlocks([
+      e("note", "[/RESOURCES]", 1),
+      e("consequence", "I light a torch.", 2),
+    ]);
     expect(afterBlock.map((b) => b.map((x) => x.id))).toEqual([["e1"], ["e2"]]);
   });
 });
 
 describe("Lonelog 1.7 answers", () => {
   it("reads every form of an oracle's answer", () => {
-    for (const text of ["-> Yes (d6=5)", "-> Ya (6)", "-> Y", "-> Exceptional Yes (d100=4)", "d100=30 vs 35 -> Yes", "d100=3 vs 25 (CF 5) -> Yx"]) {
+    for (const text of [
+      "-> Yes (d6=5)",
+      "-> Ya (6)",
+      "-> Y",
+      "-> Exceptional Yes (d100=4)",
+      "d100=30 vs 35 -> Yes",
+      "d100=3 vs 25 (CF 5) -> Yx",
+    ]) {
       expect(splitRollText(text).answer, text).toBe("si");
     }
-    for (const text of ["-> Nb (3)", "-> No, but...", "d100=60 vs 35 -> No"]) expect(splitRollText(text).answer, text).toBe("no");
-    for (const text of ["-> Partially", "Stealth d6=5 vs TN 4 -> Success", "2<4 -> F", "-> Nobody", "d6 -> Yes"]) {
+    for (const text of ["-> Nb (3)", "-> No, but...", "d100=60 vs 35 -> No"])
+      expect(splitRollText(text).answer, text).toBe("no");
+    for (const text of [
+      "-> Partially",
+      "Stealth d6=5 vs TN 4 -> Success",
+      "2<4 -> F",
+      "-> Nobody",
+      "d6 -> Yes",
+    ]) {
       expect(splitRollText(text).answer, text).toBeUndefined();
     }
   });
@@ -241,7 +315,10 @@ describe("a storyline's point of view", () => {
       entry("action", "Nobody's in particular"),
     ];
     const about = (name: string) =>
-      filterGroups(groupBySession(entries), buildCast(entries).find((c) => c.name === name)!).groups.flatMap((g) => g.items.map((e) => e.text));
+      filterGroups(
+        groupBySession(entries),
+        buildCast(entries).find((c) => c.name === name)!,
+      ).groups.flatMap((g) => g.items.map((e) => e.text));
     expect(about("Alex").slice(1)).toEqual(["Climb", "Follow"]);
     expect(about("Jordan").slice(1)).toEqual(["Search", 'PC (Jordan): "Alex?"']);
   });
@@ -250,11 +327,21 @@ describe("a storyline's point of view", () => {
 describe("composerShortcut", () => {
   it("picks the entry type from the Lonelog typed at the start", () => {
     expect(composerShortcut("@ ")).toEqual({ mode: "action", text: "" });
-    expect(composerShortcut("@ I force the door")).toEqual({ mode: "action", text: "I force the door" });
-    expect(composerShortcut("@(Odile) Shuts it")).toEqual({ mode: "action", text: "(Odile) Shuts it" });
+    expect(composerShortcut("@ I force the door")).toEqual({
+      mode: "action",
+      text: "I force the door",
+    });
+    expect(composerShortcut("@(Odile) Shuts it")).toEqual({
+      mode: "action",
+      text: "(Odile) Shuts it",
+    });
     expect(composerShortcut("=> ")).toEqual({ mode: "consequence", text: "" });
     expect(composerShortcut("PC: ")).toEqual({ mode: "dialogue", text: "", speaker: { pc: true } });
-    expect(composerShortcut("PC (Alex): Hi")).toEqual({ mode: "dialogue", text: "Hi", speaker: { pc: true, name: "Alex" } });
+    expect(composerShortcut("PC (Alex): Hi")).toEqual({
+      mode: "dialogue",
+      text: "Hi",
+      speaker: { pc: true, name: "Alex" },
+    });
     expect(composerShortcut("N (Grey Cloak): Run")).toEqual({
       mode: "dialogue",
       text: "Run",
@@ -266,7 +353,19 @@ describe("composerShortcut", () => {
   });
 
   it("waits for the space and leaves everything else alone", () => {
-    for (const text of ["@", "=>", "PC:", "N (Odile)", "\\---", "\\-- Dear", "===", "Email me @ home", "PCs: two", "", "? Is it?"]) {
+    for (const text of [
+      "@",
+      "=>",
+      "PC:",
+      "N (Odile)",
+      "\\---",
+      "\\-- Dear",
+      "===",
+      "Email me @ home",
+      "PCs: two",
+      "",
+      "? Is it?",
+    ]) {
       expect(composerShortcut(text)).toBeNull();
     }
   });
@@ -290,7 +389,13 @@ describe("filterGroups", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].sessionEntry?.text).toBe("S1");
     // The question names her; its roll and consequence come along.
-    expect(groups[0].items.map((e) => e.kind)).toEqual(["question", "roll", "consequence", "note", "action"]);
+    expect(groups[0].items.map((e) => e.kind)).toEqual([
+      "question",
+      "roll",
+      "consequence",
+      "note",
+      "action",
+    ]);
     expect(count).toBe(3);
   });
 });
@@ -307,14 +412,22 @@ describe("splitOwnRolls", () => {
       label: "Dark omen",
       rolls: [{ label: "", die: "draw=M16r", result: "The Tower, reversed" }],
     });
-    expect(splitOwnRolls("tbl: Dark omen draw=M16r -> The Tower, reversed")).toEqual(splitOwnRolls("Dark omen draw=M16r -> The Tower, reversed"));
+    expect(splitOwnRolls("tbl: Dark omen draw=M16r -> The Tower, reversed")).toEqual(
+      splitOwnRolls("Dark omen draw=M16r -> The Tower, reversed"),
+    );
     expect(splitOwnRolls("Attack d20 -> 15, Damage 1d6+1 -> 5 (4 + 1)")?.rolls).toHaveLength(2);
   });
 
   it("leaves oracles, tables and prose as they are", () => {
     for (const text of [
-      "Recluse: white 3 / black 5 -> No", "tbl: Forest d66=42 -> A wolf", "Forest d20=13 -> 7",
-      "gen: Inspiration (Action d66=26, Theme d66=43) -> Hide", "d20+5=17 vs DC 15 -> Success", "d20 -> Success, barely", "d20", "-> Yes",
+      "Recluse: white 3 / black 5 -> No",
+      "tbl: Forest d66=42 -> A wolf",
+      "Forest d20=13 -> 7",
+      "gen: Inspiration (Action d66=26, Theme d66=43) -> Hide",
+      "d20+5=17 vs DC 15 -> Success",
+      "d20 -> Success, barely",
+      "d20",
+      "-> Yes",
     ]) {
       expect(splitOwnRolls(text), text).toBeNull();
     }

@@ -10,7 +10,10 @@
 import type { Dictionary } from "./i18n";
 
 /** The relay's address, from .env (VITE_SYNC_RELAY_URL): empty, no sync in this build. */
-export const SYNC_RELAY_URL: string = (import.meta.env.VITE_SYNC_RELAY_URL ?? "").replace(/\/+$/, "");
+export const SYNC_RELAY_URL: string = (import.meta.env.VITE_SYNC_RELAY_URL ?? "").replace(
+  /\/+$/,
+  "",
+);
 
 export function syncAvailable(): boolean {
   return SYNC_RELAY_URL !== "";
@@ -121,9 +124,22 @@ export function setSyncPending(value: boolean): void {
 }
 
 /** What the header's sync icon says, at a glance. */
-export type SyncGlance = "off" | "syncing" | "pending" | "ok" | "waiting" | "offline" | "paused" | "problem";
+export type SyncGlance =
+  | "off"
+  | "syncing"
+  | "pending"
+  | "ok"
+  | "waiting"
+  | "offline"
+  | "paused"
+  | "problem";
 
-export function syncGlance(enabled: boolean, status: SyncStatus | null, busy: boolean, pending: boolean): SyncGlance {
+export function syncGlance(
+  enabled: boolean,
+  status: SyncStatus | null,
+  busy: boolean,
+  pending: boolean,
+): SyncGlance {
   if (!enabled) return status?.state === "closed" ? "problem" : "off";
   if (busy) return "syncing";
   switch (status?.state) {

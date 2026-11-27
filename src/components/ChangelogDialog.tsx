@@ -7,9 +7,11 @@ import { Modal } from "./Modal";
 
 function formatDate(dateLocale: string, iso: string): string {
   // Midday UTC so the time zone never shifts the day.
-  return new Intl.DateTimeFormat(dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(
-    new Date(`${iso}T12:00:00Z`),
-  );
+  return new Intl.DateTimeFormat(dateLocale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${iso}T12:00:00Z`));
 }
 
 /**
@@ -42,11 +44,7 @@ export function ChangelogDialog() {
       </button>
 
       {open && (
-        <Modal
-          onClose={() => setOpen(false)}
-          label={t.changelog.title}
-          size="lg"
-        >
+        <Modal onClose={() => setOpen(false)} label={t.changelog.title} size="lg">
           <DialogHeader
             title={t.changelog.title}
             subtitle={t.changelog.intro}
@@ -80,7 +78,9 @@ export function ChangelogDialog() {
                       )}
                     </div>
                     <h3 className="mt-1 font-display text-lg text-parchment">{text.title}</h3>
-                    {text.intro && <p className="mt-1 text-sm italic text-parchment-dim">{text.intro}</p>}
+                    {text.intro && (
+                      <p className="mt-1 text-sm italic text-parchment-dim">{text.intro}</p>
+                    )}
                     <ul className="mt-2.5 flex list-disc flex-col gap-1.5 pl-4 text-sm text-parchment/90 marker:text-gold">
                       {text.items.map((item) => (
                         <li key={item}>{item}</li>

@@ -32,7 +32,9 @@ export function SessionIndex({ groups, onJump, onJumpToEntry }: IndexProps) {
           Icon={IconSession}
           title={t.journal.sessionsHeading}
           folded={folded}
-          onToggle={() => setFolded(toggleFoldedNotebookSection("sessionsBlock").has("sessionsBlock"))}
+          onToggle={() =>
+            setFolded(toggleFoldedNotebookSection("sessionsBlock").has("sessionsBlock"))
+          }
           count={groups.length}
         />
       </div>
@@ -45,7 +47,12 @@ export function SessionIndex({ groups, onJump, onJumpToEntry }: IndexProps) {
  * The same index where there's no room for a column (phone, tablet and
  * narrow desktop): a button in the header that drops it down.
  */
-export function SessionMenu({ groups, onJump, onJumpToEntry, className }: IndexProps & { className: string }) {
+export function SessionMenu({
+  groups,
+  onJump,
+  onJumpToEntry,
+  className,
+}: IndexProps & { className: string }) {
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -118,11 +125,18 @@ function SessionList({ groups, onJump, onJumpToEntry }: IndexProps) {
                   type="button"
                   onClick={() => setToggled((prev) => ({ ...prev, [key]: !open }))}
                   aria-expanded={open}
-                  aria-label={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, { session: title })}
-                  title={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, { session: title })}
+                  aria-label={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, {
+                    session: title,
+                  })}
+                  title={interpolate(open ? t.journal.hideScenes : t.journal.showScenes, {
+                    session: title,
+                  })}
                   className="shrink-0 rounded-md p-1 text-parchment-faint transition hover:text-gold"
                 >
-                  <IconChevronRight size={12} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+                  <IconChevronRight
+                    size={12}
+                    className={`transition-transform ${open ? "rotate-90" : ""}`}
+                  />
                 </button>
               ) : (
                 <span aria-hidden className="w-5 shrink-0" />
@@ -154,8 +168,13 @@ function SessionList({ groups, onJump, onJumpToEntry }: IndexProps) {
                         onClick={() => onJumpToEntry(scene.id)}
                         className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1 text-left text-xs text-parchment-dim transition hover:bg-ink-700/60 hover:text-parchment"
                       >
-                        <span className="shrink-0 font-semibold tabular-nums text-gold/80">{id}</span>
-                        <span onMouseEnter={titleIfCut(tagsToPlainText(context))} className="min-w-0 flex-1 truncate">
+                        <span className="shrink-0 font-semibold tabular-nums text-gold/80">
+                          {id}
+                        </span>
+                        <span
+                          onMouseEnter={titleIfCut(tagsToPlainText(context))}
+                          className="min-w-0 flex-1 truncate"
+                        >
                           {tagsToPlainText(context)}
                         </span>
                       </button>

@@ -78,7 +78,9 @@ export function splitCompact(line: string): string[] {
       // "@(A) Slash -> d:14<15": an arrow that leads to the next element.
       .replace(n + 1 < at.length ? /\s+->$/ : /^$/, "")
       // "d:4<5 ->F" as the standard form spaces it.
-      .replace(at.length > 1 ? /^(d:|tbl:.*?|->|=>|@(?!\()|\?)(?=\S)/ : /^$/, (s) => (/^tbl:.+/.test(s) ? s : `${s} `))
+      .replace(at.length > 1 ? /^(d:|tbl:.*?|->|=>|@(?!\()|\?)(?=\S)/ : /^$/, (s) =>
+        /^tbl:.+/.test(s) ? s : `${s} `,
+      )
       .replace(at.length > 1 && /^(?:d|tbl):/.test(line.slice(from)) ? /\s->(?=\S)/ : /^$/, " -> "),
   );
 }
@@ -86,7 +88,8 @@ export function splitCompact(line: string): string[] {
 /** A line meant as one element, with any symbol in it that would split it escaped. */
 export function escapeInner(line: string): string {
   let text = line;
-  for (let at = starts(text); at.length > 1; at = starts(text)) text = `${text.slice(0, at[1])}\\${text.slice(at[1])}`;
+  for (let at = starts(text); at.length > 1; at = starts(text))
+    text = `${text.slice(0, at[1])}\\${text.slice(at[1])}`;
   return text;
 }
 

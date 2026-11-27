@@ -14,7 +14,10 @@ export function RollDrawing({ detail, result }: { detail: string; result: string
   const cards = readCards(detail);
   const oracle = cards ? null : readOracleDice(detail);
   const tables = cards || oracle ? null : readTableDice(detail);
-  const dice = cards || oracle || tables || result === null ? null : readRolledDice(diceInDetail(detail) ?? `${detail} -> ${result}`);
+  const dice =
+    cards || oracle || tables || result === null
+      ? null
+      : readRolledDice(diceInDetail(detail) ?? `${detail} -> ${result}`);
   if (!cards && !oracle && !tables && !dice) return null;
   return (
     // As high as the line it's on (dice and cards are a bit taller), so

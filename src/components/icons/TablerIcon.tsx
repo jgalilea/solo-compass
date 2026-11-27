@@ -7,9 +7,20 @@ export type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number }
 // heavy next to text at the app's small sizes.
 // Decorative unless given an aria-label (an entry's kind, say): then
 // screen readers read it as an image with that name.
-export function TablerIcon({ icon: Glyph, size = 20, strokeWidth = 1.75, ...rest }: IconProps & { icon: Icon }) {
+export function TablerIcon({
+  icon: Glyph,
+  size = 20,
+  strokeWidth = 1.75,
+  ...rest
+}: IconProps & { icon: Icon }) {
   const labelled = rest["aria-label"] !== undefined;
   return (
-    <Glyph size={size} stroke={strokeWidth} aria-hidden={labelled ? undefined : true} role={labelled ? "img" : undefined} {...rest} />
+    <Glyph
+      size={size}
+      stroke={strokeWidth}
+      aria-hidden={labelled ? undefined : true}
+      role={labelled ? "img" : undefined}
+      {...rest}
+    />
   );
 }

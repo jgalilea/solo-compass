@@ -91,7 +91,8 @@ export function AdventureHeader({
 }) {
   const { t } = useLocaleContext();
   const navigate = useNavigate();
-  const { renameAdventure, setActiveAdventureId, setAdventureStatus, toggleAdventureFavorite } = useJournalContext();
+  const { renameAdventure, setActiveAdventureId, setAdventureStatus, toggleAdventureFavorite } =
+    useJournalContext();
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const isArchived = adventure.status === "archived";
@@ -145,7 +146,9 @@ export function AdventureHeader({
           <>
             {/* Up to two lines beside the buttons: whole, for all but the longest names. */}
             <h1 className="line-clamp-2 min-w-0 font-display text-lg leading-[1.05] break-words text-parchment max-[26rem]:text-base sm:text-xl xl:text-2xl">
-              {adventure.favorite && <IconStar size={15} filled className="mr-1.5 inline align-baseline text-gold" />}
+              {adventure.favorite && (
+                <IconStar size={15} filled className="mr-1.5 inline align-baseline text-gold" />
+              )}
               {adventure.name}
             </h1>
             {/* The gold dot (active) or the play icon (set active), only
@@ -159,7 +162,9 @@ export function AdventureHeader({
                 className="flex shrink-0 items-center gap-1.5 rounded-full border-gold/40 px-1 py-1 text-xs font-medium text-gold sm:border sm:bg-gold/10 sm:px-2.5"
               >
                 <span className="size-1.5 rounded-full bg-gold" />
-                <span aria-hidden className="max-sm:hidden">{t.journal.activeLabel}</span>
+                <span aria-hidden className="max-sm:hidden">
+                  {t.journal.activeLabel}
+                </span>
               </span>
             ) : (
               <button
@@ -170,7 +175,9 @@ export function AdventureHeader({
                 className="flex h-9 shrink-0 items-center justify-center gap-1 rounded-full border border-ink-border px-3 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold max-[26rem]:w-9 max-[26rem]:px-0"
               >
                 <IconPlay size={14} />
-                <span aria-hidden className="max-[26rem]:hidden">{t.journal.setActive}</span>
+                <span aria-hidden className="max-[26rem]:hidden">
+                  {t.journal.setActive}
+                </span>
               </button>
             )}
             {isArchived && (
@@ -196,7 +203,12 @@ export function AdventureHeader({
             )}
             {/* With a single session there's nowhere to jump to. */}
             {(groups.length > 1 || groups.some((g) => g.items.some((e) => e.kind === "scene"))) && (
-              <SessionMenu groups={groups} onJump={onJumpToSession} onJumpToEntry={onJumpToEntry} className="xl:hidden" />
+              <SessionMenu
+                groups={groups}
+                onJump={onJumpToSession}
+                onJumpToEntry={onJumpToEntry}
+                className="xl:hidden"
+              />
             )}
             <button
               type="button"
@@ -221,18 +233,44 @@ export function AdventureHeader({
                   onSelect: () => toggleAdventureFavorite(adventure.id),
                 },
                 isActive
-                  ? { label: t.journal.unsetActive, Icon: IconPause, onSelect: () => setActiveAdventureId(null) }
+                  ? {
+                      label: t.journal.unsetActive,
+                      Icon: IconPause,
+                      onSelect: () => setActiveAdventureId(null),
+                    }
                   : { label: t.journal.setActive, Icon: IconPlay, onSelect: activate },
                 { label: t.journal.renameAdventure, Icon: IconPencil, onSelect: startRename },
-                ...(hasEntries ? [{ label: zen ? t.journal.zenOff : t.journal.zenOn, Icon: IconZen, onSelect: onToggleZen }] : []),
+                ...(hasEntries
+                  ? [
+                      {
+                        label: zen ? t.journal.zenOff : t.journal.zenOn,
+                        Icon: IconZen,
+                        onSelect: onToggleZen,
+                      },
+                    ]
+                  : []),
                 { label: t.journal.statsButton, Icon: IconChart, onSelect: onStats },
-                { label: t.history.showRolls, Icon: IconHistory, onSelect: () => navigate(`/historial?aventura=${adventure.id}`) },
+                {
+                  label: t.history.showRolls,
+                  Icon: IconHistory,
+                  onSelect: () => navigate(`/historial?aventura=${adventure.id}`),
+                },
                 { label: t.guide.title, Icon: IconHelp, onSelect: openGuide },
-                ...(noHeader ? [{ label: t.settings.triggerLabel, Icon: IconSettings, onSelect: settingsOpen.open }] : []),
+                ...(noHeader
+                  ? [
+                      {
+                        label: t.settings.triggerLabel,
+                        Icon: IconSettings,
+                        onSelect: settingsOpen.open,
+                      },
+                    ]
+                  : []),
                 { label: t.journal.exportButton, Icon: IconDownload, onSelect: onExport },
                 { label: t.journal.copyLonelog, Icon: IconCopy, onSelect: onCopy },
                 { label: t.journal.exportHtmlButton, Icon: IconWebPage, onSelect: onExportHtml },
-                ...(canShare() ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: onShare }] : []),
+                ...(canShare()
+                  ? [{ label: t.journal.shareButton, Icon: IconShare, onSelect: onShare }]
+                  : []),
                 { label: t.journal.continueAdventure, Icon: IconContinue, onSelect: onContinue },
                 isArchived
                   ? {
@@ -245,7 +283,12 @@ export function AdventureHeader({
                       Icon: IconArchive,
                       onSelect: () => setAdventureStatus(adventure.id, "archived"),
                     },
-                { label: t.journal.deleteAdventure, Icon: IconTrash, onSelect: onDelete, danger: true },
+                {
+                  label: t.journal.deleteAdventure,
+                  Icon: IconTrash,
+                  onSelect: onDelete,
+                  danger: true,
+                },
               ]}
             />
           </>

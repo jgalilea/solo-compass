@@ -13,7 +13,11 @@ describe("sceneVerdict", () => {
   });
 
   it("a Loner twist interrupts the scene whatever the answer", () => {
-    expect(sceneVerdict({ answer: "si", qualifier: null, twist: { counter: 0, happened: true } })).toBe("interrupted");
-    expect(sceneVerdict({ answer: "si", qualifier: null, twist: { counter: 2, happened: false } })).toBe("expected");
+    expect(
+      sceneVerdict({ answer: "si", qualifier: null, twist: { counter: 0, happened: true } }),
+    ).toBe("interrupted");
+    expect(
+      sceneVerdict({ answer: "si", qualifier: null, twist: { counter: 2, happened: false } }),
+    ).toBe("expected");
   });
 });

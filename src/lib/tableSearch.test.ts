@@ -21,7 +21,11 @@ const table: MeaningTable = {
 describe("searching the tables' results", () => {
   it("finds the results with the search, accents and case aside, in the table's order", () => {
     const q = normalizeForSearch("faro");
-    expect(matchingEntries(table, q).map((e) => e.range)).toEqual([[1, 1], [3, 4], [6, 6]]);
+    expect(matchingEntries(table, q).map((e) => e.range)).toEqual([
+      [1, 1],
+      [3, 4],
+      [6, 6],
+    ]);
     expect(matchingEntries(table, normalizeForSearch("anima"))).toEqual([table.entries[2]]);
     expect(matchingEntries(table, q, 1)).toEqual([table.entries[0]]);
   });

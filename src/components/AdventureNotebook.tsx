@@ -120,7 +120,8 @@ export function AdventureNotebook({
     const map = new Map<string, { title: string | null; day: string | null }>();
     for (const group of groupBySession(entries)) {
       const session = group.sessionEntry ?? null;
-      for (const entry of group.items) map.set(entry.id, { title: session?.text ?? null, day: playDay(entry, session) });
+      for (const entry of group.items)
+        map.set(entry.id, { title: session?.text ?? null, day: playDay(entry, session) });
     }
     return map;
   }, [entries]);
@@ -132,7 +133,11 @@ export function AdventureNotebook({
   const [query, setQuery] = useState("");
   const q = normalizeForSearch(query.trim());
   const shown = q
-    ? cast.filter((c) => normalizeForSearch(c.name).includes(q) || c.tags.some((tag) => normalizeForSearch(tag).includes(q)))
+    ? cast.filter(
+        (c) =>
+          normalizeForSearch(c.name).includes(q) ||
+          c.tags.some((tag) => normalizeForSearch(tag).includes(q)),
+      )
     : cast;
 
   const lists: Record<NotebookSection, CastMember[]> = {
@@ -140,7 +145,10 @@ export function AdventureNotebook({
     places: shown.filter((c) => c.kind === "place"),
     rooms: shown.filter((c) => c.kind === "room"),
     // Still fighting first: the dead and the fled are history.
-    foes: [...shown.filter((c) => c.kind === "foe" && !foeIsOut(c)), ...shown.filter((c) => c.kind === "foe" && foeIsOut(c))],
+    foes: [
+      ...shown.filter((c) => c.kind === "foe" && !foeIsOut(c)),
+      ...shown.filter((c) => c.kind === "foe" && foeIsOut(c)),
+    ],
     // Open ones first: the closed are history.
     threads: [
       ...shown.filter((c) => c.kind === "thread" && threadStatus(c) === "open"),
@@ -180,7 +188,9 @@ export function AdventureNotebook({
   const [seenTick, setSeenTick] = useState(focusTick);
   if (seenTick !== focusTick) {
     setSeenTick(focusTick);
-    const section = (Object.keys(lists) as NotebookSection[]).find((id) => lists[id].some((c) => c.key === focusKey));
+    const section = (Object.keys(lists) as NotebookSection[]).find((id) =>
+      lists[id].some((c) => c.key === focusKey),
+    );
     if (section && (folded.has(section) || folded.has(BLOCK_OF[section]))) {
       const next = new Set(folded);
       next.delete(section);
@@ -194,12 +204,24 @@ export function AdventureNotebook({
   }
 
   // A whole block, under a heading that folds it.
-  function block(id: NotebookBlock, Icon: typeof IconCast, title: string, count: number, children: ReactNode) {
+  function block(
+    id: NotebookBlock,
+    Icon: typeof IconCast,
+    title: string,
+    count: number,
+    children: ReactNode,
+  ) {
     if (q && count === 0) return null;
     const isFolded = !q && folded.has(id);
     return (
       <section className="flex flex-col gap-2">
-        <FoldingHeading Icon={Icon} title={title} folded={isFolded} onToggle={() => toggleSection(id)} count={count} />
+        <FoldingHeading
+          Icon={Icon}
+          title={title}
+          folded={isFolded}
+          onToggle={() => toggleSection(id)}
+          count={count}
+        />
         {!isFolded && children}
       </section>
     );
@@ -236,7 +258,10 @@ export function AdventureNotebook({
               aria-expanded={!isFolded}
               className="flex w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.7rem] font-medium text-parchment-faint transition hover:text-parchment"
             >
-              <IconChevronRight size={12} className={`shrink-0 transition-transform ${isFolded ? "" : "rotate-90"}`} />
+              <IconChevronRight
+                size={12}
+                className={`shrink-0 transition-transform ${isFolded ? "" : "rotate-90"}`}
+              />
               <span className="flex-1">{titles[id]}</span>
               <span className="text-parchment-faint">{members.length}</span>
             </button>
@@ -311,7 +336,8 @@ export function AdventureNotebook({
     );
   }
 
-  const hasCast = lists.characters.length + lists.places.length + lists.rooms.length + lists.foes.length > 0;
+  const hasCast =
+    lists.characters.length + lists.places.length + lists.rooms.length + lists.foes.length > 0;
   const hasInventory = lists.items.length + lists.wealth.length > 0;
   const hasThreads = lists.threads.length + lists.progress.length + lists.events.length > 0;
 
@@ -319,7 +345,14 @@ export function AdventureNotebook({
 
   return (
     <div className="flex flex-col gap-6">
-      {!q && block("notesBlock", IconPinned, t.notebook.notesTitle, 0, <PinnedNotes notes={notes} onChange={onNotesChange} />)}
+      {!q &&
+        block(
+          "notesBlock",
+          IconPinned,
+          t.notebook.notesTitle,
+          0,
+          <PinnedNotes notes={notes} onChange={onNotesChange} />,
+        )}
 
       {cast.length > SEARCH_FROM && (
         <div className="flex flex-col gap-2">
@@ -338,7 +371,9 @@ export function AdventureNotebook({
             />
           </label>
           {q && shown.length === 0 && (
-            <p className="px-1 text-xs text-parchment-dim">{interpolate(t.notebook.searchEmpty, { query: query.trim() })}</p>
+            <p className="px-1 text-xs text-parchment-dim">
+              {interpolate(t.notebook.searchEmpty, { query: query.trim() })}
+            </p>
           )}
         </div>
       )}
@@ -378,7 +413,9 @@ export function AdventureNotebook({
         t.notebook.inventoryTitle,
         count("items", "wealth"),
         <>
-          {!hasInventory && <p className="text-xs text-parchment-dim">{t.notebook.inventoryEmpty}</p>}
+          {!hasInventory && (
+            <p className="text-xs text-parchment-dim">{t.notebook.inventoryEmpty}</p>
+          )}
           {group("items")}
           {group("wealth")}
           {addButtons(["item", "wealth", "deck"])}

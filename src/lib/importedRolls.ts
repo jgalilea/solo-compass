@@ -21,18 +21,31 @@ export interface ImportedRoll {
 const KIND = { oracle: "oraculo", table: "tabla", dice: "dados" } as const;
 
 /** Those of one adventure, the latest first. */
-export function importedRolls(entries: readonly JournalEntry[], adventureId: string): ImportedRoll[] {
+export function importedRolls(
+  entries: readonly JournalEntry[],
+  adventureId: string,
+): ImportedRoll[] {
   const rolls: ImportedRoll[] = [];
   let session: JournalEntry | null = null;
   let previous: JournalEntry | null = null;
-  for (const entry of entries.filter((e) => e.adventureId === adventureId).sort((a, b) => a.timestamp - b.timestamp)) {
+  for (const entry of entries
+    .filter((e) => e.adventureId === adventureId)
+    .sort((a, b) => a.timestamp - b.timestamp)) {
     if (entry.kind === "session") session = entry;
-    if (entry.kind === "roll" && isImportedEntry(entry) && !entry.linkedRollId && !isTableDefinition(entry.text)) {
+    if (
+      entry.kind === "roll" &&
+      isImportedEntry(entry) &&
+      !entry.linkedRollId &&
+      !isTableDefinition(entry.text)
+    ) {
       const kind = KIND[classifyRoll(entry, undefined).kind];
       rolls.push({
         entry,
         kind,
-        question: kind === "oraculo" && previous && entryType(previous) === "question" ? previous.text : null,
+        question:
+          kind === "oraculo" && previous && entryType(previous) === "question"
+            ? previous.text
+            : null,
         sessionTitle: session?.text ?? null,
         day: playDay(entry, session),
       });
@@ -44,5 +57,7 @@ export function importedRolls(entries: readonly JournalEntry[], adventureId: str
 
 export function searchImportedRolls(rolls: ImportedRoll[], query: string): ImportedRoll[] {
   if (!query.trim()) return rolls;
-  return rolls.filter((r) => matchesAllWords([r.question, r.entry.text].filter(Boolean).join(" "), query));
+  return rolls.filter((r) =>
+    matchesAllWords([r.question, r.entry.text].filter(Boolean).join(" "), query),
+  );
 }

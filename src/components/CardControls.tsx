@@ -38,7 +38,11 @@ export function CardControls({
   const [notice, setNotice] = useState<string | null>(null);
   const hintId = useId();
   const { deck, unique } = settings;
-  const options = { jokers: settings.jokers, reversed: settings.reversed, majorOnly: settings.majorOnly };
+  const options = {
+    jokers: settings.jokers,
+    reversed: settings.reversed,
+    majorOnly: settings.majorOnly,
+  };
   const key = shuffleKey(adventureId, deck);
   const shuffledAt = settings.shuffles[key] ?? 0;
   const drawn = useMemo(
@@ -86,20 +90,33 @@ export function CardControls({
       </div>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-0.5">
         {deck === "poker" ? (
-          <Switch checked={settings.jokers} onChange={(jokers) => onChange({ ...settings, jokers })}>
+          <Switch
+            checked={settings.jokers}
+            onChange={(jokers) => onChange({ ...settings, jokers })}
+          >
             {t.dice.jokers}
           </Switch>
         ) : (
           <>
-            <Switch checked={settings.reversed} onChange={(reversed) => onChange({ ...settings, reversed })}>
+            <Switch
+              checked={settings.reversed}
+              onChange={(reversed) => onChange({ ...settings, reversed })}
+            >
               {t.dice.reversed}
             </Switch>
-            <Switch checked={settings.majorOnly} onChange={(majorOnly) => onChange({ ...settings, majorOnly })}>
+            <Switch
+              checked={settings.majorOnly}
+              onChange={(majorOnly) => onChange({ ...settings, majorOnly })}
+            >
               {t.dice.majorOnly}
             </Switch>
           </>
         )}
-        <Switch checked={unique} onChange={(next) => onChange({ ...settings, unique: next })} describedBy={hintId}>
+        <Switch
+          checked={unique}
+          onChange={(next) => onChange({ ...settings, unique: next })}
+          describedBy={hintId}
+        >
           {t.dice.unique}
         </Switch>
       </div>

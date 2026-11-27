@@ -55,7 +55,10 @@ interface Shape {
 function corners(n: number, r: number): [number, number][] {
   return Array.from({ length: n }, (_, i) => {
     const a = (i / n) * 2 * Math.PI - Math.PI / 2;
-    return [Math.round((50 + r * Math.cos(a)) * 10) / 10, Math.round((50 + r * Math.sin(a)) * 10) / 10];
+    return [
+      Math.round((50 + r * Math.cos(a)) * 10) / 10,
+      Math.round((50 + r * Math.sin(a)) * 10) / 10,
+    ];
   });
 }
 
@@ -92,23 +95,50 @@ const SHAPES: Record<number, Shape> = {
   16: KITE,
   20: { hull: closed(HEXAGON), edges: faceEdges(corners(3, 39), HEXAGON), y: 54, font: 30 },
   24: { hull: closed(OCTAGON), edges: faceEdges(corners(4, 36), OCTAGON), y: 51, font: 32 },
-  30: { hull: closed(DECAGON), edges: "M50 14L80 50L50 86L20 50ZM50 14V3M50 86V97M80 50H95M20 50H5", y: 51, font: 32 },
+  30: {
+    hull: closed(DECAGON),
+    edges: "M50 14L80 50L50 86L20 50ZM50 14V3M50 86V97M80 50H95M20 50H5",
+    y: 51,
+    font: 32,
+  },
   100: { edges: "", y: 51, font: 42 },
 };
 
-function Outline({ sides, shape, ...paint }: { sides: number; shape: Shape } & SVGProps<SVGElement>) {
-  if (sides === 100) return <circle cx="50" cy="50" r="46" {...(paint as SVGProps<SVGCircleElement>)} />;
-  if (!shape.hull) return <rect x="4" y="4" width="92" height="92" rx="18" {...(paint as SVGProps<SVGRectElement>)} />;
+function Outline({
+  sides,
+  shape,
+  ...paint
+}: { sides: number; shape: Shape } & SVGProps<SVGElement>) {
+  if (sides === 100)
+    return <circle cx="50" cy="50" r="46" {...(paint as SVGProps<SVGCircleElement>)} />;
+  if (!shape.hull)
+    return (
+      <rect x="4" y="4" width="92" height="92" rx="18" {...(paint as SVGProps<SVGRectElement>)} />
+    );
   return <path d={shape.hull} strokeLinejoin="round" {...(paint as SVGProps<SVGPathElement>)} />;
 }
 
 /** A die yet to be thrown: the outline of its face, barely filled (decorative). */
-export function BlankDie({ color, sides = 6, size = "md" }: { color: DieColor; sides?: number; size?: keyof typeof SIZES }) {
+export function BlankDie({
+  color,
+  sides = 6,
+  size = "md",
+}: {
+  color: DieColor;
+  sides?: number;
+  size?: keyof typeof SIZES;
+}) {
   const isWhite = color === "blanco";
   return (
     // The outline in the theme's own faint text colour: it shows on a
     // light card as well as on a dark one.
-    <svg viewBox="0 0 100 100" width={SIZES[size]} height={SIZES[size]} aria-hidden className="text-parchment-faint">
+    <svg
+      viewBox="0 0 100 100"
+      width={SIZES[size]}
+      height={SIZES[size]}
+      aria-hidden
+      className="text-parchment-faint"
+    >
       <Outline
         sides={sides}
         shape={SHAPES[sides] ?? SQUARE}
@@ -192,10 +222,7 @@ export function Die({
         color: name ?? t.die.color[color],
         value,
       })}
-      className={[
-        animate ? "animate-die-roll" : "",
-        "shrink-0 drop-shadow-md",
-      ].join(" ")}
+      className={[animate ? "animate-die-roll" : "", "shrink-0 drop-shadow-md"].join(" ")}
       // Not classes: the HTML export has the same drawing without them.
       opacity={faded ? 0.4 : undefined}
       style={{ overflow: "visible" }}
@@ -207,10 +234,17 @@ export function Die({
         stroke={edge}
         strokeWidth={size === "xs" ? 5 : isWhite ? 2 : 2.5}
       />
-      {shape.edges && <path d={shape.edges} fill="none" stroke={edge} strokeWidth="2" strokeLinejoin="round" />}
+      {shape.edges && (
+        <path d={shape.edges} fill="none" stroke={edge} strokeWidth="2" strokeLinejoin="round" />
+      )}
       {sides === 0 ? (
         value !== 0 && (
-          <path d={value > 0 ? "M28 50H72M50 28V72" : "M28 50H72"} stroke={ink} strokeWidth="10" strokeLinecap="round" />
+          <path
+            d={value > 0 ? "M28 50H72M50 28V72" : "M28 50H72"}
+            stroke={ink}
+            strokeWidth="10"
+            strokeLinecap="round"
+          />
         )
       ) : pips ? (
         pips.map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r={7} fill={ink} />)
@@ -230,7 +264,13 @@ export function Die({
       {badge && (
         // Half off the corner (clear of a six's pips), with a rim: in some
         // themes its colour is the die's.
-        <g transform="translate(8 8)" stroke="var(--color-ink-950)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+        <g
+          transform="translate(8 8)"
+          stroke="var(--color-ink-950)"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <circle cx="83" cy="83" r="16" fill={badge.color} />
           <path d={badge.d} fill="none" />
         </g>

@@ -45,7 +45,12 @@ import { ResultPanel, type LastResult } from "./TableResultPanel";
 import { RecentRolls } from "./RecentRolls";
 import { GeneratorRow } from "./GeneratorRow";
 import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
-import { generatorGames, generatorTables, type Generator, type GeneratorDraft } from "../lib/generators";
+import {
+  generatorGames,
+  generatorTables,
+  type Generator,
+  type GeneratorDraft,
+} from "../lib/generators";
 
 const INSPIRATION_ID = "inspiration";
 
@@ -53,7 +58,9 @@ const INSPIRATION_ID = "inspiration";
 const TABLE_GRID = "grid gap-2.5 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 4xl:grid-cols-3";
 
 // The editors load when opened: they're a good part of the main bundle otherwise.
-const TableEditorDialog = lazy(() => import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })));
+const TableEditorDialog = lazy(() =>
+  import("./TableEditorDialog").then((m) => ({ default: m.TableEditorDialog })),
+);
 const GeneratorEditorDialog = lazy(() =>
   import("./GeneratorEditorDialog").then((m) => ({ default: m.GeneratorEditorDialog })),
 );
@@ -85,7 +92,10 @@ export function TablesView() {
     restoreGenerator,
   } = useGeneratorsContext();
   useEffect(() => loadGenerators(), [loadGenerators]);
-  const [generatorEditor, setGeneratorEditor] = useState<{ id?: string; draft?: GeneratorDraft } | null>(null);
+  const [generatorEditor, setGeneratorEditor] = useState<{
+    id?: string;
+    draft?: GeneratorDraft;
+  } | null>(null);
   const {
     status: customStatus,
     tables: customTables,
@@ -98,9 +108,7 @@ export function TablesView() {
   const [last, setLast] = useState<LastResult | null>(null);
   const [rollingId, setRollingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() =>
-    loadFavoriteTableIds(),
-  );
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => loadFavoriteTableIds());
   const [openSections, setOpenSections] = useState<Set<string>>(() => loadOpenTableSections());
   const [themeFilter, setThemeFilter] = useState<TableTheme | null>(null);
   // Off until turned on: a word turns up in the results of many tables.
@@ -211,7 +219,10 @@ export function TablesView() {
   // but can still be folded. Those folds are only for this search (not
   // saved): a new query or theme opens them all again.
   const filterKey = `${q}|${themeFilter ?? ""}`;
-  const [filterFolds, setFilterFolds] = useState<{ key: string; ids: Set<string> }>({ key: "", ids: new Set() });
+  const [filterFolds, setFilterFolds] = useState<{ key: string; ids: Set<string> }>({
+    key: "",
+    ids: new Set(),
+  });
   const foldedWhileFiltering = filterFolds.key === filterKey ? filterFolds.ids : new Set<string>();
   const isOpen = (id: string) => (filtering ? !foldedWhileFiltering.has(id) : openSections.has(id));
 
@@ -243,7 +254,8 @@ export function TablesView() {
   async function handleImportFile(file: File) {
     const found = await inspectFile(t, file, "tables");
     if (found.kind === "tables") importDrafts(found.drafts);
-    else if (found.kind === "problem") setToast({ kind: "message", title: fileProblemText(t, found.problem), error: true });
+    else if (found.kind === "problem")
+      setToast({ kind: "message", title: fileProblemText(t, found.problem), error: true });
     else offerFiles([file], "button");
   }
 
@@ -252,7 +264,10 @@ export function TablesView() {
     if (drafts.length === 1) setEditor({ draft: drafts[0] });
     else {
       addTables(drafts);
-      setToast({ kind: "message", title: interpolate(t.tables.importedCount, { count: drafts.length }) });
+      setToast({
+        kind: "message",
+        title: interpolate(t.tables.importedCount, { count: drafts.length }),
+      });
     }
   }
 
@@ -288,9 +303,11 @@ export function TablesView() {
   function shareTable(id: string) {
     const table = customTables.find((x) => x.id === id);
     if (!table) return;
-    shareTextFile(`${sanitizeFilename(table.name)}.md`, exportTableToMarkdown(t, table), table.name).catch(() =>
-      exportTable(id),
-    );
+    shareTextFile(
+      `${sanitizeFilename(table.name)}.md`,
+      exportTableToMarkdown(t, table),
+      table.name,
+    ).catch(() => exportTable(id));
   }
 
   // By name, description, game or theme ("ironsworn", "naves"…), and
@@ -312,14 +329,22 @@ export function TablesView() {
     [custom, builtIn, favoriteIds, matches],
   );
   const otherCustom = custom.filter((x) => !favoriteIds.has(x.id) && matches(x));
-  const otherBlocks = blocks.map((b) => ({ ...b, tables: b.tables.filter((x) => !favoriteIds.has(x.id) && matches(x)) }));
+  const otherBlocks = blocks.map((b) => ({
+    ...b,
+    tables: b.tables.filter((x) => !favoriteIds.has(x.id) && matches(x)),
+  }));
   // While searching or filtering, a game without matches is left out once it's loaded.
-  const shownBlocks = otherBlocks.filter((block) => !filtering || block.status !== "ready" || block.tables.length > 0);
+  const shownBlocks = otherBlocks.filter(
+    (block) => !filtering || block.status !== "ready" || block.tables.length > 0,
+  );
   // Only once every game has been searched: not while one is still loading.
   const nothingFound =
     filtering &&
     blocks.every((b) => b.status === "ready" || b.status === "error") &&
-    favoriteTables.length + otherCustom.length + otherBlocks.reduce((n, b) => n + b.tables.length, 0) === 0;
+    favoriteTables.length +
+      otherCustom.length +
+      otherBlocks.reduce((n, b) => n + b.tables.length, 0) ===
+      0;
 
   // A block's tables, under a sub-heading per theme (when it has several
   // and no theme is chosen). Tables without one (the player's own) go last.
@@ -327,7 +352,9 @@ export function TablesView() {
     const groups = [...TABLE_THEMES, undefined]
       .map((theme) => ({ theme, tables: tables.filter((x) => x.theme === theme) }))
       .filter((g) => g.tables.length > 0);
-    const rows = (list: MeaningTable[]) => <ul className={TABLE_GRID}>{list.map((table) => renderRow(table, !sameGame))}</ul>;
+    const rows = (list: MeaningTable[]) => (
+      <ul className={TABLE_GRID}>{list.map((table) => renderRow(table, !sameGame))}</ul>
+    );
     if (groups.length <= 1) return rows(tables);
     return (
       <div className="flex flex-col gap-5">
@@ -368,13 +395,29 @@ export function TablesView() {
                 {
                   label: t.tables.editTable,
                   Icon: IconPencil,
-                  onSelect: () => setEditor({ id: table.id, draft: customTables.find((x) => x.id === table.id) }),
+                  onSelect: () =>
+                    setEditor({ id: table.id, draft: customTables.find((x) => x.id === table.id) }),
                 },
-                { label: t.tables.exportTable, Icon: IconDownload, onSelect: () => exportTable(table.id) },
+                {
+                  label: t.tables.exportTable,
+                  Icon: IconDownload,
+                  onSelect: () => exportTable(table.id),
+                },
                 ...(canShare()
-                  ? [{ label: t.tables.shareTable, Icon: IconShare, onSelect: () => shareTable(table.id) }]
+                  ? [
+                      {
+                        label: t.tables.shareTable,
+                        Icon: IconShare,
+                        onSelect: () => shareTable(table.id),
+                      },
+                    ]
                   : []),
-                { label: t.tables.deleteTable, Icon: IconTrash, onSelect: () => deleteTable(table.id), danger: true },
+                {
+                  label: t.tables.deleteTable,
+                  Icon: IconTrash,
+                  onSelect: () => deleteTable(table.id),
+                  danger: true,
+                },
               ]}
             />
           ) : null
@@ -438,7 +481,11 @@ export function TablesView() {
             />
           </label>
 
-          <Switch checked={searchResults} onChange={toggleSearchResults} className="-mt-2 self-start md:-mt-3">
+          <Switch
+            checked={searchResults}
+            onChange={toggleSearchResults}
+            className="-mt-2 self-start md:-mt-3"
+          >
             {t.tables.searchResults}
           </Switch>
 
@@ -477,7 +524,9 @@ export function TablesView() {
                     </>
                   }
                 >
-                  <ul className={TABLE_GRID}>{favoriteTables.map((table) => renderRow(table, true))}</ul>
+                  <ul className={TABLE_GRID}>
+                    {favoriteTables.map((table) => renderRow(table, true))}
+                  </ul>
                 </TableSection>
               )}
 
@@ -490,7 +539,9 @@ export function TablesView() {
                       title={t.tables.generatorsHeading}
                       count={generators.length}
                       countText={interpolate(
-                        generators.length === 1 ? t.tables.generatorCountOne : t.tables.generatorCount,
+                        generators.length === 1
+                          ? t.tables.generatorCountOne
+                          : t.tables.generatorCount,
                         { count: generators.length },
                       )}
                       open={isOpen("generators")}
@@ -498,7 +549,9 @@ export function TablesView() {
                     >
                       <div className="flex flex-col gap-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                          <p className="min-w-0 flex-1 text-sm text-parchment-dim">{t.tables.generatorsIntro}</p>
+                          <p className="min-w-0 flex-1 text-sm text-parchment-dim">
+                            {t.tables.generatorsIntro}
+                          </p>
                           <button
                             type="button"
                             onClick={() => setGeneratorEditor({})}
@@ -521,14 +574,19 @@ export function TablesView() {
                                 tables={generatorTables(generator, all)}
                                 loading={generator.tableIds.some((id) => {
                                   const game = gameOfTable(id);
-                                  return !!game && blocks.find((b) => b.id === game)?.status !== "ready";
+                                  return (
+                                    !!game && blocks.find((b) => b.id === game)?.status !== "ready"
+                                  );
                                 })}
                                 last={last?.sourceId === generatorSource(generator) ? last : null}
                                 rolling={rollingId === generatorSource(generator)}
                                 activeAdventure={activeAdventure}
                                 onRoll={() => handleGenerator(generator)}
                                 onEdit={() =>
-                                  setGeneratorEditor({ id: generator.id, draft: { name: generator.name, tableIds: generator.tableIds } })
+                                  setGeneratorEditor({
+                                    id: generator.id,
+                                    draft: { name: generator.name, tableIds: generator.tableIds },
+                                  })
                                 }
                                 onDelete={() => {
                                   removeGenerator(generator.id);
@@ -569,35 +627,33 @@ export function TablesView() {
 
               {shownBlocks.length > 0 && (
                 <SectionList title={t.tables.gamesHeading}>
-                  {shownBlocks.map(
-                    (block) => (
-                        <FoldingSection
-                          key={block.id}
-                          title={block.title}
-                          note={block.note}
-                          count={filtering ? block.tables.length : block.count}
-                          open={isOpen(block.id)}
-                          onToggle={() => toggleSection(block.id)}
-                        >
-                          {block.status === "error" ? (
-                            <div className="flex flex-wrap items-center gap-3 px-1 text-sm text-parchment-dim">
-                              {t.tables.loadError}
-                              <button
-                                type="button"
-                                onClick={() => retry(block.id)}
-                                className="rounded-xl border border-ink-border px-3 py-1.5 text-parchment transition hover:border-gold/50 hover:text-gold"
-                              >
-                                {t.common.retry}
-                              </button>
-                            </div>
-                          ) : block.status === "ready" ? (
-                            block.tables.length > 0 && renderTables(block.tables)
-                          ) : (
-                            <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
-                          )}
-                        </FoldingSection>
-                      ),
-                  )}
+                  {shownBlocks.map((block) => (
+                    <FoldingSection
+                      key={block.id}
+                      title={block.title}
+                      note={block.note}
+                      count={filtering ? block.tables.length : block.count}
+                      open={isOpen(block.id)}
+                      onToggle={() => toggleSection(block.id)}
+                    >
+                      {block.status === "error" ? (
+                        <div className="flex flex-wrap items-center gap-3 px-1 text-sm text-parchment-dim">
+                          {t.tables.loadError}
+                          <button
+                            type="button"
+                            onClick={() => retry(block.id)}
+                            className="rounded-xl border border-ink-border px-3 py-1.5 text-parchment transition hover:border-gold/50 hover:text-gold"
+                          >
+                            {t.common.retry}
+                          </button>
+                        </div>
+                      ) : block.status === "ready" ? (
+                        block.tables.length > 0 && renderTables(block.tables)
+                      ) : (
+                        <p className="px-1 text-sm text-parchment-dim">{t.common.loading}</p>
+                      )}
+                    </FoldingSection>
+                  ))}
                 </SectionList>
               )}
             </>

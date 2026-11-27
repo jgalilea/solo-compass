@@ -3,10 +3,7 @@
  * searching "accion" finds "Acción" and vice versa.
  */
 export function normalizeForSearch(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 /** Every word of the query appears in the text (any order, accents ignored). */

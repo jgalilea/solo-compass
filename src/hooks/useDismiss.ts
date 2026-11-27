@@ -13,7 +13,11 @@ import { useCloseOnBack } from "./useCloseOnBack";
  * with `aria-haspopup`) so it isn't left lost on the page. Going back
  * (the phone's gesture) closes it too, not the screen behind.
  */
-export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>, onClose: () => void) {
+export function useDismiss(
+  open: boolean,
+  rootRef: RefObject<HTMLElement | null>,
+  onClose: () => void,
+) {
   useCloseOnBack(open, onClose);
   useEffect(() => {
     if (!open) return;
@@ -30,7 +34,10 @@ export function useDismiss(open: boolean, rootRef: RefObject<HTMLElement | null>
         onClose();
         return;
       }
-      if (!root?.contains(document.activeElement) || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+      if (
+        !root?.contains(document.activeElement) ||
+        !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)
+      ) {
         return;
       }
       // The options: everything clickable except the opening button itself.

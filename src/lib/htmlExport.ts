@@ -18,7 +18,14 @@ import { isStoryEntry } from "./zenMode";
 import { interpolate, type Dictionary } from "./i18n";
 import { sessionDate, type JournalEntry } from "./lonelog";
 import type { CastDescription } from "./journal";
-import { buildEntryBlocks, groupBySession, splitOwnRolls, splitRollText, splitRollTotal, storylineViews } from "./journalUi";
+import {
+  buildEntryBlocks,
+  groupBySession,
+  splitOwnRolls,
+  splitRollText,
+  splitRollTotal,
+  storylineViews,
+} from "./journalUi";
 import {
   buildCast,
   PROGRESS_KINDS,
@@ -87,7 +94,12 @@ function taggedHtml(t: Dictionary, text: string): string {
     .map((part) => {
       if (!part.tag) return escapeHtml(part.text);
       const { name, details, progress } = part.tag;
-      const extra = [progress ? progressText(progress) : "", ...details.map((d) => showDetail(d, t.notebook.categories))].filter(Boolean).join(" · ");
+      const extra = [
+        progress ? progressText(progress) : "",
+        ...details.map((d) => showDetail(d, t.notebook.categories)),
+      ]
+        .filter(Boolean)
+        .join(" · ");
       return `<span class="tag"><b>${escapeHtml(name)}</b>${extra ? ` <small>${escapeHtml(extra)}</small>` : ""}</span>`;
     })
     .join("")
@@ -97,7 +109,12 @@ function taggedHtml(t: Dictionary, text: string): string {
 /** A roll's dice or cards as HTML ("" for none), by its detail and result (RollDrawing). */
 type DrawRoll = (detail: string, result: string | null) => string;
 
-function rollHtml(t: Dictionary, entry: JournalEntry, answer: Answer | undefined, drawRoll: DrawRoll): string {
+function rollHtml(
+  t: Dictionary,
+  entry: JournalEntry,
+  answer: Answer | undefined,
+  drawRoll: DrawRoll,
+): string {
   const drawn = (detail: string, result: string | null) => {
     const html = drawRoll(detail, result);
     return html && `<span class="drawn">${html}</span>`;
@@ -114,13 +131,16 @@ function rollHtml(t: Dictionary, entry: JournalEntry, answer: Answer | undefined
   }
   // A generator's axes or a table written out, under its first line.
   const [first, ...rest] = entry.text.split("\n");
-  if (rest.length) return `${rollHtml(t, { ...entry, text: first }, answer, drawRoll)}<p class="detail">${rest.map(escapeHtml).join("<br>")}</p>`;
+  if (rest.length)
+    return `${rollHtml(t, { ...entry, text: first }, answer, drawRoll)}<p class="detail">${rest.map(escapeHtml).join("<br>")}</p>`;
   const { detail, result, answer: parsed } = splitRollText(entry.text);
   const drawing = drawn(detail, result);
   if (result === null) return `<p>${drawing}${escapeHtml(entry.text)}</p>`;
   const known = answer ?? parsed;
   return `<p class="detail">${escapeHtml(detail)}</p>${
-    known ? `<p class="drawn-row">${drawing}<span class="answer ${known}">${escapeHtml(expandAnswer(t, result))}</span></p>` : `<p class="result drawn-row">${drawing}<span>${escapeHtml(result)}</span></p>`
+    known
+      ? `<p class="drawn-row">${drawing}<span class="answer ${known}">${escapeHtml(expandAnswer(t, result))}</span></p>`
+      : `<p class="result drawn-row">${drawing}<span>${escapeHtml(result)}</span></p>`
   }`;
 }
 
@@ -142,7 +162,13 @@ function noteHtml(t: Dictionary, text: string, view?: string): string {
   }
 }
 
-function entryHtml(t: Dictionary, entry: JournalEntry, answerFor: (rollId?: string) => Answer | undefined, drawRoll: DrawRoll, view?: string): string {
+function entryHtml(
+  t: Dictionary,
+  entry: JournalEntry,
+  answerFor: (rollId?: string) => Answer | undefined,
+  drawRoll: DrawRoll,
+  view?: string,
+): string {
   const kind = entry.kind === "session" || entry.kind === "scene" ? "note" : entry.kind;
   const symbol = KIND_SYMBOL[kind];
   const body =
@@ -208,11 +234,18 @@ function notesHtml(notes: string): string {
     .join("");
 }
 
-function castHtml(t: Dictionary, members: CastMember[], descriptions: Record<string, CastDescription>): string {
+function castHtml(
+  t: Dictionary,
+  members: CastMember[],
+  descriptions: Record<string, CastDescription>,
+): string {
   return `<ul class="cast">${members
     .map((m) => {
       const status = m.kind === "thread" ? threadStatus(m) : null;
-      const state = (PROGRESS_KINDS.has(m.kind) || QUANTITY_KINDS.has(m.kind)) && m.progress ? [progressText(m.progress), ...m.tags] : m.tags;
+      const state =
+        (PROGRESS_KINDS.has(m.kind) || QUANTITY_KINDS.has(m.kind)) && m.progress
+          ? [progressText(m.progress), ...m.tags]
+          : m.tags;
       const description = descriptions[m.key]?.text.trim();
       return `<li${status && status !== "open" ? ' class="closed"' : ""}><small>${escapeHtml(t.notebook.kinds[m.kind])}</small> <b>${escapeHtml(m.name)}</b>${
         state.length ? ` <span>${escapeHtml(state.join(" · "))}</span>` : ""
@@ -268,9 +301,15 @@ export function exportAdventureToHtml({
   // The notebook comes from every entry: a tag-only note isn't told, but it's still the cast.
   const cast = buildCast(all);
   const characters = cast.filter((c) => ["pc", "npc", "place", "room", "foe"].includes(c.kind));
-  const threads = story ? [] : cast.filter((c) => c.kind === "thread" || c.kind === "event" || PROGRESS_KINDS.has(c.kind));
+  const threads = story
+    ? []
+    : cast.filter((c) => c.kind === "thread" || c.kind === "event" || PROGRESS_KINDS.has(c.kind));
   const inventory = story ? [] : cast.filter((c) => QUANTITY_KINDS.has(c.kind));
-  const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(exportedAt);
+  const date = new Intl.DateTimeFormat(t.dateLocale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(exportedAt);
 
   const views = storylineViews(groupBySession(sorted));
   const sessions = groupBySession(sorted)
@@ -286,7 +325,11 @@ export function exportAdventureToHtml({
       const session = group.sessionEntry;
       const played = session ? sessionDate(session) : null;
       const playedText = played
-        ? new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${played}T12:00`))
+        ? new Intl.DateTimeFormat(t.dateLocale, {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }).format(new Date(`${played}T12:00`))
         : "";
       const title = session
         ? `<h2>${escapeHtml(session.text)}${playedText && playedText !== session.text ? ` <time datetime="${played}">${playedText}</time>` : ""}</h2>`
@@ -296,13 +339,23 @@ export function exportAdventureToHtml({
     .join("");
 
   const aside = [
-    notes.trim() ? `<section class="box"><h3>${escapeHtml(t.notebook.notesTitle)}</h3>${notesHtml(notes)}</section>` : "",
-    characters.length ? `<section class="box"><h3>${escapeHtml(t.notebook.castTitle)}</h3>${castHtml(t, characters, descriptions)}</section>` : "",
-    threads.length ? `<section class="box"><h3>${escapeHtml(t.notebook.threadsTitle)}</h3>${castHtml(t, threads, descriptions)}</section>` : "",
-    inventory.length ? `<section class="box"><h3>${escapeHtml(t.notebook.inventoryTitle)}</h3>${castHtml(t, inventory, descriptions)}</section>` : "",
+    notes.trim()
+      ? `<section class="box"><h3>${escapeHtml(t.notebook.notesTitle)}</h3>${notesHtml(notes)}</section>`
+      : "",
+    characters.length
+      ? `<section class="box"><h3>${escapeHtml(t.notebook.castTitle)}</h3>${castHtml(t, characters, descriptions)}</section>`
+      : "",
+    threads.length
+      ? `<section class="box"><h3>${escapeHtml(t.notebook.threadsTitle)}</h3>${castHtml(t, threads, descriptions)}</section>`
+      : "",
+    inventory.length
+      ? `<section class="box"><h3>${escapeHtml(t.notebook.inventoryTitle)}</h3>${castHtml(t, inventory, descriptions)}</section>`
+      : "",
   ].join("");
 
-  const colors = EXPORT_COLOR_TOKENS.map((token) => `    ${token}: ${theme.colors[token] ?? "inherit"};`).join("\n");
+  const colors = EXPORT_COLOR_TOKENS.map(
+    (token) => `    ${token}: ${theme.colors[token] ?? "inherit"};`,
+  ).join("\n");
   const fontFace = theme.font
     ? `@font-face { font-family: ${JSON.stringify(theme.font.family)}; src: url(${theme.font.dataUrl}) format("woff2"); font-display: swap; }\n`
     : "";
@@ -388,10 +441,13 @@ aside { display: grid; gap: 1rem; }
 <main class="${aside ? "with-aside" : ""}">
 <header>
 <h1>${escapeHtml(name)}</h1>
-${story ? `<p>${escapeHtml(t.journal.htmlStoryNote)}</p>\n` : ""}<p>${escapeHtml(interpolate(t.journal.htmlExportedOn, { date }))} · ${interpolate(escapeHtml(t.journal.lonelogCreditLine), {
-    app: '<a href="https://jgalilea.github.io/solo-compass/">Solo Compass</a>',
-    lonelog: '<a href="https://lonelog.itch.io/lonelog">Lonelog</a>',
-  })}</p>
+${story ? `<p>${escapeHtml(t.journal.htmlStoryNote)}</p>\n` : ""}<p>${escapeHtml(interpolate(t.journal.htmlExportedOn, { date }))} · ${interpolate(
+    escapeHtml(t.journal.lonelogCreditLine),
+    {
+      app: '<a href="https://jgalilea.github.io/solo-compass/">Solo Compass</a>',
+      lonelog: '<a href="https://lonelog.itch.io/lonelog">Lonelog</a>',
+    },
+  )}</p>
 </header>
 <div>${sessions}</div>
 ${aside ? `<aside>${aside}</aside>` : ""}

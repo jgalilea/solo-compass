@@ -7,19 +7,38 @@ import { formatOracleDice, formatOracleResult } from "./answerText";
 const t = DICTIONARIES.es;
 
 function roll(partial: Partial<OracleRoll>): OracleRoll {
-  return { kind: "oraculo", id: "r", timestamp: 0, question: "", likelihood: "equilibrado", answer: "si", qualifier: null, favorite: false, ...partial };
+  return {
+    kind: "oraculo",
+    id: "r",
+    timestamp: 0,
+    question: "",
+    likelihood: "equilibrado",
+    answer: "si",
+    qualifier: null,
+    favorite: false,
+    ...partial,
+  };
 }
 
 describe("oracle rolls in the journal", () => {
   it("writes each oracle's dice and keeps the answer recognisable", () => {
     const cases: [OracleRoll, string, string][] = [
       [
-        roll({ white: { color: "blanco", rolls: [4], kept: 4 }, black: { color: "negro", rolls: [2], kept: 2 }, qualifier: null }),
+        roll({
+          white: { color: "blanco", rolls: [4], kept: 4 },
+          black: { color: "negro", rolls: [2], kept: 2 },
+          qualifier: null,
+        }),
         "blanco 4 / negro 2",
         "Sí",
       ],
       [
-        roll({ oracle: "ironsworn", likelihood: "probable", dice: [{ role: "percentile", sides: 100, rolls: [77], kept: 77 }], special: "match" }),
+        roll({
+          oracle: "ironsworn",
+          likelihood: "probable",
+          dice: [{ role: "percentile", sides: 100, rolls: [77], kept: 77 }],
+          special: "match",
+        }),
         "d100 77 vs 26+",
         "Sí · Coincidencia",
       ],
@@ -59,8 +78,11 @@ describe("oracle rolls in the journal", () => {
   });
 
   it("shows Loner's counter after a double that brings no twist yet", () => {
-    expect(formatOracleResult(t, roll({ oracle: "loner", qualifier: "pero", twist: { counter: 2, happened: false } }))).toBe(
-      "Sí, pero. · dobles 2/3",
-    );
+    expect(
+      formatOracleResult(
+        t,
+        roll({ oracle: "loner", qualifier: "pero", twist: { counter: 2, happened: false } }),
+      ),
+    ).toBe("Sí, pero. · dobles 2/3");
   });
 });

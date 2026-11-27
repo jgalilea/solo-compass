@@ -75,9 +75,7 @@ export function isLocale(value: string): value is Locale {
  */
 export function detectBrowserLocale(): Locale {
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
-  const candidates = navigator.languages?.length
-    ? navigator.languages
-    : [navigator.language];
+  const candidates = navigator.languages?.length ? navigator.languages : [navigator.language];
   for (const lang of candidates) {
     if (lang?.toLowerCase().startsWith("es")) return "es";
   }

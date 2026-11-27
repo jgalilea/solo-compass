@@ -22,12 +22,24 @@ import { COMPOSER_KINDS, composerShortcut, type ComposerMode } from "../lib/jour
 import { loadDraft, saveDraft } from "../lib/drafts";
 import type { JournalEntry } from "../lib/lonelog";
 import { toRollLine } from "../lib/rollLine";
-import { formatDialogue, formatExcerpt, formatScene, nextSceneId, type Speaker } from "../lib/lonelogLines";
+import {
+  formatDialogue,
+  formatExcerpt,
+  formatScene,
+  nextSceneId,
+  type Speaker,
+} from "../lib/lonelogLines";
 import { buildCast, formatTag, type CastMember } from "../lib/lonelogTags";
 import { normalizeForSearch } from "../lib/text";
 import { fitLikelihood, oracleLevels } from "../lib/oracleEngines";
 import { getOracle } from "../lib/oracles";
-import { SCENE_CHECK_LIKELIHOOD, loadSceneCheck, saveSceneCheck, sceneVerdict, type SceneVerdict } from "../lib/sceneCheck";
+import {
+  SCENE_CHECK_LIKELIHOOD,
+  loadSceneCheck,
+  saveSceneCheck,
+  sceneVerdict,
+  type SceneVerdict,
+} from "../lib/sceneCheck";
 import { useTagAutocomplete } from "../hooks/useTagAutocomplete";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
@@ -65,10 +77,19 @@ const MODE_ICON: Record<ComposerMode, IconType> = {
 };
 
 /** An entry quoted in a line: a roll as Lonelog writes it. */
-const entryLine = (entry: JournalEntry) => (entry.kind === "roll" ? toRollLine(entry.text) : entry.text);
+const entryLine = (entry: JournalEntry) =>
+  entry.kind === "roll" ? toRollLine(entry.text) : entry.text;
 
 /** The selector's order, which Alt+Shift+1…7 follow. */
-const MODE_ORDER: ComposerMode[] = ["note", "action", "dialogue", "consequence", "excerpt", "session", "scene"];
+const MODE_ORDER: ComposerMode[] = [
+  "note",
+  "action",
+  "dialogue",
+  "consequence",
+  "excerpt",
+  "session",
+  "scene",
+];
 
 /** "Alt+Shift+3" for a mode, as the legend writes it. */
 function modeShortcut(mode: ComposerMode, alt: string, shift: string): string {
@@ -185,7 +206,10 @@ export function JournalComposer({
     // Only the draft found on opening.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => saveDraft(adventureId, { text, mode, speaker }), [adventureId, text, mode, speaker]);
+  useEffect(
+    () => saveDraft(adventureId, { text, mode, speaker }),
+    [adventureId, text, mode, speaker],
+  );
   // Physical keyboard (mouse/trackpad): Enter sends. Checked once; it
   // doesn't change mid-game.
   const [finePointer] = useState(() => window.matchMedia("(pointer: fine)").matches);
@@ -236,9 +260,13 @@ export function JournalComposer({
     return last;
   }, [entries, adventureId]);
   const previous = insertAfter ?? latestEntry;
-  const lastEntry = previous && previous.kind !== "session" && previous.kind !== "scene" ? previous : undefined;
+  const lastEntry =
+    previous && previous.kind !== "session" && previous.kind !== "scene" ? previous : undefined;
 
-  const cast = useMemo(() => buildCast(entries.filter((e) => e.adventureId === adventureId)), [entries, adventureId]);
+  const cast = useMemo(
+    () => buildCast(entries.filter((e) => e.adventureId === adventureId)),
+    [entries, adventureId],
+  );
   // A session title is a single plain line: no tags there.
   const tags = useTagAutocomplete({
     text,
@@ -249,20 +277,24 @@ export function JournalComposer({
     // "@(" turns the box into an action starting "(": who does it; in any
     // other type, "N (" is who says a line (and switches to Dialogue,
     // which has its own picker for who speaks).
-    actorContext: mode === "action" ? "action" : mode === "session" || mode === "dialogue" ? undefined : "note",
+    actorContext:
+      mode === "action" ? "action" : mode === "session" || mode === "dialogue" ? undefined : "note",
   });
 
   // A session title is optional (it falls back to the date), and so is
   // a scene's context (it's numbered anyway); anything else needs text,
   // and a dialogue line someone who says it.
-  const canSend = marker || (text.trim() !== "" && (mode !== "dialogue" || speaker.pc || speaker.name.trim() !== ""));
+  const canSend =
+    marker ||
+    (text.trim() !== "" && (mode !== "dialogue" || speaker.pc || speaker.name.trim() !== ""));
   const pcs = cast.filter((c) => c.kind === "pc");
   // "PC: " is the only one there is, or the first of several.
   const pc = pcs.find((c) => speaker.pc && c.name === speaker.name) ?? pcs[0];
   // A question can go to the oracle from a note, an action or a
   // consequence (where the composer lands after every roll); not from
   // dialogue, where it's someone speaking.
-  const isQuestion = (mode === "note" || mode === "action" || mode === "consequence") && text.trim().endsWith("?");
+  const isQuestion =
+    (mode === "note" || mode === "action" || mode === "consequence") && text.trim().endsWith("?");
 
   function askFromComposer() {
     const roll = askOracle(text.trim(), fitLikelihood(oracleId, likelihood), adventureId);
@@ -298,22 +330,32 @@ export function JournalComposer({
         : mode === "excerpt"
           ? t.journal.excerptPlaceholder
           : mode === "session"
-          ? t.journal.newSessionPlaceholder
-          : mode === "scene"
-            ? interpolate(t.journal.newScenePlaceholder, { id: nextSceneId(entries.filter((e) => e.adventureId === adventureId)) })
-            : t.journal.addPlaceholder;
+            ? t.journal.newSessionPlaceholder
+            : mode === "scene"
+              ? interpolate(t.journal.newScenePlaceholder, {
+                  id: nextSceneId(entries.filter((e) => e.adventureId === adventureId)),
+                })
+              : t.journal.addPlaceholder;
 
   function handleSubmit() {
     if (mode === "session") {
       // A session title is a single line (in Lonelog it goes between "===").
-      addEntry(adventureId, "session", text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString());
+      addEntry(
+        adventureId,
+        "session",
+        text.replace(/\s*\n\s*/g, " ").trim() || new Date().toLocaleDateString(),
+      );
       onModeChange("note");
     } else if (mode === "scene") {
       // Numbered after the adventure's latest scene: "S4 *Tavern, night*".
       const id = nextSceneId(entries.filter((e) => e.adventureId === adventureId));
       addEntry(adventureId, "scene", formatScene(id, text));
       if (sceneCheck) {
-        const roll = askOracle(t.journal.sceneCheckQuestion, fitLikelihood(oracleId, SCENE_CHECK_LIKELIHOOD), adventureId);
+        const roll = askOracle(
+          t.journal.sceneCheckQuestion,
+          fitLikelihood(oracleId, SCENE_CHECK_LIKELIHOOD),
+          adventureId,
+        );
         setVerdict({ rollId: roll.id, verdict: sceneVerdict(roll) });
         setText("");
         onRolled(roll.id);
@@ -322,7 +364,11 @@ export function JournalComposer({
       onModeChange("note");
     } else if (mode === "dialogue") {
       if (!canSend) return;
-      addEntry(adventureId, "note", formatDialogue(speaker.pc && pcs.length > 1 ? { pc: true, name: pc.name } : speaker, text));
+      addEntry(
+        adventureId,
+        "note",
+        formatDialogue(speaker.pc && pcs.length > 1 ? { pc: true, name: pc.name } : speaker, text),
+      );
     } else if (mode === "excerpt") {
       if (!canSend) return;
       addEntry(adventureId, "note", formatExcerpt(text));
@@ -335,7 +381,12 @@ export function JournalComposer({
   }
 
   const tools: { id: Tool; label: string; title: string; Icon: IconType }[] = [
-    { id: "oracle", label: t.journal.toolOracle, title: t.journal.toolOracleTitle, Icon: IconOracle },
+    {
+      id: "oracle",
+      label: t.journal.toolOracle,
+      title: t.journal.toolOracleTitle,
+      Icon: IconOracle,
+    },
     { id: "dice", label: t.journal.toolDice, title: t.journal.toolDiceTitle, Icon: IconDice },
     { id: "table", label: t.journal.toolTable, title: t.journal.toolTableTitle, Icon: IconTable },
   ];
@@ -359,14 +410,21 @@ export function JournalComposer({
         // A tap on it keeps the text focused: the keyboard stays up.
         <div onPointerDown={keepTextFocus} className="mb-2 flex min-w-0 items-center gap-2 px-1">
           <IconOracle size={14} className="shrink-0 text-gold" />
-          <LikelihoodPicker inline value={fitLikelihood(oracleId, likelihood)} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
+          <LikelihoodPicker
+            inline
+            value={fitLikelihood(oracleId, likelihood)}
+            onChange={setLikelihood}
+            levels={oracleLevels(oracleId)}
+          />
         </div>
       )}
       {insertAfter ? (
         <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
           <IconInsertBelow size={14} className="shrink-0 text-gold" />
           <span className="shrink-0">{t.journal.insertingAfter}</span>
-          <span className="min-w-0 flex-1 truncate italic text-parchment">«{entryLine(insertAfter)}»</span>
+          <span className="min-w-0 flex-1 truncate italic text-parchment">
+            «{entryLine(insertAfter)}»
+          </span>
           <button
             type="button"
             onClick={onInsertDone}
@@ -387,7 +445,9 @@ export function JournalComposer({
           >
             <IconOracle size={14} className={sceneCheck ? "shrink-0 text-gold" : "shrink-0"} />
             <span>
-              <span className={sceneCheck ? "font-medium text-parchment" : ""}>{t.journal.sceneCheckLabel}</span>{" "}
+              <span className={sceneCheck ? "font-medium text-parchment" : ""}>
+                {t.journal.sceneCheckLabel}
+              </span>{" "}
               <span className="text-parchment-faint">({t.journal.sceneCheckOptional})</span>
             </span>
           </Switch>
@@ -397,18 +457,22 @@ export function JournalComposer({
             </p>
           )}
         </div>
-      ) : mode === "consequence" && (
-        <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
-          <IconConsequence size={14} className="shrink-0 text-gold" />
-          {lastEntry ? (
-            <>
-              <span className="shrink-0">{t.journal.consequenceJoins}</span>
-              <span className="min-w-0 truncate italic text-parchment">«{showDraws(entryLine(lastEntry))}»</span>
-            </>
-          ) : (
-            <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
-          )}
-        </p>
+      ) : (
+        mode === "consequence" && (
+          <p className="mb-2 flex min-w-0 items-center gap-1.5 px-1 text-xs text-parchment-dim">
+            <IconConsequence size={14} className="shrink-0 text-gold" />
+            {lastEntry ? (
+              <>
+                <span className="shrink-0">{t.journal.consequenceJoins}</span>
+                <span className="min-w-0 truncate italic text-parchment">
+                  «{showDraws(entryLine(lastEntry))}»
+                </span>
+              </>
+            ) : (
+              <span className="min-w-0 truncate">{t.journal.consequenceAlone}</span>
+            )}
+          </p>
+        )
       )}
       {mode === "dialogue" && (
         <SpeakerPicker
@@ -451,7 +515,9 @@ export function JournalComposer({
               <Icon size={19} />
               {/* With a tablet's width, named: just icons, above the nav's
                   tabs with the same icons, read as a second nav. */}
-              <span aria-hidden className="max-md:hidden">{label}</span>
+              <span aria-hidden className="max-md:hidden">
+                {label}
+              </span>
             </button>
           ))}
         </div>
@@ -463,7 +529,11 @@ export function JournalComposer({
             handleSubmit();
           }}
         >
-          <ModePicker mode={mode} onChange={onModeChange} onPicked={() => inputRef.current?.focus()} />
+          <ModePicker
+            mode={mode}
+            onChange={onModeChange}
+            onPicked={() => inputRef.current?.focus()}
+          />
           <textarea
             ref={inputRef}
             data-hotkey="write"
@@ -472,7 +542,8 @@ export function JournalComposer({
             onChange={(e) => {
               // Lonelog typed at the start picks the entry type (and the
               // symbol goes: the type writes it back on export).
-              const shortcut = mode === "session" || mode === "scene" ? null : composerShortcut(e.target.value);
+              const shortcut =
+                mode === "session" || mode === "scene" ? null : composerShortcut(e.target.value);
               if (shortcut) {
                 onModeChange(shortcut.mode);
                 if (shortcut.speaker) setSpeaker(shortcut.speaker);
@@ -490,7 +561,8 @@ export function JournalComposer({
                 askFromComposer();
                 return;
               }
-              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing || !sendsOnEnter) return;
+              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing || !sendsOnEnter)
+                return;
               e.preventDefault();
               handleSubmit();
             }}
@@ -523,16 +595,15 @@ export function JournalComposer({
       </div>
 
       {openTool && (
-        <Modal
-          sheet
-          onClose={() => setTool(null)}
-          label={openTool.title}
-          size="lg"
-        >
+        <Modal sheet onClose={() => setTool(null)} label={openTool.title} size="lg">
           {/* Tabs instead of a title: go from the oracle to a table
               without closing the sheet (on desktop all three are visible). */}
           <DialogHeader title={openTool.title} onClose={() => setTool(null)}>
-            <div role="tablist" aria-label={t.journal.playPanelLabel} className="flex min-w-0 flex-1 gap-1 rounded-xl bg-ink-900/60 p-1">
+            <div
+              role="tablist"
+              aria-label={t.journal.playPanelLabel}
+              className="flex min-w-0 flex-1 gap-1 rounded-xl bg-ink-900/60 p-1"
+            >
               {tools.map(({ id, label, Icon }) => (
                 <button
                   key={id}
@@ -542,7 +613,9 @@ export function JournalComposer({
                   onClick={() => setTool(id)}
                   className={[
                     "flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition",
-                    id === tool ? "bg-gold text-ink-950" : "text-parchment-dim hover:text-parchment",
+                    id === tool
+                      ? "bg-gold text-ink-950"
+                      : "text-parchment-dim hover:text-parchment",
                   ].join(" ")}
                 >
                   {/* On the narrowest phones icon and name don't both fit. */}
@@ -553,7 +626,9 @@ export function JournalComposer({
             </div>
           </DialogHeader>
           <DialogBody>
-            {tool === "oracle" && <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />}
+            {tool === "oracle" && (
+              <OracleTool adventureId={adventureId} onRolled={rolled} autoFocus />
+            )}
             {tool === "dice" && <DiceTool adventureId={adventureId} onRolled={rolled} />}
             {tool === "table" && <TableTool adventureId={adventureId} onRolled={rolled} />}
           </DialogBody>
@@ -599,7 +674,8 @@ function ModePicker({
     const viewport = window.visualViewport;
     const fit = () => {
       const header = document.querySelector("header");
-      const pinned = header && getComputedStyle(header).position === "sticky" ? header.offsetHeight : 0;
+      const pinned =
+        header && getComputedStyle(header).position === "sticky" ? header.offsetHeight : 0;
       const top = (viewport?.offsetTop ?? 0) + pinned;
       menu.style.maxHeight = `${Math.max(140, composer.getBoundingClientRect().top - top - 16)}px`;
     };
@@ -620,7 +696,11 @@ function ModePicker({
   function toggle() {
     // Choosing needs the screen, not the keyboard: it's back on picking.
     // Only now, with the tap done (see keepTextFocus).
-    if (!open && window.matchMedia("(pointer: coarse)").matches && document.activeElement instanceof HTMLTextAreaElement) {
+    if (
+      !open &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      document.activeElement instanceof HTMLTextAreaElement
+    ) {
       document.activeElement.blur();
     }
     setOpen((v) => !v);
@@ -628,7 +708,11 @@ function ModePicker({
 
   const kinds: { mode: ComposerMode; label: string; hint: string }[] = COMPOSER_KINDS.map((k) => ({
     mode: k,
-    label: { note: t.journal.kindNote, action: t.journal.kindAction, consequence: t.journal.kindConsequence }[k],
+    label: {
+      note: t.journal.kindNote,
+      action: t.journal.kindAction,
+      consequence: t.journal.kindConsequence,
+    }[k],
     hint: {
       note: t.journal.composerHintNote,
       action: t.journal.composerHintAction,
@@ -636,11 +720,23 @@ function ModePicker({
     }[k],
   }));
   // Dialogue right after the action: what your character does, then says.
-  kinds.splice(2, 0, { mode: "dialogue", label: t.journal.kindDialogue, hint: t.journal.composerHintDialogue });
+  kinds.splice(2, 0, {
+    mode: "dialogue",
+    label: t.journal.kindDialogue,
+    hint: t.journal.composerHintDialogue,
+  });
   // In-world text goes last: it's the rarest.
-  kinds.push({ mode: "excerpt", label: t.journal.kindExcerpt, hint: t.journal.composerHintExcerpt });
+  kinds.push({
+    mode: "excerpt",
+    label: t.journal.kindExcerpt,
+    hint: t.journal.composerHintExcerpt,
+  });
   const markers = [
-    { mode: "session" as const, label: t.journal.newSessionButton, hint: t.journal.composerHintSession },
+    {
+      mode: "session" as const,
+      label: t.journal.newSessionButton,
+      hint: t.journal.composerHintSession,
+    },
     { mode: "scene" as const, label: t.journal.newSceneButton, hint: t.journal.composerHintScene },
   ];
   const current = [...kinds, ...markers].find((o) => o.mode === mode)!;
@@ -705,9 +801,14 @@ function ModePicker({
                   selected ? "bg-gold/10" : "",
                 ].join(" ")}
               >
-                <Icon size={18} className={`mt-0.5 shrink-0 ${selected ? "text-gold" : "text-parchment-dim"}`} />
+                <Icon
+                  size={18}
+                  className={`mt-0.5 shrink-0 ${selected ? "text-gold" : "text-parchment-dim"}`}
+                />
                 <span className="min-w-0 flex-1">
-                  <span className={`block text-sm font-medium ${selected ? "text-gold" : "text-parchment"}`}>
+                  <span
+                    className={`block text-sm font-medium ${selected ? "text-gold" : "text-parchment"}`}
+                  >
                     {o.label}
                   </span>
                   <span className="block text-xs text-parchment-dim">{o.hint}</span>
@@ -790,7 +891,10 @@ function SpeakerPicker({
   onAddToNotebook: (name: string) => void;
 }) {
   const { t } = useLocaleContext();
-  const npcs = useMemo(() => cast.filter((c) => c.kind === "npc").sort((a, b) => b.lastSeen - a.lastSeen), [cast]);
+  const npcs = useMemo(
+    () => cast.filter((c) => c.kind === "npc").sort((a, b) => b.lastSeen - a.lastSeen),
+    [cast],
+  );
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -834,7 +938,9 @@ function SpeakerPicker({
   const chip = (selected: boolean) =>
     [
       "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition",
-      selected ? "border-gold bg-gold text-ink-950" : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+      selected
+        ? "border-gold bg-gold text-ink-950"
+        : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
     ].join(" ");
 
   return (
@@ -842,7 +948,11 @@ function SpeakerPicker({
       <span id="dialogue-speaker" className="shrink-0 py-1 text-xs text-parchment-dim">
         {t.journal.dialogueSpeaker}
       </span>
-      <div role="radiogroup" aria-labelledby="dialogue-speaker" className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+      <div
+        role="radiogroup"
+        aria-labelledby="dialogue-speaker"
+        className="flex min-w-0 flex-1 flex-wrap items-center gap-1"
+      >
         {pcs.length > 1 ? (
           pcs.map((pc, i) => {
             const selected = speaker.pc && (speaker.name ? speaker.name === pc.name : i === 0);
@@ -860,7 +970,13 @@ function SpeakerPicker({
             );
           })
         ) : (
-          <button type="button" role="radio" aria-checked={speaker.pc} onClick={() => pick({ pc: true })} className={chip(speaker.pc)}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={speaker.pc}
+            onClick={() => pick({ pc: true })}
+            className={chip(speaker.pc)}
+          >
             {pcs[0]?.name ?? t.journal.dialoguePc}
           </button>
         )}
@@ -881,7 +997,13 @@ function SpeakerPicker({
         })}
         {typed && !searching && (
           <>
-            <button type="button" role="radio" aria-checked onClick={() => setSearching(true)} className={chip(true)}>
+            <button
+              type="button"
+              role="radio"
+              aria-checked
+              onClick={() => setSearching(true)}
+              className={chip(true)}
+            >
               {typed}
             </button>
             {/* Not in the notebook yet: one tap names them there. */}
@@ -912,7 +1034,9 @@ function SpeakerPicker({
               if (e.key === "ArrowDown" || e.key === "ArrowUp") {
                 e.preventDefault();
                 const step = e.key === "ArrowDown" ? 1 : -1;
-                setActive((i) => (matches.length ? (i + step + matches.length) % matches.length : 0));
+                setActive((i) =>
+                  matches.length ? (i + step + matches.length) % matches.length : 0,
+                );
               } else if (e.key === "Enter") {
                 e.preventDefault();
                 accept();
@@ -962,7 +1086,9 @@ function SpeakerPicker({
               ].join(" ")}
             >
               <span className="truncate text-parchment">{npc.name}</span>
-              {npc.tags.length > 0 && <span className="truncate text-xs text-parchment-dim">{npc.tags.join(" · ")}</span>}
+              {npc.tags.length > 0 && (
+                <span className="truncate text-xs text-parchment-dim">{npc.tags.join(" · ")}</span>
+              )}
             </li>
           ))}
         </ul>

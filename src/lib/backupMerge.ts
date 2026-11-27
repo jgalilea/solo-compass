@@ -36,7 +36,11 @@ export interface MergeData {
 }
 
 /** Both lists by id; `pick` chooses when an id is on both sides (local first). */
-function unionById<T extends { id: string }>(local: T[], incoming: T[], pick: (local: T, incoming: T) => T): T[] {
+function unionById<T extends { id: string }>(
+  local: T[],
+  incoming: T[],
+  pick: (local: T, incoming: T) => T,
+): T[] {
   const byId = new Map(local.map((x) => [x.id, x]));
   for (const item of incoming) {
     const mine = byId.get(item.id);
@@ -54,15 +58,22 @@ export function mergeData(local: MergeData, incoming: MergeData): MergeData {
     const mineAt = mine.notesUpdatedAt ?? 0;
     const theirsAt = theirs.notesUpdatedAt ?? 0;
     // Notes from before they had a date: better some than none.
-    const notes = theirsAt > mineAt || (theirsAt === mineAt && !mine.notes && theirs.notes) ? theirs : mine;
+    const notes =
+      theirsAt > mineAt || (theirsAt === mineAt && !mine.notes && theirs.notes) ? theirs : mine;
     const descriptions = { ...mine.descriptions };
     for (const [key, d] of Object.entries(theirs.descriptions ?? {})) {
       if (d.updatedAt > (descriptions[key]?.updatedAt ?? -1)) descriptions[key] = d;
     }
     // The oracle picked last, on either device; the game table's dice and tables, each the same way.
     const oracle = (theirs.oracleUpdatedAt ?? 0) > (mine.oracleUpdatedAt ?? 0) ? theirs : mine;
-    const gameDice = (theirs.gameDice?.updatedAt ?? 0) > (mine.gameDice?.updatedAt ?? 0) ? theirs.gameDice : mine.gameDice;
-    const gameTables = (theirs.gameTables?.updatedAt ?? 0) > (mine.gameTables?.updatedAt ?? 0) ? theirs.gameTables : mine.gameTables;
+    const gameDice =
+      (theirs.gameDice?.updatedAt ?? 0) > (mine.gameDice?.updatedAt ?? 0)
+        ? theirs.gameDice
+        : mine.gameDice;
+    const gameTables =
+      (theirs.gameTables?.updatedAt ?? 0) > (mine.gameTables?.updatedAt ?? 0)
+        ? theirs.gameTables
+        : mine.gameTables;
     return {
       ...base,
       notes: notes.notes,

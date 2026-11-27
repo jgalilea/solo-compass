@@ -33,7 +33,9 @@ async function expectAccessible(page: Page, where: string, within = "#settings-s
     .include(within)
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
-  const found = results.violations.map((v) => `${where}: ${v.id} ${v.help} ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+  const found = results.violations.map(
+    (v) => `${where}: ${v.id} ${v.help} ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+  );
   expect(found, found.join("\n")).toEqual([]);
 }
 
@@ -41,8 +43,11 @@ async function openSettings(page: Page) {
   await page.goto("./#/");
   await page.getByRole("button", { name: /^Ajustes/ }).click();
   // A build with a relay allows its origin in the Content Security Policy.
-  const policy = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute("content");
-  if (!/connect-src 'self' \S/.test(policy ?? "")) test.skip(true, "This build has no device sync (VITE_SYNC_RELAY_URL is empty).");
+  const policy = await page
+    .locator('meta[http-equiv="Content-Security-Policy"]')
+    .getAttribute("content");
+  if (!/connect-src 'self' \S/.test(policy ?? ""))
+    test.skip(true, "This build has no device sync (VITE_SYNC_RELAY_URL is empty).");
   const card = page.locator("#settings-sync");
   await expect(card).toBeVisible();
   await card.scrollIntoViewIfNeeded();
@@ -118,16 +123,42 @@ async function syncedData(page: Page) {
 /** A backup with one of each thing the sync carries, to merge in as a player would. */
 function smallBackup() {
   const now = Date.now() - 60_000;
-  const entry = (id: string, text: string, i: number) => ({ id, adventureId: "cripta", timestamp: now + i, kind: "note", text });
+  const entry = (id: string, text: string, i: number) => ({
+    id,
+    adventureId: "cripta",
+    timestamp: now + i,
+    kind: "note",
+    text,
+  });
   return {
     app: "solo-compass",
     schemaVersion: 6,
     exportedAt: new Date().toISOString(),
     history: [
-      { kind: "tabla", id: "roll-1", timestamp: now, tableId: "botin", tableName: "Botín del faro", rolls: [2], total: 2, resultText: "Un diario empapado", favorite: true },
+      {
+        kind: "tabla",
+        id: "roll-1",
+        timestamp: now,
+        tableId: "botin",
+        tableName: "Botín del faro",
+        rolls: [2],
+        total: 2,
+        resultText: "Un diario empapado",
+        favorite: true,
+      },
     ],
     journal: {
-      adventures: [{ id: "cripta", name: "La cripta", createdAt: now, updatedAt: now, favorite: false, status: "ongoing", notes: "- [ ] Bajar con luz" }],
+      adventures: [
+        {
+          id: "cripta",
+          name: "La cripta",
+          createdAt: now,
+          updatedAt: now,
+          favorite: false,
+          status: "ongoing",
+          notes: "- [ ] Bajar con luz",
+        },
+      ],
       entries: [
         entry("c1", "Bajo las escaleras de la cripta.", 1),
         entry("c2", "Huele a cera y a tierra mojada.", 2),
@@ -150,13 +181,34 @@ function smallBackup() {
         updatedAt: now,
       },
     ],
-    savedRolls: [{ id: "espada", name: "Espada", formula: "1d8+2", favorite: true, createdAt: now, updatedAt: now }],
-    generators: [{ id: "hallazgo", name: "Hallazgo", tableIds: ["botin"], createdAt: now, updatedAt: now }],
-    settings: { theme: "osr", mode: "dark", locale: "es", oracleId: "recluse", activeAdventureId: null, favoriteTableIds: [] },
+    savedRolls: [
+      {
+        id: "espada",
+        name: "Espada",
+        formula: "1d8+2",
+        favorite: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    generators: [
+      { id: "hallazgo", name: "Hallazgo", tableIds: ["botin"], createdAt: now, updatedAt: now },
+    ],
+    settings: {
+      theme: "osr",
+      mode: "dark",
+      locale: "es",
+      oracleId: "recluse",
+      activeAdventureId: null,
+      favoriteTableIds: [],
+    },
   };
 }
 
-test("two devices share a journal through the relay, and a pause says so", async ({ page, browser }, testInfo) => {
+test("two devices share a journal through the relay, and a pause says so", async ({
+  page,
+  browser,
+}, testInfo) => {
   const relay = fakeRelay();
   await relay.attach(page.context());
   // Still: a colour checked halfway through a fade isn't the colour shown.
@@ -170,7 +222,9 @@ test("two devices share a journal through the relay, and a pause says so", async
   let card = await openSettings(page);
   await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
   await expect(card.getByText("Guarda este código en un sitio seguro")).toBeVisible();
-  await expect(card.getByRole("img", { name: "Código QR para vincular otro dispositivo" })).toBeVisible();
+  await expect(
+    card.getByRole("img", { name: "Código QR para vincular otro dispositivo" }),
+  ).toBeVisible();
   await expectAccessible(page, "new code");
   const code = (await card.locator(".font-mono").first().textContent())!.trim();
   expect(code).toMatch(/^([0-9A-Z]{4}-){6}[0-9A-Z]{3}$/);
@@ -200,7 +254,9 @@ test("two devices share a journal through the relay, and a pause says so", async
   // The phone's adventure is there, entry and all.
   await other.goto("./#/diario");
   await other.getByText("El faro").first().click();
-  await expect(other.locator("[id^=entry-]").getByText("La lámpara lleva días apagada.")).toBeVisible();
+  await expect(
+    other.locator("[id^=entry-]").getByText("La lámpara lleva días apagada."),
+  ).toBeVisible();
 
   // Written on the computer, it reaches the phone (without reloading it).
   await write(other, "Alguien ha dejado huellas en la arena.");
@@ -229,7 +285,9 @@ test("two devices share a journal through the relay, and a pause says so", async
   await expect(card.getByText("Móvil del faro")).toBeVisible();
   await closeSettings(page);
   await page.getByText("El faro").first().click();
-  await expect(page.locator("[id^=entry-]").getByText("Alguien ha dejado huellas en la arena.")).toBeVisible();
+  await expect(
+    page.locator("[id^=entry-]").getByText("Alguien ha dejado huellas en la arena."),
+  ).toBeVisible();
 
   // The relay's daily allowance runs out: paused, until when, and what to do meanwhile.
   relay.fail("quota");
@@ -263,7 +321,12 @@ test("a link with a code asks before linking", async ({ page, browser }, testInf
   const code = (await card.locator(".font-mono").first().textContent())!.trim();
   await card.getByRole("button", { name: "Hecho, ya lo he guardado" }).click();
 
-  const computer = await browser.newContext({ ...testInfo.project.use, locale: "es-ES", colorScheme: "dark", reducedMotion: "reduce" });
+  const computer = await browser.newContext({
+    ...testInfo.project.use,
+    locale: "es-ES",
+    colorScheme: "dark",
+    reducedMotion: "reduce",
+  });
   await relay.attach(computer);
   const other = await computer.newPage();
   const otherErrors = watchErrors(other);
@@ -286,7 +349,10 @@ test("a link with a code asks before linking", async ({ page, browser }, testInf
   expect(otherErrors).toEqual([]);
 });
 
-test("syncing while playing keeps both devices' data whole and the same", async ({ page, browser }, testInfo) => {
+test("syncing while playing keeps both devices' data whole and the same", async ({
+  page,
+  browser,
+}, testInfo) => {
   test.setTimeout(120_000);
   const relay = fakeRelay();
   await relay.attach(page.context());
@@ -349,8 +415,12 @@ test("syncing while playing keeps both devices' data whole and the same", async 
   await syncNow(secondTab);
   await syncNow(page);
   await openAdventure(page, "La cripta");
-  await expect(page.locator("[id^=entry-]").getByText("Una losa está movida, y debajo hay un hueco.")).toBeVisible();
-  await expect(page.locator("[id^=entry-]").getByText("Huele a cera y a tierra mojada.")).toHaveCount(0);
+  await expect(
+    page.locator("[id^=entry-]").getByText("Una losa está movida, y debajo hay un hueco."),
+  ).toBeVisible();
+  await expect(
+    page.locator("[id^=entry-]").getByText("Huele a cera y a tierra mojada."),
+  ).toHaveCount(0);
   await expect(page.locator("[id^=entry-]").getByText("La antorcha chisporrotea.")).toBeVisible();
 
   // Once more each way: the deleted entry doesn't come back, and both hold exactly the same.
@@ -401,7 +471,9 @@ test("something failing on the device is said, with a report, and passes", async
   await expect(glance(page)).toHaveAttribute("data-sync-glance", "paused");
   await openSettings(page);
   // The report says what failed, and nothing of the journal.
-  const report: string = await page.evaluate(`JSON.parse(localStorage.getItem("solo-compass:sync-status")).report`);
+  const report: string = await page.evaluate(
+    `JSON.parse(localStorage.getItem("solo-compass:sync-status")).report`,
+  );
   expect(report).toContain("QuotaExceededError");
   expect(report).not.toContain("No room");
 
@@ -417,16 +489,28 @@ test("the full explanation opens from the card and from the privacy note", async
   const card = await openSettings(page);
   await card.getByRole("button", { name: "Cómo funciona, seguridad y privacidad" }).click();
   const help = page.getByRole("dialog", { name: "Cómo funciona, seguridad y privacidad" });
-  await expect(help.getByRole("heading", { name: "Cómo funciona la sincronización" })).toBeVisible();
-  for (const heading of ["Cómo se activa", "Qué viaja y qué no", "Seguridad", "Privacidad y uso de tus datos", "No es una copia de seguridad"]) {
+  await expect(
+    help.getByRole("heading", { name: "Cómo funciona la sincronización" }),
+  ).toBeVisible();
+  for (const heading of [
+    "Cómo se activa",
+    "Qué viaja y qué no",
+    "Seguridad",
+    "Privacidad y uso de tus datos",
+    "No es una copia de seguridad",
+  ]) {
     await expect(help.getByRole("heading", { name: heading, exact: true })).toBeVisible();
   }
   await expectAccessible(page, "explanation", "[role=dialog]");
   await page.keyboard.press("Escape");
   await expect(help).toBeHidden();
 
-  await page.getByRole("button", { name: "Cómo funciona la sincronización, su seguridad y su privacidad" }).click();
-  await expect(page.getByRole("dialog").getByRole("heading", { name: "Privacidad y uso de tus datos" })).toBeVisible();
+  await page
+    .getByRole("button", { name: "Cómo funciona la sincronización, su seguridad y su privacidad" })
+    .click();
+  await expect(
+    page.getByRole("dialog").getByRole("heading", { name: "Privacidad y uso de tus datos" }),
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -446,7 +530,11 @@ async function browserFilming(text: string, testInfo: TestInfo, name: string) {
       row.forEach((dark, mx) => {
         if (!dark) return;
         for (let py = 0; py < scale; py++) {
-          y.fill(16, (offset + my * scale + py) * side + offset + mx * scale, (offset + my * scale + py) * side + offset + (mx + 1) * scale);
+          y.fill(
+            16,
+            (offset + my * scale + py) * side + offset + mx * scale,
+            (offset + my * scale + py) * side + offset + (mx + 1) * scale,
+          );
         }
       }),
     );
@@ -455,16 +543,31 @@ async function browserFilming(text: string, testInfo: TestInfo, name: string) {
   const file = testInfo.outputPath(`${name}.y4m`);
   writeFileSync(
     file,
-    Buffer.concat([Buffer.from(`YUV4MPEG2 W${side} H${side} F10:1 Ip A1:1 C420jpeg\nFRAME\n`), Buffer.from(y), Buffer.from(chroma)]),
+    Buffer.concat([
+      Buffer.from(`YUV4MPEG2 W${side} H${side} F10:1 Ip A1:1 C420jpeg\nFRAME\n`),
+      Buffer.from(y),
+      Buffer.from(chroma),
+    ]),
   );
   const browser = await chromium.launch({
-    args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", `--use-file-for-fake-video-capture=${file}`],
+    args: [
+      "--use-fake-ui-for-media-stream",
+      "--use-fake-device-for-media-stream",
+      `--use-file-for-fake-video-capture=${file}`,
+    ],
   });
-  const context = await browser.newContext({ ...testInfo.project.use, locale: "es-ES", permissions: ["camera"], reducedMotion: "reduce" });
+  const context = await browser.newContext({
+    ...testInfo.project.use,
+    locale: "es-ES",
+    permissions: ["camera"],
+    reducedMotion: "reduce",
+  });
   return { browser, context };
 }
 
-test("the other device links by scanning the QR code with its camera", async ({ page }, testInfo) => {
+test("the other device links by scanning the QR code with its camera", async ({
+  page,
+}, testInfo) => {
   const relay = fakeRelay();
   await relay.attach(page.context());
   const errors = watchErrors(page);
@@ -476,10 +579,15 @@ test("the other device links by scanning the QR code with its camera", async ({ 
   await expect(card.getByRole("button", { name: "Activar en este dispositivo" })).toBeVisible();
   await expect(card.getByRole("button", { name: "Escanear el QR" })).toHaveCount(0);
   // One that lists nothing before the camera is allowed (Safari): it may well have one, so it's offered.
-  const safariLike = await page.context().browser()!.newContext({ ...testInfo.project.use, locale: "es-ES" });
+  const safariLike = await page
+    .context()
+    .browser()!
+    .newContext({ ...testInfo.project.use, locale: "es-ES" });
   await safariLike.addInitScript(`navigator.mediaDevices.enumerateDevices = async () => [];`);
   const safariPage = await safariLike.newPage();
-  await expect((await openSettings(safariPage)).getByRole("button", { name: "Escanear el QR" })).toBeVisible();
+  await expect(
+    (await openSettings(safariPage)).getByRole("button", { name: "Escanear el QR" }),
+  ).toBeVisible();
   await safariLike.close();
   await card.getByRole("button", { name: "Activar en este dispositivo" }).click();
   const code = (await card.locator(".font-mono").first().textContent())!.trim();
@@ -493,7 +601,9 @@ test("the other device links by scanning the QR code with its camera", async ({ 
   card = await openSettings(other);
   await card.getByRole("button", { name: "Escanear el QR" }).click();
   const scanner = other.getByRole("dialog", { name: "Escanea el QR de tu otro dispositivo" });
-  await expect(scanner.getByText(/Ese QR no es un código de sincronización/)).toBeVisible({ timeout: 15_000 });
+  await expect(scanner.getByText(/Ese QR no es un código de sincronización/)).toBeVisible({
+    timeout: 15_000,
+  });
   await expectAccessible(other, "scanning", "[role=dialog]");
   await scanner.getByRole("button", { name: "Cancelar" }).click();
   await expect(scanner).toBeHidden();
@@ -508,8 +618,12 @@ test("the other device links by scanning the QR code with its camera", async ({ 
   otherErrors = watchErrors(other);
   card = await openSettings(other);
   await card.getByRole("button", { name: "Escanear el QR" }).click();
-  await expect(card.getByText(/Has escaneado un código de sincronización/)).toBeVisible({ timeout: 15_000 });
-  await expect(other.getByRole("dialog", { name: "Escanea el QR de tu otro dispositivo" })).toHaveCount(0);
+  await expect(card.getByText(/Has escaneado un código de sincronización/)).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(
+    other.getByRole("dialog", { name: "Escanea el QR de tu otro dispositivo" }),
+  ).toHaveCount(0);
   await card.getByRole("button", { name: "Vincular" }).click();
   await expect(card.getByText(/^Sincronizado/)).toBeVisible();
   await card.getByRole("button", { name: "Ver el código" }).click();
@@ -547,7 +661,9 @@ test("two hours of play cost a handful of requests", async ({ page }) => {
   await page.clock.runFor(5 * 60_000);
   await expect.poll(() => relay.requests() - before).toBeGreaterThanOrEqual(4);
   // A send every half hour at most while writing on (leaving sends at once): never one per entry.
-  console.log(`Two hours of play, 60 entries: ${relay.requests() - before} requests, ${relay.rowsWritten()} rows written in all`);
+  console.log(
+    `Two hours of play, 60 entries: ${relay.requests() - before} requests, ${relay.rowsWritten()} rows written in all`,
+  );
   expect(relay.requests() - before).toBeLessThanOrEqual(6);
   // And on the relay, one row per change sent.
   expect(relay.rowsWritten()).toBeLessThanOrEqual(relay.requests() + 2);
@@ -581,7 +697,10 @@ test("two hours of play cost a handful of requests", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("opening the app, or coming back to it, brings what another device wrote", async ({ page, browser }, testInfo) => {
+test("opening the app, or coming back to it, brings what another device wrote", async ({
+  page,
+  browser,
+}, testInfo) => {
   test.setTimeout(120_000);
   const relay = fakeRelay();
   await relay.attach(page.context());
@@ -635,7 +754,9 @@ test("opening the app, or coming back to it, brings what another device wrote", 
   expect(otherErrors).toEqual([]);
 });
 
-test("leaving the app sends what was just written at once, even if it closes right then", async ({ page }) => {
+test("leaving the app sends what was just written at once, even if it closes right then", async ({
+  page,
+}) => {
   test.skip(LIVE_RELAY, "Counts the fake relay's requests.");
   const relay = fakeRelay();
   await relay.attach(page.context());

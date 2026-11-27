@@ -33,7 +33,8 @@ export class SavedRollsStorageError extends Error {}
 export function normalizeSavedRoll(value: unknown): SavedRoll | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
-  if (typeof v.id !== "string" || typeof v.name !== "string" || typeof v.formula !== "string") return null;
+  if (typeof v.id !== "string" || typeof v.name !== "string" || typeof v.formula !== "string")
+    return null;
   if (!isRollable(v.formula)) return null;
   const createdAt = typeof v.createdAt === "number" ? v.createdAt : 0;
   return {
@@ -52,12 +53,21 @@ export function isRollable(formula: string): boolean {
 }
 
 export function createSavedRoll(draft: SavedRollDraft, now = Date.now()): SavedRoll {
-  return { id: makeId(), name: draft.name.trim(), formula: draft.formula.trim(), favorite: false, createdAt: now, updatedAt: now };
+  return {
+    id: makeId(),
+    name: draft.name.trim(),
+    formula: draft.formula.trim(),
+    favorite: false,
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 /** Favorites first, then in the order they were saved. */
 export function sortSavedRolls(rolls: SavedRoll[]): SavedRoll[] {
-  return [...rolls].sort((a, b) => Number(b.favorite) - Number(a.favorite) || a.createdAt - b.createdAt);
+  return [...rolls].sort(
+    (a, b) => Number(b.favorite) - Number(a.favorite) || a.createdAt - b.createdAt,
+  );
 }
 
 /** What its button says: its text, or the formula when it has none. */
@@ -66,7 +76,11 @@ export function savedRollLabel(roll: Pick<SavedRoll, "name" | "formula">): strin
 }
 
 /** Rolled as the dice tool writes it: "Athletics 4dF+2 -> +3 (…)", or just "d20+5 -> …". */
-export function rollSaved(roll: Pick<SavedRoll, "name" | "formula">, edge?: Edge, random?: () => number): string | null {
+export function rollSaved(
+  roll: Pick<SavedRoll, "name" | "formula">,
+  edge?: Edge,
+  random?: () => number,
+): string | null {
   const formula = roll.name ? `${roll.formula} // ${roll.name}` : roll.formula;
   return rollFormula(edge ? withEdge(formula, edge) : formula, random);
 }
@@ -82,7 +96,11 @@ export async function loadSavedRolls(t: Dictionary): Promise<SavedRoll[]> {
   }
 }
 
-export async function saveSavedRollChanges(t: Dictionary, prev: SavedRoll[], next: SavedRoll[]): Promise<void> {
+export async function saveSavedRollChanges(
+  t: Dictionary,
+  prev: SavedRoll[],
+  next: SavedRoll[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await store.save(diffById(prev, next));

@@ -14,20 +14,25 @@ export const enLong: LongTexts = {
     linkFromUrlTitle: "Link this device?",
     linkFromUrl:
       "You opened a link with a sync code. Only link if the code is yours: what's on this device will be joined with that code's, and whoever has it can read it.",
-    alreadyLinked: "This device already syncs with another code: linking this one stops it using the old one.",
+    alreadyLinked:
+      "This device already syncs with another code: linking this one stops it using the old one.",
     linkFromScan:
       "You scanned a sync code. Only link if it's yours: what's on this device will be joined with that code's, and whoever has it can read it.",
     scanQr: "Scan the QR code",
     scanTitle: "Scan your other device's QR code",
-    scanHint: "Point the camera at the QR code your other device shows in Settings → Sync your devices → “Show the code”. The picture never leaves this device.",
-    scanNotCode: "That QR code isn't a Solo Compass sync code. Point at the one your other device shows.",
-    scanDenied: "Solo Compass isn't allowed to use the camera. Allow it in the browser's settings, or type the code with “I have a code”.",
+    scanHint:
+      "Point the camera at the QR code your other device shows in Settings → Sync your devices → “Show the code”. The picture never leaves this device.",
+    scanNotCode:
+      "That QR code isn't a Solo Compass sync code. Point at the one your other device shows.",
+    scanDenied:
+      "Solo Compass isn't allowed to use the camera. Allow it in the browser's settings, or type the code with “I have a code”.",
     scanUnavailable: "The camera couldn't be opened. Type the code with “I have a code”.",
     scanCancel: "Cancel",
     saveTitle: "Keep this code somewhere safe",
     saveText:
       "You'll need it to link another device, or this one if it loses its data. A password manager or a private note will do. Whoever has it can read and change your synced journal: don't share it.",
-    notBackup: "Syncing isn't a backup: a deletion syncs too. Keep exporting a backup now and then.",
+    notBackup:
+      "Syncing isn't a backup: a deletion syncs too. Keep exporting a backup now and then.",
     otherDevice:
       "On the other device, open Settings → Sync your devices and press “Scan the QR code” (or type it with “I have a code”). The system camera works too: the QR code is a link that opens the app.",
     iosHint:
@@ -43,7 +48,8 @@ export const enLong: LongTexts = {
     syncing: "Syncing…",
     synced: "Synced {when}",
     notYet: "Not synced yet",
-    pendingNote: "There are changes to send: they go by themselves in a few minutes or when you leave the app, or now with “Sync now”.",
+    pendingNote:
+      "There are changes to send: they go by themselves in a few minutes or when you leave the app, or now with “Sync now”.",
     offlineTitle: "Offline",
     offline: "What you change is kept here and will be sent when you're back online.",
     pausedTitle: "Sync paused",
@@ -55,12 +61,15 @@ export const enLong: LongTexts = {
     pausedDaily:
       "This device has synced far more times today than usual, so it waits so as not to use up the allowance everyone shares. “Sync now” still works.",
     backBy: "It'll resume by itself, at the latest at midnight UTC ({reset} your time).",
-    meanwhile: "Meanwhile, you can carry your changes over by hand: “Send” here and, on the other device, restore with “Merge”.",
+    meanwhile:
+      "Meanwhile, you can carry your changes over by hand: “Send” here and, on the other device, restore with “Merge”.",
     errorTitle: "Sync has stopped",
     errorFull:
       "The server's copy has reached its maximum size and takes no more changes. Your data is still here; please tell me in the ideas and bugs form.",
-    errorUpdate: "Another device uses a newer version of Solo Compass: update the app here to keep syncing.",
-    errorDamaged: "The code saved on this device is damaged. Stop syncing here and link it again with your code.",
+    errorUpdate:
+      "Another device uses a newer version of Solo Compass: update the app here to keep syncing.",
+    errorDamaged:
+      "The code saved on this device is damaged. Stop syncing here and link it again with your code.",
     errorUnexpected:
       "Something failed on this device while syncing (its storage, perhaps). Nothing is lost: what's left to send or receive is worked out again on the next try.",
     retryAt: "It'll try again by itself at {time}, or now with “Sync now”.",
@@ -68,9 +77,11 @@ export const enLong: LongTexts = {
     reportCopied: "Report copied",
     reportHint:
       "If it keeps happening, paste it into the ideas and bugs form (About). It only carries the app's version, your browser and where it failed: nothing from your journal.",
-    actionFailed: "That couldn't be done: this browser's storage isn't answering. Try again, or reload the app.",
+    actionFailed:
+      "That couldn't be done: this browser's storage isn't answering. Try again, or reload the app.",
     staleTitle: "This device hasn't synced for almost a year",
-    staleText: "What you deleted on your other devices that long ago is no longer remembered, and merging could bring it back. What would you rather do?",
+    staleText:
+      "What you deleted on your other devices that long ago is no longer remembered, and merging could bring it back. What would you rather do?",
     staleMerge: "Merge this device's",
     staleMergeHint: "Nothing is lost, but something you deleted may come back.",
     staleServer: "Keep the server's",
@@ -79,8 +90,10 @@ export const enLong: LongTexts = {
     closed:
       "Sync was closed from another device (maybe you changed the code). Your data is still here. To come back, link it with the new code.",
     closedOk: "Got it",
-    clockAhead: "This device's clock is {minutes} min ahead: set it right so the sync can tell which change is the latest.",
-    clockBehind: "This device's clock is {minutes} min behind: set it right so the sync can tell which change is the latest.",
+    clockAhead:
+      "This device's clock is {minutes} min ahead: set it right so the sync can tell which change is the latest.",
+    clockBehind:
+      "This device's clock is {minutes} min behind: set it right so the sync can tell which change is the latest.",
     moreOptions: "More options",
     changeCode: "Change the code",
     changeCodeTitle: "Change the code?",
@@ -88,10 +101,12 @@ export const enLong: LongTexts = {
       "This device moves to a new code and the old one's copy is closed. Your other devices stop syncing until you link them with the new code.",
     unlink: "Stop syncing here",
     unlinkTitle: "Stop syncing this device?",
-    unlinkText: "Your data stays here, and the server's copy and your other devices stay as they are. You can come back with your code.",
+    unlinkText:
+      "Your data stays here, and the server's copy and your other devices stay as they are. You can come back with your code.",
     deleteServer: "Delete the server's copy",
     deleteServerTitle: "Delete the server's copy?",
-    deleteServerText: "It's deleted for good and all your devices stop syncing. What's on each device stays on it.",
+    deleteServerText:
+      "It's deleted for good and all your devices stop syncing. What's on each device stays on it.",
     deleteServerFailed: "It couldn't be deleted: check your connection and try again.",
     fileName: "solo-compass-sync-code.txt",
     fileText:
@@ -101,7 +116,8 @@ export const enLong: LongTexts = {
     seen: "seen {when}",
     rename: "Rename",
     renameLabel: "This device's name",
-    noOthers: "Nothing has come from another device yet: they'll show up here once they sync. Names travel encrypted, and one that stops syncing drops off the list after two months.",
+    noOthers:
+      "Nothing has come from another device yet: they'll show up here once they sync. Names travel encrypted, and one that stops syncing drops off the list after two months.",
     learnMore: "How it works, security and privacy",
     help: {
       title: "How sync works",
@@ -193,148 +209,336 @@ export const enLong: LongTexts = {
       "[PC:Mara] Guild courier, quick and stubborn. Never leaves a job half done.\n[N:Odile] Keeper of the crossroads inn. Hasn't trusted the guild since one of its couriers left her a debt.\n[N:Grey Cloak] Tall, well-spoken, fine leather gloves. Pays in gold and leaves no tracks… almost never.\n[L:Mill] A water mill by the river, idle since the spring flood.",
     script: [
       { kind: "session", text: "Session 1 · Rain at the crossroads", date: "2026-10-03" },
-      { kind: "note", text: "(guide: this adventure shows everything a journal can hold. Comments like this one explain what you've just seen. Tap an entry and the pencil to see how it's written.)" },
+      {
+        kind: "note",
+        text: "(guide: this adventure shows everything a journal can hold. Comments like this one explain what you've just seen. Tap an entry and the pencil to see how it's written.)",
+      },
       { kind: "scene", text: "S1 *The crossroads inn, at night*" },
       { kind: "note", text: "[PC:Mara\n| guild courier\n| HP 8\n| Oil d8\n| mood:alert\n]" },
-      { kind: "note", text: "(guide: a tag over several lines is someone's whole state. Plain words add up, numbers are set, and what follows a colon can only be one thing at a time.)" },
-      { kind: "note", text: "She arrives soaked at the [L:Crossroads Inn]. She carries [Wealth:Mara|Silver 9|Gold 1], a [Inv:Lantern|×1], [Inv:Rations|×3|days] and [Inv:Rope|×1|50ft|owner:guild]. The courier who was meant to relieve her, [N:Tobias|guild courier|missing], isn't here." },
-      { kind: "note", text: "(guide: characters, places, items and money go in square brackets and gather in the notebook. Money says whose it is, and items how many there are: with no owner, they belong to whoever keeps the journal.)" },
+      {
+        kind: "note",
+        text: "(guide: a tag over several lines is someone's whole state. Plain words add up, numbers are set, and what follows a colon can only be one thing at a time.)",
+      },
+      {
+        kind: "note",
+        text: "She arrives soaked at the [L:Crossroads Inn]. She carries [Wealth:Mara|Silver 9|Gold 1], a [Inv:Lantern|×1], [Inv:Rations|×3|days] and [Inv:Rope|×1|50ft|owner:guild]. The courier who was meant to relieve her, [N:Tobias|guild courier|missing], isn't here.",
+      },
+      {
+        kind: "note",
+        text: "(guide: characters, places, items and money go in square brackets and gather in the notebook. Money says whose it is, and items how many there are: with no owner, they belong to whoever keeps the journal.)",
+      },
       { kind: "action", text: "I go in and look around for the courier." },
       { kind: "question", text: "Is anyone awake at this hour?" },
       { oracle: [5, 2] },
-      { kind: "consequence", text: "The innkeeper, [N:Odile|wary], is drying tankards behind the bar. No one else." },
-      { kind: "note", text: "(guide: question, oracle and consequence go together in a card. When the answer is more or less likely, it's noted after the question.)" },
+      {
+        kind: "consequence",
+        text: "The innkeeper, [N:Odile|wary], is drying tankards behind the bar. No one else.",
+      },
+      {
+        kind: "note",
+        text: "(guide: question, oracle and consequence go together in a card. When the answer is more or less likely, it's noted after the question.)",
+      },
       { table: "descriptor-escena", roll: [5] },
-      { kind: "consequence", text: "The fire is nearly out, a smell of old smoke. Nobody has come in here for days." },
-      { kind: "note", text: "PC: \"I'm looking for Tobias, from the guild. Have you seen him?\"" },
-      { kind: "note", text: "N (Odile): \"Maybe. He left a bill unpaid.\"" },
+      {
+        kind: "consequence",
+        text: "The fire is nearly out, a smell of old smoke. Nobody has come in here for days.",
+      },
+      { kind: "note", text: 'PC: "I\'m looking for Tobias, from the guild. Have you seen him?"' },
+      { kind: "note", text: 'N (Odile): "Maybe. He left a bill unpaid."' },
       { kind: "question", text: "Does Odile know anything about the courier? (Likely)" },
       { oracle: [[2, 3], 1] },
-      { kind: "consequence", text: "She saw him leave two nights ago towards the [L:Mill|idle], but won't say who with." },
+      {
+        kind: "consequence",
+        text: "She saw him leave two nights ago towards the [L:Mill|idle], but won't say who with.",
+      },
       { table: "accion-pnj", roll: [5] },
-      { kind: "consequence", text: "If I pay the bill [#N:Tobias] left, [#N:Odile] will tell me the rest." },
-      { kind: "note", text: "(guide: with a hash you only name someone: it links to them without changing them. To change them, write their tag without the hash, with the change.)" },
+      {
+        kind: "consequence",
+        text: "If I pay the bill [#N:Tobias] left, [#N:Odile] will tell me the rest.",
+      },
+      {
+        kind: "note",
+        text: "(guide: with a hash you only name someone: it links to them without changing them. To change them, write their tag without the hash, with the change.)",
+      },
       { kind: "action", text: "I try to bring the bill down." },
       { kind: "roll", text: "Haggle +[smile] -[soaked] d20+1=8 vs 12 -> Fail" },
-      { kind: "consequence", text: "She won't budge. I pay the whole bill. [Wealth:Mara|Silver-7]" },
-      { kind: "note", text: "(retcon: the bill was six coins, not seven; I get one back and have three left. [Wealth:Mara|Silver+1])" },
-      { kind: "note", text: "(guide: a mistake isn't erased: the line stays as it was and the correction goes right below.)" },
-      { kind: "note", text: "(guide: what goes before the dice tells what helps and what hinders. It's only a reminder: it doesn't change the roll. After them, what it was against and how it ended: you add the verdict by editing it.)" },
-      { kind: "note", text: "[#N:Odile] lowers her voice: [#N:Tobias] was with a man in a grey cloak [N:Grey Cloak|mysterious].\nThey took a sealed box. [Thread:The sealed box|Open]" },
+      {
+        kind: "consequence",
+        text: "She won't budge. I pay the whole bill. [Wealth:Mara|Silver-7]",
+      },
+      {
+        kind: "note",
+        text: "(retcon: the bill was six coins, not seven; I get one back and have three left. [Wealth:Mara|Silver+1])",
+      },
+      {
+        kind: "note",
+        text: "(guide: a mistake isn't erased: the line stays as it was and the correction goes right below.)",
+      },
+      {
+        kind: "note",
+        text: "(guide: what goes before the dice tells what helps and what hinders. It's only a reminder: it doesn't change the roll. After them, what it was against and how it ended: you add the verdict by editing it.)",
+      },
+      {
+        kind: "note",
+        text: "[#N:Odile] lowers her voice: [#N:Tobias] was with a man in a grey cloak [N:Grey Cloak|mysterious].\nThey took a sealed box. [Thread:The sealed box|Open]",
+      },
       { kind: "note", text: "[N:Odile|wary>ally|owes:a favour, free lodging]" },
       { kind: "note", text: "(todo: ask Odile about the box's seal.)" },
       { kind: "action", text: "Before sleeping, I draw a card to see what awaits me at the mill." },
       { kind: "note", text: "[Deck:Tarot|×78]" },
       { kind: "roll", text: "tbl: Omen draw=M16r -> The Tower, reversed" },
       { kind: "note", text: "[Deck:Tarot|×-1|out:+M16]" },
-      { kind: "consequence", text: "Something that should have fallen is still standing… for now. I sleep badly. [PC:Mara|mood:uneasy]" },
-      { kind: "note", text: "(guide: the app's deck already knows which cards are out. A deck's tag is for other decks of yours, or to have it written down, and you keep it yourself.)" },
+      {
+        kind: "consequence",
+        text: "Something that should have fallen is still standing… for now. I sleep badly. [PC:Mara|mood:uneasy]",
+      },
+      {
+        kind: "note",
+        text: "(guide: the app's deck already knows which cards are out. A deck's tag is for other decks of yours, or to have it written down, and you keep it yourself.)",
+      },
       { kind: "scene", text: "S1a *Memory: the guild, ten years ago*" },
-      { kind: "note", text: "N (Tobias): \"A letter gets delivered, even if the bridge burns.\"" },
-      { kind: "note", text: "(guide: a scene with a letter is a flashback; with a dot and a number, a montage of separate moments.)" },
+      { kind: "note", text: 'N (Tobias): "A letter gets delivered, even if the bridge burns."' },
+      {
+        kind: "note",
+        text: "(guide: a scene with a letter is a flashback; with a dot and a number, a montage of separate moments.)",
+      },
       { kind: "session", text: "Session 2 · The mill", date: "2026-10-10" },
       { kind: "scene", text: "S2 *The road to the mill, at dawn*" },
       { kind: "question", text: "Does the scene go as I expected? (Likely)" },
       { oracle: [[3, 1], 5] },
-      { kind: "consequence", text: "Altered: the flood has taken the bridge and I have to go round through the woods. [E:The mill bridge falls] [Track:Tobias's trail 0/4]" },
-      { kind: "note", text: "(guide: an event marks a turning point, to find it later in the notebook; a track moves towards a goal.)" },
+      {
+        kind: "consequence",
+        text: "Altered: the flood has taken the bridge and I have to go round through the woods. [E:The mill bridge falls] [Track:Tobias's trail 0/4]",
+      },
+      {
+        kind: "note",
+        text: "(guide: an event marks a turning point, to find it later in the notebook; a track moves towards a goal.)",
+      },
       { kind: "scene", text: "S2.1 *The woods, in the morning*" },
       { table: "clima", roll: [4] },
-      { kind: "consequence", text: "I eat something before heading into the fog. [Inv:Rations|×-1]" },
+      {
+        kind: "consequence",
+        text: "I eat something before heading into the fog. [Inv:Rations|×-1]",
+      },
       { kind: "action", text: "I light the lantern so as not to lose the path." },
       { kind: "roll", text: "Oil d8=2 -> Step down" },
-      { kind: "consequence", text: "It burns fast: there's less than I thought. [PC:Mara|Oil d8>d6]" },
-      { kind: "note", text: "(guide: what isn't counted one by one can be a die: rolled when used and, on a low result, swapped for the next smaller one.)" },
-      { kind: "note", text: "(guide: an item is counted by its name, whoever it belongs to. If another character carries their own, give them another name, like “Nela's rations”.)" },
+      {
+        kind: "consequence",
+        text: "It burns fast: there's less than I thought. [PC:Mara|Oil d8>d6]",
+      },
+      {
+        kind: "note",
+        text: "(guide: what isn't counted one by one can be a die: rolled when used and, on a low result, swapped for the next smaller one.)",
+      },
+      {
+        kind: "note",
+        text: "(guide: an item is counted by its name, whoever it belongs to. If another character carries their own, give them another name, like “Nela's rations”.)",
+      },
       { kind: "scene", text: "S2.2 *The riverbank, at noon*" },
       { table: "evento-aleatorio", roll: [1, 4] },
-      { kind: "consequence", text: "Two sets of footprints in the mud, [#N:Tobias] and [#N:Grey Cloak]? And the ruts of a heavy cart. [Track:Tobias's trail+1]" },
-      { kind: "roll", text: "tbl: Who lives on the bank (d4) [Fisher, Smuggler, Ferrywoman, Nobody]" },
+      {
+        kind: "consequence",
+        text: "Two sets of footprints in the mud, [#N:Tobias] and [#N:Grey Cloak]? And the ruts of a heavy cart. [Track:Tobias's trail+1]",
+      },
+      {
+        kind: "roll",
+        text: "tbl: Who lives on the bank (d4) [Fisher, Smuggler, Ferrywoman, Nobody]",
+      },
       { kind: "roll", text: "tbl: Who lives on the bank d4=3 -> Ferrywoman" },
-      { kind: "note", text: "(guide: a table with no result is one written in the journal: it's there to read; it doesn't roll itself. Its button takes it to your tables, to roll it in the app whenever you like. Otherwise, roll the die yourself and log what comes up, as in the line before.)" },
-      { kind: "roll", text: "tbl: The ferrywoman\nLooks: d6=3 -> Weathered\nWants: d6=5 -> Company on the road\nHides: d6=1 -> A map" },
-      { kind: "consequence", text: "Her name is Nela and she knows every bend of the river. She's coming with me. [PC:Nela|ferrywoman|HP 6]" },
-      { kind: "note", text: "PC (Nela): \"For a roof tonight, I'll take you across.\"" },
-      { kind: "note", text: "PC (Mara, quietly): \"Deal.\"" },
-      { kind: "note", text: "(guide: with several characters of your own, dialogue says which one speaks.)" },
-      { inspiration: [[2, 6], [4, 3]] },
-      { kind: "consequence", text: "An idea: Grey Cloak doesn't want Tobias, he wants what the box hides. Something old." },
+      {
+        kind: "note",
+        text: "(guide: a table with no result is one written in the journal: it's there to read; it doesn't roll itself. Its button takes it to your tables, to roll it in the app whenever you like. Otherwise, roll the die yourself and log what comes up, as in the line before.)",
+      },
+      {
+        kind: "roll",
+        text: "tbl: The ferrywoman\nLooks: d6=3 -> Weathered\nWants: d6=5 -> Company on the road\nHides: d6=1 -> A map",
+      },
+      {
+        kind: "consequence",
+        text: "Her name is Nela and she knows every bend of the river. She's coming with me. [PC:Nela|ferrywoman|HP 6]",
+      },
+      { kind: "note", text: 'PC (Nela): "For a roof tonight, I\'ll take you across."' },
+      { kind: "note", text: 'PC (Mara, quietly): "Deal."' },
+      {
+        kind: "note",
+        text: "(guide: with several characters of your own, dialogue says which one speaks.)",
+      },
+      {
+        inspiration: [
+          [2, 6],
+          [4, 3],
+        ],
+      },
+      {
+        kind: "consequence",
+        text: "An idea: Grey Cloak doesn't want Tobias, he wants what the box hides. Something old.",
+      },
       { kind: "note", text: "(interp: “old” may be the emblem, not the thing.)" },
       { kind: "scene", text: "T1-S1 *The mill yard* @(Mara)" },
       { kind: "question", text: "Is the mill abandoned?" },
       { oracle: [4, 4] },
-      { kind: "consequence", text: "The question rested on a false idea: the [L:Mill|idle>inhabited] hasn't ground in months, but someone lives in it. Smoke rises from the chimney." },
+      {
+        kind: "consequence",
+        text: "The question rested on a false idea: the [L:Mill|idle>inhabited] hasn't ground in months, but someone lives in it. Smoke rises from the chimney.",
+      },
       { kind: "question", text: "Have they seen me coming? (Unlikely)" },
       { oracle: [4, [6, 2]] },
-      { kind: "consequence", text: "Nobody has seen me and, on top of that, the back door is ajar. [Clock:Alert at the mill 0/4]" },
+      {
+        kind: "consequence",
+        text: "Nobody has seen me and, on top of that, the back door is ajar. [Clock:Alert at the mill 0/4]",
+      },
       { kind: "action", text: "I slip in through the back door, close to the wall." },
       { kind: "roll", text: "Stealth 2d20kh1 -> 17 (17, 4✗)" },
-      { kind: "consequence", text: "Inside, the [R:1|status:explored|wheel room|exits:Up R2, Down R3]. Tobias's guild scarf hangs from a nail. [Track:Tobias's trail+1]" },
-      { kind: "note", text: "(guide: with advantage two dice are rolled and the best is kept. Edit it and you'll see the roll as Lonelog writes it.)" },
+      {
+        kind: "consequence",
+        text: "Inside, the [R:1|status:explored|wheel room|exits:Up R2, Down R3]. Tobias's guild scarf hangs from a nail. [Track:Tobias's trail+1]",
+      },
+      {
+        kind: "note",
+        text: "(guide: with advantage two dice are rolled and the best is kept. Edit it and you'll see the roll as Lonelog writes it.)",
+      },
       { kind: "scene", text: "T2-S1 *The landing stage, meanwhile* @(Nela)" },
       { kind: "action", text: "I watch the river in case someone flees by water." },
       { kind: "question", text: "Does a barge go by?" },
       { kind: "roll", text: "-> Yb (3)" },
-      { kind: "consequence", text: "One, but it's moored, loading. [Timer:Days until the barge 4]" },
-      { kind: "note", text: "(guide: with two storylines at once, the T says which, and the name at the end who lives it: its actions are that character's. The answer above was logged shortened, from an oracle on paper.)" },
+      {
+        kind: "consequence",
+        text: "One, but it's moored, loading. [Timer:Days until the barge 4]",
+      },
+      {
+        kind: "note",
+        text: "(guide: with two storylines at once, the T says which, and the name at the end who lives it: its actions are that character's. The answer above was logged shortened, from an oracle on paper.)",
+      },
       { kind: "scene", text: "T1-S2 *The wheel room*" },
-      { kind: "action", text: "(Grey Cloak) Goes down to the cellar with a lantern, without seeing me." },
+      {
+        kind: "action",
+        text: "(Grey Cloak) Goes down to the cellar with a lantern, without seeing me.",
+      },
       { kind: "roll", text: "tbl: What the room hides d6=2 -> A trapdoor" },
-      { kind: "consequence", text: "Under the wheel, a trapdoor smells of river. [R:1|exits:+Trapdoor R4] [R:2|status:unexplored]" },
+      {
+        kind: "consequence",
+        text: "Under the wheel, a trapdoor smells of river. [R:1|exits:+Trapdoor R4] [R:2|status:unexplored]",
+      },
       { kind: "session", text: "Session 3 · The sealed box", date: "2026-10-17" },
       { kind: "note", text: "[DUNGEON STATUS]" },
-      { kind: "note", text: "[R:1|status:explored|wheel room]\n[R:2|status:unexplored|loft]\n[R:3|status:locked|cellar]\n[R:4|status:unexplored|way to the river]" },
+      {
+        kind: "note",
+        text: "[R:1|status:explored|wheel room]\n[R:2|status:unexplored|loft]\n[R:3|status:locked|cellar]\n[R:4|status:unexplored|way to the river]",
+      },
       { kind: "note", text: "[/DUNGEON STATUS]" },
-      { kind: "note", text: "(guide: the dungeon status is a picture of every room, to pick it up again without rereading. It's optional.)" },
+      {
+        kind: "note",
+        text: "(guide: the dungeon status is a picture of every room, to pick it up again without rereading. It's optional.)",
+      },
       { kind: "scene", text: "S3 *The cellar door*" },
-      { kind: "note", text: "(note: the two storylines merge; from here on, each with their name.)" },
-      { kind: "action", text: "(Nela > Mara) Nela holds the lantern while Mara looks for a way to open the door." },
+      {
+        kind: "note",
+        text: "(note: the two storylines merge; from here on, each with their name.)",
+      },
+      {
+        kind: "action",
+        text: "(Nela > Mara) Nela holds the lantern while Mara looks for a way to open the door.",
+      },
       { kind: "roll", text: "Search d20=16 vs 12 -> Success" },
       { kind: "consequence", text: "The hinges are rotten." },
       { kind: "action", text: "(Mara+Nela) They force the door together." },
       { kind: "roll", text: "Might 5d6>=5 -> 2 (6✓ 5✓ 3 2 1)" },
-      { kind: "consequence", text: "The door gives way with a crack. [R:3|status:active|full of sacks|exits:Up R1, River R4] [Clock:Alert at the mill+1]" },
-      { kind: "note", text: "(guide: with a greater-than sign, the first helps and the second rolls; with a plus, both roll at once.)" },
+      {
+        kind: "consequence",
+        text: "The door gives way with a crack. [R:3|status:active|full of sacks|exits:Up R1, River R4] [Clock:Alert at the mill+1]",
+      },
+      {
+        kind: "note",
+        text: "(guide: with a greater-than sign, the first helps and the second rolls; with a plus, both roll at once.)",
+      },
       { kind: "scene", text: "S4 *Fight among the sacks* [COMBAT]" },
-      { kind: "note", text: "[PC:Mara|HP 8] [PC:Nela|HP 6]\n[F:Thug|HP 6|pos:Far|armed]\n[F:Rats|×4|pos:Close]" },
+      {
+        kind: "note",
+        text: "[PC:Mara|HP 8] [PC:Nela|HP 6]\n[F:Thug|HP 6|pos:Far|armed]\n[F:Rats|×4|pos:Close]",
+      },
       { kind: "roll", text: "Initiative d20 -> 14, Thug d20 -> 9" },
-      { kind: "note", text: "(guide: if the whole scene is a fight, its title says so, and it's closed at the end. Before the first round, who fights and how they are.)" },
+      {
+        kind: "note",
+        text: "(guide: if the whole scene is a fight, its title says so, and it's closed at the end. Before the first round, who fights and how they are.)",
+      },
       { kind: "note", text: "Rd1" },
       { kind: "action", text: "(Mara) Throws the unlit lantern at his face." },
       { kind: "roll", text: "Attack d20=15 vs 12 -> Hit" },
       { kind: "roll", text: "Damage 1d6+1 -> 5 (4 + 1)" },
-      { kind: "consequence", text: "It splits his brow, and the rats scatter. [F:Thug|HP-5] [F:Rats|×-2]" },
+      {
+        kind: "consequence",
+        text: "It splits his brow, and the rats scatter. [F:Thug|HP-5] [F:Rats|×-2]",
+      },
       { kind: "action", text: "(Thug) Comes at her, club in hand." },
       { kind: "roll", text: "Club d20=17 vs 12 -> Hit" },
       { kind: "roll", text: "Damage 1d4 -> 2" },
-      { kind: "consequence", text: "The club catches her shoulder. [F:Thug|pos:Close] [PC:Mara|HP-2|wounded]" },
+      {
+        kind: "consequence",
+        text: "The club catches her shoulder. [F:Thug|pos:Close] [PC:Mara|HP-2|wounded]",
+      },
       { kind: "note", text: "Rd2" },
       { kind: "action", text: "(Nela) Brings a pile of sacks down on him." },
       { kind: "roll", text: "Dodge d20=6 vs 12 -> Fail" },
-      { kind: "consequence", text: "He goes down under the sacks. [F:Thug|defeated] [F:Rats|×0] [R:3|status:cleared]" },
+      {
+        kind: "consequence",
+        text: "He goes down under the sacks. [F:Thug|defeated] [F:Rats|×0] [R:3|status:cleared]",
+      },
       { table: "complicacion", roll: [13] },
-      { kind: "consequence", text: "The crash carries upstairs: footsteps. [Clock:Alert at the mill+2]" },
+      {
+        kind: "consequence",
+        text: "The crash carries upstairs: footsteps. [Clock:Alert at the mill+2]",
+      },
       { kind: "note", text: "[/COMBAT]" },
-      { kind: "note", text: "(guide: in each round, who acts, their roll with its verdict and, apart, the damage. What changes is logged with − and the total is kept for the pictures.)" },
+      {
+        kind: "note",
+        text: "(guide: in each round, who acts, their roll with its verdict and, apart, the damage. What changes is logged with − and the total is kept for the pictures.)",
+      },
       { kind: "question", text: "Is Tobias down here? (Very likely)" },
       { oracle: [[1, 6, 4], 2] },
-      { kind: "consequence", text: "Tied up next to the box: [N:Tobias|-missing|wounded]. [#N:Grey Cloak] has fled by the way to the river, [#R:4]. [Track:Tobias's trail+2]" },
+      {
+        kind: "consequence",
+        text: "Tied up next to the box: [N:Tobias|-missing|wounded]. [#N:Grey Cloak] has fled by the way to the river, [#R:4]. [Track:Tobias's trail+2]",
+      },
       { kind: "action", text: "(Mara) Breaks the box's seal." },
       { table: "hallazgo", roll: [12] },
-      { kind: "consequence", text: "Inside, wrapped in linen, a silver stag: the emblem of a noble house. And a letter. [E:The silver stag turns up] [R:3|status:+looted]" },
-      { kind: "note", text: "\\---\nThe stag must reach the capital before the new moon. The guild must know nothing. The barge waits at the landing stage.\n---\\" },
+      {
+        kind: "consequence",
+        text: "Inside, wrapped in linen, a silver stag: the emblem of a noble house. And a letter. [E:The silver stag turns up] [R:3|status:+looted]",
+      },
+      {
+        kind: "note",
+        text: "\\---\nThe stag must reach the capital before the new moon. The guild must know nothing. The barge waits at the landing stage.\n---\\",
+      },
       { kind: "note", text: "(guide: in-world text, like this letter, is set apart.)" },
-      { kind: "note", text: "The box is no longer a mystery. [Thread:The sealed box|Open>Closed] But someone pays Grey Cloak. [Thread:Who pays Grey Cloak?|Open] [Timer:Days until the barge-1]" },
+      {
+        kind: "note",
+        text: "The box is no longer a mystery. [Thread:The sealed box|Open>Closed] But someone pays Grey Cloak. [Thread:Who pays Grey Cloak?|Open] [Timer:Days until the barge-1]",
+      },
       { kind: "roll", text: "tbl: NPCs d3=2 -> Odile" },
       { kind: "consequence", text: "What if she's the one who knows whose emblem it is?" },
-      { kind: "note", text: "(guide: the die on a notebook list picks one at random: an NPC (PCs aren't in it), a place or an open thread.)" },
-      { kind: "note", text: "We leave the rope tied to the trapdoor. [Inv:Rope|where:the mill] [#PC:Nela] counts what she has left. [PC:Nela|mood:tired] [Wealth:Nela|Silver 2]" },
+      {
+        kind: "note",
+        text: "(guide: the die on a notebook list picks one at random: an NPC (PCs aren't in it), a place or an open thread.)",
+      },
+      {
+        kind: "note",
+        text: "We leave the rope tied to the trapdoor. [Inv:Rope|where:the mill] [#PC:Nela] counts what she has left. [PC:Nela|mood:tired] [Wealth:Nela|Silver 2]",
+      },
       { kind: "note", text: "[RESOURCES]" },
-      { kind: "note", text: "[PC:Mara|HP 6|Oil d6|mood:uneasy|wounded]\n[PC:Nela|HP 6|mood:tired]\n[Wealth:Mara|Silver 3|Gold 1]\n[Wealth:Nela|Silver 2]\n[Inv:Lantern|×1]\n[Inv:Rations|×2|days]\n[Inv:Rope|×1|50ft|owner:guild|where:the mill]" },
+      {
+        kind: "note",
+        text: "[PC:Mara|HP 6|Oil d6|mood:uneasy|wounded]\n[PC:Nela|HP 6|mood:tired]\n[Wealth:Mara|Silver 3|Gold 1]\n[Wealth:Nela|Silver 2]\n[Inv:Lantern|×1]\n[Inv:Rations|×2|days]\n[Inv:Rope|×1|50ft|owner:guild|where:the mill]",
+      },
       { kind: "note", text: "[/RESOURCES]" },
-      { kind: "note", text: "(guide: the resources are a picture of how you are and what you carry, to close a session and pick it up without rereading. It's optional: the notebook keeps count already. [RESOURCES] and [/RESOURCES] only open and close it.)" },
+      {
+        kind: "note",
+        text: "(guide: the resources are a picture of how you are and what you carry, to close a session and pick it up without rereading. It's optional: the notebook keeps count already. [RESOURCES] and [/RESOURCES] only open and close it.)",
+      },
       { kind: "note", text: "(reflection: the alert clock made the cellar exciting.)" },
-      { kind: "note", text: "To be continued… Will I reach the landing stage in time?\nYou can keep playing this adventure by writing below, or delete it from the options menu (⋯). Tap the highlighted names to see them in the notebook, or type “[” to name one; the threads, events, clocks and what you carry are there too, with − and + to keep count. The whole notation is listed in the quick guide." },
+      {
+        kind: "note",
+        text: "To be continued… Will I reach the landing stage in time?\nYou can keep playing this adventure by writing below, or delete it from the options menu (⋯). Tap the highlighted names to see them in the notebook, or type “[” to name one; the threads, events, clocks and what you carry are there too, with − and + to keep count. The whole notation is listed in the quick guide.",
+      },
     ],
   },
   diceHelp: {
@@ -351,17 +555,38 @@ export const enLong: LongTexts = {
     buttons: [
       { label: "d4 … d20", text: "one die of that size; d% is a d100." },
       { label: "4dF", text: "four Fudge or Fate dice (−, 0, +), added up." },
-      { label: "Advantage · Disadvantage", text: "turn one on and the next roll, a die or a formula, is made twice and you keep the higher or the lower: a d20 becomes 2d20kh1; 2d6+3, {2d6+3,2d6+3}kh1." },
+      {
+        label: "Advantage · Disadvantage",
+        text: "turn one on and the next roll, a die or a formula, is made twice and you keep the higher or the lower: a d20 becomes 2d20kh1; 2d6+3, {2d6+3,2d6+3}kh1.",
+      },
     ],
     symbolsHeading: "Reading a roll",
     symbols: [
-      { symbol: "=", text: "separates the formula from the total. “->” goes after it, if you want to say how it ends: “-> Success”." },
-      { symbol: "[ ]", text: "what each die showed. On screen it's below the total, with the numbers that were added." },
-      { symbol: "✗ · 2d", text: "a dropped die (kh, kl, dl, dh) or a failure in a pool: it doesn't count." },
+      {
+        symbol: "=",
+        text: "separates the formula from the total. “->” goes after it, if you want to say how it ends: “-> Success”.",
+      },
+      {
+        symbol: "[ ]",
+        text: "what each die showed. On screen it's below the total, with the numbers that were added.",
+      },
+      {
+        symbol: "✗ · 2d",
+        text: "a dropped die (kh, kl, dl, dh) or a failure in a pool: it doesn't count.",
+      },
       { symbol: "✓", text: "a die that counts as a success." },
-      { symbol: "6!+2", text: "a die that exploded: it showed 6, was rolled again and showed 2; it's worth 8." },
-      { symbol: "1→4", text: "a rerolled die (r, u): it showed 1, was rolled again and is worth 4." },
-      { symbol: "2↑ · 3↓", text: "a die raised to the minimum or lowered to the maximum (min, max)." },
+      {
+        symbol: "6!+2",
+        text: "a die that exploded: it showed 6, was rolled again and showed 2; it's worth 8.",
+      },
+      {
+        symbol: "1→4",
+        text: "a rerolled die (r, u): it showed 1, was rolled again and is worth 4.",
+      },
+      {
+        symbol: "2↑ · 3↓",
+        text: "a die raised to the minimum or lowered to the maximum (min, max).",
+      },
       { symbol: "▲ · ▼", text: "a critical success or failure (cs, cf). Only marked." },
       { symbol: "+ 0 −", text: "the faces of Fudge dice." },
     ],
@@ -378,15 +603,22 @@ export const enLong: LongTexts = {
         text: "The roll of almost every game: roll the dice, add them up and add or subtract numbers. You can chain as many terms as you like, of different dice.",
         parts: [
           { token: "2", text: "how many dice. Leave it out for one: d20 is 1d20." },
-          { token: "d6", text: "how many sides: d4, d6, d8, d10, d12, d20, d100 (or d%), or any other number." },
-          { token: "+3", text: "a number that's added; with - it's subtracted. Adding more dice works too: +1d4." },
+          {
+            token: "d6",
+            text: "how many sides: d4, d6, d8, d10, d12, d20, d100 (or d%), or any other number.",
+          },
+          {
+            token: "+3",
+            text: "a number that's added; with - it's subtracted. Adding more dice works too: +1d4.",
+          },
         ],
         examples: [
           { line: "2d6+3 -> 9 (4+2 + 3)", text: "two d6 (4 and 2) and +3." },
           { line: "d20+5 -> 17 (12 + 5)", text: "a d20 with a +5 bonus." },
           { line: "1d8+1d6-1 -> 7 (5 + 3 − 1)", text: "different dice added up and a −1." },
         ],
-        usedIn: "D&D and d20 games (d20+5), Powered by the Apocalypse (2d6+2), the damage of almost any weapon (1d8+3).",
+        usedIn:
+          "D&D and d20 games (d20+5), Powered by the Apocalypse (2d6+2), the damage of almost any weapon (1d8+3).",
       },
       {
         name: "Keeping the highest or the lowest",
@@ -396,15 +628,25 @@ export const enLong: LongTexts = {
           { token: "4d6", text: "the dice you roll: four d6." },
           { token: "kh3", text: "keep highest: keep the 3 highest (k3 is the same)." },
           { token: "kl1", text: "keep lowest: keep the lowest one (or the N lowest)." },
-          { token: "dl1 · dh1", text: "drop lowest / drop highest: throws away the lowest or highest (or N of them). 4d6dl1 is the same as 4d6kh3." },
+          {
+            token: "dl1 · dh1",
+            text: "drop lowest / drop highest: throws away the lowest or highest (or N of them). 4d6dl1 is the same as 4d6kh3.",
+          },
         ],
         examples: [
-          { line: "4d6kh3 -> 14 (6+5+3, 2✗)", text: "the 2 is dropped and the other three are added." },
+          {
+            line: "4d6kh3 -> 14 (6+5+3, 2✗)",
+            text: "the 2 is dropped and the other three are added.",
+          },
           { line: "2d20kh1 -> 17 (17, 4✗)", text: "advantage: the higher of two d20." },
           { line: "2d20kl1 -> 4 (4, 17✗)", text: "disadvantage: the lower of two d20." },
-          { line: "4d6dl1 -> 14 (6+5+3, 2✗)", text: "the same, said the other way round: the lowest goes." },
+          {
+            line: "4d6dl1 -> 14 (6+5+3, 2✗)",
+            text: "the same, said the other way round: the lowest goes.",
+          },
         ],
-        usedIn: "Rolling D&D ability scores (4d6kh3), advantage and disadvantage (2d20kh1, 2d20kl1), Blades in the Dark (the highest of your d6: 3d6kh1).",
+        usedIn:
+          "Rolling D&D ability scores (4d6kh3), advantage and disadvantage (2d20kh1, 2d20kl1), Blades in the Dark (the highest of your d6: 3d6kh1).",
       },
       {
         name: "Counting successes (dice pools)",
@@ -412,17 +654,27 @@ export const enLong: LongTexts = {
         text: "The dice aren't added up: the result is how many reach the target. Each success gets ✓.",
         parts: [
           { token: "5d6", text: "the pool: five d6." },
-          { token: ">=5", text: "a die showing 5 or more is a success. It goes after the dice (and kh, dl…), but before ! or r: right after them it would be their condition." },
-          { token: "> <= <", text: "more than, at most and less than: <=3 counts the dice showing 3 or less." },
+          {
+            token: ">=5",
+            text: "a die showing 5 or more is a success. It goes after the dice (and kh, dl…), but before ! or r: right after them it would be their condition.",
+          },
+          {
+            token: "> <= <",
+            text: "more than, at most and less than: <=3 counts the dice showing 3 or less.",
+          },
           { token: "f<3", text: "after the target: each die under 3 takes a success away (✗)." },
         ],
         examples: [
           { line: "5d6>=5 -> 2 (6✓ 5✓ 3 2 1)", text: "two dice reach 5: two successes." },
           { line: "6d10>=8 -> 3 (9✓ 2 8✓ 10✓ 5 7)", text: "target 8 on d10." },
-          { line: "4d6<=2 -> 1 (5 2✓ 6 4)", text: "roll under: counts the dice showing 2 or less." },
+          {
+            line: "4d6<=2 -> 1 (5 2✓ 6 4)",
+            text: "roll under: counts the dice showing 2 or less.",
+          },
           { line: "4d6>4f<3 -> 1 (6✓ 5✓ 2✗ 4)", text: "two successes minus one failure." },
         ],
-        usedIn: "Shadowrun (Xd6>=5), Vampire and the World of Darkness (Xd10>=8 or >=6), Mouse Guard and Burning Wheel (Xd6>=4).",
+        usedIn:
+          "Shadowrun (Xd6>=5), Vampire and the World of Darkness (Xd10>=8 or >=6), Mouse Guard and Burning Wheel (Xd6>=4).",
       },
       {
         name: "Exploding dice",
@@ -431,56 +683,107 @@ export const enLong: LongTexts = {
         parts: [
           { token: "3d6", text: "the dice you roll." },
           { token: "!", text: "after the sides: those dice explode on their highest face." },
-          { token: "!>4", text: "with a condition attached, they explode on whatever meets it: here, on 5 or 6." },
-          { token: "!!", text: "compounding: the rerolls add up on the same die, which counts once." },
+          {
+            token: "!>4",
+            text: "with a condition attached, they explode on whatever meets it: here, on 5 or 6.",
+          },
+          {
+            token: "!!",
+            text: "compounding: the rerolls add up on the same die, which counts once.",
+          },
           { token: "!p", text: "penetrating: each reroll is worth one less." },
         ],
         examples: [
-          { line: "3d6! -> 13 (6!+2+4+1)", text: "the first die showed 6, was rolled again and showed 2: it's worth 8." },
-          { line: "1d8!+1d6! -> 13 (8!+3 + 2)", text: "two different dice that explode and are added up." },
-          { line: "3d10>=8! -> 3 (10!✓ 9✓ 4 8✓)", text: "successes on 8 or more and the 10 explodes: its reroll is one more success." },
+          {
+            line: "3d6! -> 13 (6!+2+4+1)",
+            text: "the first die showed 6, was rolled again and showed 2: it's worth 8.",
+          },
+          {
+            line: "1d8!+1d6! -> 13 (8!+3 + 2)",
+            text: "two different dice that explode and are added up.",
+          },
+          {
+            line: "3d10>=8! -> 3 (10!✓ 9✓ 4 8✓)",
+            text: "successes on 8 or more and the 10 explodes: its reroll is one more success.",
+          },
           { line: "d6!! -> 14 (6!+6!+2)", text: "two sixes in a row: a single die worth 14." },
         ],
-        usedIn: "Savage Worlds (damage, 1d8!+1d6!, and {d8!!, d6!!}k1 for a d8 trait with its wild die), the World of Darkness (3d10>=8!, “10-again”), HackMaster (!p).",
+        usedIn:
+          "Savage Worlds (damage, 1d8!+1d6!, and {d8!!, d6!!}k1 for a d8 trait with its wild die), the World of Darkness (3d10>=8!, “10-again”), HackMaster (!p).",
       },
       {
         name: "Rerolling, limiting and marking",
         formula: "d6r",
         text: "Touches on what comes up before it's added or counted: reroll the results you don't want, give the dice a floor or a ceiling and point out criticals.",
         parts: [
-          { token: "r · ro", text: "rerolls the die while it shows 1 (ro: only once). With a condition, other values: r<3 rerolls 1 and 2." },
-          { token: "u", text: "rerolls results that already came up, until they're all different (uo: only once)." },
-          { token: "min2 · max5", text: "a die showing less than 2 counts as 2 (↑); one showing more than 5, as 5 (↓)." },
-          { token: "cs · cf", text: "marks criticals: cs the highest face (▲) and cf the lowest (▼); cs>=19, from 19 up. They don't change the result." },
-          { token: "s · sd", text: "writes the dice sorted from lowest to highest (sd: highest first)." },
+          {
+            token: "r · ro",
+            text: "rerolls the die while it shows 1 (ro: only once). With a condition, other values: r<3 rerolls 1 and 2.",
+          },
+          {
+            token: "u",
+            text: "rerolls results that already came up, until they're all different (uo: only once).",
+          },
+          {
+            token: "min2 · max5",
+            text: "a die showing less than 2 counts as 2 (↑); one showing more than 5, as 5 (↓).",
+          },
+          {
+            token: "cs · cf",
+            text: "marks criticals: cs the highest face (▲) and cf the lowest (▼); cs>=19, from 19 up. They don't change the result.",
+          },
+          {
+            token: "s · sd",
+            text: "writes the dice sorted from lowest to highest (sd: highest first).",
+          },
         ],
         examples: [
           { line: "d6r -> 4 (1→4)", text: "it showed 1, was rerolled and showed 4." },
-          { line: "2d10u -> 11 (7+7→4)", text: "the second 7 repeated the first: it was rolled again." },
+          {
+            line: "2d10u -> 11 (7+7→4)",
+            text: "the second 7 repeated the first: it was rolled again.",
+          },
           { line: "4d6min2 -> 13 (2↑+5+2↑+4)", text: "both ones count as 2." },
           { line: "2d20cs>=19 -> 25 (19▲+6)", text: "the 19 is a critical." },
           { line: "4d6sd -> 15 (6+5+3+1)", text: "the same dice, highest first." },
         ],
-        usedIn: "D&D 5e (the halfling's Lucky, d20ro, and Great Weapon Fighting, 2d6ro<3), criticals on any d20 (d20cs, d20cf) and rolls with no repeats (u).",
+        usedIn:
+          "D&D 5e (the halfling's Lucky, d20ro, and Great Weapon Fighting, 2d6ro<3), criticals on any d20 (d20cs, d20cf) and rolls with no repeats (u).",
       },
       {
         name: "Arithmetic, parentheses and groups",
         formula: "(1d6+2)*3",
         text: "For sums that aren't just adding: multiply, divide, group with parentheses or roll several things at once and compare their totals.",
         parts: [
-          { token: "* / % ^", text: "multiply, divide, remainder and power. They go before + and −, as at school." },
-          { token: "( )", text: "what's inside goes first. They also set how many dice or sides: (1d4)d6, 3d(2*6)." },
+          {
+            token: "* / % ^",
+            text: "multiply, divide, remainder and power. They go before + and −, as at school.",
+          },
+          {
+            token: "( )",
+            text: "what's inside goes first. They also set how many dice or sides: (1d4)d6, 3d(2*6).",
+          },
           { token: "{2d6, 1d8}", text: "a group: rolls each part and adds them up." },
-          { token: "{…}k1", text: "with k or d after it, keeps the parts with the highest totals (or drops the lowest)." },
+          {
+            token: "{…}k1",
+            text: "with k or d after it, keeps the parts with the highest totals (or drops the lowest).",
+          },
           { token: "{…}>=15", text: "with a target, counts how many parts reach it." },
         ],
         examples: [
           { line: "(1d6+2)*3 -> 18 ((4 + 2) × 3)", text: "the parentheses first, then times 3." },
           { line: "1d6*10 -> 40 (4 × 10)", text: "a d6 of tens." },
-          { line: "{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})", text: "two whole rolls; the higher total counts." },
-          { line: "{3d20+5}>=40 -> 1 ({(11+17+19 + 5)✓})", text: "if the total reaches 40, it's a success." },
+          {
+            line: "{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})",
+            text: "two whole rolls; the higher total counts.",
+          },
+          {
+            line: "{3d20+5}>=40 -> 1 ({(11+17+19 + 5)✓})",
+            text: "if the total reaches 40, it's a success.",
+          },
         ],
-        usedIn: "Multiplied damage on some games' criticals, coins or distances to scale (1d6*10), keeping the better of two whole rolls ({…}k1) or counting how many attacks beat a defence.",
+        usedIn:
+          "Multiplied damage on some games' criticals, coins or distances to scale (1d6*10), keeping the better of two whole rolls ({…}k1) or counting how many attacks beat a defence.",
       },
       {
         name: "Fudge dice and d100",
@@ -503,17 +806,24 @@ export const enLong: LongTexts = {
         formula: "d66 · d7 · d(66)",
         text: "A die can have any number of sides, even one that doesn't really exist. There's one exception: d66 isn't a die of 66 sides but the usual d66, two d6.",
         parts: [
-          { token: "d66", text: "two d6: the first is the tens and the second the units (11 to 66, with no 7, 8, 9 or 0)." },
+          {
+            token: "d66",
+            text: "two d6: the first is the tens and the second the units (11 to 66, with no 7, 8, 9 or 0).",
+          },
           { token: "2d66", text: "two d66 rolls, added up." },
           { token: "d7", text: "a die of 7 sides; change the 7 for any other: d3, d30, d1000." },
-          { token: "d(66)", text: "in brackets, a die of exactly that many sides: here, 1 to 66. For any other it makes no difference: d(50) is the same as d50." },
+          {
+            token: "d(66)",
+            text: "in brackets, a die of exactly that many sides: here, 1 to 66. For any other it makes no difference: d(50) is the same as d50.",
+          },
         ],
         examples: [
           { line: "d66 -> 34", text: "a 3 and a 4." },
           { line: "d7 -> 5", text: "a die of 7 sides." },
           { line: "d(66) -> 47", text: "a single die of 66 sides." },
         ],
-        usedIn: "Tables and events of many games with a d66, and odd dice such as the d3, d5 or d7 of Dungeon Crawl Classics.",
+        usedIn:
+          "Tables and events of many games with a d66, and odd dice such as the d3, d5 or d7 of Dungeon Crawl Classics.",
       },
     ],
     rulesHeading: "Details and limits",
@@ -529,7 +839,8 @@ export const enLong: LongTexts = {
     ],
   },
   guide: {
-    intro: "How to write in the journal, each adventure's game table, the Lonelog notation it understands and the keyboard shortcuts.",
+    intro:
+      "How to write in the journal, each adventure's game table, the Lonelog notation it understands and the keyboard shortcuts.",
     writingHeading: "Writing in the journal",
     writing: [
       "Pick the entry type in the selector beside the box: note, action, dialogue, consequence or in-world text; apart from those, new session or new scene. In “Dialogue” you pick who speaks and type just their words; in “In-world text”, a letter or an inscription as written.",
@@ -555,54 +866,111 @@ export const enLong: LongTexts = {
     notationIntro:
       "The journal is kept in Lonelog, an open plain-text notation: what you write this way is drawn in its own style and exported as is. Anything that isn't notation stays a note.",
     notation: [
-      { code: "@ I force the door", text: "An action by your character (the selector adds it for you)." },
-      { code: "? Is anyone inside? (Likely)", text: "A question for the oracle and, if you like, how likely it is." },
-      { code: "d: 2d6+3=9", text: "A roll and its total; with “-> Success” after it, how it ends." },
+      {
+        code: "@ I force the door",
+        text: "An action by your character (the selector adds it for you).",
+      },
+      {
+        code: "? Is anyone inside? (Likely)",
+        text: "A question for the oracle and, if you like, how likely it is.",
+      },
+      {
+        code: "d: 2d6+3=9",
+        text: "A roll and its total; with “-> Success” after it, how it ends.",
+      },
       { code: "=> The door gives way", text: "The consequence of what came before." },
       { code: "=== Session 2 ===", text: "A new session." },
-      { code: "S3 *The cellar, at night*", text: "A new scene; with [COMBAT] after it, a fight. T2-S1 *The city* @(Odile) is another storyline and who lives it." },
+      {
+        code: "S3 *The cellar, at night*",
+        text: "A new scene; with [COMBAT] after it, a fight. T2-S1 *The city* @(Odile) is another storyline and who lives it.",
+      },
       { code: "@(Odile) Shuts the door", text: "What another character does." },
-      { code: "N (Odile): \"Who's there?\"", text: "What an NPC says; “PC:” for yours, or “PC (Mara):” if you play several." },
-      { code: "(note: check the rules)", text: "An out-of-game comment. “retcon:” corrects something already logged without erasing it; also “todo:”, “house:” or whatever you like." },
-      { code: "\\--- … ---\\", text: "In-world text, on lines of its own: a letter, an inscription." },
-      { code: "tbl: Weather d6=4 -> Fog", text: "A roll that gives content: from a table, a generator or several tables at once." },
-      { code: "tbl: draw=Qs -> Queen of Spades", text: "A card drawn from the deck (in the dice, “Cards”); M16r is The Tower reversed." },
-      { code: "S4 @Sneak d:2<4 ->F => I make noise", text: "Compact form: all on one line. Imported, each part is an entry." },
+      {
+        code: 'N (Odile): "Who\'s there?"',
+        text: "What an NPC says; “PC:” for yours, or “PC (Mara):” if you play several.",
+      },
+      {
+        code: "(note: check the rules)",
+        text: "An out-of-game comment. “retcon:” corrects something already logged without erasing it; also “todo:”, “house:” or whatever you like.",
+      },
+      {
+        code: "\\--- … ---\\",
+        text: "In-world text, on lines of its own: a letter, an inscription.",
+      },
+      {
+        code: "tbl: Weather d6=4 -> Fog",
+        text: "A roll that gives content: from a table, a generator or several tables at once.",
+      },
+      {
+        code: "tbl: draw=Qs -> Queen of Spades",
+        text: "A card drawn from the deck (in the dice, “Cards”); M16r is The Tower reversed.",
+      },
+      {
+        code: "S4 @Sneak d:2<4 ->F => I make noise",
+        text: "Compact form: all on one line. Imported, each part is an entry.",
+      },
       { code: "[COMBAT] · Rd1 · [/COMBAT]", text: "A fight, round by round." },
     ],
     tagsHeading: "Notebook tags",
-    tagsIntro: "They go in square brackets inside any entry. The notebook gathers them and keeps each one's state.",
+    tagsIntro:
+      "They go in square brackets inside any entry. The notebook gathers them and keeps each one's state.",
     tags: [
       { code: "[PC:Mara|wounded]", text: "Your character." },
       { code: "[N:Odile|wary]", text: "A non-player character." },
       { code: "[L:Mill|idle]", text: "A place." },
-      { code: "[#N:Odile]", text: "Naming someone already introduced, without restating their state." },
+      {
+        code: "[#N:Odile]",
+        text: "Naming someone already introduced, without restating their state.",
+      },
       { code: "[Thread:The box|Open]", text: "A plot thread: Open, Closed or Abandoned." },
-      { code: "[Clock:Alert 2/4]", text: "A clock that fills up; [Track:Escape 3/8] is a progress track." },
+      {
+        code: "[Clock:Alert 2/4]",
+        text: "A clock that fills up; [Track:Escape 3/8] is a progress track.",
+      },
       { code: "[Timer:Dawn 3]", text: "A countdown." },
-      { code: "[R:3|status:cleared|cellar|exits:N R2]", text: "A room: its status, what it's like and its exits." },
-      { code: "[F:Thug|HP 6|pos:Close]", text: "A foe (“×4” for a group); “defeated” or “fled” takes it out of the fight." },
-      { code: "[E:The bridge falls]", text: "An event: a turning point you'll want to find again." },
+      {
+        code: "[R:3|status:cleared|cellar|exits:N R2]",
+        text: "A room: its status, what it's like and its exits.",
+      },
+      {
+        code: "[F:Thug|HP 6|pos:Close]",
+        text: "A foe (“×4” for a group); “defeated” or “fled” takes it out of the fight.",
+      },
+      {
+        code: "[E:The bridge falls]",
+        text: "An event: a turning point you'll want to find again.",
+      },
       { code: "[Inv:Torch|×3]", text: "An item and how many you carry." },
       { code: "[Wealth:Mara|Silver 9]", text: "Money: whose, and how much of each currency." },
       { code: "[Deck:Main|×52]", text: "A deck of cards and how many are left." },
     ],
     updatesHeading: "Changing their state",
-    updatesIntro: "Write the tag again with the change: the notebook adds it all up in journal order.",
+    updatesIntro:
+      "Write the tag again with the change: the notebook adds it all up in journal order.",
     updates: [
       { code: "[N:Odile|ally]", text: "Adds a trait (also with “+ally”)." },
       { code: "[N:Odile|-wary]", text: "Removes a trait." },
       { code: "[N:Odile|wary>ally]", text: "Swaps one for another (also with “→”)." },
-      { code: "[N:Odile|mood:happy]", text: "With a name and a colon, only the latest counts; “mood:+tired” adds and “mood:-happy” removes." },
+      {
+        code: "[N:Odile|mood:happy]",
+        text: "With a name and a colon, only the latest counts; “mood:+tired” adds and “mood:-happy” removes.",
+      },
       { code: "[PC:Mara|HP-2]", text: "Takes from a value, or adds with “+”; “HP 6” sets it." },
-      { code: "[Clock:Alert 3/4]", text: "A clock or counter at its new value (the notebook's − and + write it for you); “Alert+1” advances it." },
+      {
+        code: "[Clock:Alert 3/4]",
+        text: "A clock or counter at its new value (the notebook's − and + write it for you); “Alert+1” advances it.",
+      },
       { code: "[Inv:Torch|×-1]", text: "Spend or gain items; money, with [Wealth:Mara|Silver-6]." },
     ],
     scopeHeading: "What's used of Lonelog",
-    scopeIntro: "Lonelog is a notation with a core and separate documents. This is what the app understands (version 1.7).",
+    scopeIntro:
+      "Lonelog is a notation with a core and separate documents. This is what the app understands (version 1.7).",
     scopeUsedLabel: "Used",
     scopeUsed: [
-      { code: "Lonelog 1.7", text: "The core, all of it: actions, questions, rolls, tables, consequences, scenes and tags." },
+      {
+        code: "Lonelog 1.7",
+        text: "The core, all of it: actions, questions, rolls, tables, consequences, scenes and tags.",
+      },
       { code: "Combat 1.2", text: "Fights by rounds and foes: [COMBAT], Rd1, [F:…]." },
       { code: "Dungeon Crawling 1.2", text: "Rooms and their status: [R:…], [DUNGEON STATUS]." },
       { code: "Resource Tracking 1.2", text: "Items and money: [Inv:…], [Wealth:…], [RESOURCES]." },
@@ -612,14 +980,22 @@ export const enLong: LongTexts = {
     scopeApartLabel: "Left apart",
     scopeApart: [
       { code: "Partylog", text: "Group play, with a GM or several players: “!” and [Party:…]." },
-      { code: "Lorelog", text: "Facts and lore of the world (a draft): factions, rumours, secrets." },
+      {
+        code: "Lorelog",
+        text: "Facts and lore of the world (a draft): factions, rumours, secrets.",
+      },
       { code: "Maplog", text: "Drawing maps during play (a draft)." },
-      { code: "Solo Wargaming", text: "Units, battles and campaigns: [Unit:…], [Force:…], [Scenario:…]." },
+      {
+        code: "Solo Wargaming",
+        text: "Units, battles and campaigns: [Unit:…], [Force:…], [Scenario:…].",
+      },
     ],
-    scopeNote: "Nothing is lost from a journal with those notations: what's theirs stays as text and is exported the same, but the notebook doesn't gather or count it.",
+    scopeNote:
+      "Nothing is lost from a journal with those notations: what's theirs stays as text and is exported the same, but the notebook doesn't gather or count it.",
   },
   oracleHelp: {
-    intro: "When you don't know what happens in the story, don't decide it yourself: ask the oracle.",
+    intro:
+      "When you don't know what happens in the story, don't decide it yourself: ask the oracle.",
     steps: [
       "Ask a yes-or-no question about what you don't know: “Is anyone at the inn?”.",
       "Pick how likely it seems. The more likely, the easier a “Yes” comes up.",
@@ -635,17 +1011,26 @@ export const enLong: LongTexts = {
       recluse: {
         heading: "How Recluse answers",
         text: "Roll a white die against a black die: if white is higher, “Yes”; if black is, “No”. If both are low (1–3), add “but”; if both are high (4–6), “and”. Likely adds white dice and unlikely, black ones: the highest of each colour counts.",
-        special: { label: "Contradiction", text: "on a tie, something you took for granted isn't true. Rethink the scene." },
+        special: {
+          label: "Contradiction",
+          text: "on a tie, something you took for granted isn't true. Rethink the scene.",
+        },
       },
       loner: {
         heading: "How Loner answers",
         text: "Roll a Chance die against a Risk die: if Chance is higher, “Yes”; if Risk is, “No”. Both low (1–3), “but”; both high (4–6), “and”. “Likely” means advantage (one more Chance die) and “Unlikely”, disadvantage (one more Risk die): the highest counts.",
-        special: { label: "Doubles", text: "on a tie it's “Yes, but” and the Twist Counter goes up by one. The third brings a twist: roll “Twist: Subject” and “Twist: Action”, and the counter starts again. There's one counter for all your games." },
+        special: {
+          label: "Doubles",
+          text: "on a tie it's “Yes, but” and the Twist Counter goes up by one. The third brings a twist: roll “Twist: Subject” and “Twist: Action”, and the counter starts again. There's one counter for all your games.",
+        },
       },
       ironsworn: {
         heading: "How Ironsworn answers",
         text: "Roll a d100: it's “Yes” on at least 11 (very likely, “almost certain” in the book), 26 (likely), 51 (even, “50/50”), 76 (unlikely) or 91 (very unlikely, “small chance”). There's no “but” or “and”.",
-        special: { label: "Match", text: "if both digits are the same (11, 22… 99 and 100), an extreme result or a twist has happened." },
+        special: {
+          label: "Match",
+          text: "if both digits are the same (11, 22… 99 and 100), an extreme result or a twist has happened.",
+        },
       },
       opse: {
         heading: "How One Page Solo Engine answers",
@@ -656,7 +1041,8 @@ export const enLong: LongTexts = {
     oddsIntro: "What comes up at each likelihood, counting every possible roll.",
     oddsColumns: { likelihood: "Likelihood", yes: "Yes", no: "No", and: "and", but: "but" },
     oddsSpecial: { recluse: "Contradiction", loner: "Doubles", ironsworn: "Match" },
-    stuck: "Drawing a blank? Roll the quick inspiration (Action + Theme) in Tables and make sense of it.",
+    stuck:
+      "Drawing a blank? Roll the quick inspiration (Action + Theme) in Tables and make sense of it.",
     credit: "{name} is by {author} ({license}). Its full rules are in the original.",
   },
 };

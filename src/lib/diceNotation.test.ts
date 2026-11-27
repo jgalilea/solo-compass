@@ -8,7 +8,9 @@ import { LONG_TEXTS } from "./i18n/allDictionaries";
 /** A die roll that always lands on the given faces, in order (1-based). */
 function dice(...faces: number[]) {
   let i = 0;
-  return (sides = 6) => () => (faces[i++ % faces.length] - 1) / sides;
+  return (sides = 6) =>
+    () =>
+      (faces[i++ % faces.length] - 1) / sides;
 }
 
 /** Rolls that land on the given faces, each with its own die's sides. */
@@ -33,14 +35,16 @@ describe("withEdge", () => {
     expect(rollFormula(withEdge("2d6+3", "advantage"), dice(1, 1, 6, 5)(6))).toBe(
       "{2d6+3,2d6+3}kh1 -> 14 ({(1+1 + 3)✗, 6+5 + 3})",
     );
-    expect(rollFormula(withEdge("5d6>=5", "disadvantage"), dice(5, 6, 1, 1, 1, 6, 1, 1, 1, 1)(6))).toBe(
-      "{5d6>=5,5d6>=5}kl1 -> 1 ({(5✓ 6✓ 1 1 1)✗, 6✓ 1 1 1 1})",
-    );
+    expect(
+      rollFormula(withEdge("5d6>=5", "disadvantage"), dice(5, 6, 1, 1, 1, 6, 1, 1, 1, 1)(6)),
+    ).toBe("{5d6>=5,5d6>=5}kl1 -> 1 ({(5✓ 6✓ 1 1 1)✗, 6✓ 1 1 1 1})");
   });
 
   it("keeps the description outside", () => {
     expect(withEdge("3d6 // Fuerza", "advantage")).toBe("{3d6,3d6}kh1 // Fuerza");
-    expect(rollFormula(withEdge("d20 // Sigilo", "advantage"), dice(4, 17)(20))).toBe("Sigilo 2d20kh1 -> 17 (17, 4✗)");
+    expect(rollFormula(withEdge("d20 // Sigilo", "advantage"), dice(4, 17)(20))).toBe(
+      "Sigilo 2d20kh1 -> 17 (17, 4✗)",
+    );
   });
 });
 
@@ -89,7 +93,9 @@ describe("rollFormula", () => {
     expect(rollFormula("d6!=5", dice(5, 6)(6))).toBe("d6!=5 -> 11 (5!+6)");
     expect(rollFormula("d6!<>4", dice(2, 4)(6))).toBe("d6!<>4 -> 6 (2!+4)");
     // Attached to the "!", ">=8" is when it explodes, not a target.
-    expect(rollFormula("5d10!>=8", dice(8, 1, 2, 3, 4, 5)(10))).toBe("5d10!>=8 -> 23 (8!+1+2+3+4+5)");
+    expect(rollFormula("5d10!>=8", dice(8, 1, 2, 3, 4, 5)(10))).toBe(
+      "5d10!>=8 -> 23 (8!+1+2+3+4+5)",
+    );
   });
 
   it("counts a target written before the ! and explodes on the highest face", () => {
@@ -110,7 +116,22 @@ describe("rollFormula", () => {
   });
 
   it("returns null for what it can't read", () => {
-    for (const bad of ["", "hola", "2d", "d0", "0d6", "3", "2d6 3", "1000d6", "4d6f<3", "2d6>3>4", "(2d6", "{2d6", "2d6+", "d6/0"]) {
+    for (const bad of [
+      "",
+      "hola",
+      "2d",
+      "d0",
+      "0d6",
+      "3",
+      "2d6 3",
+      "1000d6",
+      "4d6f<3",
+      "2d6>3>4",
+      "(2d6",
+      "{2d6",
+      "2d6+",
+      "d6/0",
+    ]) {
       expect(rollFormula(bad), bad).toBeNull();
     }
   });
@@ -146,7 +167,9 @@ describe("rollFormula, the rest of Lonelog's dice notation", () => {
   it("rerolls until the condition misses, or once", () => {
     expect(rollFormula("d6r", dice(1, 1, 4)(6))).toBe("d6r -> 4 (1→1→4)");
     expect(rollFormula("d6ro", dice(1, 1)(6))).toBe("d6ro -> 1 (1→1)");
-    expect(rollFormula("4d10r<=3", dice(2, 7, 3, 5, 9, 8)(10))).toBe("4d10r<=3 -> 29 (2→9+7+3→8+5)");
+    expect(rollFormula("4d10r<=3", dice(2, 7, 3, 5, 9, 8)(10))).toBe(
+      "4d10r<=3 -> 29 (2→9+7+3→8+5)",
+    );
   });
 
   it("rerolls repeated results", () => {
@@ -168,8 +191,12 @@ describe("rollFormula, the rest of Lonelog's dice notation", () => {
 
   it("applies modifiers in the spec's order, whatever order they're written in", () => {
     // Exploding (3) before keeping (6): the 10's reroll is one more die to choose from.
-    expect(rollFormula("5d10!k2", dice(10, 3, 1, 8, 2, 4)(10))).toBe("5d10!k2 -> 18 (10!+8, 4✗ 3✗ 2✗ 1✗)");
-    expect(rollFormula("5d10k2!", dice(10, 3, 1, 8, 2, 4)(10))).toBe("5d10k2! -> 18 (10!+8, 4✗ 3✗ 2✗ 1✗)");
+    expect(rollFormula("5d10!k2", dice(10, 3, 1, 8, 2, 4)(10))).toBe(
+      "5d10!k2 -> 18 (10!+8, 4✗ 3✗ 2✗ 1✗)",
+    );
+    expect(rollFormula("5d10k2!", dice(10, 3, 1, 8, 2, 4)(10))).toBe(
+      "5d10k2! -> 18 (10!+8, 4✗ 3✗ 2✗ 1✗)",
+    );
   });
 
   it("does arithmetic with precedence and parentheses", () => {
@@ -190,25 +217,40 @@ describe("rollFormula, the rest of Lonelog's dice notation", () => {
   });
 
   it("rolls groups: added, kept by total or counted", () => {
-    expect(rollFormula("{4d6, 2d10, d4}", faces([2, 6], [6, 6], [4, 6], [2, 6], [7, 10], [4, 10], [1, 4]))).toBe(
-      "{4d6,2d10,d4} -> 26 ({2+6+4+2, 7+4, 1})",
+    expect(
+      rollFormula(
+        "{4d6, 2d10, d4}",
+        faces([2, 6], [6, 6], [4, 6], [2, 6], [7, 10], [4, 10], [1, 4]),
+      ),
+    ).toBe("{4d6,2d10,d4} -> 26 ({2+6+4+2, 7+4, 1})");
+    expect(
+      rollFormula("{4d6,2d10}k1", faces([5, 6], [4, 6], [3, 6], [1, 6], [7, 10], [4, 10])),
+    ).toBe("{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})");
+    expect(rollFormula("{3d20+5}>40", faces([11, 20], [7, 20], [19, 20]))).toBe(
+      "{3d20+5}>40 -> 1 ({(11+7+19 + 5)✓})",
     );
-    expect(rollFormula("{4d6,2d10}k1", faces([5, 6], [4, 6], [3, 6], [1, 6], [7, 10], [4, 10]))).toBe(
-      "{4d6,2d10}k1 -> 13 ({5+4+3+1, (7+4)✗})",
+    expect(rollFormula("{2d6,d20}>=10f<3", faces([1, 6], [1, 6], [15, 20]))).toBe(
+      "{2d6,d20}>=10f<3 -> 0 ({(1+1)✗, 15✓})",
     );
-    expect(rollFormula("{3d20+5}>40", faces([11, 20], [7, 20], [19, 20]))).toBe("{3d20+5}>40 -> 1 ({(11+7+19 + 5)✓})");
-    expect(rollFormula("{2d6,d20}>=10f<3", faces([1, 6], [1, 6], [15, 20]))).toBe("{2d6,d20}>=10f<3 -> 0 ({(1+1)✗, 15✓})");
-    expect(rollFormula("{2d6,d20}sd", faces([1, 6], [1, 6], [15, 20]))).toBe("{2d6,d20}sd -> 17 ({15, 1+1})");
+    expect(rollFormula("{2d6,d20}sd", faces([1, 6], [1, 6], [15, 20]))).toBe(
+      "{2d6,d20}sd -> 17 ({15, 1+1})",
+    );
   });
 
   it("a group of one keeps or drops single dice", () => {
-    expect(rollFormula("{2d6+1d8}k2", faces([2, 6], [5, 6], [7, 8]))).toBe("{2d6+1d8}k2 -> 12 ({5, 2✗ + 7})");
+    expect(rollFormula("{2d6+1d8}k2", faces([2, 6], [5, 6], [7, 8]))).toBe(
+      "{2d6+1d8}k2 -> 12 ({5, 2✗ + 7})",
+    );
   });
 
   it("writes a description before the roll, in every form", () => {
-    expect(rollFormula("4d6dl1 // Strength", dice(2, 6, 5, 3)(6))).toBe("Strength 4d6dl1 -> 14 (6+5+3, 2✗)");
+    expect(rollFormula("4d6dl1 // Strength", dice(2, 6, 5, 3)(6))).toBe(
+      "Strength 4d6dl1 -> 14 (6+5+3, 2✗)",
+    );
     expect(rollFormula("2d6 # Damage", dice(3, 4)(6))).toBe("Damage 2d6 -> 7 (3+4)");
-    expect(rollFormula("4d6 /* Ice damage 5d10+7 */", dice(1, 2, 3, 4)(6))).toBe("Ice damage 5d10+7 4d6 -> 10 (1+2+3+4)");
+    expect(rollFormula("4d6 /* Ice damage 5d10+7 */", dice(1, 2, 3, 4)(6))).toBe(
+      "Ice damage 5d10+7 4d6 -> 10 (1+2+3+4)",
+    );
     expect(rollFormula("2d10 [ Fire damage ]", dice(3, 4)(10))).toBe("Fire damage 2d10 -> 7 (3+4)");
   });
 
@@ -233,35 +275,134 @@ describe("dice help", () => {
   it("writes each example exactly as the help shows it", () => {
     const lines = LONG_TEXTS.es.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line));
     const rolls: Record<string, [number, number][]> = {
-      "2d6+3": [[4, 6], [2, 6]],
+      "2d6+3": [
+        [4, 6],
+        [2, 6],
+      ],
       "d20+5": [[12, 20]],
-      "1d8+1d6-1": [[5, 8], [3, 6]],
-      "4d6kh3": [[2, 6], [6, 6], [5, 6], [3, 6]],
-      "2d20kh1": [[17, 20], [4, 20]],
-      "2d20kl1": [[4, 20], [17, 20]],
-      "5d6>=5": [[6, 6], [5, 6], [3, 6], [2, 6], [1, 6]],
-      "6d10>=8": [[9, 10], [2, 10], [8, 10], [10, 10], [5, 10], [7, 10]],
-      "4d6<=2": [[5, 6], [2, 6], [6, 6], [4, 6]],
-      "3d6!": [[6, 6], [2, 6], [4, 6], [1, 6]],
-      "1d8!+1d6!": [[8, 8], [3, 8], [2, 6]],
-      "3d10>=8!": [[10, 10], [9, 10], [4, 10], [8, 10]],
-      "4dF+1": [[3, 3], [2, 3], [3, 3], [1, 3]],
-      "4d6dl1": [[2, 6], [6, 6], [5, 6], [3, 6]],
-      "4d6>4f<3": [[6, 6], [5, 6], [2, 6], [4, 6]],
-      "d6!!": [[6, 6], [6, 6], [2, 6]],
+      "1d8+1d6-1": [
+        [5, 8],
+        [3, 6],
+      ],
+      "4d6kh3": [
+        [2, 6],
+        [6, 6],
+        [5, 6],
+        [3, 6],
+      ],
+      "2d20kh1": [
+        [17, 20],
+        [4, 20],
+      ],
+      "2d20kl1": [
+        [4, 20],
+        [17, 20],
+      ],
+      "5d6>=5": [
+        [6, 6],
+        [5, 6],
+        [3, 6],
+        [2, 6],
+        [1, 6],
+      ],
+      "6d10>=8": [
+        [9, 10],
+        [2, 10],
+        [8, 10],
+        [10, 10],
+        [5, 10],
+        [7, 10],
+      ],
+      "4d6<=2": [
+        [5, 6],
+        [2, 6],
+        [6, 6],
+        [4, 6],
+      ],
+      "3d6!": [
+        [6, 6],
+        [2, 6],
+        [4, 6],
+        [1, 6],
+      ],
+      "1d8!+1d6!": [
+        [8, 8],
+        [3, 8],
+        [2, 6],
+      ],
+      "3d10>=8!": [
+        [10, 10],
+        [9, 10],
+        [4, 10],
+        [8, 10],
+      ],
+      "4dF+1": [
+        [3, 3],
+        [2, 3],
+        [3, 3],
+        [1, 3],
+      ],
+      "4d6dl1": [
+        [2, 6],
+        [6, 6],
+        [5, 6],
+        [3, 6],
+      ],
+      "4d6>4f<3": [
+        [6, 6],
+        [5, 6],
+        [2, 6],
+        [4, 6],
+      ],
+      "d6!!": [
+        [6, 6],
+        [6, 6],
+        [2, 6],
+      ],
       "d%": [[42, 100]],
-      "d6r": [[1, 6], [4, 6]],
-      "2d10u": [[7, 10], [7, 10], [4, 10]],
-      "4d6min2": [[1, 6], [5, 6], [1, 6], [4, 6]],
-      "2d20cs>=19": [[19, 20], [6, 20]],
-      "4d6sd": [[3, 6], [6, 6], [1, 6], [5, 6]],
+      d6r: [
+        [1, 6],
+        [4, 6],
+      ],
+      "2d10u": [
+        [7, 10],
+        [7, 10],
+        [4, 10],
+      ],
+      "4d6min2": [
+        [1, 6],
+        [5, 6],
+        [1, 6],
+        [4, 6],
+      ],
+      "2d20cs>=19": [
+        [19, 20],
+        [6, 20],
+      ],
+      "4d6sd": [
+        [3, 6],
+        [6, 6],
+        [1, 6],
+        [5, 6],
+      ],
       "(1d6+2)*3": [[4, 6]],
       "1d6*10": [[4, 6]],
-      "{4d6,2d10}k1": [[5, 6], [4, 6], [3, 6], [1, 6], [7, 10], [4, 10]],
+      "{4d6,2d10}k1": [
+        [5, 6],
+        [4, 6],
+        [3, 6],
+        [1, 6],
+        [7, 10],
+        [4, 10],
+      ],
       d66: [[16, 36]],
       d7: [[5, 7]],
       "d(66)": [[47, 66]],
-      "{3d20+5}>=40": [[11, 20], [17, 20], [19, 20]],
+      "{3d20+5}>=40": [
+        [11, 20],
+        [17, 20],
+        [19, 20],
+      ],
     };
     for (const line of lines) {
       const formula = line.split(" -> ")[0];
@@ -269,7 +410,9 @@ describe("dice help", () => {
       expect(rollFormula(formula, faces(...rolls[formula]))).toBe(line);
     }
     // Both languages show the same lines.
-    expect(LONG_TEXTS.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(lines);
+    expect(LONG_TEXTS.en.diceHelp.formulas.flatMap((f) => f.examples.map((e) => e.line))).toEqual(
+      lines,
+    );
   });
 
   it("every formula a card or a game names can be rolled", () => {
@@ -284,7 +427,10 @@ describe("dice help", () => {
     for (const locale of LOCALES) {
       for (const { formula, parts, usedIn } of LONG_TEXTS[locale].diceHelp.formulas) {
         const text = [usedIn, ...parts.map((p) => p.text)].join(" ").replace(/\{(\S+), /g, "{$1,");
-        const named = [...formula.split(" · "), ...(text.match(/\S*\dd[\d%F(]\S*|\S*\bd[\d%F(]\S*/g) ?? []).map(clean)];
+        const named = [
+          ...formula.split(" · "),
+          ...(text.match(/\S*\dd[\d%F(]\S*|\S*\bd[\d%F(]\S*/g) ?? []).map(clean),
+        ];
         for (const f of named) expect(rollFormula(f), `${locale}: ${f}`).not.toBeNull();
       }
     }
@@ -301,13 +447,19 @@ describe("dice help", () => {
 describe("d66", () => {
   it("is two d6, tens and units, however many are rolled", () => {
     const seen = new Set<number>();
-    for (let i = 0; i < 36; i++) seen.add(Number(rollFormula("d66", () => (i + 0.5) / 36)!.split(" -> ")[1]));
-    expect([...seen]).toEqual([1, 2, 3, 4, 5, 6].flatMap((t) => [1, 2, 3, 4, 5, 6].map((u) => t * 10 + u)));
+    for (let i = 0; i < 36; i++)
+      seen.add(Number(rollFormula("d66", () => (i + 0.5) / 36)!.split(" -> ")[1]));
+    expect([...seen]).toEqual(
+      [1, 2, 3, 4, 5, 6].flatMap((t) => [1, 2, 3, 4, 5, 6].map((u) => t * 10 + u)),
+    );
     expect(rollFormula("2d66kh1", () => 0.5)).toBe("2d66kh1 -> 41 (41, 41✗)");
   });
 
   it("is drawn as its two dice; one from when it had 66 faces, as it was", () => {
-    expect(readRolledDice("Loot d66 -> 34")).toEqual([{ sides: 6, value: 3 }, { sides: 6, value: 4 }]);
+    expect(readRolledDice("Loot d66 -> 34")).toEqual([
+      { sides: 6, value: 3 },
+      { sides: 6, value: 4 },
+    ]);
     expect(readRolledDice("2d66kh1 -> 41 (41, 35✗)")).toEqual([
       { sides: 6, value: 4 },
       { sides: 6, value: 1 },
@@ -323,12 +475,44 @@ describe("d66", () => {
     expect(fixOldD66("d20 -> 5, d66 -> 60, d66 -> 61")).toBe("d20 -> 5, d(66) -> 60, d66 -> 61");
     expect(fixOldD66("d66+2 -> 11 (9 + 2)")).toBe("d(66)+2 -> 11 (9 + 2)");
     expect(fixOldD66("2d66kh1 -> 41 (41, 38✗)")).toBe("2d(66)kh1 -> 41 (41, 38✗)");
-    for (const text of ["d66 -> 34", "Theme d66=25 -> 3", "tbl: Loot d66=38 -> 7", "d(66) -> 38", "d66 -> 99", "d666 -> 38", "I rolled d66 -> 38 gold"])
+    for (const text of [
+      "d66 -> 34",
+      "Theme d66=25 -> 3",
+      "tbl: Loot d66=38 -> 7",
+      "d(66) -> 38",
+      "d66 -> 99",
+      "d666 -> 38",
+      "I rolled d66 -> 38 gold",
+    ])
       expect(fixOldD66(text), text).toBe(text);
     expect(fixOldD66(fixOldD66("d66 -> 38"))).toBe("d(66) -> 38");
-    expect(normalizeJournalEntry({ id: "e", adventureId: "a", timestamp: 1, kind: "roll", text: "d66 -> 38" })?.text).toBe("d(66) -> 38");
-    expect(normalizeJournalEntry({ id: "e", adventureId: "a", timestamp: 1, kind: "note", text: "d66 -> 38" })?.text).toBe("d66 -> 38");
-    expect(normalizeHistoryEntry({ id: "h", kind: "dados", timestamp: 1, text: "d66 -> 38", favorite: false })).toMatchObject({ text: "d(66) -> 38" });
+    expect(
+      normalizeJournalEntry({
+        id: "e",
+        adventureId: "a",
+        timestamp: 1,
+        kind: "roll",
+        text: "d66 -> 38",
+      })?.text,
+    ).toBe("d(66) -> 38");
+    expect(
+      normalizeJournalEntry({
+        id: "e",
+        adventureId: "a",
+        timestamp: 1,
+        kind: "note",
+        text: "d66 -> 38",
+      })?.text,
+    ).toBe("d66 -> 38");
+    expect(
+      normalizeHistoryEntry({
+        id: "h",
+        kind: "dados",
+        timestamp: 1,
+        text: "d66 -> 38",
+        favorite: false,
+      }),
+    ).toMatchObject({ text: "d(66) -> 38" });
   });
 
   it("leaves a die of 66 faces as d(66)", () => {

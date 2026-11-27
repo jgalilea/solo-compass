@@ -22,9 +22,19 @@ export function AllDiceStatsDialog({ onClose }: { onClose: () => void }) {
   }, [adventures, entries]);
   return (
     <Modal onClose={onClose} labelledBy={titleId} size="lg">
-      <DialogHeader id={titleId} title={s.diceHeading} subtitle={<p>{s.allDiceSubtitle}</p>} Icon={IconChart} onClose={onClose} />
+      <DialogHeader
+        id={titleId}
+        title={s.diceHeading}
+        subtitle={<p>{s.allDiceSubtitle}</p>}
+        Icon={IconChart}
+        onClose={onClose}
+      />
       <DialogBody className="flex flex-col gap-3">
-        {stats.total > 0 ? <DiceStatsSection stats={stats} across /> : <p className="text-sm text-parchment-dim">{s.allDiceEmpty}</p>}
+        {stats.total > 0 ? (
+          <DiceStatsSection stats={stats} across />
+        ) : (
+          <p className="text-sm text-parchment-dim">{s.allDiceEmpty}</p>
+        )}
       </DialogBody>
     </Modal>
   );

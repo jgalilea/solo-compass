@@ -20,7 +20,8 @@ let pendingTimer: ReturnType<typeof setTimeout> | undefined;
 /** Depth of the dialogs open in the current history entry. */
 export function currentModalDepth(): number {
   const state: unknown = window.history.state;
-  const depth = state && typeof state === "object" ? (state as Record<string, unknown>)[KEY] : undefined;
+  const depth =
+    state && typeof state === "object" ? (state as Record<string, unknown>)[KEY] : undefined;
   return typeof depth === "number" ? depth : 0;
 }
 

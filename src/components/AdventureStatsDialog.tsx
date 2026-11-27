@@ -43,14 +43,20 @@ export function AdventureStatsDialog({
   const dice = useMemo(() => computeDiceStats(entries), [entries]);
   const named = useMemo(() => mostNamed(entries, buildCast(entries), MAX_NAMED), [entries]);
   const number = new Intl.NumberFormat(t.dateLocale);
-  const date = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "long", year: "numeric" });
+  const date = new Intl.DateTimeFormat(t.dateLocale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   const { oracle } = stats;
   const yesTenths = oracle.total ? Math.round((oracle.si / oracle.total) * 10) : 0;
   // Against the chances of what was asked, if they're known; otherwise
   // (an imported journal, a cleared history) just how often it says yes.
   const { oracleChance: chance } = stats;
-  const chanceMood = chance.mood && { generous: s.chanceGenerous, stubborn: s.chanceStubborn, fair: s.chanceFair }[chance.mood];
+  const chanceMood =
+    chance.mood &&
+    { generous: s.chanceGenerous, stubborn: s.chanceStubborn, fair: s.chanceFair }[chance.mood];
   const mood = yesTenths >= 6 ? s.moodKind : yesTenths <= 4 ? s.moodStubborn : s.moodFair;
   const longDay = (iso: string) => date.format(new Date(`${iso}T12:00`));
   const firstDay = stats.first !== null ? longDay(stats.first) : null;
@@ -58,12 +64,14 @@ export function AdventureStatsDialog({
   const playTime = formatPlayTime(s, stats.playMinutes);
 
   return (
-    <Modal
-      onClose={onClose}
-      labelledBy={titleId}
-      size="lg"
-    >
-      <DialogHeader id={titleId} title={s.title} subtitle={<p className="truncate">{name}</p>} Icon={IconChart} onClose={onClose} />
+    <Modal onClose={onClose} labelledBy={titleId} size="lg">
+      <DialogHeader
+        id={titleId}
+        title={s.title}
+        subtitle={<p className="truncate">{name}</p>}
+        Icon={IconChart}
+        onClose={onClose}
+      />
       <DialogBody className="flex flex-col gap-5">
         {stats.entries === 0 ? (
           <p className="text-sm text-parchment-dim">{s.empty}</p>
@@ -78,9 +86,14 @@ export function AdventureStatsDialog({
                   [s.daysPlayed, stats.daysPlayed],
                 ] as const
               ).map(([label, value]) => (
-                <div key={label} className="rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
+                <div
+                  key={label}
+                  className="rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3"
+                >
                   <dt className="text-xs text-parchment-dim">{label}</dt>
-                  <dd className="font-display text-2xl tabular-nums text-parchment">{number.format(value)}</dd>
+                  <dd className="font-display text-2xl tabular-nums text-parchment">
+                    {number.format(value)}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -95,7 +108,9 @@ export function AdventureStatsDialog({
             {/* Roughly, and only from what was written here (an import has no times). */}
             {playTime && (
               <div className="-mt-2 flex flex-col gap-0.5">
-                <p className="text-sm text-parchment">{interpolate(s.playTime, { time: playTime })}</p>
+                <p className="text-sm text-parchment">
+                  {interpolate(s.playTime, { time: playTime })}
+                </p>
                 <p className="text-xs text-parchment-faint">{s.playTimeNote}</p>
               </div>
             )}
@@ -110,8 +125,20 @@ export function AdventureStatsDialog({
             {named.characters.length + named.places.length > 0 && (
               <StatsSection id="namedStats" title={s.namedHeading}>
                 <div className="grid gap-2.5 md:grid-cols-2">
-                  {named.characters.length > 0 && <NamedList title={s.namedCharacters} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.characters} />}
-                  {named.places.length > 0 && <NamedList title={s.namedPlaces} limit={interpolate(s.namedTop, { count: MAX_NAMED })} items={named.places} />}
+                  {named.characters.length > 0 && (
+                    <NamedList
+                      title={s.namedCharacters}
+                      limit={interpolate(s.namedTop, { count: MAX_NAMED })}
+                      items={named.characters}
+                    />
+                  )}
+                  {named.places.length > 0 && (
+                    <NamedList
+                      title={s.namedPlaces}
+                      limit={interpolate(s.namedTop, { count: MAX_NAMED })}
+                      items={named.places}
+                    />
+                  )}
                 </div>
                 <p className="text-xs text-parchment-dim">{s.namedHint}</p>
               </StatsSection>
@@ -122,17 +149,32 @@ export function AdventureStatsDialog({
                 <p className="text-sm text-parchment-dim">{s.noOracle}</p>
               ) : (
                 <>
-                  <p className="text-sm text-parchment">{chanceMood ?? interpolate(mood, { pct: yesTenths })}</p>
+                  <p className="text-sm text-parchment">
+                    {chanceMood ?? interpolate(mood, { pct: yesTenths })}
+                  </p>
                   {chanceMood && (
                     <p className="text-xs text-parchment-dim">
-                      {interpolate(s.chanceNote, { total: chance.total, expected: Math.round(chance.expected), yes: chance.yes })}
+                      {interpolate(s.chanceNote, {
+                        total: chance.total,
+                        expected: Math.round(chance.expected),
+                        yes: chance.yes,
+                      })}
                     </p>
                   )}
                   {/* Colour plus the count beside each one: some themes are nearly monochrome. */}
                   <div className="flex h-2.5 overflow-hidden rounded-full bg-ink-900" aria-hidden>
-                    <span className="bg-yes" style={{ width: `${(oracle.si / oracle.total) * 100}%` }} />
-                    <span className="bg-no" style={{ width: `${(oracle.no / oracle.total) * 100}%` }} />
-                    <span className="bg-contradiction" style={{ width: `${(oracle.contradiccion / oracle.total) * 100}%` }} />
+                    <span
+                      className="bg-yes"
+                      style={{ width: `${(oracle.si / oracle.total) * 100}%` }}
+                    />
+                    <span
+                      className="bg-no"
+                      style={{ width: `${(oracle.no / oracle.total) * 100}%` }}
+                    />
+                    <span
+                      className="bg-contradiction"
+                      style={{ width: `${(oracle.contradiccion / oracle.total) * 100}%` }}
+                    />
                   </div>
                   <ul className="grid grid-cols-3 gap-2 text-center text-xs">
                     {(
@@ -143,7 +185,9 @@ export function AdventureStatsDialog({
                       ] as const
                     ).map(([label, value, color]) => (
                       <li key={label} className="rounded-xl border border-ink-border/70 px-2 py-2">
-                        <span className={`block text-lg font-semibold tabular-nums ${color}`}>{number.format(value)}</span>
+                        <span className={`block text-lg font-semibold tabular-nums ${color}`}>
+                          {number.format(value)}
+                        </span>
                         <span className="text-parchment-dim">{label}</span>
                       </li>
                     ))}
@@ -159,12 +203,16 @@ export function AdventureStatsDialog({
             {(stats.tableRolls > 0 || stats.diceRolls > 0) && (
               <StatsSection id="rollStats" title={s.rollsHeading}>
                 <p className="text-sm text-parchment">
-                  {s.tableRolls}: {number.format(stats.tableRolls)} · {s.diceRolls}: {number.format(stats.diceRolls)}
+                  {s.tableRolls}: {number.format(stats.tableRolls)} · {s.diceRolls}:{" "}
+                  {number.format(stats.diceRolls)}
                 </p>
                 {/* A "favourite" needs at least two rolls to mean anything. */}
                 {stats.topTable && stats.topTable.count > 1 && (
                   <p className="text-sm text-parchment-dim">
-                    {interpolate(s.topTable, { name: stats.topTable.name, count: stats.topTable.count })}
+                    {interpolate(s.topTable, {
+                      name: stats.topTable.name,
+                      count: stats.topTable.count,
+                    })}
                   </p>
                 )}
               </StatsSection>

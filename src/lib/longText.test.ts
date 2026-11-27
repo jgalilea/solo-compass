@@ -51,14 +51,25 @@ describe("long texts read in linear time", () => {
   });
 
   it("a note's marks", () => {
-    for (const text of ["[".repeat(LONG), "*".repeat(LONG), "~".repeat(LONG), "_a".repeat(LONG / 2)]) {
+    for (const text of [
+      "[".repeat(LONG),
+      "*".repeat(LONG),
+      "~".repeat(LONG),
+      "_a".repeat(LONG / 2),
+    ]) {
       fast(() => parseInline(text));
     }
   });
 
   it("still reads what it always read", () => {
-    expect(actorParts("Kael > Odile + Hal").filter((p) => p.name).map((p) => p.name)).toEqual(["Kael", "Odile", "Hal"]);
+    expect(
+      actorParts("Kael > Odile + Hal")
+        .filter((p) => p.name)
+        .map((p) => p.name),
+    ).toEqual(["Kael", "Odile", "Hal"]);
     expect(formatScene("S2", "La cripta\n  @(Jordan)")).toBe("S2 *La cripta* @(Jordan)");
-    expect(loneRoll("Ataque d20+5 -> 19 (14 + 5)")).toMatchObject({ rolls: [{ die: "d20+5", result: "19 (14 + 5)" }] });
+    expect(loneRoll("Ataque d20+5 -> 19 (14 + 5)")).toMatchObject({
+      rolls: [{ die: "d20+5", result: "19 (14 + 5)" }],
+    });
   });
 });

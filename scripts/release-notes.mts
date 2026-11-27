@@ -10,6 +10,11 @@ if (!entry) {
 }
 
 const section = ({ title, intro, items }: (typeof entry.text)["es"]) =>
-  [`## ${title}`, ...(intro ? ["", `*${intro}*`] : []), "", ...items.map((item) => `- ${item}`)].join("\n");
+  [
+    `## ${title}`,
+    ...(intro ? ["", `*${intro}*`] : []),
+    "",
+    ...items.map((item) => `- ${item}`),
+  ].join("\n");
 
 console.log([section(entry.text.es), section(entry.text.en)].join("\n\n---\n\n"));

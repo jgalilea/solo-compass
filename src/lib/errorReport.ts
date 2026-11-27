@@ -17,7 +17,10 @@ export function errorReport(
     date: new Date(),
   },
 ): string {
-  const stack = (error.stack ?? "").split("\n").slice(1, STACK_LINES + 1).map((line) => line.trim());
+  const stack = (error.stack ?? "")
+    .split("\n")
+    .slice(1, STACK_LINES + 1)
+    .map((line) => line.trim());
   return [
     `Solo Compass ${versionLabel()}`,
     `${where.date.toISOString()} · ${where.screen}`,

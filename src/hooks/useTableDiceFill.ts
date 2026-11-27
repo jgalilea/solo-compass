@@ -16,7 +16,9 @@ export function useTableDiceFill() {
 
   useEffect(() => {
     if (status !== "ready" || journalStatus !== "ready") return;
-    const missing = entries.filter((e) => e.kind === "tabla" && !e.dice && !tried.current.has(e.id));
+    const missing = entries.filter(
+      (e) => e.kind === "tabla" && !e.dice && !tried.current.has(e.id),
+    );
     if (missing.length === 0) return;
     for (const entry of missing) tried.current.add(entry.id);
     import("../lib/historyDice")

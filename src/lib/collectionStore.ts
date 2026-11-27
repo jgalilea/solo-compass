@@ -33,7 +33,10 @@ export interface Collection<T extends { id: string }> {
  * or changed (the app updates immutably, so a changed record is a new
  * object) and the ids that are gone.
  */
-export function diffById<T extends { id: string }>(prev: readonly T[], next: readonly T[]): Changes<T> {
+export function diffById<T extends { id: string }>(
+  prev: readonly T[],
+  next: readonly T[],
+): Changes<T> {
   const before = new Map(prev.map((x) => [x.id, x]));
   const kept = new Set(next.map((x) => x.id));
   return {

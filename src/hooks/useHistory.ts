@@ -50,7 +50,13 @@ export function useHistory(): UseHistoryResult {
       saveHistoryChanges(t, prev, next).then(() => announceChange("history")),
     [t],
   );
-  const { items: entries, latest, version, setLoaded: setEntries, update: persist } = useStoredList(save, failSave);
+  const {
+    items: entries,
+    latest,
+    version,
+    setLoaded: setEntries,
+    update: persist,
+  } = useStoredList(save, failSave);
 
   // IndexedDB read. It doesn't touch "loading" itself: the initial
   // state is already "loading", and on retry retry() sets it (an
@@ -65,9 +71,7 @@ export function useHistory(): UseHistoryResult {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(
-          err instanceof HistoryStorageError ? err.message : t.history.genericLoadError,
-        );
+        setError(err instanceof HistoryStorageError ? err.message : t.history.genericLoadError);
         setStatus("error");
       });
     return () => {
@@ -135,9 +139,7 @@ export function useHistory(): UseHistoryResult {
 
   const toggleFavorite = useCallback(
     (id: string) => {
-      persist((prev) =>
-        prev.map((e) => (e.id === id ? { ...e, favorite: !e.favorite } : e)),
-      );
+      persist((prev) => prev.map((e) => (e.id === id ? { ...e, favorite: !e.favorite } : e)));
     },
     [persist],
   );
@@ -158,7 +160,11 @@ export function useHistory(): UseHistoryResult {
 
   const setTableDice = useCallback(
     (dice: ReadonlyMap<string, DiceType>) => {
-      persist((prev) => prev.map((e) => (e.kind === "tabla" && !e.dice && dice.has(e.id) ? { ...e, dice: dice.get(e.id) } : e)));
+      persist((prev) =>
+        prev.map((e) =>
+          e.kind === "tabla" && !e.dice && dice.has(e.id) ? { ...e, dice: dice.get(e.id) } : e,
+        ),
+      );
     },
     [persist],
   );
@@ -174,9 +180,7 @@ export function useHistory(): UseHistoryResult {
         setError(null);
       })
       .catch((err: unknown) => {
-        setError(
-          err instanceof HistoryStorageError ? err.message : t.history.genericClearError,
-        );
+        setError(err instanceof HistoryStorageError ? err.message : t.history.genericClearError);
         setStatus("error");
       });
   }, [t, latest, setEntries]);

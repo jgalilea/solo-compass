@@ -88,7 +88,9 @@ export function Modal({
         return;
       }
       if (e.key !== "Tab" || !panel) return;
-      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null,
+      );
       if (items.length === 0) {
         e.preventDefault();
         return;
@@ -96,7 +98,10 @@ export function Modal({
       const first = items[0];
       const last = items[items.length - 1];
       const inside = panel.contains(document.activeElement);
-      if (e.shiftKey && (!inside || document.activeElement === first || document.activeElement === panel)) {
+      if (
+        e.shiftKey &&
+        (!inside || document.activeElement === first || document.activeElement === panel)
+      ) {
         e.preventDefault();
         last.focus();
       } else if (!e.shiftKey && (!inside || document.activeElement === last)) {

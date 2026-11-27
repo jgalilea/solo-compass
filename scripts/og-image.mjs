@@ -12,7 +12,11 @@ const root = new URL("../", import.meta.url);
 const browser = await chromium.launch();
 
 // The oracle, just answered, as a player sees it on a phone.
-const phone = await browser.newContext({ ...devices["Pixel 7"], locale: "es-ES", colorScheme: "dark" });
+const phone = await browser.newContext({
+  ...devices["Pixel 7"],
+  locale: "es-ES",
+  colorScheme: "dark",
+});
 const app = await phone.newPage();
 await app.goto(base);
 await app.getByLabel("Pregunta para el oráculo").fill("¿Me ha visto el guardia?");
@@ -24,7 +28,8 @@ await phone.close();
 
 const logo = readFileSync(new URL("public/favicon.svg", root), "utf8");
 // Inline: a page made with setContent can't load local files.
-const font = (file) => `data:font/woff2;base64,${readFileSync(new URL(`public/fonts/${file}`, root)).toString("base64")}`;
+const font = (file) =>
+  `data:font/woff2;base64,${readFileSync(new URL(`public/fonts/${file}`, root)).toString("base64")}`;
 const card = await browser.newPage({ viewport: { width: 1200, height: 630 } });
 await card.setContent(`<!doctype html><html><head><style>
   @font-face { font-family: Pirata; src: url(${font("pirata-400.woff2")}); }

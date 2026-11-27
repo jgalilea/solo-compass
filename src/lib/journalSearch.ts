@@ -11,7 +11,17 @@ export interface EntryMatch {
 }
 
 /** What an entry is, to search only those: its kind, or a note's own form. */
-export const ENTRY_TYPES = ["action", "question", "roll", "consequence", "dialogue", "excerpt", "note", "scene", "session"] as const;
+export const ENTRY_TYPES = [
+  "action",
+  "question",
+  "roll",
+  "consequence",
+  "dialogue",
+  "excerpt",
+  "note",
+  "scene",
+  "session",
+] as const;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 
 export function entryType(entry: Pick<JournalEntry, "kind" | "text">): EntryType {
@@ -31,7 +41,12 @@ export const ADVENTURE_SEARCH_LIMIT = 50;
  * usually where it was introduced), each with the session it belongs to. Only those of a
  * `type`, if given: all of them, with no query.
  */
-export function searchEntries(entries: JournalEntry[], query: string, limit = Infinity, type: EntryType | null = null): EntryMatch[] {
+export function searchEntries(
+  entries: JournalEntry[],
+  query: string,
+  limit = Infinity,
+  type: EntryType | null = null,
+): EntryMatch[] {
   const any = !query.trim();
   if (any && !type) return [];
   const byAdventure = new Map<string, JournalEntry[]>();

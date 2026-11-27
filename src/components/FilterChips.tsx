@@ -30,7 +30,12 @@ export function FilterChips<T extends string>({
   return (
     <div role="group" aria-label={label} className={`overflow-x-auto lg:mx-0 lg:px-0 ${className}`}>
       <div className="flex gap-2 pb-1 lg:flex-wrap">
-        <button type="button" aria-pressed={value === null} onClick={() => onChange(null)} className={chip(value === null)}>
+        <button
+          type="button"
+          aria-pressed={value === null}
+          onClick={() => onChange(null)}
+          className={chip(value === null)}
+        >
           {allLabel}
         </button>
         {options.map(([id, name]) => (

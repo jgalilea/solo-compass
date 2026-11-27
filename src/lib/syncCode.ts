@@ -24,7 +24,7 @@ export function newSecret(): Uint8Array<ArrayBuffer> {
 
 /** x times a symbol, in GF(32) (polynomial x⁵ + x² + 1). */
 function times2(v: number): number {
-  return v & 16 ? ((v << 1) ^ 0b100101) : v << 1;
+  return v & 16 ? (v << 1) ^ 0b100101 : v << 1;
 }
 
 /**
@@ -98,4 +98,3 @@ export function parseCode(text: string): Uint8Array<ArrayBuffer> | null {
   }
   return secret;
 }
-

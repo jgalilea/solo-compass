@@ -18,7 +18,11 @@ function useSourceLabel(tool: GameTool, source: TableSource, onOracleScreen: boo
   const g = useLocaleContext().t.gameTable;
   if (source === "adventure") return onOracleScreen ? g.fromActiveAdventure : g.fromAdventure;
   if (source === "last") return g.fromLastOracle;
-  return tool === "dice" ? g.fromFavoriteDice : tool === "tables" ? g.fromFavoriteTables : g.fromFavoriteOracle;
+  return tool === "dice"
+    ? g.fromFavoriteDice
+    : tool === "tables"
+      ? g.fromFavoriteTables
+      : g.fromFavoriteOracle;
 }
 
 /**
@@ -40,7 +44,9 @@ export function SourceTag({
   const label = useSourceLabel(tool, source, onOracleScreen);
   const Icon = ICON[source];
   return (
-    <span className={`inline-flex min-w-0 items-center gap-1 text-xs text-parchment-faint ${className}`}>
+    <span
+      className={`inline-flex min-w-0 items-center gap-1 text-xs text-parchment-faint ${className}`}
+    >
       <Icon size={13} className="shrink-0" />
       <span className="truncate">{label}</span>
     </span>
@@ -67,11 +73,22 @@ export function SourceNote({
   const label = useSourceLabel(tool, source, onOracleScreen);
   const Icon = ICON[source];
   const rule =
-    tool === "dice" ? g.diceRule : tool === "tables" ? g.tablesRule : onOracleScreen ? g.oracleScreenRule : g.oracleRule;
+    tool === "dice"
+      ? g.diceRule
+      : tool === "tables"
+        ? g.tablesRule
+        : onOracleScreen
+          ? g.oracleScreenRule
+          : g.oracleRule;
   const now = {
     dice: source === "adventure" ? g.diceOwn : g.diceFollowing,
     tables: source === "adventure" ? g.tablesOwn : g.tablesFollowing,
-    oracle: source === "adventure" ? g.oracleOwn : source === "last" ? g.oracleFollowingLast : g.oracleFollowing,
+    oracle:
+      source === "adventure"
+        ? g.oracleOwn
+        : source === "last"
+          ? g.oracleFollowingLast
+          : g.oracleFollowing,
   }[tool];
   return (
     <div className="flex flex-col gap-1.5 rounded-xl border border-ink-border bg-ink-900/40 px-3.5 py-3 text-sm">

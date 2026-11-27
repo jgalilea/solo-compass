@@ -14,7 +14,14 @@ import { Modal } from "./Modal";
  * `onOracleScreen`) it picks that one's and says so on top.
  */
 export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: boolean }) {
-  const { oracleId, setOracleId, favoriteOracleId, setFavoriteOracleId, adventureName, oracleSource } = useOracleContext();
+  const {
+    oracleId,
+    setOracleId,
+    favoriteOracleId,
+    setFavoriteOracleId,
+    adventureName,
+    oracleSource,
+  } = useOracleContext();
   const { t } = useLocaleContext();
   const [open, setOpen] = useState(false);
   const current = ORACLES.find((o) => o.id === oracleId) ?? ORACLES[0];
@@ -33,15 +40,16 @@ export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: bo
       </button>
 
       {open && (
-        <Modal
-          onClose={() => setOpen(false)}
-          label={t.oracleSwitcher.dialogTitle}
-          size="lg"
-        >
+        <Modal onClose={() => setOpen(false)} label={t.oracleSwitcher.dialogTitle} size="lg">
           <DialogHeader title={t.oracleSwitcher.dialogTitle} onClose={() => setOpen(false)} />
           <DialogBody>
             {adventureName && oracleSource && (
-              <SourceNote tool="oracle" source={oracleSource} name={adventureName} onOracleScreen={onOracleScreen} />
+              <SourceNote
+                tool="oracle"
+                source={oracleSource}
+                name={adventureName}
+                onOracleScreen={onOracleScreen}
+              />
             )}
             <div className="grid gap-2 md:grid-cols-2 md:gap-3">
               {ORACLES.map((oracleInfo) => {
@@ -52,9 +60,7 @@ export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: bo
                     key={oracleInfo.id}
                     className={[
                       "flex flex-col justify-between rounded-2xl border p-3",
-                      active
-                        ? "border-gold/50 bg-gold/10"
-                        : "border-ink-border",
+                      active ? "border-gold/50 bg-gold/10" : "border-ink-border",
                     ].join(" ")}
                   >
                     <button
@@ -77,9 +83,7 @@ export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: bo
                           {oracleInfo.license}
                         </span>
                       </span>
-                      {active && (
-                        <IconCheck size={18} className="shrink-0 text-gold" />
-                      )}
+                      {active && <IconCheck size={18} className="shrink-0 text-gold" />}
                     </button>
                     <div className="mt-2 flex gap-1.5">
                       {/* One favourite at a time: the oracle the app opens with. */}
@@ -112,7 +116,9 @@ export function OracleSwitcher({ onOracleScreen = false }: { onOracleScreen?: bo
                 );
               })}
             </div>
-            <p className="text-center text-xs text-parchment-dim">{t.oracleSwitcher.favoriteHint}</p>
+            <p className="text-center text-xs text-parchment-dim">
+              {t.oracleSwitcher.favoriteHint}
+            </p>
           </DialogBody>
         </Modal>
       )}

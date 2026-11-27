@@ -13,14 +13,30 @@
 
 import type { MergeData } from "./backupMerge";
 
-export const SYNC_KINDS = ["history", "adventures", "entries", "customTables", "savedRolls", "generators", "deleted"] as const;
+export const SYNC_KINDS = [
+  "history",
+  "adventures",
+  "entries",
+  "customTables",
+  "savedRolls",
+  "generators",
+  "deleted",
+] as const;
 export type SyncKind = (typeof SYNC_KINDS)[number];
 
 /** A record's fingerprint, by `${kind}:${id}`. */
 export type Prints = Map<string, string>;
 
 export function emptyData(): MergeData {
-  return { history: [], adventures: [], entries: [], customTables: [], savedRolls: [], generators: [], deleted: [] };
+  return {
+    history: [],
+    adventures: [],
+    entries: [],
+    customTables: [],
+    savedRolls: [],
+    generators: [],
+    deleted: [],
+  };
 }
 
 export function isEmptyData(data: MergeData): boolean {
@@ -42,7 +58,8 @@ export function combineData(parts: readonly MergeData[]): MergeData {
 
 function stable(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
-  if (Array.isArray(value)) return `[${value.map((v) => (v === undefined ? "null" : stable(v))).join(",")}]`;
+  if (Array.isArray(value))
+    return `[${value.map((v) => (v === undefined ? "null" : stable(v))).join(",")}]`;
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
     .filter((k) => record[k] !== undefined)
@@ -85,7 +102,9 @@ const SLICE_MS = 10;
 function breather(): (() => Promise<void>) | null {
   if (typeof document === "undefined" || document.visibilityState !== "visible") return null;
   const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
-  return scheduler?.yield ? () => scheduler.yield!() : () => new Promise((resolve) => setTimeout(resolve, 0));
+  return scheduler?.yield
+    ? () => scheduler.yield!()
+    : () => new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 /**
@@ -93,7 +112,10 @@ function breather(): (() => Promise<void>) | null {
  * sent. Every record is fingerprinted (years of play: a fifth of a second
  * on a modest phone), in slices, so writing meanwhile never stutters.
  */
-export async function changedRecords(data: MergeData, prints: Prints): Promise<{ delta: MergeData; sent: Prints }> {
+export async function changedRecords(
+  data: MergeData,
+  prints: Prints,
+): Promise<{ delta: MergeData; sent: Prints }> {
   const pause = breather();
   let sliceStart = performance.now();
   const delta = emptyData();
@@ -140,7 +162,12 @@ export function splitData(data: MergeData, perPart: number): MergeData[] {
  * sent). One kept here over what came in (newer here) stays a change to
  * send; nothing is remembered for records no longer here.
  */
-export function printsAfter(prints: Prints, sent: Prints, incoming: MergeData, merged: MergeData): Prints {
+export function printsAfter(
+  prints: Prints,
+  sent: Prints,
+  incoming: MergeData,
+  merged: MergeData,
+): Prints {
   const next: Prints = new Map(prints);
   for (const [k, print] of sent) next.set(k, print);
   for (const kind of SYNC_KINDS) {
@@ -154,7 +181,8 @@ export function printsAfter(prints: Prints, sent: Prints, incoming: MergeData, m
     }
   }
   const present = new Set<string>();
-  for (const kind of SYNC_KINDS) for (const r of merged[kind] as { id: string }[]) present.add(key(kind, r.id));
+  for (const kind of SYNC_KINDS)
+    for (const r of merged[kind] as { id: string }[]) present.add(key(kind, r.id));
   for (const k of [...next.keys()]) if (!present.has(k)) next.delete(k);
   return next;
 }

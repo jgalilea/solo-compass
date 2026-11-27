@@ -11,7 +11,13 @@ import { NoteText } from "./NoteText";
  * into a field. While writing
  * it's saved after a short pause, and when leaving the field.
  */
-export function PinnedNotes({ notes, onChange }: { notes: string; onChange: (notes: string) => void }) {
+export function PinnedNotes({
+  notes,
+  onChange,
+}: {
+  notes: string;
+  onChange: (notes: string) => void;
+}) {
   const { t } = useLocaleContext();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(notes);

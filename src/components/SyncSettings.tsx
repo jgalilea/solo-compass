@@ -1,4 +1,12 @@
-import { Suspense, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  Suspense,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { useLongTexts } from "../hooks/useLongTexts";
 import { interpolate, type Dictionary } from "../lib/i18n";
@@ -178,7 +186,11 @@ export function SyncSettings() {
   };
 
   return (
-    <div ref={cardRef} id="settings-sync" className="flex scroll-mt-4 flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/60 p-4">
+    <div
+      ref={cardRef}
+      id="settings-sync"
+      className="flex scroll-mt-4 flex-col gap-3 rounded-2xl border border-ink-border bg-ink-900/60 p-4"
+    >
       <p className="flex items-center gap-1.5 font-display text-base text-parchment">
         <IconDevices size={18} className="shrink-0 text-gold" />
         {sync.title}
@@ -204,16 +216,17 @@ export function SyncSettings() {
       )}
 
       {revealed ? (
-        <CodeReveal
-          code={revealed.code}
-          fresh={revealed.fresh}
-          onDone={() => setRevealed(null)}
-        />
+        <CodeReveal code={revealed.code} fresh={revealed.fresh} onDone={() => setRevealed(null)} />
       ) : enabled ? (
         <>
           <SyncState status={status} busy={busy} />
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => void syncNow()} disabled={busy} className={secondaryButton}>
+            <button
+              type="button"
+              onClick={() => void syncNow()}
+              disabled={busy}
+              className={secondaryButton}
+            >
               <IconSync size={16} className={busy ? "animate-spin" : ""} />
               {busy ? sync.syncing : sync.syncNow}
             </button>
@@ -223,7 +236,11 @@ export function SyncSettings() {
             </button>
           </div>
           <SyncedDevicesList status={status} />
-          <Disclosure open={moreOpen} onToggle={() => setMoreOpen((v) => !v)} label={sync.moreOptions}>
+          <Disclosure
+            open={moreOpen}
+            onToggle={() => setMoreOpen((v) => !v)}
+            label={sync.moreOptions}
+          >
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => setConfirm("change")} className={quietButton}>
                 <IconKey size={16} />
@@ -255,7 +272,11 @@ export function SyncSettings() {
           <>
             <p className="text-sm text-parchment-dim">{sync.intro}</p>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => void turnOn()} className={`${primaryButton} basis-full`}>
+              <button
+                type="button"
+                onClick={() => void turnOn()}
+                className={`${primaryButton} basis-full`}
+              >
                 <IconDevices size={16} />
                 {sync.turnOn}
               </button>
@@ -296,9 +317,21 @@ export function SyncSettings() {
 
       {confirm && (
         <ConfirmDialog
-          title={{ change: sync.changeCodeTitle, unlink: sync.unlinkTitle, delete: sync.deleteServerTitle }[confirm]}
-          description={{ change: sync.changeCodeText, unlink: sync.unlinkText, delete: sync.deleteServerText }[confirm]}
-          confirmLabel={{ change: sync.changeCode, unlink: sync.unlink, delete: sync.deleteServer }[confirm]}
+          title={
+            {
+              change: sync.changeCodeTitle,
+              unlink: sync.unlinkTitle,
+              delete: sync.deleteServerTitle,
+            }[confirm]
+          }
+          description={
+            { change: sync.changeCodeText, unlink: sync.unlinkText, delete: sync.deleteServerText }[
+              confirm
+            ]
+          }
+          confirmLabel={
+            { change: sync.changeCode, unlink: sync.unlink, delete: sync.deleteServer }[confirm]
+          }
           onConfirm={() => void confirmed(confirm)}
           onCancel={() => setConfirm(null)}
         />
@@ -307,7 +340,17 @@ export function SyncSettings() {
   );
 }
 
-function Disclosure({ open, onToggle, label, children }: { open: boolean; onToggle: () => void; label: string; children: ReactNode }) {
+function Disclosure({
+  open,
+  onToggle,
+  label,
+  children,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <>
       <button
@@ -324,11 +367,22 @@ function Disclosure({ open, onToggle, label, children }: { open: boolean; onTogg
   );
 }
 
-function Notice({ tone, title, children }: { tone: "ok" | "warn" | "problem"; title: string; children: ReactNode }) {
+function Notice({
+  tone,
+  title,
+  children,
+}: {
+  tone: "ok" | "warn" | "problem";
+  title: string;
+  children: ReactNode;
+}) {
   const Icon = tone === "ok" ? IconCloudCheck : tone === "warn" ? IconCloudOff : IconAlertTriangle;
   const color = tone === "ok" ? "text-yes" : tone === "warn" ? "text-gold" : "text-no";
   return (
-    <div role="status" className="flex items-start gap-2.5 rounded-xl border border-ink-border bg-ink-900/60 p-3">
+    <div
+      role="status"
+      className="flex items-start gap-2.5 rounded-xl border border-ink-border bg-ink-900/60 p-3"
+    >
       <Icon size={20} className={`mt-0.5 shrink-0 ${color}`} />
       <div className="min-w-0 text-sm text-parchment-dim">
         <p className="font-medium text-parchment">{title}</p>
@@ -352,7 +406,16 @@ function SyncState({ status, busy }: { status: SyncStatus | null; busy: boolean 
   if (status?.state === "paused") {
     return (
       <Notice tone="warn" title={sync.pausedTitle}>
-        <p>{{ unreachable: sync.pausedUnreachable, quota: sync.pausedQuota, rate: sync.pausedRate, daily: sync.pausedDaily }[status.reason]}</p>
+        <p>
+          {
+            {
+              unreachable: sync.pausedUnreachable,
+              quota: sync.pausedQuota,
+              rate: sync.pausedRate,
+              daily: sync.pausedDaily,
+            }[status.reason]
+          }
+        </p>
         {status.reason !== "rate" && <p>{interpolate(sync.backBy, { reset: resetTime(t) })}</p>}
         <p>{sync.meanwhile}</p>
       </Notice>
@@ -365,11 +428,21 @@ function SyncState({ status, busy }: { status: SyncStatus | null; busy: boolean 
       </Notice>
     );
   }
-  if (status?.state === "error" && status.reason === "unexpected") return <UnexpectedFailure status={status} />;
+  if (status?.state === "error" && status.reason === "unexpected")
+    return <UnexpectedFailure status={status} />;
   if (status?.state === "error") {
     return (
       <Notice tone="problem" title={sync.errorTitle}>
-        <p>{{ full: sync.errorFull, update: sync.errorUpdate, damaged: sync.errorDamaged, unexpected: sync.errorUnexpected }[status.reason]}</p>
+        <p>
+          {
+            {
+              full: sync.errorFull,
+              update: sync.errorUpdate,
+              damaged: sync.errorDamaged,
+              unexpected: sync.errorUnexpected,
+            }[status.reason]
+          }
+        </p>
       </Notice>
     );
   }
@@ -392,7 +465,9 @@ function SyncState({ status, busy }: { status: SyncStatus | null; busy: boolean 
       {Math.abs(skew) > SKEW_WARNING && (
         <p className="flex items-start gap-2 text-sm text-parchment-dim">
           <IconAlertTriangle size={16} className="mt-0.5 shrink-0 text-gold" />
-          {interpolate(skew > 0 ? sync.clockAhead : sync.clockBehind, { minutes: String(Math.round(Math.abs(skew) / 60_000)) })}
+          {interpolate(skew > 0 ? sync.clockAhead : sync.clockBehind, {
+            minutes: String(Math.round(Math.abs(skew) / 60_000)),
+          })}
         </p>
       )}
     </div>
@@ -417,7 +492,13 @@ function UnexpectedFailure({ status }: { status: Extract<SyncStatus, { state: "e
     <Notice tone="warn" title={sync.pausedTitle}>
       <p>{sync.errorUnexpected}</p>
       {status.retryAt && (
-        <p>{interpolate(sync.retryAt, { time: new Intl.DateTimeFormat(t.dateLocale, { timeStyle: "short" }).format(status.retryAt) })}</p>
+        <p>
+          {interpolate(sync.retryAt, {
+            time: new Intl.DateTimeFormat(t.dateLocale, { timeStyle: "short" }).format(
+              status.retryAt,
+            ),
+          })}
+        </p>
       )}
       {report && (
         <>
@@ -438,11 +519,19 @@ function StaleChoice() {
     <Notice tone="warn" title={sync.staleTitle}>
       <p>{sync.staleText}</p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-        <button type="button" onClick={() => void resolveStale("merge")} className={`${secondaryButton} flex-col items-start whitespace-normal text-left`}>
+        <button
+          type="button"
+          onClick={() => void resolveStale("merge")}
+          className={`${secondaryButton} flex-col items-start whitespace-normal text-left`}
+        >
           <span>{sync.staleMerge}</span>
           <span className="text-xs font-normal text-parchment-dim">{sync.staleMergeHint}</span>
         </button>
-        <button type="button" onClick={() => void resolveStale("server")} className={`${secondaryButton} flex-col items-start whitespace-normal text-left`}>
+        <button
+          type="button"
+          onClick={() => void resolveStale("server")}
+          className={`${secondaryButton} flex-col items-start whitespace-normal text-left`}
+        >
           <span>{sync.staleServer}</span>
           <span className="text-xs font-normal text-parchment-dim">{sync.staleServerHint}</span>
         </button>
@@ -452,7 +541,15 @@ function StaleChoice() {
 }
 
 /** Typed or pasted: checked before linking, so a typo never makes a new, empty box. */
-function CodeEntry({ onLink, onScan, onCancel }: { onLink: (code: string) => void; onScan?: () => void; onCancel: () => void }) {
+function CodeEntry({
+  onLink,
+  onScan,
+  onCancel,
+}: {
+  onLink: (code: string) => void;
+  onScan?: () => void;
+  onCancel: () => void;
+}) {
   const { t } = useLocaleContext();
   const sync = useLongTexts().sync;
   const [text, setText] = useState("");
@@ -583,8 +680,12 @@ function CodeReveal({ code, fresh, onDone }: { code: string; fresh: boolean; onD
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
         <SyncQr value={link} label={sync.qrLabel} />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{sync.codeLabel}</p>
-          <p className="select-all break-all font-mono text-lg tracking-wide text-parchment">{code}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+            {sync.codeLabel}
+          </p>
+          <p className="select-all break-all font-mono text-lg tracking-wide text-parchment">
+            {code}
+          </p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => void copy()} className={quietButton}>
               {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
@@ -592,7 +693,13 @@ function CodeReveal({ code, fresh, onDone }: { code: string; fresh: boolean; onD
             </button>
             <button
               type="button"
-              onClick={() => downloadTextFile(sync.fileName, interpolate(sync.fileText, { code, link }), "text/plain")}
+              onClick={() =>
+                downloadTextFile(
+                  sync.fileName,
+                  interpolate(sync.fileText, { code, link }),
+                  "text/plain",
+                )
+              }
               className={quietButton}
             >
               <IconDownload size={16} />
@@ -712,7 +819,13 @@ const SCAN_EVERY = 250;
  * on this device and nothing is kept; the camera is let go as soon as
  * the dialog closes.
  */
-function QrScanDialog({ onCode, onClose }: { onCode: (code: string) => void; onClose: () => void }) {
+function QrScanDialog({
+  onCode,
+  onClose,
+}: {
+  onCode: (code: string) => void;
+  onClose: () => void;
+}) {
   const sync = useLongTexts().sync;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [problem, setProblem] = useState<"denied" | "unavailable" | null>(null);
@@ -733,10 +846,15 @@ function QrScanDialog({ onCode, onClose }: { onCode: (code: string) => void; onC
     };
     void (async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
       } catch (error) {
         const name = error instanceof Error ? error.name : "";
-        setProblem(name === "NotAllowedError" || name === "SecurityError" ? "denied" : "unavailable");
+        setProblem(
+          name === "NotAllowedError" || name === "SecurityError" ? "denied" : "unavailable",
+        );
         return;
       }
       const video = videoRef.current;
@@ -792,15 +910,29 @@ function QrScanDialog({ onCode, onClose }: { onCode: (code: string) => void; onC
           <>
             <div className="relative w-full max-w-sm overflow-hidden rounded-xl bg-ink-950">
               {/* The camera's picture: only to aim, so it's not described. */}
-              <video ref={videoRef} muted playsInline autoPlay aria-hidden className="aspect-square w-full object-cover" />
-              <div aria-hidden className="pointer-events-none absolute inset-[15%] rounded-lg border-2 border-gold/80" />
+              <video
+                ref={videoRef}
+                muted
+                playsInline
+                autoPlay
+                aria-hidden
+                className="aspect-square w-full object-cover"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-[15%] rounded-lg border-2 border-gold/80"
+              />
             </div>
             <p role="status" className="text-center text-sm text-parchment-dim">
               {notCode ? sync.scanNotCode : sync.scanHint}
             </p>
           </>
         )}
-        <button type="button" onClick={onClose} className={`${secondaryButton} w-full max-w-sm flex-none`}>
+        <button
+          type="button"
+          onClick={onClose}
+          className={`${secondaryButton} w-full max-w-sm flex-none`}
+        >
           {sync.scanCancel}
         </button>
       </DialogBody>
@@ -887,11 +1019,15 @@ function SyncedDevicesList({ status }: { status: SyncStatus | null }) {
           <li key={d.id} className="flex flex-wrap items-center gap-x-2">
             <IconDevices size={16} className="shrink-0 text-parchment-dim" />
             <span className="text-parchment">{d.name}</span>
-            <span className="text-parchment-faint">{interpolate(sync.seen, { when: relativeTime(d.seenAt, locale, now) })}</span>
+            <span className="text-parchment-faint">
+              {interpolate(sync.seen, { when: relativeTime(d.seenAt, locale, now) })}
+            </span>
           </li>
         ))}
       </ul>
-      {devices.others.length === 0 && <p className="text-xs text-parchment-faint">{sync.noOthers}</p>}
+      {devices.others.length === 0 && (
+        <p className="text-xs text-parchment-faint">{sync.noOthers}</p>
+      )}
     </div>
   );
 }

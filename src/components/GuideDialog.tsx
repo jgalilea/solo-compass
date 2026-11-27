@@ -99,7 +99,9 @@ function GuideRows({ heading, intro, rows }: { heading: string; intro: string; r
         {rows.map(({ code, text }) => (
           <div key={code} className="flex flex-col gap-0.5">
             <dt>
-              <code className="break-words rounded-md border border-ink-border bg-ink-900/70 px-1.5 py-0.5 font-mono text-sm text-gold">{code}</code>
+              <code className="break-words rounded-md border border-ink-border bg-ink-900/70 px-1.5 py-0.5 font-mono text-sm text-gold">
+                {code}
+              </code>
             </dt>
             <dd className="text-sm text-parchment-dim">{text}</dd>
           </div>

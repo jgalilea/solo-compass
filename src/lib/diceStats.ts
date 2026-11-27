@@ -82,17 +82,32 @@ const zScore = (deviation: number, count: number) => deviation / Math.sqrt(count
  * One journal's dice, session by session; with `nameOf`, several
  * journals', adventure by adventure (each one's name).
  */
-export function computeDiceStats(entries: readonly JournalEntry[], nameOf?: (entry: JournalEntry) => string): DiceStats {
+export function computeDiceStats(
+  entries: readonly JournalEntry[],
+  nameOf?: (entry: JournalEntry) => string,
+): DiceStats {
   const bySides = new Map<number, number[]>();
   type Group = { title: string | null; deviation: number; count: number };
   const sessions: Group[] = [{ title: null, deviation: 0, count: 0 }];
   const adventures = new Map<string, Group>();
   const adventureGroup = ({ adventureId }: JournalEntry, title: string): Group => {
     // By adventure, not by name: two can be called the same.
-    if (!adventures.has(adventureId)) adventures.set(adventureId, { title, deviation: 0, count: 0 });
+    if (!adventures.has(adventureId))
+      adventures.set(adventureId, { title, deviation: 0, count: 0 });
     return adventures.get(adventureId)!;
   };
-  const stats: DiceStats = { total: 0, dice: [], trend: null, highRun: 0, lowRun: 0, top: 0, bottom: 0, extremes: 0, favourite: null, sessions: null };
+  const stats: DiceStats = {
+    total: 0,
+    dice: [],
+    trend: null,
+    highRun: 0,
+    lowRun: 0,
+    top: 0,
+    bottom: 0,
+    extremes: 0,
+    favourite: null,
+    sessions: null,
+  };
   let deviation = 0;
   let high = 0;
   let low = 0;
@@ -103,7 +118,11 @@ export function computeDiceStats(entries: readonly JournalEntry[], nameOf?: (ent
     const own = splitOwnRolls(entry.text)?.rolls;
     // One with its verdict ("2d6+2[4, 3]=9 -> Hit") says its dice too.
     const verdict = own ? null : diceInDetail(splitRollText(entry.text).detail);
-    const rolled = own ? own.flatMap(({ die, result }) => thrownDice(die, result)) : verdict ? thrownDice(...(verdict.split(" -> ") as [string, string])) : [];
+    const rolled = own
+      ? own.flatMap(({ die, result }) => thrownDice(die, result))
+      : verdict
+        ? thrownDice(...(verdict.split(" -> ") as [string, string]))
+        : [];
     for (const die of rolled) {
       const { sides, value } = die;
       // Written by hand or by another tool: not a face of that die.
@@ -138,7 +157,8 @@ export function computeDiceStats(entries: readonly JournalEntry[], nameOf?: (ent
     }))
     .sort((a, b) => b.count - a.count || a.sides - b.sides);
   const z = zScore(deviation, stats.total);
-  if (stats.total >= MIN_DICE_FOR_TREND) stats.trend = z >= TREND_Z ? "high" : z <= -TREND_Z ? "low" : "normal";
+  if (stats.total >= MIN_DICE_FOR_TREND)
+    stats.trend = z >= TREND_Z ? "high" : z <= -TREND_Z ? "low" : "normal";
 
   stats.favourite = favouriteFace(bySides);
   const ranked = (nameOf ? [...adventures.values()] : sessions)
@@ -174,7 +194,8 @@ function countBars(sides: number, values: readonly number[]): DieStats["bars"] {
   const last = sides || 1;
   const size = last - first + 1 > MAX_BARS ? Math.ceil(sides / 10) : 1;
   const bars: DieStats["bars"] = [];
-  for (let from = first; from <= last; from += size) bars.push({ from, to: Math.min(from + size - 1, last), count: 0 });
+  for (let from = first; from <= last; from += size)
+    bars.push({ from, to: Math.min(from + size - 1, last), count: 0 });
   for (const value of values) bars[Math.floor((value - first) / size)].count++;
   return bars;
 }

@@ -1,5 +1,20 @@
-import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
-import { findActorQuery, findTagQuery, tagOptionText, tagOptions, type CastMember, type TagOption, type TagQuery } from "../lib/lonelogTags";
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type RefObject,
+} from "react";
+import {
+  findActorQuery,
+  findTagQuery,
+  tagOptionText,
+  tagOptions,
+  type CastMember,
+  type TagOption,
+  type TagQuery,
+} from "../lib/lonelogTags";
 
 export interface TagSuggestionsState {
   open: boolean;
@@ -121,7 +136,8 @@ export function useTagAutocomplete({
   }
 
   const inputProps = {
-    onSelect: (e: { currentTarget: HTMLTextAreaElement }) => setCaret(e.currentTarget.selectionStart),
+    onSelect: (e: { currentTarget: HTMLTextAreaElement }) =>
+      setCaret(e.currentTarget.selectionStart),
     onFocus: () => setFocused(true),
     onBlur: () => setFocused(false),
     // A textarea can't be a combobox in ARIA; as a text box it still

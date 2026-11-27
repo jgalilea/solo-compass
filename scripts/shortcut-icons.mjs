@@ -12,7 +12,10 @@ const root = new URL("../", import.meta.url);
 const icons = { oraculo: "crystal-ball", tablas: "list-numbers", dados: "dice-5", diario: "book" };
 
 for (const [name, tabler] of Object.entries(icons)) {
-  const svg = readFileSync(new URL(`node_modules/@tabler/icons/icons/outline/${tabler}.svg`, root), "utf8");
+  const svg = readFileSync(
+    new URL(`node_modules/@tabler/icons/icons/outline/${tabler}.svg`, root),
+    "utf8",
+  );
   const paths = svg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
   for (const maskable of [false, true]) {
     const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="192" height="192">

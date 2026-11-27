@@ -5,7 +5,8 @@ import { interpolate } from "../lib/i18n";
 import { progressText, type TagOption } from "../lib/lonelogTags";
 import { CastIcon } from "./CastIcon";
 
-const isRecent = (option: TagOption | undefined) => !!option && "member" in option && !!option.recent;
+const isRecent = (option: TagOption | undefined) =>
+  !!option && "member" in option && !!option.recent;
 
 /**
  * The list opened by "[" in a text field (see useTagAutocomplete):
@@ -45,7 +46,8 @@ export function TagSuggestions({
           const kind = existing ? option.member.kind : option.kind;
           const kindLabel = t.notebook.kinds[kind];
           const name = existing ? option.member.name : option.name;
-          const progress = existing && option.member.progress ? progressText(option.member.progress) : "";
+          const progress =
+            existing && option.member.progress ? progressText(option.member.progress) : "";
           const detail = existing
             ? [progress, ...option.member.tags].filter(Boolean).join(" · ") || kindLabel
             : state.actor
@@ -86,7 +88,9 @@ export function TagSuggestions({
                 <CastIcon kind={kind} size={16} className="shrink-0 text-gold" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-parchment">{name}</span>
-                  <span className={`block truncate text-xs ${existing ? "text-parchment-dim" : "text-gold"}`}>
+                  <span
+                    className={`block truncate text-xs ${existing ? "text-parchment-dim" : "text-gold"}`}
+                  >
                     {detail}
                   </span>
                 </span>

@@ -39,17 +39,35 @@ function isRed(look: CardLook): boolean {
  * beside it. Nothing for an id that isn't a card. `small` (a one-line
  * row, RecentRolls): the value once, over the suit.
  */
-export function PlayingCard({ id, animate = false, small = false }: { id: string; animate?: boolean; small?: boolean }) {
+export function PlayingCard({
+  id,
+  animate = false,
+  small = false,
+}: {
+  id: string;
+  animate?: boolean;
+  small?: boolean;
+}) {
   const { locale } = useLocaleContext();
   const look = cardLook(id, locale);
   if (!look) return null;
-  const Suit = look.kind === "joker" ? IconJoker : look.kind === "major" ? IconMajorArcana : SUIT_ICONS[look.suit];
+  const Suit =
+    look.kind === "joker"
+      ? IconJoker
+      : look.kind === "major"
+        ? IconMajorArcana
+        : SUIT_ICONS[look.suit];
   const value = look.kind === "joker" ? "" : look.kind === "major" ? look.numeral : look.rank;
   const tarot = look.kind === "major" || look.kind === "minor";
   const reversed = tarot && look.reversed;
 
   const [width, height] = small ? [22, 32] : [36, 52];
-  const text = { textAnchor: "middle", dominantBaseline: "central", fontWeight: 700, fill: "currentColor" } as const;
+  const text = {
+    textAnchor: "middle",
+    dominantBaseline: "central",
+    fontWeight: 700,
+    fill: "currentColor",
+  } as const;
   const icon = small ? (value ? 13 : 16) : look.kind === "poker" ? 18 : 20;
 
   return (
@@ -84,7 +102,13 @@ export function PlayingCard({ id, animate = false, small = false }: { id: string
           </text>
         )}
         {value && !small && !tarot && (
-          <text {...text} x={value.length > 1 ? 9.5 : 7.5} y={9} fontSize={10} transform="rotate(180 18 26)">
+          <text
+            {...text}
+            x={value.length > 1 ? 9.5 : 7.5}
+            y={9}
+            fontSize={10}
+            transform="rotate(180 18 26)"
+          >
             {value}
           </text>
         )}

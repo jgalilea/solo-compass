@@ -1,7 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { cardFace, cardIdentity, cardLook, cardName, cardPurpose, deckCards, drawCard, formatCardDraw, isCardDraw, readCards, showDraws } from "./cards";
-import { DEFAULT_CARD_SETTINGS, mergeCardSettings, normalizeCardSettings, shuffleKey, withShuffle } from "./cardSettings";
-import { cardsDrawn, createDiceRollEntries, createDiceRollEntry, normalizeHistoryEntry } from "./history";
+import {
+  cardFace,
+  cardIdentity,
+  cardLook,
+  cardName,
+  cardPurpose,
+  deckCards,
+  drawCard,
+  formatCardDraw,
+  isCardDraw,
+  readCards,
+  showDraws,
+} from "./cards";
+import {
+  DEFAULT_CARD_SETTINGS,
+  mergeCardSettings,
+  normalizeCardSettings,
+  shuffleKey,
+  withShuffle,
+} from "./cardSettings";
+import {
+  cardsDrawn,
+  createDiceRollEntries,
+  createDiceRollEntry,
+  normalizeHistoryEntry,
+} from "./history";
 import { splitRollText } from "./journalUi";
 import { splitRollSeries } from "./rollLine";
 import { exportAdventureToMarkdown, parseMarkdownToEntries } from "./lonelog";
@@ -12,7 +35,9 @@ const plain = { jokers: false, reversed: false, majorOnly: false };
 describe("decks", () => {
   it("has the add-on's cards: 52 (+2 jokers) and a 78-card tarot", () => {
     expect(deckCards("poker", plain)).toHaveLength(52);
-    expect(deckCards("poker", { ...plain, jokers: true })).toEqual(expect.arrayContaining(["RJkr", "BJkr", "10h", "Qs", "Ac"]));
+    expect(deckCards("poker", { ...plain, jokers: true })).toEqual(
+      expect.arrayContaining(["RJkr", "BJkr", "10h", "Qs", "Ac"]),
+    );
     const tarot = deckCards("tarot", plain);
     expect(tarot).toHaveLength(78);
     expect(tarot).toEqual(expect.arrayContaining(["M0", "M21", "KnCu", "PgSw", "10Pe", "AWa"]));
@@ -24,7 +49,9 @@ describe("decks", () => {
     expect(majors.every((card) => /^M\d+$/.test(card))).toBe(true);
     expect(deckCards("poker", { ...plain, majorOnly: true })).toHaveLength(52);
     // Minor cards already drawn don't count against them.
-    expect(drawCard("tarot", { ...plain, majorOnly: true }, ["7Wa", ...majors.slice(1)])).toBe("M0");
+    expect(drawCard("tarot", { ...plain, majorOnly: true }, ["7Wa", ...majors.slice(1)])).toBe(
+      "M0",
+    );
   });
 
   it("names every card in both languages", () => {
@@ -73,7 +100,9 @@ describe("a draw in the journal", () => {
     expect(cardFace("10h")).toBe("10♥");
     expect(cardFace("M16r")).toBe("M16r");
     expect(showDraws("Omen draw=Qs -> Queen of Spades")).toBe("Omen Q♠ -> Queen of Spades");
-    expect(isCardDraw("Presagio draw=4d -> Cuatro de diamantes, draw=Ks -> Rey de picas")).toBe(true);
+    expect(isCardDraw("Presagio draw=4d -> Cuatro de diamantes, draw=Ks -> Rey de picas")).toBe(
+      true,
+    );
     expect(isCardDraw("draw=Qs -> Reina de picas, d6 -> 4")).toBe(false);
     expect(isCardDraw("d6 -> 4")).toBe(false);
     expect(cardPurpose("Dark omen draw=M16r -> The Tower, reversed")).toBe("Dark omen");
@@ -86,14 +115,26 @@ describe("a draw in the journal", () => {
     expect(cardLook("M0", "es")).toEqual({ kind: "major", numeral: "0", reversed: false });
     expect(cardLook("M14r", "es")).toEqual({ kind: "major", numeral: "XIV", reversed: true });
     expect(cardLook("M19", "es")).toMatchObject({ numeral: "XIX" });
-    expect(cardLook("PgCu", "es")).toEqual({ kind: "minor", rank: "S", suit: "Cu", reversed: false });
-    expect(cardLook("KnSwr", "en")).toEqual({ kind: "minor", rank: "Kn", suit: "Sw", reversed: true });
+    expect(cardLook("PgCu", "es")).toEqual({
+      kind: "minor",
+      rank: "S",
+      suit: "Cu",
+      reversed: false,
+    });
+    expect(cardLook("KnSwr", "en")).toEqual({
+      kind: "minor",
+      rank: "Kn",
+      suit: "Sw",
+      reversed: true,
+    });
     expect(cardLook("7Pe", "en")).toMatchObject({ rank: "7", suit: "Pe" });
     expect(cardLook("Zz", "es")).toBeNull();
     for (const deck of ["poker", "tarot"] as const) {
       for (const card of deckCards(deck, { ...plain, jokers: true })) {
         expect(cardLook(card, "es")).not.toBeNull();
-        expect(cardLook(`${card}r`, "en")?.kind ?? "poker").toMatch(deck === "tarot" ? /major|minor/ : /poker/);
+        expect(cardLook(`${card}r`, "en")?.kind ?? "poker").toMatch(
+          deck === "tarot" ? /major|minor/ : /poker/,
+        );
       }
     }
   });
@@ -104,14 +145,28 @@ describe("a draw in the journal", () => {
     expect(readCards("draw=Qh vs red")).toEqual(["Qh"]);
     expect(readCards("draw=Jkr")).toEqual(["Jkr"]);
     expect(readCards("Past=4d, Present=Kh, Future=5Swr")).toEqual(["4d", "Kh", "5Swr"]);
-    for (const text of ["Loot d100=42", "Theme d66=25", "4d6dl1", "draw=The Abyss", "3d6>=4", "Recluse: blanco 3 / negro 5"]) {
+    for (const text of [
+      "Loot d100=42",
+      "Theme d66=25",
+      "4d6dl1",
+      "draw=The Abyss",
+      "3d6>=4",
+      "Recluse: blanco 3 / negro 5",
+    ]) {
       expect(readCards(text), text).toBeNull();
     }
   });
 
   it("reads as a roll, alone or with others", () => {
-    expect(splitRollText("draw=Qs -> Reina de picas")).toMatchObject({ detail: "draw=Qs", result: "Reina de picas" });
-    expect(splitRollSeries("Presagio draw=Qs -> Reina de picas, draw=M16r -> La Torre, invertida, d6 -> 4")).toEqual({
+    expect(splitRollText("draw=Qs -> Reina de picas")).toMatchObject({
+      detail: "draw=Qs",
+      result: "Reina de picas",
+    });
+    expect(
+      splitRollSeries(
+        "Presagio draw=Qs -> Reina de picas, draw=M16r -> La Torre, invertida, d6 -> 4",
+      ),
+    ).toEqual({
       label: "Presagio",
       rolls: [
         { label: "", die: "draw=Qs", result: "Reina de picas" },
@@ -122,19 +177,39 @@ describe("a draw in the journal", () => {
   });
 
   it("goes out and back in a .md as a roll", () => {
-    const entry = { id: "e1", adventureId: "a", timestamp: 1, kind: "roll" as const, text: "draw=Qs -> Reina de picas" };
+    const entry = {
+      id: "e1",
+      adventureId: "a",
+      timestamp: 1,
+      kind: "roll" as const,
+      text: "draw=Qs -> Reina de picas",
+    };
     const md = exportAdventureToMarkdown(es, "A", [entry]);
     expect(md).toContain("d: draw=Qs -> Reina de picas");
-    expect(parseMarkdownToEntries(md, "a", 1).map((e) => [e.kind, e.text])).toContainEqual(["roll", "draw=Qs -> Reina de picas"]);
+    expect(parseMarkdownToEntries(md, "a", 1).map((e) => [e.kind, e.text])).toContainEqual([
+      "roll",
+      "draw=Qs -> Reina de picas",
+    ]);
   });
 });
 
 describe("the deck of an adventure", () => {
   const draw = (id: string, adventureId: string | undefined, at: number) =>
-    createDiceRollEntry(`draw=${id} -> x`, adventureId, { deck: id.startsWith("M") ? "tarot" : "poker", id }, at);
+    createDiceRollEntry(
+      `draw=${id} -> x`,
+      adventureId,
+      { deck: id.startsWith("M") ? "tarot" : "poker", id },
+      at,
+    );
 
   it("is the cards of that adventure drawn since its last shuffle", () => {
-    const history = [draw("Qs", "a", 10), draw("3h", "a", 30), draw("Kd", "b", 30), draw("2c", undefined, 30), draw("M16r", "a", 30)];
+    const history = [
+      draw("Qs", "a", 10),
+      draw("3h", "a", 30),
+      draw("Kd", "b", 30),
+      draw("2c", undefined, 30),
+      draw("M16r", "a", 30),
+    ];
     expect(cardsDrawn(history, "a", "poker", 0)).toEqual(["Qs", "3h"]);
     expect(cardsDrawn(history, "a", "poker", 20)).toEqual(["3h"]);
     expect(cardsDrawn(history, undefined, "poker", 0)).toEqual(["2c"]);
@@ -142,7 +217,11 @@ describe("the deck of an adventure", () => {
   });
 
   it("keeps a tray's rolls in their order, a millisecond apart", () => {
-    const [a, b] = createDiceRollEntries([{ text: "d6 -> 4" }, { text: "draw=Qs -> x", card: { deck: "poker", id: "Qs" } }], "a", 100);
+    const [a, b] = createDiceRollEntries(
+      [{ text: "d6 -> 4" }, { text: "draw=Qs -> x", card: { deck: "poker", id: "Qs" } }],
+      "a",
+      100,
+    );
     expect([a.timestamp, b.timestamp]).toEqual([100, 101]);
     expect(b).toMatchObject({ adventureId: "a", card: { deck: "poker", id: "Qs" } });
     expect(a).not.toHaveProperty("card");
@@ -151,11 +230,20 @@ describe("the deck of an adventure", () => {
   it("keeps a draw's card in the history", () => {
     const entry = draw("M16r", "a", 5);
     expect(normalizeHistoryEntry(entry)).toEqual(entry);
-    expect(normalizeHistoryEntry({ ...entry, card: { deck: "uno", id: "x" } })).not.toHaveProperty("card");
+    expect(normalizeHistoryEntry({ ...entry, card: { deck: "uno", id: "x" } })).not.toHaveProperty(
+      "card",
+    );
   });
 
   it("settings read leniently, and a backup's shuffles merge by the latest", () => {
-    expect(normalizeCardSettings({ tool: "cards", deck: "tarot", unique: false, shuffles: { k: 5, bad: "x" } })).toEqual({
+    expect(
+      normalizeCardSettings({
+        tool: "cards",
+        deck: "tarot",
+        unique: false,
+        shuffles: { k: 5, bad: "x" },
+      }),
+    ).toEqual({
       ...DEFAULT_CARD_SETTINGS,
       tool: "cards",
       deck: "tarot",
@@ -165,7 +253,11 @@ describe("the deck of an adventure", () => {
     expect(normalizeCardSettings(null)).toEqual(DEFAULT_CARD_SETTINGS);
     const key = shuffleKey("a", "poker");
     const local = withShuffle(DEFAULT_CARD_SETTINGS, key, 50);
-    const restored = withShuffle(withShuffle(DEFAULT_CARD_SETTINGS, key, 20), shuffleKey(undefined, "tarot"), 7);
+    const restored = withShuffle(
+      withShuffle(DEFAULT_CARD_SETTINGS, key, 20),
+      shuffleKey(undefined, "tarot"),
+      7,
+    );
     expect(mergeCardSettings(local, restored).shuffles).toEqual({ [key]: 50, "|tarot": 7 });
   });
 });

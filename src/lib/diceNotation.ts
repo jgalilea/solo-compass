@@ -94,7 +94,16 @@ type Node =
   | { kind: "neg"; inner: Node }
   | { kind: "paren"; inner: Node }
   | { kind: "bin"; op: "+" | "-" | "*" | "/" | "%" | "^"; left: Node; right: Node }
-  | ({ kind: "dice"; fudge: boolean; d66: boolean; sides: number; drops: boolean; compound: boolean; dice: Die[]; shown: Die[] } & Pool)
+  | ({
+      kind: "dice";
+      fudge: boolean;
+      d66: boolean;
+      sides: number;
+      drops: boolean;
+      compound: boolean;
+      dice: Die[];
+      shown: Die[];
+    } & Pool)
   | ({
       kind: "group";
       subs: Node[];
@@ -131,7 +140,8 @@ function value(node: Node): number {
     }
     case "dice": {
       const kept = node.dice.filter((d) => !d.dropped);
-      if (node.target) return kept.filter((d) => d.success).length - kept.filter((d) => d.failure).length;
+      if (node.target)
+        return kept.filter((d) => d.success).length - kept.filter((d) => d.failure).length;
       return kept.reduce((sum, d) => sum + total(d), 0);
     }
     case "group": {
@@ -182,9 +192,16 @@ type KeepDrop = { keep: boolean; highest: boolean; n: number };
  * Keeping and dropping look at the whole pool, already dropped dice
  * included (spec: "3d10k1dh1" drops everything).
  */
-function applyKeepDrop<T>(items: T[], score: (item: T) => number, rules: KeepDrop[], dropped: (item: T) => void) {
+function applyKeepDrop<T>(
+  items: T[],
+  score: (item: T) => number,
+  rules: KeepDrop[],
+  dropped: (item: T) => void,
+) {
   for (const { keep, highest, n } of rules) {
-    const byScore = items.map((item, i) => ({ item, i })).sort((a, b) => score(a.item) - score(b.item) || a.i - b.i);
+    const byScore = items
+      .map((item, i) => ({ item, i }))
+      .sort((a, b) => score(a.item) - score(b.item) || a.i - b.i);
     if (highest) byScore.reverse();
     // Keeping N highest is dropping the rest from the low end.
     const out = keep ? byScore.slice(n) : byScore.slice(0, n);
@@ -249,7 +266,15 @@ class Parser {
   private term(): Node {
     let node = this.power();
     for (;;) {
-      const op = this.peek("**") ? null : this.peek("*") ? "*" : this.peek("/") ? "/" : this.peek("%") ? "%" : null;
+      const op = this.peek("**")
+        ? null
+        : this.peek("*")
+          ? "*"
+          : this.peek("/")
+            ? "/"
+            : this.peek("%")
+              ? "%"
+              : null;
       if (!op) return node;
       this.i++;
       node = { kind: "bin", op, left: node, right: this.power() };
@@ -258,7 +283,8 @@ class Parser {
 
   private power(): Node {
     const base = this.unary();
-    if (this.eat("^") || this.eat("**")) return { kind: "bin", op: "^", left: base, right: this.power() };
+    if (this.eat("^") || this.eat("**"))
+      return { kind: "bin", op: "^", left: base, right: this.power() };
     return base;
   }
 
@@ -319,10 +345,20 @@ class Parser {
     };
     if (subs.length === 1) {
       // A group of one keeps or drops single dice, across all of it.
-      applyKeepDrop(diceIn(subs[0]).filter((d) => !d.dropped), total, keepDrop, (d) => (d.dropped = true));
+      applyKeepDrop(
+        diceIn(subs[0]).filter((d) => !d.dropped),
+        total,
+        keepDrop,
+        (d) => (d.dropped = true),
+      );
       if (keepDrop.length) poolsIn(subs[0]).forEach((pool) => (pool.drops = true));
     } else {
-      applyKeepDrop(node.order, (i) => value(subs[i]), keepDrop, (i) => (node.out[i] = true));
+      applyKeepDrop(
+        node.order,
+        (i) => value(subs[i]),
+        keepDrop,
+        (i) => (node.out[i] = true),
+      );
     }
     if (target) {
       subs.forEach((sub, i) => {
@@ -331,7 +367,8 @@ class Parser {
         node.miss[i] = !node.hit[i] && !!failure && meets(failure, value(sub));
       });
     }
-    if (sort) node.order.sort((a, b) => (sort === "asc" ? 1 : -1) * (value(subs[a]) - value(subs[b])));
+    if (sort)
+      node.order.sort((a, b) => (sort === "asc" ? 1 : -1) * (value(subs[a]) - value(subs[b])));
     return node;
   }
 
@@ -373,7 +410,8 @@ class Parser {
       sides = this.int();
       d66 = sides === 66;
     }
-    if (!fudge && (!Number.isInteger(sides) || sides < 1 || sides > Number.MAX_SAFE_INTEGER)) fail();
+    if (!fudge && (!Number.isInteger(sides) || sides < 1 || sides > Number.MAX_SAFE_INTEGER))
+      fail();
     const low = fudge ? -1 : d66 ? 11 : 1;
     const high = fudge ? 1 : sides;
 
@@ -432,12 +470,26 @@ class Parser {
     const roll = (): Face => {
       if (++this.rolls > MAX_ROLLS) fail();
       const r = this.random();
-      const v = fudge === 1 ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)] : fudge ? Math.floor(r * 3) - 1 : d66 ? 11 + 10 * Math.floor(r * 6) + Math.floor((r * 36) % 6) : 1 + Math.floor(r * sides);
+      const v =
+        fudge === 1
+          ? [-1, 0, 0, 0, 0, 1][Math.floor(r * 6)]
+          : fudge
+            ? Math.floor(r * 3) - 1
+            : d66
+              ? 11 + 10 * Math.floor(r * 6) + Math.floor((r * 36) % 6)
+              : 1 + Math.floor(r * sides);
       if (min !== null && v < min) return { v: min, mark: "↑" };
       if (max !== null && v > max) return { v: max, mark: "↓" };
       return { v, mark: "" };
     };
-    const newDie = (face: Face): Die => ({ faces: [face], rerolled: [], dropped: false, success: false, failure: false, crit: "" });
+    const newDie = (face: Face): Die => ({
+      faces: [face],
+      rerolled: [],
+      dropped: false,
+      success: false,
+      failure: false,
+      crit: "",
+    });
     let dice: Die[] = [];
 
     // 3: exploding, each die's rerolls before the next die. Each reroll
@@ -469,7 +521,11 @@ class Parser {
     // 4: rerolling, until the result misses the condition (or once).
     if (reroll) {
       for (const die of dice) {
-        for (let n = 0; n < (reroll.once ? 1 : MAX_ITERATIONS) && meets(reroll.when, total(die)); n++) {
+        for (
+          let n = 0;
+          n < (reroll.once ? 1 : MAX_ITERATIONS) && meets(reroll.when, total(die));
+          n++
+        ) {
           die.rerolled.push(total(die));
           die.faces = [roll()];
         }
@@ -480,7 +536,9 @@ class Parser {
     if (unique) {
       const { once, when } = unique;
       dice.forEach((die, i) => {
-        const repeated = () => dice.slice(0, i).some((d) => total(d) === total(die)) && (!when || meets(when, total(die)));
+        const repeated = () =>
+          dice.slice(0, i).some((d) => total(d) === total(die)) &&
+          (!when || meets(when, total(die)));
         for (let n = 0; n < (once ? 1 : MAX_ITERATIONS) && repeated(); n++) {
           die.rerolled.push(total(die));
           die.faces = [roll()];
@@ -514,7 +572,18 @@ class Parser {
     if (order) shown = [...dice].sort((a, b) => (order === "asc" ? 1 : -1) * (total(a) - total(b)));
     shown = [...shown.filter((d) => !d.dropped), ...shown.filter((d) => d.dropped)];
 
-    return { kind: "dice", fudge: !!fudge, d66, sides, drops: keepDrop.length > 0, compound: !!explode?.compound, dice, shown, target, failure };
+    return {
+      kind: "dice",
+      fudge: !!fudge,
+      d66,
+      sides,
+      drops: keepDrop.length > 0,
+      compound: !!explode?.compound,
+      dice,
+      shown,
+      target,
+      failure,
+    };
   }
 }
 
@@ -528,10 +597,14 @@ function fudgeSymbol(v: number): string {
 
 function dieText(node: Extract<Node, { kind: "dice" }>, die: Die): string {
   const face = (f: Face) => (node.fudge ? fudgeSymbol(f.v) : formatNumber(f.v)) + f.mark;
-  const before = die.rerolled.map((v) => `${node.fudge ? fudgeSymbol(v) : formatNumber(v)}→`).join("");
+  const before = die.rerolled
+    .map((v) => `${node.fudge ? fudgeSymbol(v) : formatNumber(v)}→`)
+    .join("");
   // In a pool a compounded die counts once, with its total ("7!!").
   const faces =
-    node.target && die.faces.length > 1 ? `${formatNumber(total(die))}!!` : die.faces.map(face).join("+");
+    node.target && die.faces.length > 1
+      ? `${formatNumber(total(die))}!!`
+      : die.faces.map(face).join("+");
   const marks = (die.success ? "✓" : die.failure ? "✗" : "") + die.crit + (die.dropped ? "✗" : "");
   return before + faces + marks;
 }
@@ -573,7 +646,9 @@ function detail(node: Node): string {
         // brackets too: "(+ 0 + −) + 1", not "+ 0 + − + 1".
         const loose =
           (child.kind === "bin" && PRECEDENCE[child.op] < PRECEDENCE[node.op]) ||
-          (child.kind === "dice" && (PRECEDENCE[node.op] > 1 || child.fudge || !!child.target) && /[ +,]/.test(text));
+          (child.kind === "dice" &&
+            (PRECEDENCE[node.op] > 1 || child.fudge || !!child.target) &&
+            /[ +,]/.test(text));
         return loose ? `(${text})` : text;
       };
       return `${side(node.left)} ${SHOWN_OP[node.op]} ${side(node.right)}`;
@@ -660,9 +735,15 @@ class DetailReader {
 
   private side(child: Node, op: keyof typeof PRECEDENCE) {
     // In brackets as `detail` writes them.
-    const loose = child.kind === "bin" ? PRECEDENCE[child.op] < PRECEDENCE[op] : child.kind === "dice" && this.s[this.i] === "(";
+    const loose =
+      child.kind === "bin"
+        ? PRECEDENCE[child.op] < PRECEDENCE[op]
+        : child.kind === "dice" && this.s[this.i] === "(";
     if (loose) this.need("(");
-    this.read(child, !loose && child.kind === "dice" && (PRECEDENCE[op] > 1 || child.fudge || !!child.target));
+    this.read(
+      child,
+      !loose && child.kind === "dice" && (PRECEDENCE[op] > 1 || child.fudge || !!child.target),
+    );
     if (loose) this.need(")");
   }
 
@@ -720,16 +801,28 @@ class DetailReader {
       .match(new RegExp(`^((?:${face}→)*)(${face})[↑↓]?!*([✓✗]?)([▲▼]?)(✗?)`));
     if (!m) fail();
     this.i += m[0].length;
-    const number = (text: string) => (node.fudge ? { "+": 1, "−": -1, "0": 0 }[text]! : Number(text));
+    const number = (text: string) =>
+      node.fudge ? { "+": 1, "−": -1, "0": 0 }[text]! : Number(text);
     const add = (text: string, mark?: RolledDie["mark"]) => {
-      for (const die of fallen(node, number(text))) this.dice.push({ ...die, ...(mark ? { mark } : {}) });
+      for (const die of fallen(node, number(text)))
+        this.dice.push({ ...die, ...(mark ? { mark } : {}) });
     };
     for (const value of m[1].split("→").slice(0, -1)) add(value, "out");
     const crossed = m[3] === "✗" || m[5] === "✗";
     const failed = crossed && !dropped && (!!node.failure || miss);
     add(
       m[2],
-      crossed && !failed ? "out" : m[4] === "▲" ? "high" : m[4] === "▼" ? "low" : m[3] === "✓" ? "hit" : failed ? "miss" : undefined,
+      crossed && !failed
+        ? "out"
+        : m[4] === "▲"
+          ? "high"
+          : m[4] === "▼"
+            ? "low"
+            : m[3] === "✓"
+              ? "hit"
+              : failed
+                ? "miss"
+                : undefined,
     );
   }
 }
@@ -765,7 +858,13 @@ export function readRolledDice(text: string, max?: number): RolledDie[] | null {
     // Written by hand, or wrong: not a face of that die. (min, max and
     // penetrating dice are written changed, a pool's compounded ones added up.)
     const changed = /m(?:in|ax)\d|!/.test(formula);
-    if (!changed && !dice.every(({ sides, value }) => (sides ? value >= 1 && value <= sides : Math.abs(value) <= 1))) return null;
+    if (
+      !changed &&
+      !dice.every(({ sides, value }) =>
+        sides ? value >= 1 && value <= sides : Math.abs(value) <= 1,
+      )
+    )
+      return null;
     return canDrawDice(dice, max) ? dice : null;
   } catch (e) {
     if (e instanceof Unreadable) return null;
@@ -817,7 +916,13 @@ function splitDescription(input: string): { formula: string; description: string
     parts.push(tail[1]);
     formula = formula.slice(0, tail.index);
   }
-  return { formula, description: [...parts, context].map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).join(" ") };
+  return {
+    formula,
+    description: [...parts, context]
+      .map((p) => p.replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .join(" "),
+  };
 }
 
 export type Edge = "advantage" | "disadvantage";
@@ -865,8 +970,15 @@ export function rollFormula(input: string, random: () => number = Math.random): 
   const plusSign = hasFudge(node) && result > 0 ? "+" : "";
   const only = node.kind === "dice" && node.dice.length === 1 ? node.dice[0] : null;
   const plain =
-    only && node.kind === "dice" && !node.fudge && !node.target && only.faces.length === 1 &&
-    !only.faces[0].mark && !only.rerolled.length && !only.crit && !only.dropped;
+    only &&
+    node.kind === "dice" &&
+    !node.fudge &&
+    !node.target &&
+    only.faces.length === 1 &&
+    !only.faces[0].mark &&
+    !only.rerolled.length &&
+    !only.crit &&
+    !only.dropped;
   const line = plain
     ? `${written} -> ${formatNumber(result)}`
     : `${written} -> ${plusSign}${formatNumber(result)} (${detail(node)})`;

@@ -24,7 +24,12 @@ export interface AdventureStats {
    * likelihoods added up to. `mood`: more yes or fewer than chance usually
    * gives; null with too few to tell.
    */
-  oracleChance: { total: number; yes: number; expected: number; mood: "generous" | "stubborn" | "fair" | null };
+  oracleChance: {
+    total: number;
+    yes: number;
+    expected: number;
+    mood: "generous" | "stubborn" | "fair" | null;
+  };
   /**
    * Every session, in order (and what comes before the first, if
    * anything). `minutes`: roughly how long it was played (playedMinutes).
@@ -68,7 +73,10 @@ export function playTimeParts(minutes: number): { hours: number; minutes: number
 }
 
 /** A play time in words ("1 h 25 min"), or null when it's under five minutes. */
-export function formatPlayTime(words: { hoursMinutes: string; hours: string; minutes: string }, minutes: number): string | null {
+export function formatPlayTime(
+  words: { hoursMinutes: string; hours: string; minutes: string },
+  minutes: number,
+): string | null {
   const parts = playTimeParts(minutes);
   if (!parts) return null;
   if (!parts.hours) return interpolate(words.minutes, parts);
@@ -86,7 +94,10 @@ const MIN_ORACLE_FOR_MOOD = 10;
 export function classifyRoll(
   entry: JournalEntry,
   linked: HistoryEntry | undefined,
-): { kind: "oracle"; answer?: Answer; qualifier?: "and" | "but" } | { kind: "table"; name: string } | { kind: "dice" } {
+):
+  | { kind: "oracle"; answer?: Answer; qualifier?: "and" | "but" }
+  | { kind: "table"; name: string }
+  | { kind: "dice" } {
   if (linked?.kind === "oraculo") {
     return {
       kind: "oracle",
@@ -103,7 +114,8 @@ export function classifyRoll(
     return { kind: "table", name: tableName(detail) };
   }
   // A bare answer is an oracle's, whatever its scale ("-> Partially").
-  if (symbol === "result") return { kind: "oracle", ...readAnswer(result ?? ""), ...(answer ? { answer } : {}) };
+  if (symbol === "result")
+    return { kind: "oracle", ...readAnswer(result ?? ""), ...(answer ? { answer } : {}) };
   if (answer && !linked) {
     const qualifier = /,\s*(pero|but)\b/i.test(result ?? "")
       ? "but"
@@ -130,7 +142,10 @@ export function classifyRoll(
 
 /** "Theme d66=25", "Theme 2/5" (as written before), "NPC d8=3,d10=7" or "Inspiration (Action d66=34, Theme d66=25)": just the name. */
 function tableName(detail: string): string {
-  const name = detail.replace(/\s*\(.*\)$/, "").replace(/\s+(?:\d*d\w+=)?[\d/]+(?:,\s*\d*d\w+=\d+)*$/, "").trim();
+  const name = detail
+    .replace(/\s*\(.*\)$/, "")
+    .replace(/\s+(?:\d*d\w+=)?[\d/]+(?:,\s*\d*d\w+=\d+)*$/, "")
+    .trim();
   return name || detail;
 }
 
@@ -158,7 +173,12 @@ export function computeAdventureStats(
   };
   const tableCounts = new Map<string, number>();
   let session: JournalEntry | null = null;
-  let current: AdventureStats["perSession"][number] = { title: null, entries: 0, words: 0, minutes: 0 };
+  let current: AdventureStats["perSession"][number] = {
+    title: null,
+    entries: 0,
+    words: 0,
+    minutes: 0,
+  };
   // How long a session was played, roughly: the time between one entry
   // and the next, written in the app (an imported one's time is the
   // import's), leaving out pauses. Only ever an estimate: an entry
@@ -258,12 +278,21 @@ export interface NamedCount {
  * the most named first. A single word counts only written as it is ("Sal"
  * isn't "sal").
  */
-export function mostNamed(entries: readonly JournalEntry[], cast: readonly CastMember[], limit: number): { characters: NamedCount[]; places: NamedCount[] } {
-  const texts = entries.filter((e) => e.kind !== "session" && e.kind !== "roll").map((e) => ({ id: e.id, text: e.text }));
+export function mostNamed(
+  entries: readonly JournalEntry[],
+  cast: readonly CastMember[],
+  limit: number,
+): { characters: NamedCount[]; places: NamedCount[] } {
+  const texts = entries
+    .filter((e) => e.kind !== "session" && e.kind !== "roll")
+    .map((e) => ({ id: e.id, text: e.text }));
   const count = (member: CastMember): NamedCount => {
     const ids = new Set(member.mentions);
     const escaped = member.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const named = new RegExp(`(?<![\\p{L}\\d])${escaped}(?![\\p{L}\\d])`, /\s/.test(member.name) ? "iu" : "u");
+    const named = new RegExp(
+      `(?<![\\p{L}\\d])${escaped}(?![\\p{L}\\d])`,
+      /\s/.test(member.name) ? "iu" : "u",
+    );
     for (const { id, text } of texts) if (!ids.has(id) && named.test(text)) ids.add(id);
     return { key: member.key, name: member.name, kind: member.kind, count: ids.size };
   };
@@ -278,7 +307,9 @@ export function mostNamed(entries: readonly JournalEntry[], cast: readonly CastM
 
 /** The longest run of consecutive days among these ("2026-11-09"). */
 export function longestStreak(isoDays: string[]): number {
-  const dayNumbers = [...new Set(isoDays)].map((iso) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86_400_000).sort((a, b) => a - b);
+  const dayNumbers = [...new Set(isoDays)]
+    .map((iso) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86_400_000)
+    .sort((a, b) => a - b);
   let best = 0;
   let run = 0;
   dayNumbers.forEach((n, i) => {
@@ -294,7 +325,10 @@ export type ActivityDay = { iso: string; day: number; count: number; future: boo
  * The last twelve months, one row each (oldest first), with every day
  * of the month: the heat map in the statistics.
  */
-export function lastYearByMonth(activity: Record<string, number>, today: Date): { year: number; month: number; days: ActivityDay[] }[] {
+export function lastYearByMonth(
+  activity: Record<string, number>,
+  today: Date,
+): { year: number; month: number; days: ActivityDay[] }[] {
   const todayIso = isoDate(today.getTime());
   return Array.from({ length: 12 }, (_, i) => {
     const first = new Date(today.getFullYear(), today.getMonth() - 11 + i, 1);

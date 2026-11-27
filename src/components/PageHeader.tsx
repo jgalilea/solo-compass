@@ -26,7 +26,9 @@ export function PageHeader({
     <header className="flex flex-col gap-1">
       <div className="flex min-h-10 flex-wrap items-center gap-x-2.5 gap-y-2">
         {before}
-        <h1 className="font-display text-3xl leading-none text-parchment sm:text-4xl sm:leading-none">{title}</h1>
+        <h1 className="font-display text-3xl leading-none text-parchment sm:text-4xl sm:leading-none">
+          {title}
+        </h1>
         {after}
         {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
       </div>

@@ -10,7 +10,13 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
  * them (`OracleResultCard`), so picking another likelihood or oracle
  * already shows what changes.
  */
-export function OracleWaiting({ oracleId, likelihood }: { oracleId: OracleId; likelihood: Likelihood }) {
+export function OracleWaiting({
+  oracleId,
+  likelihood,
+}: {
+  oracleId: OracleId;
+  likelihood: Likelihood;
+}) {
   const { t } = useLocaleContext();
   const groups = oracleDicePlan(oracleId, likelihood);
   const singleDie = groups.every((g) => g.count === 1);
@@ -21,23 +27,32 @@ export function OracleWaiting({ oracleId, likelihood }: { oracleId: OracleId; li
       <div className="flex items-start justify-center gap-6">
         {groups.map((group, i) => (
           <div key={group.role} className="contents">
-            {i > 0 && contest && <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>}
+            {i > 0 && contest && (
+              <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>
+            )}
             <div className="flex flex-col items-center gap-1.5">
               <div className="flex min-h-18 items-center gap-2">
                 {Array.from({ length: group.count }, (_, n) => (
-                  <BlankDie key={n} sides={group.sides} color={ROLE_COLOR[group.role]} size={singleDie ? "lg" : "md"} />
+                  <BlankDie
+                    key={n}
+                    sides={group.sides}
+                    color={ROLE_COLOR[group.role]}
+                    size={singleDie ? "lg" : "md"}
+                  />
                 ))}
               </div>
-              {oracleId !== "recluse" && <span className="text-xs text-parchment-faint">{t.oracleDice[group.role]}</span>}
+              {oracleId !== "recluse" && (
+                <span className="text-xs text-parchment-faint">{t.oracleDice[group.role]}</span>
+              )}
             </div>
           </div>
         ))}
       </div>
       <OracleVerdictSpace oracle={oracleId}>
-      <div className="flex flex-col items-center gap-2">
-        <p className="font-display text-base text-parchment">{t.oracle.emptyTitle}</p>
-        <p className="max-w-sm text-sm text-parchment-dim">{t.oracle.emptyDescription}</p>
-      </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="font-display text-base text-parchment">{t.oracle.emptyTitle}</p>
+          <p className="max-w-sm text-sm text-parchment-dim">{t.oracle.emptyDescription}</p>
+        </div>
       </OracleVerdictSpace>
     </div>
   );

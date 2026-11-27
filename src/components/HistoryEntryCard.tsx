@@ -157,13 +157,19 @@ export function HistoryEntryCard({
         }}
         className={[
           "relative rounded-2xl border p-4 transition-colors",
-          entry.favorite
-            ? "border-gold/40 bg-gold/[0.06]"
-            : "border-ink-border bg-ink-800/50",
+          entry.favorite ? "border-gold/40 bg-gold/[0.06]" : "border-ink-border bg-ink-800/50",
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-faint">
-          <span>{entry.kind === "oraculo" ? t.history.kindOracle : entry.kind === "dados" ? (entry.card ? t.history.kindCards : t.history.kindDice) : entry.tableName}</span>
+          <span>
+            {entry.kind === "oraculo"
+              ? t.history.kindOracle
+              : entry.kind === "dados"
+                ? entry.card
+                  ? t.history.kindCards
+                  : t.history.kindDice
+                : entry.tableName}
+          </span>
           <div className="flex items-center gap-4">
             <span className="normal-case tracking-normal">
               {formatTime(t.dateLocale, entry.timestamp)}
@@ -172,15 +178,11 @@ export function HistoryEntryCard({
               type="button"
               onClick={() => onToggleFavorite(entry.id)}
               aria-pressed={entry.favorite}
-              aria-label={
-                entry.favorite ? t.history.favoriteRemove : t.history.favoriteAdd
-              }
+              aria-label={entry.favorite ? t.history.favoriteRemove : t.history.favoriteAdd}
               title={entry.favorite ? t.history.favoriteRemove : t.history.favoriteAddHint}
               className={[
                 "-m-2 p-2 transition",
-                entry.favorite
-                  ? "text-gold"
-                  : "text-parchment-faint hover:text-gold",
+                entry.favorite ? "text-gold" : "text-parchment-faint hover:text-gold",
               ].join(" ")}
             >
               <IconStar size={15} filled={entry.favorite} />
@@ -209,7 +211,9 @@ export function HistoryEntryCard({
               {adventureName}
             </Link>
           ) : (
-            <span className="truncate italic">{adventureId ? t.history.deletedAdventure : t.history.freeRoll}</span>
+            <span className="truncate italic">
+              {adventureId ? t.history.deletedAdventure : t.history.freeRoll}
+            </span>
           )}
           {!adventureId && onLog && (
             <button
@@ -313,4 +317,3 @@ function DiceRollText({ text }: { text: string }) {
     </div>
   );
 }
-

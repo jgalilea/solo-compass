@@ -80,7 +80,8 @@ export function saveCardSettings(settings: CardSettings): void {
 /** A backup's settings over this device's: the later shuffle of each deck wins. */
 export function mergeCardSettings(local: CardSettings, restored: CardSettings): CardSettings {
   const shuffles = { ...local.shuffles };
-  for (const [key, at] of Object.entries(restored.shuffles)) shuffles[key] = Math.max(shuffles[key] ?? 0, at);
+  for (const [key, at] of Object.entries(restored.shuffles))
+    shuffles[key] = Math.max(shuffles[key] ?? 0, at);
   return { ...restored, shuffles };
 }
 

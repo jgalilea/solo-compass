@@ -40,10 +40,14 @@ export function RestoreChoice({
     }
   }
 
-  if (restoring) return <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>;
+  if (restoring)
+    return <p className="mt-4 text-sm text-gold">{t.about.importAllSuccessReloading}</p>;
   if (confirmingReplace) {
     return (
-      <div role="alert" className="mt-4 flex flex-col gap-3 rounded-xl border border-no/60 px-4 py-3">
+      <div
+        role="alert"
+        className="mt-4 flex flex-col gap-3 rounded-xl border border-no/60 px-4 py-3"
+      >
         <p className="text-sm text-parchment">{t.about.restoreReplaceConfirm}</p>
         <div className="flex flex-wrap justify-end gap-2">
           <button
@@ -73,7 +77,9 @@ export function RestoreChoice({
         className="rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-left transition hover:bg-gold/20"
       >
         <span className="block text-sm font-semibold text-gold">{t.about.restoreMergeLabel}</span>
-        <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreMergeDescription}</span>
+        <span className="mt-0.5 block text-xs text-parchment-dim">
+          {t.about.restoreMergeDescription}
+        </span>
       </button>
       <button
         type="button"
@@ -81,7 +87,9 @@ export function RestoreChoice({
         className="rounded-xl border border-ink-border px-4 py-3 text-left transition hover:border-no/60"
       >
         <span className="block text-sm font-semibold text-no">{t.about.restoreReplaceLabel}</span>
-        <span className="mt-0.5 block text-xs text-parchment-dim">{t.about.restoreReplaceDescription}</span>
+        <span className="mt-0.5 block text-xs text-parchment-dim">
+          {t.about.restoreReplaceDescription}
+        </span>
       </button>
       <button
         type="button"

@@ -42,7 +42,9 @@ describe("exportAdventureToHtml", () => {
     expect(html).toContain('<span class="tag"><b>Odile</b> <small>desconfiada</small></span>');
     expect(html).toContain('<span class="answer si">Sí</span>');
     expect(html).toContain('<p class="check done">☑ Pagar</p>');
-    expect(html).toContain('<h2>Sesión 1 <time datetime="2025-09-03">3 de septiembre de 2025</time></h2>');
+    expect(html).toContain(
+      '<h2>Sesión 1 <time datetime="2025-09-03">3 de septiembre de 2025</time></h2>',
+    );
     expect(html).toContain("<b>Alerta</b> <span>1/4</span>");
   });
 
@@ -50,13 +52,16 @@ describe("exportAdventureToHtml", () => {
     const page = exportAdventureToHtml({
       t: es,
       name: "Notas",
-      notes: '## Pistas\nEl **ciervo** de [la casa](https://example.com/"x") <b>\n> «Oro»\n---\n1. Ir',
+      notes:
+        '## Pistas\nEl **ciervo** de [la casa](https://example.com/"x") <b>\n> «Oro»\n---\n1. Ir',
       theme,
       exportedAt: new Date(2026, 10, 6),
       entries: [entry("note", "Algo", 1)],
     });
     expect(page).toContain('<p class="h2">Pistas</p>');
-    expect(page).toContain('<p>El <strong>ciervo</strong> de <a href="https://example.com/&quot;x&quot;" rel="noreferrer">la casa</a> &lt;b&gt;</p>');
+    expect(page).toContain(
+      '<p>El <strong>ciervo</strong> de <a href="https://example.com/&quot;x&quot;" rel="noreferrer">la casa</a> &lt;b&gt;</p>',
+    );
     expect(page).toContain('<p class="quote">«Oro»</p><hr><p class="bullet">1. Ir</p>');
   });
 });

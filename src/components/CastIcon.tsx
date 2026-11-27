@@ -33,7 +33,15 @@ const CAST_ICON: Record<CastKind, ComponentType<{ size?: number; className?: str
 };
 
 /** The icon of a notebook element: character, place, thread, clock… */
-export function CastIcon({ kind, size, className }: { kind: CastKind; size?: number; className?: string }) {
+export function CastIcon({
+  kind,
+  size,
+  className,
+}: {
+  kind: CastKind;
+  size?: number;
+  className?: string;
+}) {
   const Icon = CAST_ICON[kind];
   return <Icon size={size} className={className} />;
 }

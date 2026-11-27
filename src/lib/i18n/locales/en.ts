@@ -39,7 +39,8 @@ export const en: Dictionary = {
     triggerLabelBackupDue: "Settings · it's been a while since your last backup",
     triggerLabelSync: "Settings · the sync could use a look",
     keepScreenOnLabel: "Keep the screen on",
-    keepScreenOnHint: "While the app is in view, the screen won't turn off by itself (handy when playing with real dice). Uses a little more battery.",
+    keepScreenOnHint:
+      "While the app is in view, the screen won't turn off by itself (handy when playing with real dice). Uses a little more battery.",
   },
   gameTable: {
     pickDice: "Pick dice",
@@ -52,18 +53,28 @@ export const en: Dictionary = {
     fromLastOracle: "The last one you used",
     fromAdventure: "This adventure's",
     fromActiveAdventure: "The active adventure's",
-    diceRule: "The dice you pick here show up on “{name}”'s game table only: your other adventures don't change.",
-    tablesRule: "The tables you pick here show up on “{name}”'s game table only: your other adventures don't change.",
-    oracleRule: "The oracle you pick here is for “{name}” only: your other adventures don't change.",
+    diceRule:
+      "The dice you pick here show up on “{name}”'s game table only: your other adventures don't change.",
+    tablesRule:
+      "The tables you pick here show up on “{name}”'s game table only: your other adventures don't change.",
+    oracleRule:
+      "The oracle you pick here is for “{name}” only: your other adventures don't change.",
     oracleScreenRule:
       "It's the one of “{name}”, the active adventure: the one you pick here changes only its own. With no active adventure, the Oracle goes back to your favorite (or, if you have none, the last one you used without an adventure).",
-    diceFollowing: "Right now these are your favorites, the starred ones on Dice. As soon as you change one, they'll be this adventure's.",
-    tablesFollowing: "Right now these are your favorites, the starred ones on Tables. As soon as you change one, they'll be this adventure's.",
-    oracleFollowing: "Right now it's your favorite, the starred one. As soon as you pick another or ask it something, it'll be this adventure's.",
-    oracleFollowingLast: "Right now it's the last one you used. As soon as you pick one or ask it something, it'll be this adventure's.",
-    diceOwn: "They're this adventure's now: the stars on Dice don't change it. “Back to my favorites” undoes it.",
-    tablesOwn: "They're this adventure's now: the stars on Tables don't change it. “Back to my favorites” undoes it.",
-    oracleOwn: "It's this adventure's now: changing your favorite doesn't change it. To use another, pick it.",
+    diceFollowing:
+      "Right now these are your favorites, the starred ones on Dice. As soon as you change one, they'll be this adventure's.",
+    tablesFollowing:
+      "Right now these are your favorites, the starred ones on Tables. As soon as you change one, they'll be this adventure's.",
+    oracleFollowing:
+      "Right now it's your favorite, the starred one. As soon as you pick another or ask it something, it'll be this adventure's.",
+    oracleFollowingLast:
+      "Right now it's the last one you used. As soon as you pick one or ask it something, it'll be this adventure's.",
+    diceOwn:
+      "They're this adventure's now: the stars on Dice don't change it. “Back to my favorites” undoes it.",
+    tablesOwn:
+      "They're this adventure's now: the stars on Tables don't change it. “Back to my favorites” undoes it.",
+    oracleOwn:
+      "It's this adventure's now: changing your favorite doesn't change it. To use another, pick it.",
     builtin: "Built-in",
     own: "Yours",
     noOwn: "Your own dice are made on the Dice screen.",
@@ -84,25 +95,29 @@ export const en: Dictionary = {
     noAdventure: "No active adventure: you roll, but nothing goes to a journal.",
     loggedIn: "Logged in “{name}”",
     savedTitle: "My dice",
-    savedEmpty: "Make your own dice with a formula and, if you like, a text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Without one, add whatever you want in “What's the roll for?” when you roll.",
+    savedEmpty:
+      "Make your own dice with a formula and, if you like, a text that goes in front in the journal (Athletics 4dF+2, Attack d20+5). Without one, add whatever you want in “What's the roll for?” when you roll.",
     newRoll: "New die",
     nameLabel: "Die text (optional)",
     namePlaceholder: "Text, optional (Athletics, Attack…)",
     favoriteAdd: "Mark {name} as a favorite",
     favoriteRemove: "Remove {name} from favorites",
-    favoriteAddHint: "Favorite: it's on the journal's game table, except in an adventure with dice of its own",
+    favoriteAddHint:
+      "Favorite: it's on the journal's game table, except in an adventure with dice of its own",
     favoriteRemoveHint: "Remove from favorites",
     edit: "Edit {name}",
     delete: "Delete {name}",
     deleted: "Die deleted",
     saveFormula: "Save as a die",
-    saveFormulaHint: "Save this formula as a die of your own, a favorite, with the text of “What's the roll for?” if any",
+    saveFormulaHint:
+      "Save this formula as a die of your own, a favorite, with the text of “What's the roll for?” if any",
     saved: "Saved to your dice",
     repeat: "Roll {roll} again",
     trayHint: "Rolls wait here until you save them.",
     saveToHistory: "Save to history",
     builtinTitle: "On your game table",
-    favoritesHint: "The starred dice (built-in and your own) are on the journal's game table, except in an adventure you pick others for.",
+    favoritesHint:
+      "The starred dice (built-in and your own) are on the journal's game table, except in an adventure you pick others for.",
     noFavorites: "You have no favorite dice: mark them with the star in",
     toolLabel: "Dice or cards",
     toolDice: "Dice",
@@ -161,7 +176,8 @@ export const en: Dictionary = {
   syncGlance: {
     ok: "Synced {when} · see in Settings",
     syncing: "Syncing…",
-    pending: "Changes to send: they go in a few minutes or when you leave the app · see in Settings",
+    pending:
+      "Changes to send: they go in a few minutes or when you leave the app · see in Settings",
     waiting: "Sync: not synced yet · see in Settings",
     offline: "Offline: changes wait on this device · see in Settings",
     paused: "Sync paused: it comes back by itself · see in Settings",
@@ -172,7 +188,8 @@ export const en: Dictionary = {
     text: "There's no automatic backup: if you clear its data, or lose or change your device, they're gone. Export a copy now and then.",
     syncHint: "To have them on another device too, turn on “Sync your devices” in Settings.",
     syncedTitle: "Your adventures sync, but have no backup.",
-    syncedText: "Syncing isn't a backup: a deletion or a mistake reaches all your devices. Export a copy now and then.",
+    syncedText:
+      "Syncing isn't a backup: a deletion or a mistake reaches all your devices. Export a copy now and then.",
     button: "Export everything",
     failed: "The backup couldn't be made. Try from Settings.",
   },
@@ -202,14 +219,12 @@ export const en: Dictionary = {
   storage: {
     sectionTitle: "Your data",
     whatTitle: "What is this?",
-    what:
-      "Your adventures, rolls and settings are saved on this device, inside the browser. If the device runs low on space, or you don't open the app for a long time, some browsers may delete that data on their own to free up room.",
+    what: "Your adventures, rolls and settings are saved on this device, inside the browser. If the device runs low on space, or you don't open the app for a long time, some browsers may delete that data on their own to free up room.",
     benefitTitle: "What do you get?",
     benefit:
       "If you allow it, the browser marks Solo Compass's data as important and won't delete it on its own anymore. It would only go away if you decide so (for example, by clearing the site's data).",
     howTitle: "How does it work?",
-    how:
-      "It's a standard browser permission. Some browsers, like Firefox, will show their own prompt so you can confirm it: that's normal, this app is the one asking. Others, like Chrome or Safari, decide on their own without asking, often based on whether you've installed the app or use it often.",
+    how: "It's a standard browser permission. Some browsers, like Firefox, will show their own prompt so you can confirm it: that's normal, this app is the one asking. Others, like Chrome or Safari, decide on their own without asking, often based on whether you've installed the app or use it often.",
     ownershipTitle: "Your data is always yours",
     ownership:
       "This permission doesn't send anything to anyone, and there are no accounts: nothing leaves your device unless you take it out. You can export a copy or delete everything whenever you want.",
@@ -273,7 +288,8 @@ export const en: Dictionary = {
     tablesUsedBy: "Tables from other games",
     notOfficial:
       "Solo Compass is an independent, unofficial project: it isn't an official product of, nor affiliated with, endorsed or sponsored by, any of the authors, publishers or games credited here (including Tomkin Press and Ironsworn).",
-    translationNote: "The Spanish translations are by Solo Compass (Ironsworn's with GatoMalefico's as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0 too.",
+    translationNote:
+      "The Spanish translations are by Solo Compass (Ironsworn's with GatoMalefico's as a reference); those of Loner, Starsmith and Cairn are shared under CC BY-SA 4.0 too.",
     creditBy: "by {author}, licensed under",
     version: "Version {version}",
     privacyTitle: "Your journal is yours alone",
@@ -291,7 +307,8 @@ export const en: Dictionary = {
       "Something not working, something missing, or an idea? Tell me in a short form. It only carries the app's version and your browser, nothing from your journal.",
     feedbackButton: "Open the form",
     sourceTitle: "Open source",
-    sourceDescription: "Solo Compass is free software (GPL-3.0): its code is on GitHub, for anyone to see.",
+    sourceDescription:
+      "Solo Compass is free software (GPL-3.0): its code is on GitHub, for anyone to see.",
     sourceButton: "See the project on GitHub",
     legendTitle: "Journal symbols",
     legendAction: "what your character does.",
@@ -300,11 +317,16 @@ export const en: Dictionary = {
     legendConsequence: "what happens as a result of a roll.",
     legendNote: "free-form narration, no symbol.",
     legendSession: "a session title.",
-    legendScene: "a scene within the session: S2, S5a (flashback), S7.1 (montage), T2-S1 (another storyline; @(Name) at the end, who lives it).",
-    legendTable: "random content: a table, a generator or a card; a bare “-> Yes” is an answer without dice.",
-    legendNarrative: "@(Name) is another character acting; N (Guard): \"…\" a line of dialogue; (note: …) an aside out of the game; between \\--- and ---\\, in-world text.",
-    legendAddons: "from Lonelog's add-ons: rooms [R:4|status:cleared], foes [F:Thug|HP 6], items [Inv:Torch|×3], money [Wealth:Mara|Gold 45], decks [Deck:Main|×52], fights [COMBAT] with rounds Rd1, Rd2…",
-    legendTags: "characters ([N:…] NPC, [PC:…] PC) and places ([L:…]), with their traits after “|”. They gather in the adventure's notebook.",
+    legendScene:
+      "a scene within the session: S2, S5a (flashback), S7.1 (montage), T2-S1 (another storyline; @(Name) at the end, who lives it).",
+    legendTable:
+      "random content: a table, a generator or a card; a bare “-> Yes” is an answer without dice.",
+    legendNarrative:
+      '@(Name) is another character acting; N (Guard): "…" a line of dialogue; (note: …) an aside out of the game; between \\--- and ---\\, in-world text.',
+    legendAddons:
+      "from Lonelog's add-ons: rooms [R:4|status:cleared], foes [F:Thug|HP 6], items [Inv:Torch|×3], money [Wealth:Mara|Gold 45], decks [Deck:Main|×52], fights [COMBAT] with rounds Rd1, Rd2…",
+    legendTags:
+      "characters ([N:…] NPC, [PC:…] PC) and places ([L:…]), with their traits after “|”. They gather in the adventure's notebook.",
     legendIntro:
       "In the app each entry type has an icon; when exported it's written with its Lonelog symbol:",
     dataSectionTitle: "Backup",
@@ -345,7 +367,8 @@ export const en: Dictionary = {
     },
     favorite: "Favorite",
     markFavorite: "Mark as favorite",
-    favoriteHint: "Your favorite is the one every new adventure starts with, and the one the Oracle opens with when no adventure is active.",
+    favoriteHint:
+      "Your favorite is the one every new adventure starts with, and the one the Oracle opens with when no adventure is active.",
   },
   oracleHelp: {
     button: "How the oracle works",
@@ -378,12 +401,14 @@ export const en: Dictionary = {
     rollsLabel: "Rolls",
     tablesLabel: "Own tables",
     problemTitle: "It can't be opened",
-    sharedNote: "It was shared from another app or a website. If you didn't share it yourself, close it without importing anything.",
+    sharedNote:
+      "It was shared from another app or a website. If you didn't share it yourself, close it without importing anything.",
     problems: {
       unsupported:
         "Solo Compass opens text files: Lonelog journals (.md or .txt), tables (.md, .txt or .json) and backups (.json).",
       tooBig: "It's too big to open without risking the app freezing.",
-      notText: "It isn't a text file (or it isn't UTF-8): it may be another kind of file, or damaged.",
+      notText:
+        "It isn't a text file (or it isn't UTF-8): it may be another kind of file, or damaged.",
       empty: "It's empty.",
       damaged: "It looks like a .json, but it's damaged and can't be read.",
       newerBackup:
@@ -408,9 +433,11 @@ export const en: Dictionary = {
     matchExplanation: "Both digits are the same: an extreme result or a twist.",
     doubleExplanation: "Doubles: counts toward a twist ({count} of 3).",
     twistLabel: "Twist!",
-    twistExplanation: "Third double: something unexpected changes the scene. The counter starts again.",
+    twistExplanation:
+      "Third double: something unexpected changes the scene. The counter starts again.",
     doubleShort: "doubles {count}/3",
-    twistCounterHint: "Loner's Twist Counter: the third double brings a twist. Each adventure keeps its own.",
+    twistCounterHint:
+      "Loner's Twist Counter: the third double brings a twist. Each adventure keeps its own.",
     targetSuffix: "{value} vs {target}+",
     consequencePlaceholder: "What happens? Goes in the journal.",
     consequenceSaved: "Logged in “{name}”",
@@ -461,7 +488,8 @@ export const en: Dictionary = {
     toolTableHint: "Search any table by name, or keep it here at hand with “Pick tables”.",
     favoriteAdd: "Mark table as favorite",
     favoriteRemove: "Remove table from favorites",
-    favoriteAddHint: "Favorite: shown at the top of Tables and on the journal's game table, except in an adventure with tables of its own",
+    favoriteAddHint:
+      "Favorite: shown at the top of Tables and on the journal's game table, except in an adventure with tables of its own",
     rolling: "Rolling…",
     rollButton: "Roll {dice}",
     resultLabel: "Result {n}",
@@ -489,7 +517,8 @@ export const en: Dictionary = {
     allThemes: "All",
     loadError: "These tables couldn't be loaded.",
     customHeading: "Your tables",
-    customEmpty: "Create a table with your own results or import one from a file: they roll just like the built-in ones and get logged in the journal.",
+    customEmpty:
+      "Create a table with your own results or import one from a file: they roll just like the built-in ones and get logged in the journal.",
     customGame: "Yours",
     newTable: "New table",
     importTable: "Import",
@@ -511,7 +540,8 @@ export const en: Dictionary = {
     generatorsHeading: "Generators",
     generatorsIntro: "Several tables in one roll, and in one journal entry.",
     generatorNew: "New generator",
-    generatorsEmpty: "Gather the tables you always roll together: say, Kind of place, State of the place and Trouble in the place.",
+    generatorsEmpty:
+      "Gather the tables you always roll together: say, Kind of place, State of the place and Trouble in the place.",
     generatorRoll: "Roll",
     generatorEdit: "Edit {name}",
     generatorDelete: "Delete {name}",
@@ -541,7 +571,8 @@ export const en: Dictionary = {
       diceLabel: "Die",
       diceAuto: "One per line",
       entriesLabel: "Results, one per line",
-      entriesHint: "You can paste a list or a Markdown table. To make a result come up more often, start the line with its range: “1-3 Rats”. A result can roll on another table, “A {NPC: Name} keeps watch”, or say “Roll twice”.",
+      entriesHint:
+        "You can paste a list or a Markdown table. To make a result come up more often, start the line with its range: “1-3 Rats”. A result can roll on another table, “A {NPC: Name} keeps watch”, or say “Roll twice”.",
       entriesPlaceholder: "A pouch of coins\nA rusty sword\nA half-drawn map",
       themeLabel: "Theme",
       themeNone: "No theme",
@@ -550,7 +581,8 @@ export const en: Dictionary = {
       authorLabel: "Author",
       licenseLabel: "License",
       urlLabel: "Link",
-      ownershipNote: "Your tables are stored on this device and in your backup. The app doesn't publish them anywhere.",
+      ownershipNote:
+        "Your tables are stored on this device and in your backup. The app doesn't publish them anywhere.",
       save: "Save table",
       summary: "{count} results · {dice}",
       errorName: "Give the table a name.",
@@ -558,7 +590,8 @@ export const en: Dictionary = {
       errorCount: "A {dice} needs {expected} results and there are {count}.",
       errorRanges: "Ranges must cover {from} to {to} with no gaps or repeats (check {value}).",
       errorMixed: "Give every line a range, or none.",
-      errorD66Lines: "66 lines without ranges would be mistaken for a d66: add or remove one, or use ranges.",
+      errorD66Lines:
+        "66 lines without ranges would be mistaken for a d66: add or remove one, or use ranges.",
       errorTooBig: "A table can go up to a d10000.",
     },
   },
@@ -635,7 +668,8 @@ export const en: Dictionary = {
     setActive: "Activate",
     unsetActive: "Deactivate",
     activeLabel: "Active",
-    activeAdventureNote: "The active adventure: what you roll on Oracle, Tables and Dice is logged here.",
+    activeAdventureNote:
+      "The active adventure: what you roll on Oracle, Tables and Dice is logged here.",
     activeChipTitle: "Go to “{name}”, the active adventure: what you roll is logged there",
     noActiveAdventureNote: "No active adventure: rolls aren't being logged anywhere.",
     activateHint: "Activate it so what you roll on Oracle, Tables and Dice is logged in it.",
@@ -716,10 +750,12 @@ export const en: Dictionary = {
     moreActions: "More options",
     composerHintAction: "What your character does, with or without a roll.",
     kindExcerpt: "In-world text",
-    composerHintExcerpt: "What's read inside the game: a letter, an inscription, a sign. It's logged as written, set apart.",
+    composerHintExcerpt:
+      "What's read inside the game: a letter, an inscription, a sign. It's logged as written, set apart.",
     excerptPlaceholder: "A letter, an inscription, a sign…",
     kindDialogue: "Dialogue",
-    composerHintDialogue: "What your character or someone else says: pick who speaks and type just their words.",
+    composerHintDialogue:
+      "What your character or someone else says: pick who speaks and type just their words.",
     dialogueSpeaker: "Speaking",
     dialogueOther: "Someone else…",
     dialogueOtherName: "Name…",
@@ -759,7 +795,8 @@ export const en: Dictionary = {
     sendButton: "Add to journal",
     kindMenuLabel: "Entry type: {kind}",
     composerHintSession: "Opens a new chapter. The title is optional.",
-    composerHintScene: "A change of place or moment within the session. Numbered for you: S1, S2… If you like, the oracle tests it.",
+    composerHintScene:
+      "A change of place or moment within the session. Numbered for you: S1, S2… If you like, the oracle tests it.",
     consequenceJoins: "Joins",
     consequenceAlone: "No earlier entry in this session: it will stand alone.",
     toolDice: "Dice",
@@ -789,7 +826,8 @@ export const en: Dictionary = {
     hideScenes: "Hide the scenes of {session}",
     prologueLabel: "Before the first session",
     noActiveChip: "No adventure",
-    noActiveChipTitle: "No adventure active: your rolls only stay in the history. Activate one in the journal.",
+    noActiveChipTitle:
+      "No adventure active: your rolls only stay in the history. Activate one in the journal.",
     playPanelLabel: "Game table",
     newSessionButton: "New session",
     newSessionPlaceholder: "Session title (optional)",
@@ -842,8 +880,10 @@ export const en: Dictionary = {
       diceHigh: "Blessed dice: they're coming up higher than usual.",
       diceLow: "Cursed dice: they're coming up lower than usual.",
       diceNormal: "Honest dice: neither blessed nor cursed, they come up as usual.",
-      diceFew: "Once you've rolled {count} dice, of all kinds together, you'll see whether they're blessed or cursed ({total} so far).",
-      diceHint: "Every die that falls counts, dropped ones too: a 2d6 is two dice. If low is better in your game, read it the other way round.",
+      diceFew:
+        "Once you've rolled {count} dice, of all kinds together, you'll see whether they're blessed or cursed ({total} so far).",
+      diceHint:
+        "Every die that falls counts, dropped ones too: a 2d6 is two dice. If low is better in your game, read it the other way round.",
       featHighRun: "Blessed run",
       featHighRunNote: "dice in a row above average",
       featLowRun: "Cursed run",
@@ -860,11 +900,13 @@ export const en: Dictionary = {
       adventureWorst: "Cursed adventure, with the lowest dice: {session}.",
       allDiceButton: "The luck of your dice",
       allDiceSubtitle: "Across all your adventures",
-      allDiceEmpty: "No dice to count yet: roll in an adventure, log it in its journal and come back.",
+      allDiceEmpty:
+        "No dice to count yet: roll in an adventure, log it in its journal and come back.",
       chanceGenerous: "Generous oracle: it says yes more than its share.",
       chanceStubborn: "Stubborn oracle: it says yes less than its share.",
       chanceFair: "Fair oracle: it says yes about its share.",
-      chanceNote: "In {total} questions, by the likelihood you picked for each, chance would give about {expected} “yes”; {yes} came out.",
+      chanceNote:
+        "In {total} questions, by the likelihood you picked for each, chance would give about {expected} “yes”; {yes} came out.",
       sessionsHeading: "The sessions",
       sessionsAverage: "On average, {entries} entries and {words} words per session.",
       sessionsLongest: "The longest: {session}, with {words} words.",
@@ -915,7 +957,8 @@ export const en: Dictionary = {
     exportButton: "Export to Markdown",
     exportHtmlButton: "Export as a web page",
     htmlExportedOn: "Exported on {date}",
-    htmlThemeComment: "Colours and font of the theme it was exported with: change these values to customise the page.",
+    htmlThemeComment:
+      "Colours and font of the theme it was exported with: change these values to customise the page.",
     exportedToastTitle: "Downloaded {filename}",
     exportedToastDescription: "Saved to your browser's Downloads folder.",
     importButton: "Import journal (.md)",
@@ -929,11 +972,13 @@ export const en: Dictionary = {
     openLabel: "Notebook: pinned notes, characters and places, threads and clocks, inventory",
     notesTitle: "Pinned notes",
     notesEmpty: "Anything you want at hand: inventory, clues, loose ends… Tap to write.",
-    notesPlaceholder: "Write here, in Markdown if you like: **bold**, *italic*, “# heading”, “- list” and “- [ ] checkbox” you tick with a tap.",
+    notesPlaceholder:
+      "Write here, in Markdown if you like: **bold**, *italic*, “# heading”, “- list” and “- [ ] checkbox” you tick with a tap.",
     notesEdit: "Edit the notes",
     notesDone: "Done",
     descriptionAdd: "Add a description",
-    descriptionPlaceholder: "What they look like, who they are, what you know… Not logged in the journal. **Bold**, *italic* and links work.",
+    descriptionPlaceholder:
+      "What they look like, who they are, what you know… Not logged in the journal. **Bold**, *italic* and links work.",
     descriptionLabel: "Description of {name}",
     castTitle: "Characters and places",
     castEmpty:
@@ -989,10 +1034,18 @@ export const en: Dictionary = {
     groupItems: "Items",
     groupWealth: "Money",
     inventoryTitle: "Inventory",
-    inventoryEmpty: "What you carry and what you own, like [Inv:Torch|×3] or [Wealth:Mara|Gold 45]. −/+ logs using up or gaining one.",
+    inventoryEmpty:
+      "What you carry and what you own, like [Inv:Torch|×3] or [Wealth:Mara|Gold 45]. −/+ logs using up or gaining one.",
     quantityLabel: "Quantity",
     ownerLabel: "Whose is it?",
-    categories: { status: "status", exits: "exits", pos: "pos", owner: "owner", where: "where", out: "out" },
+    categories: {
+      status: "status",
+      exits: "exits",
+      pos: "pos",
+      owner: "owner",
+      where: "where",
+      out: "out",
+    },
     useOne: "Use one {name}",
     addOne: "One more {name}",
     cardOut: "One card fewer in {name}",
@@ -1015,7 +1068,8 @@ export const en: Dictionary = {
     mentionHint: "Adds a reference to what you're writing.",
     changeButton: "Log a change",
     changePlaceholder: "wounded, -armed, wounded>healed…",
-    changeHint: "Separate with commas. “-” removes, “a>b” swaps one for another, “HP 6” sets a value and “HP-2” changes it.",
+    changeHint:
+      "Separate with commas. “-” removes, “a>b” swaps one for another, “HP 6” sets a value and “HP-2” changes it.",
     logButton: "Log it",
     addHeading: "Add:",
     addOfKind: "Add: {kind}",

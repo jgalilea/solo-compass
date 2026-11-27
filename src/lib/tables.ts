@@ -96,7 +96,12 @@ export function diceValues(dice: DiceType): number[] {
  * "tbl: Ironsworn: Action d100=42 -> Bolster". The total goes with the
  * die (a d66's "42" is its two dice).
  */
-export function formatTableRoll(name: string, dice: DiceType, total: number, result: string): string {
+export function formatTableRoll(
+  name: string,
+  dice: DiceType,
+  total: number,
+  result: string,
+): string {
   return `tbl: ${name} ${dice}=${total} -> ${result}`;
 }
 
@@ -175,9 +180,14 @@ export function resolveResult(
   let result = text.replace(TABLE_REFERENCE, (whole, name: string) => {
     const wanted = normalize(name);
     const target = tables.find(
-      (x) => normalize(x.name) === wanted || normalize(tableRollName(x)) === wanted || x.id === name.trim(),
+      (x) =>
+        normalize(x.name) === wanted ||
+        normalize(tableRollName(x)) === wanted ||
+        x.id === name.trim(),
     );
-    return target ? resolveResult(target, rollForTable(target.dice).total, tables, fallback, depth + 1) : whole;
+    return target
+      ? resolveResult(target, rollForTable(target.dice).total, tables, fallback, depth + 1)
+      : whole;
   });
   const again = rollAgainCount(text);
   if (again > 0) {

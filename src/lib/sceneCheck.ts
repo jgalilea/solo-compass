@@ -12,17 +12,34 @@ import type { OracleRoll } from "./oracle";
 export const SCENE_CHECK_LIKELIHOOD = "probable" as const;
 
 /** How the scene starts, read from the oracle's answer. */
-export type SceneVerdict = "expected" | "expectedAnd" | "expectedBut" | "altered" | "alteredBut" | "interrupted";
+export type SceneVerdict =
+  | "expected"
+  | "expectedAnd"
+  | "expectedBut"
+  | "altered"
+  | "alteredBut"
+  | "interrupted";
 
 /**
  * Yes: as expected ("and" heightens it, "but" changes something small).
  * No: altered ("but": only a little). "No, and", a contradiction or a
  * Loner twist: interrupted, something else happens instead.
  */
-export function sceneVerdict(roll: Pick<OracleRoll, "answer" | "qualifier" | "twist">): SceneVerdict {
+export function sceneVerdict(
+  roll: Pick<OracleRoll, "answer" | "qualifier" | "twist">,
+): SceneVerdict {
   if (roll.answer === "contradiccion" || roll.twist?.happened) return "interrupted";
-  if (roll.answer === "si") return roll.qualifier === "y" ? "expectedAnd" : roll.qualifier === "pero" ? "expectedBut" : "expected";
-  return roll.qualifier === "y" ? "interrupted" : roll.qualifier === "pero" ? "alteredBut" : "altered";
+  if (roll.answer === "si")
+    return roll.qualifier === "y"
+      ? "expectedAnd"
+      : roll.qualifier === "pero"
+        ? "expectedBut"
+        : "expected";
+  return roll.qualifier === "y"
+    ? "interrupted"
+    : roll.qualifier === "pero"
+      ? "alteredBut"
+      : "altered";
 }
 
 const STORAGE_KEY = "solo-compass:scene-check";

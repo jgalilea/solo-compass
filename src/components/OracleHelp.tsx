@@ -3,7 +3,9 @@ import { useLocaleContext } from "../hooks/useLocaleContext";
 import { preloadable } from "../lib/preloadable";
 import { HelpDialog } from "./HelpDialog";
 
-const OracleHelpContent = preloadable(() => import("./OracleHelpContent").then((m) => m.OracleHelpContent));
+const OracleHelpContent = preloadable(() =>
+  import("./OracleHelpContent").then((m) => m.OracleHelpContent),
+);
 
 /**
  * "?" next to the oracle's name. The button is on the first screen;

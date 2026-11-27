@@ -65,7 +65,12 @@ export function oracleDice(roll: OracleRoll): OracleDiceGroup[] {
   if (roll.dice) return roll.dice;
   return [roll.white, roll.black]
     .filter((g): g is DiceGroup => !!g)
-    .map((g) => ({ role: g.color === "blanco" ? "white" : "black", sides: 6, rolls: g.rolls, kept: g.kept }));
+    .map((g) => ({
+      role: g.color === "blanco" ? "white" : "black",
+      sides: 6,
+      rolls: g.rolls,
+      kept: g.kept,
+    }));
 }
 
 /** The oracle that answered a roll. */
@@ -73,10 +78,7 @@ export function rollOracleId(roll: OracleRoll): OracleId {
   return roll.oracle ?? "recluse";
 }
 
-export const LIKELIHOOD_DICE: Record<
-  Likelihood,
-  { white: number; black: number }
-> = {
+export const LIKELIHOOD_DICE: Record<Likelihood, { white: number; black: number }> = {
   "muy-improbable": { white: 1, black: 3 },
   improbable: { white: 1, black: 2 },
   equilibrado: { white: 1, black: 1 },

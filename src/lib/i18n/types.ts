@@ -974,7 +974,10 @@ export interface Dictionary {
     /** Each kind of notebook element (Lonelog tag), by its id in lonelogTags.ts. */
     kinds: Record<CastKind, string>;
     /** What a clock, a track and a timer are for (the add form). */
-    kindHints: Record<"clock" | "track" | "timer" | "event" | "room" | "foe" | "item" | "wealth" | "deck", string>;
+    kindHints: Record<
+      "clock" | "track" | "timer" | "event" | "room" | "foe" | "item" | "wealth" | "deck",
+      string
+    >;
     statuses: Record<"open" | "closed" | "abandoned", string>;
     threadsTitle: string;
     threadsEmpty: string;
@@ -1079,10 +1082,7 @@ export interface Dictionary {
   dateLocale: string;
 }
 
-export function interpolate(
-  template: string,
-  params: Record<string, string | number>,
-): string {
+export function interpolate(template: string, params: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) =>
     key in params ? String(params[key]) : `{${key}}`,
   );
@@ -1269,7 +1269,10 @@ export interface LongTexts {
     answersHeading: string;
     answers: { label: string; text: string }[];
     /** How the chosen oracle reads its dice, in our own words, and its special answer if it has one. */
-    rules: Record<OracleId, { heading: string; text: string; special?: { label: string; text: string } }>;
+    rules: Record<
+      OracleId,
+      { heading: string; text: string; special?: { label: string; text: string } }
+    >;
     oddsHeading: string;
     oddsIntro: string;
     oddsColumns: { likelihood: string; yes: string; no: string; and: string; but: string };

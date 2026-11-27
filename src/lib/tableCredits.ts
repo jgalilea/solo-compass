@@ -5,7 +5,16 @@
  * reads these.
  */
 
-import { IRONSWORN_URL, STARSMITH_URL, IRONSMITH_URL, LONER_URL, KNAVE_URL, CAIRN_URL, LAZY_GM_URL, OPSE_URL } from "./tableGames";
+import {
+  IRONSWORN_URL,
+  STARSMITH_URL,
+  IRONSMITH_URL,
+  LONER_URL,
+  KNAVE_URL,
+  CAIRN_URL,
+  LAZY_GM_URL,
+  OPSE_URL,
+} from "./tableGames";
 
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const CC_BY_SA = "https://creativecommons.org/licenses/by-sa/4.0/";
@@ -38,7 +47,9 @@ export const TABLE_CREDITS: {
     license: "CC BY 4.0",
     licenseUrl: CC_BY,
     url: STARSMITH_URL,
-    attribution: ["Starsmith: Expanded Oracles by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License."],
+    attribution: [
+      "Starsmith: Expanded Oracles by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License.",
+    ],
   },
   {
     name: "Ironsmith",
@@ -46,7 +57,9 @@ export const TABLE_CREDITS: {
     license: "CC BY 4.0",
     licenseUrl: CC_BY,
     url: IRONSMITH_URL,
-    attribution: ["Ironsmith by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License."],
+    attribution: [
+      "Ironsmith by Eric Bright, licensed under the Creative Commons Attribution 4.0 International License.",
+    ],
   },
   {
     name: "Loner",
@@ -54,7 +67,9 @@ export const TABLE_CREDITS: {
     license: "CC BY-SA 4.0",
     licenseUrl: CC_BY_SA,
     url: LONER_URL,
-    attribution: ["Loner v2.3 (CC) 2023 Roberto Bisceglie, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License."],
+    attribution: [
+      "Loner v2.3 (CC) 2023 Roberto Bisceglie, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.",
+    ],
   },
   {
     name: "Knave",
@@ -62,7 +77,9 @@ export const TABLE_CREDITS: {
     license: "CC BY 4.0",
     licenseUrl: CC_BY,
     url: KNAVE_URL,
-    attribution: ["Knave by Ben Milton, licensed under the Creative Commons Attribution 4.0 International License."],
+    attribution: [
+      "Knave by Ben Milton, licensed under the Creative Commons Attribution 4.0 International License.",
+    ],
   },
   {
     name: "Cairn",
@@ -70,7 +87,9 @@ export const TABLE_CREDITS: {
     license: "CC BY-SA 4.0",
     licenseUrl: CC_BY_SA,
     url: CAIRN_URL,
-    attribution: ["Cairn by Yochai Gal, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License."],
+    attribution: [
+      "Cairn by Yochai Gal, licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.",
+    ],
   },
   {
     name: "Lazy GM's Resource Document",
@@ -80,7 +99,7 @@ export const TABLE_CREDITS: {
     url: LAZY_GM_URL,
     attribution: [
       "This work includes material taken from the Lazy GM's Resource Document by Michael E. Shea of SlyFlourish.com, available under the Creative Commons Attribution 4.0 International License.",
-      "This work includes material taken from the System Reference Document 5.1 (\"SRD 5.1\") by Wizards of the Coast LLC. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License.",
+      'This work includes material taken from the System Reference Document 5.1 ("SRD 5.1") by Wizards of the Coast LLC. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License.',
     ],
   },
   {
@@ -89,6 +108,8 @@ export const TABLE_CREDITS: {
     license: "CC BY-SA 4.0",
     licenseUrl: CC_BY_SA,
     url: OPSE_URL,
-    attribution: ["One Page Solo Engine v1.6 by Karl Hendricks (Inflatable Studios), licensed under CC BY-SA 4.0."],
+    attribution: [
+      "One Page Solo Engine v1.6 by Karl Hendricks (Inflatable Studios), licensed under CC BY-SA 4.0.",
+    ],
   },
 ];

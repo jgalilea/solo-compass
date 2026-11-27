@@ -14,7 +14,9 @@ const square = (scale, radius = 0) =>
 
 const save = (svg, size, name, opaque) => {
   const image = sharp(Buffer.from(svg), { density: 144 }).resize(size, size);
-  return (opaque ? image.removeAlpha() : image).png().toFile(new URL(`public/icons/${name}.png`, root).pathname);
+  return (opaque ? image.removeAlpha() : image)
+    .png()
+    .toFile(new URL(`public/icons/${name}.png`, root).pathname);
 };
 await save(square(17.04, 112), 192, "icon-192");
 await save(square(17.04, 112), 512, "icon-512");

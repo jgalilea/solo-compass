@@ -5,7 +5,11 @@ import { errorIssueUrl, errorReport } from "./errorReport";
 describe("error report", () => {
   const error = new TypeError("x is undefined");
   error.stack = "TypeError: x is undefined\n    at a (app.js:1:2)\n    at b (app.js:3:4)";
-  const where = { screen: "#/diario/abc", userAgent: "Firefox 140", date: new Date("2026-11-11T10:00:00Z") };
+  const where = {
+    screen: "#/diario/abc",
+    userAgent: "Firefox 140",
+    date: new Date("2026-11-11T10:00:00Z"),
+  };
 
   it("says which version, where and what, and nothing else", () => {
     const report = errorReport(error, where);

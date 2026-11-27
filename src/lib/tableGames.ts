@@ -99,7 +99,11 @@ const IRONSWORN_GAME: GameRef = {
 };
 
 const DELVE_GAME: GameRef = { ...IRONSWORN_GAME, name: "Ironsworn: Delve", tag: "Delve" };
-const STARFORGED_GAME: GameRef = { ...IRONSWORN_GAME, name: "Ironsworn: Starforged", tag: "Starforged" };
+const STARFORGED_GAME: GameRef = {
+  ...IRONSWORN_GAME,
+  name: "Ironsworn: Starforged",
+  tag: "Starforged",
+};
 
 export const KNAVE_URL = "https://questingbeast.itch.io/knave";
 
@@ -121,7 +125,8 @@ const LONER_GAME: GameRef = {
   tag: "Loner",
 };
 
-export const STARSMITH_URL = "https://www.lulu.com/shop/eric-bright/starsmith-expanded-oracles/paperback/product-d9yq44.html";
+export const STARSMITH_URL =
+  "https://www.lulu.com/shop/eric-bright/starsmith-expanded-oracles/paperback/product-d9yq44.html";
 
 const STARSMITH_GAME: GameRef = {
   name: "Starsmith",
@@ -173,7 +178,10 @@ const OPSE_GAME: GameRef = {
 
 /** "By Ben Milton, licensed under CC BY 4.0.": a block's credit. */
 function creditNote(t: Dictionary, game: GameRef): string {
-  return interpolate(t.tables.creditNote, { author: game.author ?? "", license: game.license ?? "" });
+  return interpolate(t.tables.creditNote, {
+    author: game.author ?? "",
+    license: game.license ?? "",
+  });
 }
 
 export const TABLE_GAMES: TableGame[] = [
@@ -307,9 +315,18 @@ export function toMeaningTables(
 }
 
 /** Loads a game (if it isn't yet) and returns its tables in this language. */
-export async function loadMeaningTables(id: GameId, t: Dictionary, locale: Locale): Promise<MeaningTable[]> {
+export async function loadMeaningTables(
+  id: GameId,
+  t: Dictionary,
+  locale: Locale,
+): Promise<MeaningTable[]> {
   const data = await loadGame(id);
-  return toMeaningTables(TABLE_GAMES.find((g) => g.id === id)!, data, t, locale);
+  return toMeaningTables(
+    TABLE_GAMES.find((g) => g.id === id)!,
+    data,
+    t,
+    locale,
+  );
 }
 
 // --- Loading ----------------------------------------------------------

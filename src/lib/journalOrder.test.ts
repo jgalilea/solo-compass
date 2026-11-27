@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { appendEntry, compareEntries, insertEntryAfter, moveEntryIn, placeAfter, placeMoved } from "./journalOrder";
+import {
+  appendEntry,
+  compareEntries,
+  insertEntryAfter,
+  moveEntryIn,
+  placeAfter,
+  placeMoved,
+} from "./journalOrder";
 import type { JournalEntry } from "./lonelog";
 
 function entry(id: string, timestamp: number): JournalEntry {
@@ -7,10 +14,18 @@ function entry(id: string, timestamp: number): JournalEntry {
 }
 
 /** The ids in journal order once a placement is applied. */
-function order(sorted: JournalEntry[], id: string, placement: ReturnType<typeof placeAfter>, isNew = false) {
+function order(
+  sorted: JournalEntry[],
+  id: string,
+  placement: ReturnType<typeof placeAfter>,
+  isNew = false,
+) {
   const list = isNew ? [...sorted, entry(id, placement.timestamp)] : sorted;
   return list
-    .map((e) => ({ ...e, timestamp: e.id === id ? placement.timestamp : (placement.nudged.get(e.id) ?? e.timestamp) }))
+    .map((e) => ({
+      ...e,
+      timestamp: e.id === id ? placement.timestamp : (placement.nudged.get(e.id) ?? e.timestamp),
+    }))
     .sort((a, b) => a.timestamp - b.timestamp)
     .map((e) => e.id);
 }
@@ -124,7 +139,10 @@ describe("insertEntryAfter", () => {
 
   it("goes to the end if the anchor was deleted", () => {
     const entries = [at("one", 10)];
-    expect(insertEntryAfter(entries, at("new", 50), "gone", 50).map((e) => e.id)).toEqual(["one", "new"]);
+    expect(insertEntryAfter(entries, at("new", 50), "gone", 50).map((e) => e.id)).toEqual([
+      "one",
+      "new",
+    ]);
   });
 });
 

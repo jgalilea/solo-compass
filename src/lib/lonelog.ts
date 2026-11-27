@@ -121,14 +121,20 @@ export function formatLine(entry: Pick<JournalEntry, "kind" | "text">): string {
   const [first, ...rest] = entry.text.split(/\r?\n/);
   const head =
     entry.kind === "note"
-      ? NEEDS_ESCAPE.test(first) || SCENE_LINE.test(first) ? `\\${first}` : escapeInner(first)
+      ? NEEDS_ESCAPE.test(first) || SCENE_LINE.test(first)
+        ? `\\${first}`
+        : escapeInner(first)
       : entry.kind === "roll"
-        ? OWN_ROLL_SYMBOL.test(first) ? first : `${PREFIX.roll}${toRollLine(entry.text).split(/\r?\n/, 1)[0]}`
+        ? OWN_ROLL_SYMBOL.test(first)
+          ? first
+          : `${PREFIX.roll}${toRollLine(entry.text).split(/\r?\n/, 1)[0]}`
         : entry.kind === "action" && ACTOR.test(first)
           ? escapeInner(`@${first}`) // "@(Jonah) Keeps watch": no space (§ multiple actors)
           : escapeInner(`${PREFIX[entry.kind]}${first}`);
   const continuation = (line: string) =>
-    line.trim() ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}` : "";
+    line.trim()
+      ? `  ${STARTS_ENTRY.test(line.trimStart()) || line.trimStart().startsWith("\\") ? "\\" : ""}${line.trimStart()}`
+      : "";
   return [head, ...rest.map(continuation)].join("\n");
 }
 
@@ -163,9 +169,15 @@ export function exportAdventureToMarkdown(
   const blocks = [`# ${adventureName}`, `> ${buildCreditLine(t)}`, ...formatEntries(sorted)];
   const header = [
     `title: ${JSON.stringify(adventureName)}`,
-    ...(dates ? [`start_date: ${isoDate(dates.createdAt)}`, `last_update: ${isoDate(dates.updatedAt)}`] : []),
+    ...(dates
+      ? [`start_date: ${isoDate(dates.createdAt)}`, `last_update: ${isoDate(dates.updatedAt)}`]
+      : []),
   ];
-  return formatFrontMatter(notes, formatDescriptions(sorted, descriptions), header) + blocks.join("\n\n") + "\n";
+  return (
+    formatFrontMatter(notes, formatDescriptions(sorted, descriptions), header) +
+    blocks.join("\n\n") +
+    "\n"
+  );
 }
 
 /**
@@ -190,7 +202,8 @@ export function sectionToLonelog(entries: JournalEntry[], id: string): string {
   const start = sorted.findIndex((e) => e.id === id);
   const head = sorted[start];
   if (!head || (head.kind !== "session" && head.kind !== "scene")) return "";
-  const ends = (e: JournalEntry) => e.kind === "session" || (head.kind === "scene" && e.kind === "scene");
+  const ends = (e: JournalEntry) =>
+    e.kind === "session" || (head.kind === "scene" && e.kind === "scene");
   const after = sorted.slice(start + 1);
   const end = after.findIndex(ends);
   return formatEntries([head, ...(end < 0 ? after : after.slice(0, end))]).join("\n\n") + "\n";
@@ -220,7 +233,9 @@ export function playDay(
   entry: Pick<JournalEntry, "id" | "timestamp">,
   session: Pick<JournalEntry, "timestamp" | "date"> | null,
 ): string | null {
-  return (session && sessionDate(session)) || (isImportedEntry(entry) ? null : isoDate(entry.timestamp));
+  return (
+    (session && sessionDate(session)) || (isImportedEntry(entry) ? null : isoDate(entry.timestamp))
+  );
 }
 
 /**
@@ -231,7 +246,10 @@ export function playDay(
  * lines indented. Only elements still in the journal (the tag is
  * written as it is there).
  */
-function formatDescriptions(sorted: JournalEntry[], descriptions: Record<string, CastDescription>): string {
+function formatDescriptions(
+  sorted: JournalEntry[],
+  descriptions: Record<string, CastDescription>,
+): string {
   return buildCast(sorted)
     .map((member) => {
       const text = descriptions[member.key]?.text.replace(/\r\n?/g, "\n").trim();
@@ -255,7 +273,11 @@ function formatDescriptions(sorted: JournalEntry[], descriptions: Record<string,
  * it as the file's properties instead of as text.
  */
 export function formatFrontMatter(notes: string, descriptions = "", header: string[] = []): string {
-  const fields = [...header, yamlBlock("notes", notes), yamlBlock("descriptions", descriptions)].filter(Boolean);
+  const fields = [
+    ...header,
+    yamlBlock("notes", notes),
+    yamlBlock("descriptions", descriptions),
+  ].filter(Boolean);
   return fields.length ? `---\n${fields.join("\n")}\n---\n\n` : "";
 }
 
@@ -315,7 +337,10 @@ export function parseNotesFromMarkdown(text: string): string {
  * by castKey. A line that opens with a tag starts one; indented lines
  * below it continue it.
  */
-export function parseDescriptionsFromMarkdown(text: string, now = Date.now()): Record<string, CastDescription> {
+export function parseDescriptionsFromMarkdown(
+  text: string,
+  now = Date.now(),
+): Record<string, CastDescription> {
   const result: Record<string, CastDescription> = {};
   let current: { key: string; lines: string[] } | null = null;
   const save = () => {
@@ -327,7 +352,10 @@ export function parseDescriptionsFromMarkdown(text: string, now = Date.now()): R
     if (first?.tag && !/^\s/.test(line)) {
       save();
       const { kind, name, details } = first.tag;
-      const key = kind === "wealth" && details.length === 1 && !first.tag.progress ? purseKey(name, details[0]) : castKey(kind, name);
+      const key =
+        kind === "wealth" && details.length === 1 && !first.tag.progress
+          ? purseKey(name, details[0])
+          : castKey(kind, name);
       current = { key, lines: [line.slice(first.text.length).trim()] };
     } else if (current) {
       current.lines.push(line.replace(/^ {2}/, ""));
@@ -348,7 +376,8 @@ export function readLonelog(text: string): LonelogImport {
   return {
     notes: parseNotesFromMarkdown(text),
     descriptions: parseDescriptionsFromMarkdown(text),
-    entries: (adventureId, startTimestamp) => parseMarkdownToEntries(text, adventureId, startTimestamp),
+    entries: (adventureId, startTimestamp) =>
+      parseMarkdownToEntries(text, adventureId, startTimestamp),
   };
 }
 
@@ -426,7 +455,8 @@ const H2_SESSION_LINE = /^##\s+(.+?)\s*$/;
  * The date below a session: "[Date] 2025-09-03", "Date: 2025-09-03 |
  * Duration: 1h30" or in italics (§5.2); the rest of the line is kept.
  */
-const SESSION_DATE_LINE = /^\*?\s*(?:\[(?:Date|Fecha)\]|(?:Date|Fecha):)\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*(.*?)\s*\*?$/i;
+const SESSION_DATE_LINE =
+  /^\*?\s*(?:\[(?:Date|Fecha)\]|(?:Date|Fecha):)\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*(.*?)\s*\*?$/i;
 /** H1 title (# alone, not ## or more) — the adventure name to ignore. */
 const H1_TITLE_LINE = /^#(?!#)/;
 
@@ -515,7 +545,12 @@ export function parseMarkdownToEntries(
 
     const previous = entries[entries.length - 1];
     // "[PC:Jonah", "| trait: friendly", "]": the rest of a multi-line tag.
-    if (previous && pendingBlankLines === 0 && /^[|\]]/.test(line) && endsInsideTag(previous.text)) {
+    if (
+      previous &&
+      pendingBlankLines === 0 &&
+      /^[|\]]/.test(line) &&
+      endsInsideTag(previous.text)
+    ) {
       previous.text += `\n${line}`;
       continue;
     }
@@ -548,7 +583,8 @@ export function parseMarkdownToEntries(
     }
 
     // The line right below a session can be its date.
-    const dateMatch = previous?.kind === "session" && !previous.date ? line.match(SESSION_DATE_LINE) : null;
+    const dateMatch =
+      previous?.kind === "session" && !previous.date ? line.match(SESSION_DATE_LINE) : null;
     if (dateMatch) {
       previous.date = dateMatch[1];
       if (dateMatch[2]) push("note", dateMatch[2]);

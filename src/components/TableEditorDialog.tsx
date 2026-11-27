@@ -1,7 +1,13 @@
 import { useId, useMemo, useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { EDITOR_DICE, type CustomTableDraft, type DiceChoice } from "../lib/customTables";
-import { buildEntries, cleanSource, diceChoiceFor, entriesToText, parseEntryLines } from "../lib/customTableText";
+import {
+  buildEntries,
+  cleanSource,
+  diceChoiceFor,
+  entriesToText,
+  parseEntryLines,
+} from "../lib/customTableText";
 import { interpolate } from "../lib/i18n";
 import { TABLE_THEMES, type TableTheme } from "../lib/tables";
 import { INPUT_CLASS, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from "../lib/journalUi";
@@ -73,11 +79,7 @@ export function TableEditorDialog({
   const autoLabel = result.ok && choice === "auto" ? `${e.diceAuto} (${result.dice})` : e.diceAuto;
 
   return (
-    <Modal
-      onClose={onClose}
-      labelledBy={titleId}
-      size="lg"
-    >
+    <Modal onClose={onClose} labelledBy={titleId} size="lg">
       <DialogHeader id={titleId} title={editing ? e.editTitle : e.newTitle} onClose={onClose} />
       <DialogBody>
         <form
@@ -173,9 +175,15 @@ export function TableEditorDialog({
             </p>
           )}
 
-          <details open={!!initial?.source} className="group rounded-xl border border-ink-border/70 bg-ink-900/40">
+          <details
+            open={!!initial?.source}
+            className="group rounded-xl border border-ink-border/70 bg-ink-900/40"
+          >
             <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm text-parchment-dim transition hover:text-parchment [&::-webkit-details-marker]:hidden">
-              <IconChevronRight size={14} className="shrink-0 transition-transform group-open:rotate-90" />
+              <IconChevronRight
+                size={14}
+                className="shrink-0 transition-transform group-open:rotate-90"
+              />
               {e.attributionToggle}
             </summary>
             <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
@@ -201,7 +209,6 @@ export function TableEditorDialog({
           </details>
 
           <p className="text-xs text-parchment-dim">{e.ownershipNote}</p>
-
         </form>
       </DialogBody>
       <DialogFooter>

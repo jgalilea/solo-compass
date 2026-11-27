@@ -14,7 +14,13 @@ const LEVEL_CLASS = ["bg-ink-700/70", "bg-gold/25", "bg-gold/50", "bg-gold/75", 
  * see, and reading it needs no weekday grid. A summary for screen
  * readers; each square's day and count on hover.
  */
-export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<string, number>; longestStreak: number }) {
+export function ActivityHeatmap({
+  activity,
+  longestStreak,
+}: {
+  activity: Record<string, number>;
+  longestStreak: number;
+}) {
   const { t } = useLocaleContext();
   const s = t.journal.stats;
   // Today, read once (not on every render): the map ends there.
@@ -26,7 +32,11 @@ export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<
   const max = Math.max(0, ...days.map((d) => d.count));
   const played = days.filter((d) => d.count > 0).length;
   const monthName = new Intl.DateTimeFormat(t.dateLocale, { month: "short" });
-  const dayName = new Intl.DateTimeFormat(t.dateLocale, { day: "numeric", month: "short", year: "numeric" });
+  const dayName = new Intl.DateTimeFormat(t.dateLocale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
   const said = (month: (typeof months)[number], day: (typeof days)[number]) =>
     interpolate(s.activityDay, {
       date: dayName.format(new Date(month.year, month.month, day.day)),
@@ -58,14 +68,19 @@ export function ActivityHeatmap({ activity, longestStreak }: { activity: Record<
               <span
                 key={day.iso}
                 title={day.future ? undefined : said(month, day)}
-                onClick={day.future ? undefined : () => setPicked(day.iso === picked ? null : day.iso)}
+                onClick={
+                  day.future ? undefined : () => setPicked(day.iso === picked ? null : day.iso)
+                }
                 className={`aspect-square ${day.future ? "" : "cursor-pointer"} ${day.iso === picked ? "outline-2 outline-offset-1 outline-parchment" : ""} rounded-[2px] ${day.future ? "border border-ink-border/40" : LEVEL_CLASS[activityLevel(day.count, max)]}`}
               />
             ))}
           </Fragment>
         ))}
       </div>
-      <p aria-live="polite" className={`text-xs ${pickedDay ? "font-medium text-parchment" : "text-parchment-faint"}`}>
+      <p
+        aria-live="polite"
+        className={`text-xs ${pickedDay ? "font-medium text-parchment" : "text-parchment-faint"}`}
+      >
         {pickedDay && pickedMonth ? said(pickedMonth, pickedDay) : s.activityHintTap}
       </p>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs">

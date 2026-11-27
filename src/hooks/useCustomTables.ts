@@ -25,7 +25,8 @@ export function useCustomTables() {
   const [status, setStatus] = useState<CustomTablesStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const failSave = useCallback(
-    (err: unknown) => setError(err instanceof CustomTablesStorageError ? err.message : t.history.genericSaveError),
+    (err: unknown) =>
+      setError(err instanceof CustomTablesStorageError ? err.message : t.history.genericSaveError),
     [t],
   );
   const save = useCallback(
@@ -33,7 +34,12 @@ export function useCustomTables() {
       saveCustomTableChanges(t, prev, next).then(() => announceChange("customTables")),
     [t],
   );
-  const { items: tables, version, setLoaded: setTables, update: updateStored } = useStoredList(save, failSave);
+  const {
+    items: tables,
+    version,
+    setLoaded: setTables,
+    update: updateStored,
+  } = useStoredList(save, failSave);
   // Changes before the stored tables are in would overwrite them with an empty list.
   const readyRef = useRef(false);
 
@@ -54,7 +60,9 @@ export function useCustomTables() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof CustomTablesStorageError ? err.message : t.history.genericLoadError);
+        setError(
+          err instanceof CustomTablesStorageError ? err.message : t.history.genericLoadError,
+        );
         setStatus("error");
       });
     return () => {
@@ -106,7 +114,9 @@ export function useCustomTables() {
 
   const updateTable = useCallback(
     (id: string, draft: CustomTableDraft) => {
-      update((prev) => prev.map((x) => (x.id === id ? { ...x, ...draft, updatedAt: Date.now() } : x)));
+      update((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, ...draft, updatedAt: Date.now() } : x)),
+      );
     },
     [update],
   );

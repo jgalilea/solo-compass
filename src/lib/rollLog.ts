@@ -13,8 +13,12 @@ import { matchesAllWords } from "./text";
  * ("… (Likely)", §3.2.2), and its roll; a table's or a card's `tbl:`
  * line; or the player's dice as they are.
  */
-export function rollJournalLines(t: Dictionary, entry: HistoryEntry): { kind: JournalLineKind; text: string }[] {
-  if (entry.kind === "dados") return [{ kind: "roll", text: entry.card ? `tbl: ${entry.text}` : entry.text }];
+export function rollJournalLines(
+  t: Dictionary,
+  entry: HistoryEntry,
+): { kind: JournalLineKind; text: string }[] {
+  if (entry.kind === "dados")
+    return [{ kind: "roll", text: entry.card ? `tbl: ${entry.text}` : entry.text }];
   if (entry.kind === "tabla") {
     const die = tableRollDie(entry);
     const text = die
@@ -23,12 +27,19 @@ export function rollJournalLines(t: Dictionary, entry: HistoryEntry): { kind: Jo
     return [{ kind: "roll", text }];
   }
   const roll = `${getOracle(rollOracleId(entry)).name}: ${formatOracleDice(t, entry)} -> ${formatOracleResult(t, entry)}`;
-  return [...(entry.question ? [{ kind: "question" as const, text: askedQuestion(t, entry.question, entry.likelihood) }] : []), { kind: "roll", text: roll }];
+  return [
+    ...(entry.question
+      ? [{ kind: "question" as const, text: askedQuestion(t, entry.question, entry.likelihood) }]
+      : []),
+    { kind: "roll", text: roll },
+  ];
 }
 
 /** A question as Lonelog writes it: its likelihood after it, in brackets, unless it's even. */
 export function askedQuestion(t: Dictionary, question: string, likelihood: Likelihood): string {
-  return likelihood && likelihood !== "equilibrado" ? `${question} (${t.likelihood[likelihood]})` : question;
+  return likelihood && likelihood !== "equilibrado"
+    ? `${question} (${t.likelihood[likelihood]})`
+    : question;
 }
 
 /**
@@ -36,7 +47,11 @@ export function askedQuestion(t: Dictionary, question: string, likelihood: Likel
  * roll (its question, table or formula, its dice and its result), like
  * the journal's search. An empty query is every roll.
  */
-export function searchHistory(t: Dictionary, entries: HistoryEntry[], query: string): HistoryEntry[] {
+export function searchHistory(
+  t: Dictionary,
+  entries: HistoryEntry[],
+  query: string,
+): HistoryEntry[] {
   if (!query.trim()) return entries;
   return entries.filter((entry) =>
     matchesAllWords(

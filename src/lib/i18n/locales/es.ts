@@ -39,7 +39,8 @@ export const es: Dictionary = {
     triggerLabelBackupDue: "Ajustes · hace tiempo que no guardas una copia",
     triggerLabelSync: "Ajustes · la sincronización necesita que le eches un vistazo",
     keepScreenOnLabel: "Mantener la pantalla encendida",
-    keepScreenOnHint: "Mientras la app está a la vista, la pantalla no se apaga sola (útil al jugar con dados de verdad). Gasta algo más de batería.",
+    keepScreenOnHint:
+      "Mientras la app está a la vista, la pantalla no se apaga sola (útil al jugar con dados de verdad). Gasta algo más de batería.",
   },
   gameTable: {
     pickDice: "Elegir dados",
@@ -52,18 +53,27 @@ export const es: Dictionary = {
     fromLastOracle: "El último que usaste",
     fromAdventure: "De esta aventura",
     fromActiveAdventure: "De la aventura activa",
-    diceRule: "Los dados que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
-    tablesRule: "Las tablas que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
+    diceRule:
+      "Los dados que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
+    tablesRule:
+      "Las tablas que elijas aquí salen solo en la mesa de «{name}»: tus otras aventuras no cambian.",
     oracleRule: "El oráculo que elijas aquí es solo para «{name}»: tus otras aventuras no cambian.",
     oracleScreenRule:
       "Es el de «{name}», la aventura activa: el que elijas aquí cambia solo el suyo. Sin aventura activa, el Oráculo vuelve a tu favorito (o, si no tienes, al último que usaste sin aventura).",
-    diceFollowing: "Ahora salen tus favoritos, los que tienen estrella en Dados. En cuanto cambies uno, serán los de esta aventura.",
-    tablesFollowing: "Ahora salen tus favoritas, las que tienen estrella en Tablas. En cuanto cambies una, serán las de esta aventura.",
-    oracleFollowing: "Ahora es tu favorito, el de la estrella. En cuanto elijas otro o le preguntes algo, será el de esta aventura.",
-    oracleFollowingLast: "Ahora es el último que usaste. En cuanto elijas uno o le preguntes algo, será el de esta aventura.",
-    diceOwn: "Ya son los de esta aventura: las estrellas de Dados no la cambian. «Volver a mis favoritos» lo deshace.",
-    tablesOwn: "Ya son las de esta aventura: las estrellas de Tablas no la cambian. «Volver a mis favoritas» lo deshace.",
-    oracleOwn: "Ya es el de esta aventura: cambiar tu favorito no la cambia. Para usar otro, elígelo.",
+    diceFollowing:
+      "Ahora salen tus favoritos, los que tienen estrella en Dados. En cuanto cambies uno, serán los de esta aventura.",
+    tablesFollowing:
+      "Ahora salen tus favoritas, las que tienen estrella en Tablas. En cuanto cambies una, serán las de esta aventura.",
+    oracleFollowing:
+      "Ahora es tu favorito, el de la estrella. En cuanto elijas otro o le preguntes algo, será el de esta aventura.",
+    oracleFollowingLast:
+      "Ahora es el último que usaste. En cuanto elijas uno o le preguntes algo, será el de esta aventura.",
+    diceOwn:
+      "Ya son los de esta aventura: las estrellas de Dados no la cambian. «Volver a mis favoritos» lo deshace.",
+    tablesOwn:
+      "Ya son las de esta aventura: las estrellas de Tablas no la cambian. «Volver a mis favoritas» lo deshace.",
+    oracleOwn:
+      "Ya es el de esta aventura: cambiar tu favorito no la cambia. Para usar otro, elígelo.",
     builtin: "De serie",
     own: "Tuyos",
     noOwn: "Tus propios dados se crean en la pantalla Dados.",
@@ -84,25 +94,29 @@ export const es: Dictionary = {
     noAdventure: "Sin aventura activa: tiras, pero no se apunta en ningún diario.",
     loggedIn: "Apuntado en «{name}»",
     savedTitle: "Mis dados",
-    savedEmpty: "Crea tus dados con una fórmula y, si quieres, un texto que irá delante en el diario (Atletismo 4dF+2, Ataque d20+5). Sin texto, al tirar le pones el que quieras en «¿Para qué tiras?».",
+    savedEmpty:
+      "Crea tus dados con una fórmula y, si quieres, un texto que irá delante en el diario (Atletismo 4dF+2, Ataque d20+5). Sin texto, al tirar le pones el que quieras en «¿Para qué tiras?».",
     newRoll: "Nuevo dado",
     nameLabel: "Texto del dado (opcional)",
     namePlaceholder: "Texto, opcional (Atletismo, Ataque…)",
     favoriteAdd: "Marcar {name} como favorito",
     favoriteRemove: "Quitar {name} de favoritos",
-    favoriteAddHint: "Favorito: sale en la mesa de juego del diario, salvo en una aventura con sus propios dados",
+    favoriteAddHint:
+      "Favorito: sale en la mesa de juego del diario, salvo en una aventura con sus propios dados",
     favoriteRemoveHint: "Quitar de favoritos",
     edit: "Editar {name}",
     delete: "Borrar {name}",
     deleted: "Dado borrado",
     saveFormula: "Guardar como dado",
-    saveFormulaHint: "Guardar esta fórmula como un dado tuyo, favorito, con el texto de «¿Para qué tiras?» si lo hay",
+    saveFormulaHint:
+      "Guardar esta fórmula como un dado tuyo, favorito, con el texto de «¿Para qué tiras?» si lo hay",
     saved: "Guardado en tus dados",
     repeat: "Volver a tirar {roll}",
     trayHint: "Las tiradas esperan aquí hasta que las guardas.",
     saveToHistory: "Guardar en el historial",
     builtinTitle: "En tu mesa de juego",
-    favoritesHint: "Los dados con estrella (los de serie y los tuyos) salen en la mesa de juego del diario, salvo en una aventura a la que le elijas otros.",
+    favoritesHint:
+      "Los dados con estrella (los de serie y los tuyos) salen en la mesa de juego del diario, salvo en una aventura a la que le elijas otros.",
     noFavorites: "No tienes dados favoritos: márcalos con la estrella en",
     toolLabel: "Dados o cartas",
     toolDice: "Dados",
@@ -170,7 +184,8 @@ export const es: Dictionary = {
   backupNote: {
     title: "Tus aventuras solo están en este navegador.",
     text: "No hay copias automáticas: si borras sus datos, o pierdes o cambias de dispositivo, se pierden. Exporta una copia de vez en cuando.",
-    syncHint: "Para tenerlas también en otro dispositivo, activa «Sincronizar dispositivos» en Ajustes.",
+    syncHint:
+      "Para tenerlas también en otro dispositivo, activa «Sincronizar dispositivos» en Ajustes.",
     syncedTitle: "Tus aventuras se sincronizan, pero no tienen copia.",
     syncedText:
       "Sincronizar no es una copia de seguridad: un borrado o un error llega a todos tus dispositivos. Exporta una copia de vez en cuando.",
@@ -188,7 +203,8 @@ export const es: Dictionary = {
     sectionTitle: "Aplicación",
     statusStandalone: "Instalada: estás usando Solo Compass como app.",
     statusInstalled: "Instalada en este dispositivo.",
-    openIt: "Ábrela desde tu pantalla de inicio o tu lista de aplicaciones para jugar en su propia ventana.",
+    openIt:
+      "Ábrela desde tu pantalla de inicio o tu lista de aplicaciones para jugar en su propia ventana.",
     removed:
       "¿La has quitado? Algunos navegadores no se enteran: para volver a instalarla, búscalo en su menú («Instalar app» o «Añadir a pantalla de inicio»).",
     statusNotInstalled: "Sin instalar: la estás usando desde el navegador.",
@@ -203,14 +219,12 @@ export const es: Dictionary = {
   storage: {
     sectionTitle: "Tus datos",
     whatTitle: "¿Qué es esto?",
-    what:
-      "Tus aventuras, tiradas y ajustes se guardan en este dispositivo, dentro del navegador. Si el dispositivo se queda sin espacio, o pasas mucho tiempo sin abrir la app, algunos navegadores pueden borrar esos datos por su cuenta para hacer sitio.",
+    what: "Tus aventuras, tiradas y ajustes se guardan en este dispositivo, dentro del navegador. Si el dispositivo se queda sin espacio, o pasas mucho tiempo sin abrir la app, algunos navegadores pueden borrar esos datos por su cuenta para hacer sitio.",
     benefitTitle: "¿Qué ganas?",
     benefit:
       "Si das permiso, el navegador marca los datos de Solo Compass como importantes y ya no los borrará por su cuenta. Solo desaparecerían si tú lo decides (por ejemplo, borrando los datos del sitio).",
     howTitle: "¿Cómo funciona?",
-    how:
-      "Es un permiso estándar de los navegadores. Algunos, como Firefox, te mostrarán su propio aviso para que lo confirmes: es normal, lo pide esta app. Otros, como Chrome o Safari, lo deciden solos sin preguntar, a menudo según si has instalado la app o la usas con frecuencia.",
+    how: "Es un permiso estándar de los navegadores. Algunos, como Firefox, te mostrarán su propio aviso para que lo confirmes: es normal, lo pide esta app. Otros, como Chrome o Safari, lo deciden solos sin preguntar, a menudo según si has instalado la app o la usas con frecuencia.",
     ownershipTitle: "Tus datos son siempre tuyos",
     ownership:
       "Este permiso no envía nada a nadie, y no hay cuentas: nada sale de tu dispositivo si tú no lo sacas. Puedes exportar una copia o borrarlo todo cuando quieras.",
@@ -230,7 +244,8 @@ export const es: Dictionary = {
   },
   update: {
     title: "Ha llegado una versión nueva de Solo Compass",
-    description: "Actualiza para ver los últimos cambios. Todo lo que tienes guardado sigue a salvo.",
+    description:
+      "Actualiza para ver los últimos cambios. Todo lo que tienes guardado sigue a salvo.",
     button: "Actualizar",
     updating: "Actualizando…",
     later: "Más tarde",
@@ -274,7 +289,8 @@ export const es: Dictionary = {
     tablesUsedBy: "Tablas de otros juegos",
     notOfficial:
       "Solo Compass es un proyecto independiente y no oficial: no es un producto oficial ni está afiliado, respaldado o patrocinado por ninguno de los autores, editoriales o juegos que se citan aquí (entre ellos, Tomkin Press e Ironsworn).",
-    translationNote: "Las traducciones al español son de Solo Compass (las de Ironsworn, con la de GatoMalefico como referencia); las de Loner, Starsmith y Cairn se comparten también bajo CC BY-SA 4.0.",
+    translationNote:
+      "Las traducciones al español son de Solo Compass (las de Ironsworn, con la de GatoMalefico como referencia); las de Loner, Starsmith y Cairn se comparten también bajo CC BY-SA 4.0.",
     creditBy: "de {author}, bajo licencia",
     version: "Versión {version}",
     privacyTitle: "Tu diario es solo tuyo",
@@ -292,7 +308,8 @@ export const es: Dictionary = {
       "¿Algo no funciona, echas algo en falta o se te ha ocurrido una idea? Cuéntamelo en un formulario corto. Solo lleva la versión de la app y tu navegador, nada de tu diario.",
     feedbackButton: "Abrir el formulario",
     sourceTitle: "Código abierto",
-    sourceDescription: "Solo Compass es software libre (GPL-3.0): su código está en GitHub, a la vista de todos.",
+    sourceDescription:
+      "Solo Compass es software libre (GPL-3.0): su código está en GitHub, a la vista de todos.",
     sourceButton: "Ver el proyecto en GitHub",
     legendTitle: "Símbolos del diario",
     legendAction: "lo que hace tu personaje.",
@@ -301,11 +318,16 @@ export const es: Dictionary = {
     legendConsequence: "qué pasa como consecuencia de una tirada.",
     legendNote: "narración libre, sin símbolo.",
     legendSession: "el título de una sesión.",
-    legendScene: "una escena dentro de la sesión: S2, S5a (recuerdo), S7.1 (montaje), T2-S1 (otra trama; @(Nombre) al final, quién la vive).",
-    legendTable: "contenido al azar: una tabla, un generador o una carta; «-> Sí» solo es una respuesta sin dados.",
-    legendNarrative: "@(Nombre) es lo que hace otro personaje; N (Guardia): \"…\" un diálogo; (nota: …) un comentario fuera del juego; entre \\--- y ---\\, un texto de la historia.",
-    legendAddons: "de los complementos de Lonelog: salas [R:4|estado:despejada], enemigos [F:Matón|PV 6], objetos [Inv:Antorcha|×3], dinero [Wealth:Mara|Oro 45], mazos [Deck:Principal|×52], combates [COMBAT] con asaltos Rd1, Rd2…",
-    legendTags: "personajes ([N:…] PNJ, [PC:…] PJ) y lugares ([L:…]), con sus rasgos tras «|». Se reúnen en el cuaderno de la aventura.",
+    legendScene:
+      "una escena dentro de la sesión: S2, S5a (recuerdo), S7.1 (montaje), T2-S1 (otra trama; @(Nombre) al final, quién la vive).",
+    legendTable:
+      "contenido al azar: una tabla, un generador o una carta; «-> Sí» solo es una respuesta sin dados.",
+    legendNarrative:
+      '@(Nombre) es lo que hace otro personaje; N (Guardia): "…" un diálogo; (nota: …) un comentario fuera del juego; entre \\--- y ---\\, un texto de la historia.',
+    legendAddons:
+      "de los complementos de Lonelog: salas [R:4|estado:despejada], enemigos [F:Matón|PV 6], objetos [Inv:Antorcha|×3], dinero [Wealth:Mara|Oro 45], mazos [Deck:Principal|×52], combates [COMBAT] con asaltos Rd1, Rd2…",
+    legendTags:
+      "personajes ([N:…] PNJ, [PC:…] PJ) y lugares ([L:…]), con sus rasgos tras «|». Se reúnen en el cuaderno de la aventura.",
     legendIntro:
       "En la app cada tipo de entrada lleva un icono; al exportar se escribe con su símbolo Lonelog:",
     dataSectionTitle: "Copia de seguridad",
@@ -318,7 +340,8 @@ export const es: Dictionary = {
     lastBackup: "Última copia: {when}.",
     noBackupYet: "Aún no has guardado ninguna copia desde este dispositivo.",
     importAllButton: "Restaurar copia",
-    importAllError: "No se pudo leer el archivo. ¿Es una copia de seguridad de Solo Compass válida?",
+    importAllError:
+      "No se pudo leer el archivo. ¿Es una copia de seguridad de Solo Compass válida?",
     importAllSuccessReloading: "Copia restaurada. Recargando…",
     shareAllButton: "Enviar",
     shareAllTitle: "Copia de Solo Compass",
@@ -346,7 +369,8 @@ export const es: Dictionary = {
     },
     favorite: "Favorito",
     markFavorite: "Marcar como favorito",
-    favoriteHint: "Tu favorito es con el que empieza cada aventura nueva, y con el que se abre el Oráculo sin aventura activa.",
+    favoriteHint:
+      "Tu favorito es con el que empieza cada aventura nueva, y con el que se abre el Oráculo sin aventura activa.",
   },
   oracleHelp: {
     button: "Cómo funciona el oráculo",
@@ -379,12 +403,14 @@ export const es: Dictionary = {
     rollsLabel: "Tiradas",
     tablesLabel: "Tablas propias",
     problemTitle: "No se puede abrir",
-    sharedNote: "Llegó compartido desde otra app o desde una web. Si no lo has compartido tú, ciérralo sin importar nada.",
+    sharedNote:
+      "Llegó compartido desde otra app o desde una web. Si no lo has compartido tú, ciérralo sin importar nada.",
     problems: {
       unsupported:
         "Solo Compass abre archivos de texto: diarios de Lonelog (.md o .txt), tablas (.md, .txt o .json) y copias de seguridad (.json).",
       tooBig: "Es demasiado grande para abrirlo sin riesgo de que la app se cuelgue.",
-      notText: "No es un archivo de texto (o no está en UTF-8): puede ser de otro tipo o estar dañado.",
+      notText:
+        "No es un archivo de texto (o no está en UTF-8): puede ser de otro tipo o estar dañado.",
       empty: "Está vacío.",
       damaged: "Parece un .json, pero está dañado y no se puede leer.",
       newerBackup:
@@ -411,7 +437,8 @@ export const es: Dictionary = {
     twistLabel: "¡Giro!",
     twistExplanation: "Tercer doble: algo inesperado cambia la escena. El contador vuelve a cero.",
     doubleShort: "dobles {count}/3",
-    twistCounterHint: "Contador de giros de Loner: al tercer doble, un giro. Cada aventura lleva el suyo.",
+    twistCounterHint:
+      "Contador de giros de Loner: al tercer doble, un giro. Cada aventura lleva el suyo.",
     targetSuffix: "{value} vs {target}+",
     consequencePlaceholder: "¿Qué pasa? Se apunta en el diario.",
     consequenceSaved: "Apuntado en «{name}»",
@@ -462,7 +489,8 @@ export const es: Dictionary = {
     toolTableHint: "Busca cualquier tabla por su nombre, o tenla aquí a mano con «Elegir tablas».",
     favoriteAdd: "Marcar tabla como favorita",
     favoriteRemove: "Quitar tabla de favoritas",
-    favoriteAddHint: "Favorita: sale arriba en Tablas y en la mesa de juego del diario, salvo en una aventura con sus propias tablas",
+    favoriteAddHint:
+      "Favorita: sale arriba en Tablas y en la mesa de juego del diario, salvo en una aventura con sus propias tablas",
     rolling: "Lanzando…",
     rollButton: "Tirar {dice}",
     resultLabel: "Resultado {n}",
@@ -475,11 +503,13 @@ export const es: Dictionary = {
     resultPanelHeading: "Último resultado",
     resultPanelEmpty: "Tira en una tabla y el resultado aparecerá aquí.",
     inspirationTitle: "Inspiración rápida",
-    inspirationDescription: "Una acción y un tema a la vez, para cuando el oráculo te deja en blanco.",
+    inspirationDescription:
+      "Una acción y un tema a la vez, para cuando el oráculo te deja en blanco.",
     inspirationButton: "Inspírame",
     inspirationName: "Inspiración",
     builtInHeading: "Tablas de Solo Compass",
-    ironswornNote: "De Shawn Tomkin, bajo licencia CC BY 4.0. No es un producto oficial de Ironsworn.",
+    ironswornNote:
+      "De Shawn Tomkin, bajo licencia CC BY 4.0. No es un producto oficial de Ironsworn.",
     creditNote: "De {author}, bajo licencia {license}.",
     sectionCount: "{count} tablas",
     sectionCountOne: "1 tabla",
@@ -490,7 +520,8 @@ export const es: Dictionary = {
     allThemes: "Todas",
     loadError: "No se pudieron cargar estas tablas.",
     customHeading: "Tus tablas",
-    customEmpty: "Crea una tabla con tus propios resultados o importa una desde un archivo: se tiran igual que las de serie y se apuntan en el diario.",
+    customEmpty:
+      "Crea una tabla con tus propios resultados o importa una desde un archivo: se tiran igual que las de serie y se apuntan en el diario.",
     customGame: "Propia",
     newTable: "Nueva tabla",
     importTable: "Importar",
@@ -512,7 +543,8 @@ export const es: Dictionary = {
     generatorsHeading: "Generadores",
     generatorsIntro: "Varias tablas en una sola tirada, y en una sola entrada del diario.",
     generatorNew: "Nuevo generador",
-    generatorsEmpty: "Junta las tablas que siempre tiras juntas: por ejemplo, Tipo de lugar, Estado del lugar y Problema del lugar.",
+    generatorsEmpty:
+      "Junta las tablas que siempre tiras juntas: por ejemplo, Tipo de lugar, Estado del lugar y Problema del lugar.",
     generatorRoll: "Tirar",
     generatorEdit: "Editar {name}",
     generatorDelete: "Borrar {name}",
@@ -542,7 +574,8 @@ export const es: Dictionary = {
       diceLabel: "Dado",
       diceAuto: "Según las líneas",
       entriesLabel: "Resultados, uno por línea",
-      entriesHint: "Puedes pegar una lista o una tabla de Markdown. Para que un resultado salga más, empieza la línea por su rango: «1-3 Ratas». Un resultado puede tirar en otra tabla, «Un {PNJ: nombre} vigila», o pedir «Tira dos veces».",
+      entriesHint:
+        "Puedes pegar una lista o una tabla de Markdown. Para que un resultado salga más, empieza la línea por su rango: «1-3 Ratas». Un resultado puede tirar en otra tabla, «Un {PNJ: nombre} vigila», o pedir «Tira dos veces».",
       entriesPlaceholder: "Una bolsa de monedas\nUna espada oxidada\nUn mapa a medio dibujar",
       themeLabel: "Temática",
       themeNone: "Sin temática",
@@ -551,15 +584,18 @@ export const es: Dictionary = {
       authorLabel: "Autoría",
       licenseLabel: "Licencia",
       urlLabel: "Enlace",
-      ownershipNote: "Tus tablas se guardan en este dispositivo y en tu copia de seguridad. La app no las publica en ningún sitio.",
+      ownershipNote:
+        "Tus tablas se guardan en este dispositivo y en tu copia de seguridad. La app no las publica en ningún sitio.",
       save: "Guardar tabla",
       summary: "{count} resultados · {dice}",
       errorName: "Ponle un nombre a la tabla.",
       errorTooFew: "Añade al menos dos resultados.",
       errorCount: "Un {dice} necesita {expected} resultados y hay {count}.",
-      errorRanges: "Los rangos tienen que cubrir del {from} al {to} sin huecos ni repeticiones (revisa el {value}).",
+      errorRanges:
+        "Los rangos tienen que cubrir del {from} al {to} sin huecos ni repeticiones (revisa el {value}).",
       errorMixed: "Pon rango en todas las líneas o en ninguna.",
-      errorD66Lines: "66 líneas sin rango se confundirían con un d66: añade o quita una, o usa rangos.",
+      errorD66Lines:
+        "66 líneas sin rango se confundirían con un d66: añade o quita una, o usa rangos.",
       errorTooBig: "Una tabla puede llegar como mucho a un d10000.",
     },
   },
@@ -589,8 +625,7 @@ export const es: Dictionary = {
     emptyDescription:
       "Consulta el oráculo o tira en una tabla: cada tirada quedará aquí, guardada en este dispositivo.",
     emptyFavoritesTitle: "Aún no tienes tiradas favoritas",
-    emptyFavoritesDescription:
-      "Toca la estrella de una tirada para marcarla como favorita.",
+    emptyFavoritesDescription: "Toca la estrella de una tirada para marcarla como favorita.",
     importedNote: "Venía con el diario",
     emptyFilterTitle: "Sin resultados para este filtro",
     kindOracle: "Oráculo",
@@ -613,8 +648,7 @@ export const es: Dictionary = {
     clearConfirmDescription: "Esta acción no se puede deshacer.",
     clearConfirmButton: "Borrar todo",
     entryDeleted: "Tirada eliminada",
-    storageUnavailableError:
-      "El almacenamiento de este navegador no está disponible.",
+    storageUnavailableError: "El almacenamiento de este navegador no está disponible.",
     storageSaveError: "No se pudo guardar el historial (¿almacenamiento lleno o bloqueado?).",
     storageClearError: "No se pudo borrar el historial.",
     genericLoadError: "No se pudo cargar el historial.",
@@ -638,12 +672,11 @@ export const es: Dictionary = {
     setActive: "Activar",
     unsetActive: "Desactivar",
     activeLabel: "Activa",
-    activeAdventureNote: "La aventura activa: lo que tires en Oráculo, Tablas y Dados se apunta aquí.",
+    activeAdventureNote:
+      "La aventura activa: lo que tires en Oráculo, Tablas y Dados se apunta aquí.",
     activeChipTitle: "Ir a «{name}», la aventura activa: ahí se apunta lo que tiras",
-    noActiveAdventureNote:
-      "Sin aventura activa: las tiradas no se registran en ningún diario.",
-    activateHint:
-      "Actívala para que lo que tires en Oráculo, Tablas y Dados se apunte en ella.",
+    noActiveAdventureNote: "Sin aventura activa: las tiradas no se registran en ningún diario.",
+    activateHint: "Actívala para que lo que tires en Oráculo, Tablas y Dados se apunte en ella.",
     activatedTitle: "Ahora es la aventura activa",
     activatedDescription: "Lo que tires en Oráculo, Tablas y Dados se apuntará aquí.",
     goToActiveAdventure: "{name}: ir a la aventura activa",
@@ -721,10 +754,12 @@ export const es: Dictionary = {
     moreActions: "Más opciones",
     composerHintAction: "Lo que hace tu personaje, con o sin tirada.",
     kindExcerpt: "Texto de la historia",
-    composerHintExcerpt: "Lo que se lee dentro del juego: una carta, una inscripción, un cartel. Se apunta tal cual, aparte.",
+    composerHintExcerpt:
+      "Lo que se lee dentro del juego: una carta, una inscripción, un cartel. Se apunta tal cual, aparte.",
     excerptPlaceholder: "Una carta, una inscripción, un cartel…",
     kindDialogue: "Diálogo",
-    composerHintDialogue: "Lo que dice tu personaje u otro: eliges quién habla y escribes solo sus palabras.",
+    composerHintDialogue:
+      "Lo que dice tu personaje u otro: eliges quién habla y escribes solo sus palabras.",
     dialogueSpeaker: "Habla",
     dialogueOther: "Otro…",
     dialogueOtherName: "Nombre…",
@@ -741,7 +776,8 @@ export const es: Dictionary = {
     zenOn: "Modo zen",
     zenOff: "Salir del modo zen",
     zenBar: "Modo zen: solo lo que se cuenta, sin tiradas ni preguntas.",
-    zenHint: "Las consecuencias sí se quedan: lo que respondió el oráculo se entiende si lo cuentas en ellas.",
+    zenHint:
+      "Las consecuencias sí se quedan: lo que respondió el oráculo se entiende si lo cuentas en ellas.",
     zenExport: "Exportar el relato",
     zenExportTitle: "Una página web con solo lo que se cuenta, para leerla o compartirla",
     htmlStoryNote: "Solo el relato: sin preguntas ni tiradas.",
@@ -764,7 +800,8 @@ export const es: Dictionary = {
     sendButton: "Añadir al diario",
     kindMenuLabel: "Tipo de entrada: {kind}",
     composerHintSession: "Abre un capítulo nuevo. El título es opcional.",
-    composerHintScene: "Un cambio de lugar o de momento dentro de la sesión. Se numera sola: S1, S2… Si quieres, el oráculo la pone a prueba.",
+    composerHintScene:
+      "Un cambio de lugar o de momento dentro de la sesión. Se numera sola: S1, S2… Si quieres, el oráculo la pone a prueba.",
     consequenceJoins: "Se une a",
     consequenceAlone: "No hay entrada anterior en esta sesión: irá suelta.",
     toolDice: "Dados",
@@ -794,7 +831,8 @@ export const es: Dictionary = {
     hideScenes: "Ocultar las escenas de {session}",
     prologueLabel: "Antes de la primera sesión",
     noActiveChip: "Sin aventura",
-    noActiveChipTitle: "Sin aventura activa, tus tiradas solo quedan en el historial. Activa una en el diario.",
+    noActiveChipTitle:
+      "Sin aventura activa, tus tiradas solo quedan en el historial. Activa una en el diario.",
     playPanelLabel: "Mesa de juego",
     newSessionButton: "Nueva sesión",
     newSessionPlaceholder: "Título de la sesión (opcional)",
@@ -847,8 +885,10 @@ export const es: Dictionary = {
       diceHigh: "Dados bendecidos: te están saliendo más altos de lo normal.",
       diceLow: "Dados malditos: te están saliendo más bajos de lo normal.",
       diceNormal: "Dados honrados: ni bendecidos ni malditos, salen como es normal.",
-      diceFew: "Cuando lleves {count} dados, sumando todos los tipos, se verá si están bendecidos o malditos (llevas {total}).",
-      diceHint: "Cuenta cada dado que cae, también los descartados: un 2d6 son dos dados. Si en tu juego es mejor sacar bajo, léelo al revés.",
+      diceFew:
+        "Cuando lleves {count} dados, sumando todos los tipos, se verá si están bendecidos o malditos (llevas {total}).",
+      diceHint:
+        "Cuenta cada dado que cae, también los descartados: un 2d6 son dos dados. Si en tu juego es mejor sacar bajo, léelo al revés.",
       featHighRun: "Racha bendita",
       featHighRunNote: "dados seguidos por encima de la media",
       featLowRun: "Racha maldita",
@@ -865,11 +905,13 @@ export const es: Dictionary = {
       adventureWorst: "Aventura maldita, con los dados más bajos: {session}.",
       allDiceButton: "La suerte de tus dados",
       allDiceSubtitle: "En todas tus aventuras",
-      allDiceEmpty: "Aún no hay ningún dado que contar: tira en una aventura, apúntalo en su diario y vuelve.",
+      allDiceEmpty:
+        "Aún no hay ningún dado que contar: tira en una aventura, apúntalo en su diario y vuelve.",
       chanceGenerous: "Oráculo generoso: dice que sí más de lo que le toca.",
       chanceStubborn: "Oráculo tozudo: dice que sí menos de lo que le toca.",
       chanceFair: "Oráculo justo: dice que sí más o menos lo que le toca.",
-      chanceNote: "En {total} preguntas, por la probabilidad que elegiste en cada una, por azar tocarían unos {expected} «sí»; han salido {yes}.",
+      chanceNote:
+        "En {total} preguntas, por la probabilidad que elegiste en cada una, por azar tocarían unos {expected} «sí»; han salido {yes}.",
       sessionsHeading: "Las sesiones",
       sessionsAverage: "De media, {entries} entradas y {words} palabras por sesión.",
       sessionsLongest: "La más extensa: {session}, con {words} palabras.",
@@ -891,8 +933,10 @@ export const es: Dictionary = {
       diceWaiting: "Aún sin gráfica: {dice}.",
       diceWaitingItem: "{die} ({total} de {count})",
       diceAverage: "Media {average} (por azar: {expected})",
-      diceFace: "Cara {face}: {count} de {total} dados, el {share} (por azar tocaría el {expected})",
-      diceFaces: "Caras {face}: {count} de {total} dados, el {share} (por azar tocaría el {expected})",
+      diceFace:
+        "Cara {face}: {count} de {total} dados, el {share} (por azar tocaría el {expected})",
+      diceFaces:
+        "Caras {face}: {count} de {total} dados, el {share} (por azar tocaría el {expected})",
       chartHint: "Toca una barra para ver el detalle",
       entryOne: "Entrada",
       activityHintTap: "Toca un día para ver el detalle",
@@ -907,7 +951,8 @@ export const es: Dictionary = {
       hours: "{hours} h",
       minutes: "{minutes} min",
       activityHeading: "El último año",
-      activityHint: "Cada fila es un mes y cada casilla un día: cuanto más intensa, más escribiste.",
+      activityHint:
+        "Cada fila es un mes y cada casilla un día: cuanto más intensa, más escribiste.",
       activityLess: "Menos",
       activityMore: "Más",
       activityDay: "{date}: {count}",
@@ -920,7 +965,8 @@ export const es: Dictionary = {
     exportButton: "Exportar a Markdown",
     exportHtmlButton: "Exportar como página web",
     htmlExportedOn: "Exportado el {date}",
-    htmlThemeComment: "Colores y letra del tema con el que se exportó: cambia estos valores para personalizar la página.",
+    htmlThemeComment:
+      "Colores y letra del tema con el que se exportó: cambia estos valores para personalizar la página.",
     exportedToastTitle: "Descargado {filename}",
     exportedToastDescription: "Guardado en la carpeta de Descargas de tu navegador.",
     importButton: "Importar diario (.md)",
@@ -933,12 +979,15 @@ export const es: Dictionary = {
     title: "Cuaderno",
     openLabel: "Cuaderno: notas fijas, personajes y lugares, hilos y relojes, inventario",
     notesTitle: "Notas fijas",
-    notesEmpty: "Lo que quieras tener a mano: inventario, pistas, cabos sueltos… Toca para escribir.",
-    notesPlaceholder: "Escribe aquí, en Markdown si quieres: **negrita**, *cursiva*, «# título», «- lista» y «- [ ] casilla» que se marca con un toque.",
+    notesEmpty:
+      "Lo que quieras tener a mano: inventario, pistas, cabos sueltos… Toca para escribir.",
+    notesPlaceholder:
+      "Escribe aquí, en Markdown si quieres: **negrita**, *cursiva*, «# título», «- lista» y «- [ ] casilla» que se marca con un toque.",
     notesEdit: "Editar las notas",
     notesDone: "Hecho",
     descriptionAdd: "Añadir descripción",
-    descriptionPlaceholder: "Cómo es, quién es, qué sabes… No se apunta en el diario. Admite **negrita**, *cursiva* y enlaces.",
+    descriptionPlaceholder:
+      "Cómo es, quién es, qué sabes… No se apunta en el diario. Admite **negrita**, *cursiva* y enlaces.",
     descriptionLabel: "Descripción de {name}",
     castTitle: "Personajes y lugares",
     castEmpty:
@@ -994,10 +1043,18 @@ export const es: Dictionary = {
     groupItems: "Objetos",
     groupWealth: "Dinero",
     inventoryTitle: "Inventario",
-    inventoryEmpty: "Lo que llevas y lo que tienes, como [Inv:Antorcha|×3] o [Wealth:Mara|Oro 45]. Con −/+ apuntas que gastas o consigues uno.",
+    inventoryEmpty:
+      "Lo que llevas y lo que tienes, como [Inv:Antorcha|×3] o [Wealth:Mara|Oro 45]. Con −/+ apuntas que gastas o consigues uno.",
     quantityLabel: "Cantidad",
     ownerLabel: "¿De quién es?",
-    categories: { status: "estado", exits: "salidas", pos: "posición", owner: "dueño", where: "lugar", out: "fuera" },
+    categories: {
+      status: "estado",
+      exits: "salidas",
+      pos: "posición",
+      owner: "dueño",
+      where: "lugar",
+      out: "fuera",
+    },
     useOne: "Gastar una unidad de {name}",
     addOne: "Una unidad más de {name}",
     cardOut: "Una carta menos en {name}",
@@ -1011,7 +1068,8 @@ export const es: Dictionary = {
     filterHint: "Muestra en el diario solo las entradas sobre este elemento",
     renameButton: "Renombrar",
     renameLabel: "Nombre nuevo",
-    renameHint: "Cambia el nombre en todas las entradas del diario, también en sus diálogos y acciones.",
+    renameHint:
+      "Cambia el nombre en todas las entradas del diario, también en sus diálogos y acciones.",
     renamed: "Renombrado a «{name}» en {count} entradas",
     progressFull: "completo",
     timerDone: "¡ya!",
@@ -1020,7 +1078,8 @@ export const es: Dictionary = {
     mentionHint: "Añade una referencia a lo que estás escribiendo.",
     changeButton: "Anotar un cambio",
     changePlaceholder: "herido, -armado, herido>curado…",
-    changeHint: "Separa con comas. «-» quita, «a>b» cambia uno por otro, «PV 6» fija un valor y «PV-2» lo cambia.",
+    changeHint:
+      "Separa con comas. «-» quita, «a>b» cambia uno por otro, «PV 6» fija un valor y «PV-2» lo cambia.",
     logButton: "Apuntar",
     addHeading: "Añadir:",
     addOfKind: "Añadir: {kind}",

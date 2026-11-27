@@ -25,7 +25,9 @@ const KEEP_FOR = 365 * 24 * 60 * 60 * 1000;
 function normalizeDeletion(value: unknown): Deletion | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
-  return typeof v.id === "string" && typeof v.at === "number" && Number.isFinite(v.at) ? { id: v.id, at: v.at } : null;
+  return typeof v.id === "string" && typeof v.at === "number" && Number.isFinite(v.at)
+    ? { id: v.id, at: v.at }
+    : null;
 }
 
 const deletionStore = createCollection<Deletion>({
@@ -47,7 +49,9 @@ export async function loadDeletions(): Promise<Deletion[]> {
     const recent = recentDeletions(all);
     if (recent.length < all.length) {
       const kept = new Set(recent.map((d) => d.id));
-      void deletionStore.save({ put: [], remove: all.filter((d) => !kept.has(d.id)).map((d) => d.id) }).catch(() => {});
+      void deletionStore
+        .save({ put: [], remove: all.filter((d) => !kept.has(d.id)).map((d) => d.id) })
+        .catch(() => {});
     }
     return recent;
   } catch {
@@ -57,7 +61,9 @@ export async function loadDeletions(): Promise<Deletion[]> {
 
 export async function replaceDeletions(deletions: Deletion[]): Promise<void> {
   if (typeof window === "undefined") return;
-  await deletionStore.replace(recentDeletions(deletions.map(normalizeDeletion).filter((d) => d !== null)));
+  await deletionStore.replace(
+    recentDeletions(deletions.map(normalizeDeletion).filter((d) => d !== null)),
+  );
 }
 
 /** Writes only what changed between the two lists (a sync's merge). */

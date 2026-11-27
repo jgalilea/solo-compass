@@ -9,10 +9,30 @@
  * localStorage fails, they just start unfolded.
  */
 
-export type NotebookSection = "characters" | "places" | "rooms" | "foes" | "threads" | "progress" | "events" | "items" | "wealth";
-export type NotebookBlock = "sessionsBlock" | "notesBlock" | "castBlock" | "threadsBlock" | "inventoryBlock";
+export type NotebookSection =
+  | "characters"
+  | "places"
+  | "rooms"
+  | "foes"
+  | "threads"
+  | "progress"
+  | "events"
+  | "items"
+  | "wealth";
+export type NotebookBlock =
+  | "sessionsBlock"
+  | "notesBlock"
+  | "castBlock"
+  | "threadsBlock"
+  | "inventoryBlock";
 export type PlayToolBlock = "oracleTool" | "diceTool" | "tableTool";
-export type StatsBlock = "activityStats" | "sessionStats" | "namedStats" | "oracleStats" | "rollStats" | "diceStats";
+export type StatsBlock =
+  | "activityStats"
+  | "sessionStats"
+  | "namedStats"
+  | "oracleStats"
+  | "rollStats"
+  | "diceStats";
 export type NotebookFold = NotebookSection | NotebookBlock | PlayToolBlock | StatsBlock;
 
 const STORAGE_KEY = "solo-compass:notebook-sections-folded";

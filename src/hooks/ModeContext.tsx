@@ -15,8 +15,7 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>(() => loadMode());
   const systemDark = useSyncExternalStore(subscribeToSystemScheme, systemPrefersDark);
   // Derived, not its own state: so it doesn't need syncing with an effect.
-  const resolvedMode: "light" | "dark" =
-    mode === "auto" ? (systemDark ? "dark" : "light") : mode;
+  const resolvedMode: "light" | "dark" = mode === "auto" ? (systemDark ? "dark" : "light") : mode;
 
   useEffect(() => {
     saveMode(mode);
@@ -28,8 +27,6 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   }, [resolvedMode]);
 
   return (
-    <ModeContext.Provider value={{ mode, setMode, resolvedMode }}>
-      {children}
-    </ModeContext.Provider>
+    <ModeContext.Provider value={{ mode, setMode, resolvedMode }}>{children}</ModeContext.Provider>
   );
 }

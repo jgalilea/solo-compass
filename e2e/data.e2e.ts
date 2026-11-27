@@ -61,7 +61,10 @@ test("exports an adventure as Lonelog and imports it back", async ({ page }) => 
   expect(errors).toEqual([]);
 });
 
-test("restores the full backup on a device that has nothing", async ({ page, browser }, testInfo) => {
+test("restores the full backup on a device that has nothing", async ({
+  page,
+  browser,
+}, testInfo) => {
   const errors = watchErrors(page);
   await newAdventure(page, "La ciénaga");
   await write(page, "El barro me llega a las rodillas.");
@@ -91,7 +94,9 @@ test("restores the full backup on a device that has nothing", async ({ page, bro
   await other.getByRole("button", { name: "Sí, sustituirlo todo" }).click();
   // It reloads with everything in place.
   await other.getByText("La ciénaga").first().click();
-  await expect(other.locator("[id^=entry-]").getByText("El barro me llega a las rodillas.")).toBeVisible();
+  await expect(
+    other.locator("[id^=entry-]").getByText("El barro me llega a las rodillas."),
+  ).toBeVisible();
   await fresh.close();
 
   expect(errors).toEqual([]);
@@ -106,13 +111,22 @@ test("rolls a table of one's own and keeps the language picked", async ({ page }
   await page.getByRole("button", { name: "Nueva tabla" }).click();
   const editor = page.getByRole("dialog");
   await editor.getByLabel("Nombre", { exact: true }).fill("Botín del faro");
-  await editor.getByLabel("Resultados, uno por línea").fill("Una lente rota\nUn diario empapado\nAceite para la lámpara");
+  await editor
+    .getByLabel("Resultados, uno por línea")
+    .fill("Una lente rota\nUn diario empapado\nAceite para la lámpara");
   await editor.getByRole("button", { name: "Guardar tabla" }).click();
 
   const results = ["Una lente rota", "Un diario empapado", "Aceite para la lámpara"];
-  const row = page.getByRole("listitem").filter({ has: page.getByText("Botín del faro", { exact: true }) });
+  const row = page
+    .getByRole("listitem")
+    .filter({ has: page.getByText("Botín del faro", { exact: true }) });
   await row.getByRole("button", { name: /^Tirar/ }).click();
-  await expect(page.getByText(new RegExp(results.join("|"))).filter({ visible: true }).first()).toBeVisible();
+  await expect(
+    page
+      .getByText(new RegExp(results.join("|")))
+      .filter({ visible: true })
+      .first(),
+  ).toBeVisible();
 
   // English, and still English after reloading, with the table there.
   await page.getByRole("button", { name: /^Ajustes/ }).click();
@@ -128,7 +142,9 @@ test("rolls a table of one's own and keeps the language picked", async ({ page }
   expect(errors).toEqual([]);
 });
 
-test("draws the dice of table rolls from before the history kept them", async ({ page }, testInfo) => {
+test("draws the dice of table rolls from before the history kept them", async ({
+  page,
+}, testInfo) => {
   const errors = watchErrors(page);
   await page.goto("./#/tablas");
   await page.getByLabel("Buscar tabla").first().fill("gancho");

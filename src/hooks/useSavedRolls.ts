@@ -25,11 +25,13 @@ export function useSavedRolls() {
   const [status, setStatus] = useState<SavedRollsStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const failSave = useCallback(
-    (err: unknown) => setError(err instanceof SavedRollsStorageError ? err.message : t.history.genericSaveError),
+    (err: unknown) =>
+      setError(err instanceof SavedRollsStorageError ? err.message : t.history.genericSaveError),
     [t],
   );
   const save = useCallback(
-    (prev: SavedRoll[], next: SavedRoll[]) => saveSavedRollChanges(t, prev, next).then(() => announceChange("savedRolls")),
+    (prev: SavedRoll[], next: SavedRoll[]) =>
+      saveSavedRollChanges(t, prev, next).then(() => announceChange("savedRolls")),
     [t],
   );
   const { items, version, setLoaded, update: updateStored } = useStoredList(save, failSave);

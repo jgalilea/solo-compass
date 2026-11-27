@@ -3,7 +3,13 @@ import { useOracleContext } from "../hooks/useOracleContext";
 import { useLongTexts } from "../hooks/useLongTexts";
 import { interpolate } from "../lib/i18n";
 import { getOracle } from "../lib/oracles";
-import { oracleLevels, oracleOdds, oracleTarget, type OracleId, type OracleOdds } from "../lib/oracleEngines";
+import {
+  oracleLevels,
+  oracleOdds,
+  oracleTarget,
+  type OracleId,
+  type OracleOdds,
+} from "../lib/oracleEngines";
 import { HelpHeading } from "./HelpDialog";
 import { IconExternalLink } from "./icons/Icons";
 
@@ -39,12 +45,14 @@ export function OracleHelpContent() {
           <div className="flex flex-col gap-1.5">
             <HelpHeading>{help.answersHeading}</HelpHeading>
             <dl className="flex flex-col gap-1 text-sm">
-              {[...help.answers, ...(rules.special ? [rules.special] : [])].map(({ label, text }) => (
-                <div key={label}>
-                  <dt className="inline font-medium text-parchment">{label}:</dt>{" "}
-                  <dd className="inline text-parchment-dim">{text}</dd>
-                </div>
-              ))}
+              {[...help.answers, ...(rules.special ? [rules.special] : [])].map(
+                ({ label, text }) => (
+                  <div key={label}>
+                    <dt className="inline font-medium text-parchment">{label}:</dt>{" "}
+                    <dd className="inline text-parchment-dim">{text}</dd>
+                  </div>
+                ),
+              )}
             </dl>
           </div>
 
@@ -61,7 +69,11 @@ export function OracleHelpContent() {
 
       <div className="flex flex-col gap-2 border-t border-ink-border pt-4">
         <p className="text-xs text-parchment-dim">
-          {interpolate(help.credit, { name: oracle.name, author: oracle.author, license: oracle.license })}
+          {interpolate(help.credit, {
+            name: oracle.name,
+            author: oracle.author,
+            license: oracle.license,
+          })}
         </p>
         <a
           href={oracle.url}
@@ -90,10 +102,24 @@ function OddsTable({ oracleId }: { oracleId: OracleId }) {
   const columns: { label: string; value: (odds: OracleOdds) => number; className: string }[] = [
     { label: help.oddsColumns.yes, value: (o) => o.yes, className: "text-yes" },
     { label: help.oddsColumns.no, value: (o) => o.no, className: "text-no" },
-    { label: `…${help.oddsColumns.and}`, value: (o) => o.and, className: "whitespace-nowrap text-parchment" },
-    { label: `…${help.oddsColumns.but}`, value: (o) => o.but, className: "whitespace-nowrap text-parchment" },
+    {
+      label: `…${help.oddsColumns.and}`,
+      value: (o) => o.and,
+      className: "whitespace-nowrap text-parchment",
+    },
+    {
+      label: `…${help.oddsColumns.but}`,
+      value: (o) => o.but,
+      className: "whitespace-nowrap text-parchment",
+    },
     ...(special
-      ? [{ label: special, value: (o: OracleOdds) => o.contradiction + o.special, className: "text-contradiction" }]
+      ? [
+          {
+            label: special,
+            value: (o: OracleOdds) => o.contradiction + o.special,
+            className: "text-contradiction",
+          },
+        ]
       : []),
   ];
 
@@ -109,7 +135,11 @@ function OddsTable({ oracleId }: { oracleId: OracleId }) {
                 {help.oddsColumns.likelihood}
               </th>
               {columns.map((c) => (
-                <th key={c.label} scope="col" className={`hyphens-auto px-1 py-1.5 text-right align-bottom font-medium sm:px-1.5 ${c.className}`}>
+                <th
+                  key={c.label}
+                  scope="col"
+                  className={`hyphens-auto px-1 py-1.5 text-right align-bottom font-medium sm:px-1.5 ${c.className}`}
+                >
                   {c.label}
                 </th>
               ))}
@@ -123,11 +153,16 @@ function OddsTable({ oracleId }: { oracleId: OracleId }) {
                   <th scope="row" className="py-1.5 pr-2 text-left font-normal text-parchment">
                     {t.likelihood[level]}
                     {oracleTarget(oracleId, level) !== undefined && (
-                      <span className="ml-1 text-xs text-parchment-dim">({oracleTarget(oracleId, level)}+)</span>
+                      <span className="ml-1 text-xs text-parchment-dim">
+                        ({oracleTarget(oracleId, level)}+)
+                      </span>
                     )}
                   </th>
                   {columns.map((c) => (
-                    <td key={c.label} className="whitespace-nowrap px-1 py-1.5 text-right text-parchment-dim sm:px-1.5">
+                    <td
+                      key={c.label}
+                      className="whitespace-nowrap px-1 py-1.5 text-right text-parchment-dim sm:px-1.5"
+                    >
                       {format(c.value(odds))}
                     </td>
                   ))}

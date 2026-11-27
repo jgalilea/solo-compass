@@ -33,7 +33,10 @@ export function splitRollSymbol(text: string): { symbol: RollSymbol; text: strin
 export function isGenerator(text: string): boolean {
   const { symbol, text: body } = splitRollSymbol(text);
   if (symbol === "gen") return true;
-  return symbol === "tbl" && (/\([^()]*d\d+=\d+,[^()]*d\d+=\d+\) ->/.test(body) || /\n[^\n]*->/.test(body));
+  return (
+    symbol === "tbl" &&
+    (/\([^()]*d\d+=\d+,[^()]*d\d+=\d+\) ->/.test(body) || /\n[^\n]*->/.test(body))
+  );
 }
 
 /** A table written out in the log (§4.3.1–4.3.2), not a roll on it: `tbl: Mood [Tense, Hopeful]`. */
@@ -49,7 +52,12 @@ const COMBAT_MARK = /\s*\[COMBAT\]\s*/i;
 const POV = /(?<!\s)\s*@\(([^()\n]+)\)\s*$/;
 
 /** "S1 *Tavern, evening*" → S1 and "Tavern, evening"; `[COMBAT]` says the scene is a fight, `@(Jordan)` whose point of view it is. */
-export function parseScene(text: string): { id: string; context: string; combat: boolean; pov?: string } {
+export function parseScene(text: string): {
+  id: string;
+  context: string;
+  combat: boolean;
+  pov?: string;
+} {
   const m = text.trim().match(SCENE);
   if (!m) return { id: "", context: text.trim(), combat: false };
   const pov = m[2]?.match(POV)?.[1].trim();
@@ -57,7 +65,11 @@ export function parseScene(text: string): { id: string; context: string; combat:
   const combat = COMBAT_MARK.test(rest);
   // The context goes between asterisks (italics); a place tag or
   // anything else around it stays.
-  const context = rest.replace(COMBAT_MARK, " ").replace(/\*([^*]+)\*/g, "$1").replace(/\s+/g, " ").trim();
+  const context = rest
+    .replace(COMBAT_MARK, " ")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
   return { id: m[1], context, combat, ...(pov ? { pov } : {}) };
 }
 
@@ -93,7 +105,10 @@ export type Speaker = { pc: true; name?: string } | { pc: false; name: string };
 export function formatDialogue(speaker: Speaker, words: string): string {
   const text = words.trim();
   const quoted = /^["“«'‘]/.test(text) ? text : `"${text}"`;
-  const name = (speaker.name ?? "").replace(/[()\n]/g, " ").replace(/\s+/g, " ").trim();
+  const name = (speaker.name ?? "")
+    .replace(/[()\n]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (speaker.pc) return name ? `PC (${name}): ${quoted}` : `PC: ${quoted}`;
   return `N (${name}): ${quoted}`;
 }
@@ -117,11 +132,13 @@ export function splitActor(text: string): { actor: string | null; text: string }
  * "A+B" for a joint action; each separator kept, to draw them as is.
  */
 export function actorParts(actor: string): { name?: string; text: string }[] {
-  return actor
-    // From the start of a run of spaces only, as in formatScene.
-    .split(/((?<!\s)\s*[>+]\s*)/)
-    .filter((part) => part !== "")
-    .map((part, i) => (i % 2 === 0 ? { name: part.trim(), text: part } : { text: part }));
+  return (
+    actor
+      // From the start of a run of spaces only, as in formatScene.
+      .split(/((?<!\s)\s*[>+]\s*)/)
+      .filter((part) => part !== "")
+      .map((part, i) => (i % 2 === 0 ? { name: part.trim(), text: part } : { text: part }))
+  );
 }
 
 export type NoteForm =
@@ -157,7 +174,8 @@ export function noteForm(text: string): NoteForm {
   const excerpt = trimmed.match(EXCERPT);
   if (excerpt) return { form: "excerpt", text: excerpt[1] };
   const block = trimmed.match(BLOCK) ?? trimmed.match(ANALOG_BLOCK);
-  if (block) return { form: "block", name: BLOCK_NAME[block[2].toLowerCase()], closing: !!block[1] };
+  if (block)
+    return { form: "block", name: BLOCK_NAME[block[2].toLowerCase()], closing: !!block[1] };
   const round = trimmed.match(ROUND);
   if (round) return { form: "round", round: round[1], text: round[2] };
   const dialogue = trimmed.match(DIALOGUE);
@@ -166,12 +184,20 @@ export function noteForm(text: string): NoteForm {
     const pc = dialogue[1] === "PC";
     // "Alex, whisper" is Alex; an NPC's name may have a comma of its own.
     const name = pc ? speaker?.split(",", 1)[0].trim() : speaker;
-    return { form: "dialogue", speaker: speaker ?? "PC", ...(name ? { name } : {}), pc, text: dialogue[3] };
+    return {
+      form: "dialogue",
+      speaker: speaker ?? "PC",
+      ...(name ? { name } : {}),
+      pc,
+      text: dialogue[3],
+    };
   }
   const meta = trimmed.match(META);
   if (meta && balanced(meta[1])) {
     const labelled = meta[1].match(META_LABEL);
-    return labelled ? { form: "meta", label: labelled[1], text: labelled[2] } : { form: "meta", label: null, text: meta[1] };
+    return labelled
+      ? { form: "meta", label: labelled[1], text: labelled[2] }
+      : { form: "meta", label: null, text: meta[1] };
   }
   return { form: "plain" };
 }

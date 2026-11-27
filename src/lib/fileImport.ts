@@ -97,8 +97,10 @@ const CONTROL = /[\u0000-\u0008\u000e-\u001a\u001c-\u001f\u007f]/;
 export function decodeText(bytes: Uint8Array): string | null {
   let text: string;
   try {
-    if (bytes[0] === 0xff && bytes[1] === 0xfe) text = new TextDecoder("utf-16le", { fatal: true }).decode(bytes.subarray(2));
-    else if (bytes[0] === 0xfe && bytes[1] === 0xff) text = new TextDecoder("utf-16be", { fatal: true }).decode(bytes.subarray(2));
+    if (bytes[0] === 0xff && bytes[1] === 0xfe)
+      text = new TextDecoder("utf-16le", { fatal: true }).decode(bytes.subarray(2));
+    else if (bytes[0] === 0xfe && bytes[1] === 0xff)
+      text = new TextDecoder("utf-16be", { fatal: true }).decode(bytes.subarray(2));
     else text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return null;
@@ -113,7 +115,11 @@ export function decodeText(bytes: Uint8Array): string | null {
  * opened, shared), a text is a journal unless it has the table header
  * the app's own export writes ("| d20 | Result |").
  */
-export async function inspectFile(t: Dictionary, file: FileLike, prefer?: FileKind): Promise<InspectedFile> {
+export async function inspectFile(
+  t: Dictionary,
+  file: FileLike,
+  prefer?: FileKind,
+): Promise<InspectedFile> {
   const name = file.name;
   if (!isOpenableFile(name, file.type)) return { kind: "problem", name, problem: "unsupported" };
   if (file.size > MAX_FILE_BYTES) return { kind: "problem", name, problem: "tooBig" };
@@ -133,7 +139,12 @@ export async function inspectFile(t: Dictionary, file: FileLike, prefer?: FileKi
 const TABLE_HEADER = /^\s*\|\s*d(?:66|\d+)\s*\|/im;
 
 /** inspectFile once the text is read (a test gives it straight). */
-export function inspectText(t: Dictionary, name: string, text: string, prefer?: FileKind): InspectedFile {
+export function inspectText(
+  t: Dictionary,
+  name: string,
+  text: string,
+  prefer?: FileKind,
+): InspectedFile {
   const problem = (p: FileProblem): InspectedFile => ({ kind: "problem", name, problem: p });
   if (!text.trim()) return problem("empty");
 
@@ -163,14 +174,17 @@ export function inspectText(t: Dictionary, name: string, text: string, prefer?: 
 /** The same text read as a journal, whatever it looked like (the dialog's "it's a journal" choice). */
 export function inspectJournal(name: string, text: string): InspectedFile {
   const entries = parseMarkdownToEntries(text, "", 0).length;
-  if (entries === 0 && !parseNotesFromMarkdown(text).trim()) return { kind: "problem", name, problem: "noJournal" };
+  if (entries === 0 && !parseNotesFromMarkdown(text).trim())
+    return { kind: "problem", name, problem: "noJournal" };
   return { kind: "journal", name, text, title: journalTitle(name, text), entries };
 }
 
 /** The same text read as tables (the dialog's "it's a table" choice). */
 export function inspectTables(t: Dictionary, name: string, text: string): InspectedFile {
   const drafts = parseTablesFile(t, text, name);
-  return drafts.length ? { kind: "tables", name, text, drafts } : { kind: "problem", name, problem: "noTables" };
+  return drafts.length
+    ? { kind: "tables", name, text, drafts }
+    : { kind: "problem", name, problem: "noTables" };
 }
 
 /** An imported journal's name: its campaign title, or the file's name. */

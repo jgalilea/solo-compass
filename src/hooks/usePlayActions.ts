@@ -80,11 +80,23 @@ export function usePlayActions() {
   const askOracle = useCallback(
     (question: string, likelihood: Likelihood, adventureId = activeAdventureId): OracleRoll => {
       // Loner's Twist Counter is each adventure's own (free rolls share one).
-      const roll = rollOracleWith(oracleId, question, likelihood, lonerTwistCounterOf(historyEntries, adventureId));
+      const roll = rollOracleWith(
+        oracleId,
+        question,
+        likelihood,
+        lonerTwistCounterOf(historyEntries, adventureId),
+      );
       if (roll.twist?.happened) {
         // Each table roll goes to the history too, like any other.
         const data = gameState("loner").data;
-        const tables = data ? toMeaningTables(TABLE_GAMES.find((g) => g.id === "loner")!, data, t, locale) : [];
+        const tables = data
+          ? toMeaningTables(
+              TABLE_GAMES.find((g) => g.id === "loner")!,
+              data,
+              t,
+              locale,
+            )
+          : [];
         const twistRolls = ["loner-twist-subject", "loner-twist-action"]
           .map((id) => tables.find((table) => table.id === id))
           .filter((table) => table !== undefined)
@@ -98,20 +110,36 @@ export function usePlayActions() {
       if (adventureId) setAdventureOracle(adventureId, oracleId);
       announce(formatOracleResult(t, roll));
       if (adventureId) {
-        for (const line of rollJournalLines(t, roll)) addJournalEntry(adventureId, line.kind, line.text, roll.id);
+        for (const line of rollJournalLines(t, roll))
+          addJournalEntry(adventureId, line.kind, line.text, roll.id);
       }
       return roll;
     },
-    [activeAdventureId, record, addJournalEntry, buildTableRoll, historyEntries, locale, oracleId, setAdventureOracle, t],
+    [
+      activeAdventureId,
+      record,
+      addJournalEntry,
+      buildTableRoll,
+      historyEntries,
+      locale,
+      oracleId,
+      setAdventureOracle,
+      t,
+    ],
   );
 
   const rollTable = useCallback(
-    (table: MeaningTable, adventureId = activeAdventureId, tables: MeaningTable[] = []): TableRollEntry => {
+    (
+      table: MeaningTable,
+      adventureId = activeAdventureId,
+      tables: MeaningTable[] = [],
+    ): TableRollEntry => {
       const entry = buildTableRoll(table, tables);
       record(entry, adventureId);
       announce(`${entry.tableName}: ${entry.resultText}`);
       if (adventureId) {
-        for (const line of rollJournalLines(t, entry)) addJournalEntry(adventureId, line.kind, line.text, entry.id);
+        for (const line of rollJournalLines(t, entry))
+          addJournalEntry(adventureId, line.kind, line.text, entry.id);
       }
       return entry;
     },
@@ -126,7 +154,12 @@ export function usePlayActions() {
    * linked to the first, so the consequence follows them all.
    */
   const rollCombined = useCallback(
-    (name: string, tables: MeaningTable[], adventureId = activeAdventureId, all: MeaningTable[] = []): Inspiration => {
+    (
+      name: string,
+      tables: MeaningTable[],
+      adventureId = activeAdventureId,
+      all: MeaningTable[] = [],
+    ): Inspiration => {
       const rolls = tables.map((table) => buildTableRoll(table, all));
       for (const roll of rolls) record(roll, adventureId);
       const inspiration: Inspiration = {

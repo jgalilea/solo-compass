@@ -21,13 +21,20 @@ const base = "/solo-compass/";
  */
 const SHORTCUT_ROUTES = { oraculo: "", tablas: "tablas", dados: "dados", diario: "diario" };
 
-function shortcuts(names: Record<keyof typeof SHORTCUT_ROUTES, string>): ManifestOptions["shortcuts"] {
+function shortcuts(
+  names: Record<keyof typeof SHORTCUT_ROUTES, string>,
+): ManifestOptions["shortcuts"] {
   return Object.entries(names).map(([icon, name]) => ({
     name,
     url: `${base}#/${SHORTCUT_ROUTES[icon as keyof typeof SHORTCUT_ROUTES]}`,
     icons: [
       { src: `icons/shortcuts/${icon}.png`, sizes: "192x192", type: "image/png" },
-      { src: `icons/shortcuts/${icon}-maskable.png`, sizes: "192x192", type: "image/png", purpose: "maskable" },
+      {
+        src: `icons/shortcuts/${icon}-maskable.png`,
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ],
   }));
 }
@@ -100,7 +107,12 @@ const manifest: Partial<ManifestOptions> = {
       files: [
         {
           name: "file",
-          accept: ["text/*", "application/json", "application/octet-stream", ...Object.values(OPENED_FILES).flat()],
+          accept: [
+            "text/*",
+            "application/json",
+            "application/octet-stream",
+            ...Object.values(OPENED_FILES).flat(),
+          ],
         },
       ],
     },
@@ -146,19 +158,21 @@ function localeModulePreloadPlugin(): Plugin {
       handler(_html, ctx) {
         const files: Record<string, string> = {};
         for (const chunk of Object.values(ctx.bundle ?? {})) {
-          const match = chunk.type === "chunk" && chunk.facadeModuleId?.match(/i18n\/locales\/(\w+)\.ts$/);
+          const match =
+            chunk.type === "chunk" && chunk.facadeModuleId?.match(/i18n\/locales\/(\w+)\.ts$/);
           if (match) files[match[1]] = base + chunk.fileName;
         }
-        if (!files.es || !files.en) throw new Error("Locale chunks not found for the modulepreload hint");
+        if (!files.es || !files.en)
+          throw new Error("Locale chunks not found for the modulepreload hint");
         return [
           {
             tag: "script",
             injectTo: "head-prepend",
             children:
-              "try{var l=localStorage.getItem(\"solo-compass:locale\");" +
-              "if(l!==\"es\"&&l!==\"en\")l=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language])" +
-              ".some(function(x){return x&&x.toLowerCase().indexOf(\"es\")===0})?\"es\":\"en\";" +
-              "var p=document.createElement(\"link\");p.rel=\"modulepreload\";p.crossOrigin=\"\";" +
+              'try{var l=localStorage.getItem("solo-compass:locale");' +
+              'if(l!=="es"&&l!=="en")l=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language])' +
+              '.some(function(x){return x&&x.toLowerCase().indexOf("es")===0})?"es":"en";' +
+              'var p=document.createElement("link");p.rel="modulepreload";p.crossOrigin="";' +
               `p.href=l==="es"?${JSON.stringify(files.es)}:${JSON.stringify(files.en)};` +
               "document.head.appendChild(p)}catch(e){}",
           },
@@ -203,7 +217,8 @@ function contentSecurityPolicyPlugin(): Plugin {
         const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(
           ([, body]) => `'sha256-${createHash("sha256").update(body).digest("base64")}'`,
         );
-        if (inline.length === 0) throw new Error("No inline scripts found for the Content Security Policy");
+        if (inline.length === 0)
+          throw new Error("No inline scripts found for the Content Security Policy");
         const policy = [
           "default-src 'self'",
           `script-src 'self' ${inline.join(" ")}`,
@@ -217,19 +232,26 @@ function contentSecurityPolicyPlugin(): Plugin {
           "base-uri 'none'",
           "form-action 'self'",
         ].join("; ");
-        return html.replace(/<head>/, `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`);
+        return html.replace(
+          /<head>/,
+          `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`,
+        );
       },
     },
   };
 }
 
 /** package.json's version: the app's, shown in Settings → About and in the changelog. */
-const version: string = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
+const version: string = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+).version;
 
 /** The commit being built, to tell two builds of the same version apart ("" outside git). */
 function gitCommit(): string {
   try {
-    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
   } catch {
     return "";
   }
@@ -273,9 +295,10 @@ export default defineConfig({
       // the precache itself, so it's taken out here.
       integration: {
         beforeBuildServiceWorker(options) {
-          options.workbox.additionalManifestEntries = options.workbox.additionalManifestEntries?.filter(
-            (entry) => typeof entry === "string" || !entry.url.endsWith(".webmanifest"),
-          );
+          options.workbox.additionalManifestEntries =
+            options.workbox.additionalManifestEntries?.filter(
+              (entry) => typeof entry === "string" || !entry.url.endsWith(".webmanifest"),
+            );
         },
       },
     }),
@@ -295,7 +318,8 @@ export default defineConfig({
       // the first screen's bundle, and each one goes with what draws it.
       // Everything else keeps the default (undefined: as its package says).
       treeshake: {
-        moduleSideEffects: (id) => (/[\\/]src[\\/]components[\\/]icons[\\/]set[\\/]/.test(id) ? false : undefined),
+        moduleSideEffects: (id) =>
+          /[\\/]src[\\/]components[\\/]icons[\\/]set[\\/]/.test(id) ? false : undefined,
       },
       output: {
         codeSplitting: {

@@ -51,8 +51,21 @@ import { announceChange, onLocalChange, type SyncTopic } from "./sync";
 import { formatCode, newSecret, parseCode } from "./syncCode";
 import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import type { Prints, SyncKind } from "./syncData";
-import { defaultDeviceName, FORGET_AFTER, MAX_NAME_LENGTH, mergeDevices, type SyncedDevice } from "./syncDevices";
-import { exchange, prepareChange, type ChangeInFlight, type PreparedChange, type SyncDevice, type SyncState } from "./syncExchange";
+import {
+  defaultDeviceName,
+  FORGET_AFTER,
+  MAX_NAME_LENGTH,
+  mergeDevices,
+  type SyncedDevice,
+} from "./syncDevices";
+import {
+  exchange,
+  prepareChange,
+  type ChangeInFlight,
+  type PreparedChange,
+  type SyncDevice,
+  type SyncState,
+} from "./syncExchange";
 import { callRelay, type RelayError } from "./syncRelay";
 import {
   SYNC_RELAY_URL,
@@ -132,8 +145,15 @@ function me(): { id: string; name: string } {
       // Not kept: it's a new device next time, harmlessly.
     }
   }
-  const installed = window.matchMedia?.("(display-mode: standalone)").matches || (navigator as { standalone?: boolean }).standalone === true;
-  return { id, name: saved.name || defaultDeviceName(navigator.userAgent, !!installed, navigator.maxTouchPoints > 1) };
+  const installed =
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return {
+    id,
+    name:
+      saved.name ||
+      defaultDeviceName(navigator.userAgent, !!installed, navigator.maxTouchPoints > 1),
+  };
 }
 
 const loadDevices = async () => (await get<SyncedDevice[]>("devices", db())) ?? [];
@@ -153,15 +173,20 @@ function deviceFor(t: Dictionary): SyncDevice {
   };
 }
 
-const relay = (request: SyncRequest, payload?: Uint8Array) => callRelay(SYNC_RELAY_URL, request, payload);
+const relay = (request: SyncRequest, payload?: Uint8Array) =>
+  callRelay(SYNC_RELAY_URL, request, payload);
 /** On leaving the app: the request outlives the page if it's closed right then. */
-const leavingRelay = (request: SyncRequest, payload?: Uint8Array) => callRelay(SYNC_RELAY_URL, request, payload, { keepalive: true });
+const leavingRelay = (request: SyncRequest, payload?: Uint8Array) =>
+  callRelay(SYNC_RELAY_URL, request, payload, { keepalive: true });
 
 /** Automatic exchanges made today (UTC), by every tab of this device. */
 function exchangesToday(now = Date.now()): { day: string; count: number } {
   const day = new Date(now).toISOString().slice(0, 10);
   try {
-    const saved = JSON.parse(window.localStorage.getItem(TODAY_KEY) ?? "null") as { day: string; count: number } | null;
+    const saved = JSON.parse(window.localStorage.getItem(TODAY_KEY) ?? "null") as {
+      day: string;
+      count: number;
+    } | null;
     if (saved?.day === day && typeof saved.count === "number") return saved;
   } catch {
     // Unreadable: counted from zero.
@@ -172,7 +197,10 @@ function exchangesToday(now = Date.now()): { day: string; count: number } {
 function countExchange(): void {
   const today = exchangesToday();
   try {
-    window.localStorage.setItem(TODAY_KEY, JSON.stringify({ day: today.day, count: today.count + 1 }));
+    window.localStorage.setItem(
+      TODAY_KEY,
+      JSON.stringify({ day: today.day, count: today.count + 1 }),
+    );
   } catch {
     // Not critical: only the safeguard.
   }
@@ -316,7 +344,11 @@ function canSendNow(now = Date.now()): boolean {
   const status = loadSyncStatus();
   if (status?.state === "stale" || status?.state === "closed") return false;
   if (status?.state === "paused" && now < status.retryAt) return false;
-  if (status?.state === "error" && (status.reason === "update" || (status.retryAt && now < status.retryAt))) return false;
+  if (
+    status?.state === "error" &&
+    (status.reason === "update" || (status.retryAt && now < status.retryAt))
+  )
+    return false;
   return now >= waitUntil && exchangesToday(now).count < DAILY_EXCHANGES;
 }
 
@@ -337,7 +369,9 @@ function leave(): void {
     inFlight = {
       flight: {
         change: ready.change,
-        result: callRelay(SYNC_RELAY_URL, ready.change.request, ready.change.op, { keepalive: true }),
+        result: callRelay(SYNC_RELAY_URL, ready.change.request, ready.change.op, {
+          keepalive: true,
+        }),
         sentAt: Date.now(),
       },
       stamp: ready.stamp,
@@ -383,13 +417,23 @@ async function run(reason: Reason): Promise<void> {
   const status = loadSyncStatus();
   if (status?.state === "stale" || status?.state === "closed") return;
   // Data from a newer app: only worth trying again once this one is updated (a reload).
-  if (status?.state === "error" && status.reason === "update" && reason !== "start" && reason !== "manual") return;
+  if (
+    status?.state === "error" &&
+    status.reason === "update" &&
+    reason !== "start" &&
+    reason !== "manual"
+  )
+    return;
   if (reason !== "manual") {
     // Opening the app tries once whatever stopped it last time (not the day's allowance being used up).
     const opening = reason === "start";
-    const waitedOut = status?.state === "paused" && now < status.retryAt && !(opening && status.reason === "unreachable");
+    const waitedOut =
+      status?.state === "paused" &&
+      now < status.retryAt &&
+      !(opening && status.reason === "unreachable");
     if (waitedOut) return scheduleRetry(status.retryAt - now);
-    if (status?.state === "error" && status.retryAt && now < status.retryAt && !opening) return scheduleRetry(status.retryAt - now);
+    if (status?.state === "error" && status.retryAt && now < status.retryAt && !opening)
+      return scheduleRetry(status.retryAt - now);
     if (now < waitUntil) return scheduleRetry(waitUntil - now);
     if (exchangesToday(now).count >= DAILY_EXCHANGES) return pause("daily", 0);
   }
@@ -399,7 +443,11 @@ async function run(reason: Reason): Promise<void> {
 }
 
 /** Looking for what's new: not when an exchange has just been made (by another tab, say). */
-const FRESH: Partial<Record<Reason, number>> = { start: JUST_SYNCED, back: JUST_SYNCED, online: JUST_SYNCED };
+const FRESH: Partial<Record<Reason, number>> = {
+  start: JUST_SYNCED,
+  back: JUST_SYNCED,
+  online: JUST_SYNCED,
+};
 /** Sending what changed: nothing to send, no request. */
 const SENDS = new Set<Reason>(["change", "leaving"]);
 
@@ -418,7 +466,14 @@ async function cycle(t: Dictionary, reason: Reason): Promise<void> {
   // Checked here, holding the lock: another tab may have just done it. Changes waiting go with their timer.
   const status = loadSyncStatus();
   const fresh = FRESH[reason];
-  if (!flying && fresh && state.lastSyncAt && Date.now() - state.lastSyncAt < fresh && status?.state === "ok") return;
+  if (
+    !flying &&
+    fresh &&
+    state.lastSyncAt &&
+    Date.now() - state.lastSyncAt < fresh &&
+    status?.state === "ok"
+  )
+    return;
   clearTimeout(changeTimer);
   clearTimeout(prepareTimer);
   prepared = null;
@@ -427,10 +482,17 @@ async function cycle(t: Dictionary, reason: Reason): Promise<void> {
   setSyncPending(false);
   setSyncBusy(true);
   try {
-    const outcome = await exchange(deviceFor(t), reason === "leaving" ? leavingRelay : relay, keys, state, Date.now, {
-      onlyToSend: SENDS.has(reason),
-      ...(flying ? { inFlight: flying } : {}),
-    });
+    const outcome = await exchange(
+      deviceFor(t),
+      reason === "leaving" ? leavingRelay : relay,
+      keys,
+      state,
+      Date.now,
+      {
+        onlyToSend: SENDS.has(reason),
+        ...(flying ? { inFlight: flying } : {}),
+      },
+    );
     if (outcome.kind === "ok" && outcome.skipped) return;
     if (reason !== "manual") countExchange();
     if (behind) noteChange();
@@ -485,8 +547,15 @@ function unexpected(error: unknown): void {
   failures++;
   const wait = BACKOFF[Math.min(failures, BACKOFF.length) - 1] * MINUTE;
   const status = loadSyncStatus();
-  const since = status?.state === "error" && status.reason === "unexpected" ? status.since : Date.now();
-  saveSyncStatus({ state: "error", since, reason: "unexpected", retryAt: Date.now() + wait, report: syncReport(error) });
+  const since =
+    status?.state === "error" && status.reason === "unexpected" ? status.since : Date.now();
+  saveSyncStatus({
+    state: "error",
+    since,
+    reason: "unexpected",
+    retryAt: Date.now() + wait,
+    report: syncReport(error),
+  });
   scheduleRetry(wait);
 }
 
@@ -495,20 +564,40 @@ function unexpected(error: unknown): void {
  * message: one from reading data could quote it, and nothing of the
  * journal goes in a report.
  */
-export function syncReport(error: unknown, userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent): string {
+export function syncReport(
+  error: unknown,
+  userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent,
+): string {
   const name = error instanceof Error ? error.name : typeof error;
   const message = error instanceof Error ? error.message : "";
   const frames = (error instanceof Error ? (error.stack ?? "") : "")
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line && !(message && line.includes(message)) && !line.startsWith(`${name}:`) && line !== name)
+    .filter(
+      (line) =>
+        line &&
+        !(message && line.includes(message)) &&
+        !line.startsWith(`${name}:`) &&
+        line !== name,
+    )
     .slice(0, 8);
-  return [`Solo Compass ${versionLabel()} · sync`, new Date().toISOString(), userAgent, "", name, ...frames].join("\n");
+  return [
+    `Solo Compass ${versionLabel()} · sync`,
+    new Date().toISOString(),
+    userAgent,
+    "",
+    name,
+    ...frames,
+  ].join("\n");
 }
 
 function problem(reason: SyncProblem): void {
   const status = loadSyncStatus();
-  saveSyncStatus({ state: "error", since: status?.state === "error" ? status.since : Date.now(), reason });
+  saveSyncStatus({
+    state: "error",
+    since: status?.state === "error" ? status.since : Date.now(),
+    reason,
+  });
 }
 
 function pause(reason: SyncPause, delay: number): void {
@@ -529,7 +618,10 @@ async function failed(error: RelayError, retryAfter?: number): Promise<void> {
     case "network":
       if (typeof navigator !== "undefined" && navigator.onLine === false) {
         const status = loadSyncStatus();
-        saveSyncStatus({ state: "offline", since: status?.state === "offline" ? status.since : Date.now() });
+        saveSyncStatus({
+          state: "offline",
+          since: status?.state === "offline" ? status.since : Date.now(),
+        });
       } else {
         pause("unreachable", backoff);
       }
@@ -555,9 +647,13 @@ async function failed(error: RelayError, retryAfter?: number): Promise<void> {
 // ---- What Settings does -------------------------------------------------
 
 /** This device, and the others that have told it they share the code (most recent first). */
-export async function syncedDevices(now = Date.now()): Promise<{ me: { id: string; name: string }; others: SyncedDevice[] }> {
+export async function syncedDevices(
+  now = Date.now(),
+): Promise<{ me: { id: string; name: string }; others: SyncedDevice[] }> {
   const self = me();
-  const others = mergeDevices(await loadDevices(), [], now).filter((d) => d.id !== self.id && now - d.seenAt < FORGET_AFTER);
+  const others = mergeDevices(await loadDevices(), [], now).filter(
+    (d) => d.id !== self.id && now - d.seenAt < FORGET_AFTER,
+  );
   return { me: self, others };
 }
 
@@ -566,7 +662,10 @@ export function renameDevice(name: string): void {
   const clean = name.trim().slice(0, MAX_NAME_LENGTH);
   const self = me();
   try {
-    window.localStorage.setItem(DEVICE_KEY, JSON.stringify({ id: self.id, ...(clean ? { name: clean } : {}) }));
+    window.localStorage.setItem(
+      DEVICE_KEY,
+      JSON.stringify({ id: self.id, ...(clean ? { name: clean } : {}) }),
+    );
   } catch {
     // Not kept: the name stays as it was.
   }

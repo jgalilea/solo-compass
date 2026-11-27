@@ -38,14 +38,14 @@ describe("rollOracle (Recluse)", () => {
     expect(rollOracle("?", "equilibrado").qualifier).toBeNull();
   });
 
-  it("both low (≤3) → \"but\"", () => {
+  it('both low (≤3) → "but"', () => {
     forceDice(3, 1);
     const roll = rollOracle("?", "equilibrado");
     expect(roll.answer).toBe("si");
     expect(roll.qualifier).toBe("pero");
   });
 
-  it("both high (≥4) → \"and\"", () => {
+  it('both high (≥4) → "and"', () => {
     forceDice(4, 6);
     const roll = rollOracle("?", "equilibrado");
     expect(roll.answer).toBe("no");

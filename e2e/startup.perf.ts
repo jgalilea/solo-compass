@@ -13,7 +13,11 @@ import { expect, test, type Browser } from "@playwright/test";
 
 const CPU_SLOWDOWN = 4;
 /** Lighthouse's "slow 4G". */
-const SLOW_4G = { latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 };
+const SLOW_4G = {
+  latency: 150,
+  downloadThroughput: (1.6 * 1024 * 1024) / 8,
+  uploadThroughput: (750 * 1024) / 8,
+};
 const RUNS = 3;
 
 interface Paint {
@@ -22,7 +26,11 @@ interface Paint {
   jsKB: number;
 }
 
-async function visitTwice(browser: Browser, baseURL: string, route: string): Promise<{ first: Paint; repeat: Paint }> {
+async function visitTwice(
+  browser: Browser,
+  baseURL: string,
+  route: string,
+): Promise<{ first: Paint; repeat: Paint }> {
   const context = await browser.newContext({ ...test.info().project.use, locale: "es-ES" });
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -46,7 +54,10 @@ async function visitTwice(browser: Browser, baseURL: string, route: string): Pro
   await page.goto(baseURL + route);
   const first = await paint();
   // Once the service worker has everything, the same screen again.
-  await page.evaluate(() => (navigator as unknown as { serviceWorker: { ready: Promise<unknown> } }).serviceWorker.ready);
+  await page.evaluate(
+    () =>
+      (navigator as unknown as { serviceWorker: { ready: Promise<unknown> } }).serviceWorker.ready,
+  );
   await page.waitForTimeout(1000);
   await page.goto("about:blank");
   await page.goto(baseURL + route);
@@ -55,7 +66,8 @@ async function visitTwice(browser: Browser, baseURL: string, route: string): Pro
   return { first, repeat };
 }
 
-const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
+const median = (values: number[]) =>
+  values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
 
 for (const [label, route] of [
   ["oracle", ""],
@@ -68,8 +80,12 @@ for (const [label, route] of [
     for (const visit of ["first", "repeat"] as const) {
       const fcp = median(runs.map((r) => r[visit].fcp));
       const jsKB = median(runs.map((r) => r[visit].jsKB));
-      console.log(`${`${label}, ${visit} visit`.padEnd(30)} first paint ${String(Math.round(fcp)).padStart(5)} ms  (JS before it: ${Math.round(jsKB)} kB)`);
-      test.info().annotations.push({ type: `${visit} visit`, description: `${Math.round(fcp)} ms` });
+      console.log(
+        `${`${label}, ${visit} visit`.padEnd(30)} first paint ${String(Math.round(fcp)).padStart(5)} ms  (JS before it: ${Math.round(jsKB)} kB)`,
+      );
+      test
+        .info()
+        .annotations.push({ type: `${visit} visit`, description: `${Math.round(fcp)} ms` });
     }
     expect(median(runs.map((r) => r.first.fcp)), "first visit").toBeLessThan(3000);
     expect(median(runs.map((r) => r.repeat.fcp)), "repeat visit").toBeLessThan(1000);

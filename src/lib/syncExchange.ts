@@ -81,7 +81,14 @@ export type Relay = (request: SyncRequest, payload?: Uint8Array) => Promise<Rela
 
 export type ExchangeOutcome =
   /** `skipped`: nothing to send and only sending was asked, so the relay wasn't called. */
-  | { kind: "ok"; state: SyncState; skew: number; wait: number; followUp: boolean; skipped?: boolean }
+  | {
+      kind: "ok";
+      state: SyncState;
+      skew: number;
+      wait: number;
+      followUp: boolean;
+      skipped?: boolean;
+    }
   | { kind: "failed"; error: RelayError; retryAfter?: number }
   | { kind: "problem"; reason: "full" | "update" }
   | { kind: "stale"; lastSyncAt: number };
@@ -105,7 +112,11 @@ function signed(device: SyncDevice, now: () => number): { device?: SyncedDevice 
 }
 
 /** What came in, opened and read like a backup's records. A part that can't be opened is left out. */
-async function openIncoming(keys: SyncKeys, result: Extract<RelayResult, { ok: true }>, seen: SyncedDevice[] = []): Promise<MergeData> {
+async function openIncoming(
+  keys: SyncKeys,
+  result: Extract<RelayResult, { ok: true }>,
+  seen: SyncedDevice[] = [],
+): Promise<MergeData> {
   if (result.reply.op !== "sync") return emptyData();
   const kinds: SealedKind[] = [
     ...(result.reply.snapshot !== null ? ["snapshot" as const] : []),
@@ -152,8 +163,20 @@ function subsetOf(prints: Prints, part: MergeData): Prints {
   return subset;
 }
 
-function syncRequest(keys: SyncKeys, state: Pick<SyncState, "epoch" | "since">, size: number): SyncRequest {
-  return { v: 1, op: "sync", box: keys.box, pass: keys.pass, epoch: state.epoch, since: state.epoch ? state.since : null, size };
+function syncRequest(
+  keys: SyncKeys,
+  state: Pick<SyncState, "epoch" | "since">,
+  size: number,
+): SyncRequest {
+  return {
+    v: 1,
+    op: "sync",
+    box: keys.box,
+    pass: keys.pass,
+    epoch: state.epoch,
+    since: state.epoch ? state.since : null,
+    size,
+  };
 }
 
 /**
@@ -200,7 +223,11 @@ export async function prepareChange(
   const [prints, local] = await Promise.all([device.loadPrints(), device.loadData()]);
   const { delta, sent } = await changedRecords(local, prints);
   if (isEmptyData(delta) || countRecords(delta) > RECORDS_PER_PART) return null;
-  const op = await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: delta, ...signed(device, now) } satisfies Packet);
+  const op = await seal(keys, "op", {
+    v: BACKUP_SCHEMA_VERSION,
+    data: delta,
+    ...signed(device, now),
+  } satisfies Packet);
   if (op.length > maxBytes) return null;
   return { request: syncRequest(keys, state, op.length), op, part: delta, sent };
 }
@@ -237,22 +264,39 @@ async function exchangeOrThrow(
 
   // Most of a year without syncing: what it deleted meanwhile is forgotten,
   // so merging could bring it back. A look first, and the person decides.
-  if (!current.staleChoice && current.lastSyncAt !== null && now() - current.lastSyncAt > STALE_AFTER) {
+  if (
+    !current.staleChoice &&
+    current.lastSyncAt !== null &&
+    now() - current.lastSyncAt > STALE_AFTER
+  ) {
     const probe = await relay(syncRequest(keys, current, 0));
     if (!probe.ok) return { kind: "failed", error: probe.error, retryAfter: probe.retryAfter };
-    if (probe.reply.op === "sync" && !probe.reply.reset) return { kind: "stale", lastSyncAt: current.lastSyncAt };
+    if (probe.reply.op === "sync" && !probe.reply.reset)
+      return { kind: "stale", lastSyncAt: current.lastSyncAt };
   }
 
   const local = await device.loadData();
   const flying = options.inFlight;
-  const { delta, sent } = flying ? { delta: flying.change.part, sent: flying.change.sent } : await changedRecords(local, prints);
+  const { delta, sent } = flying
+    ? { delta: flying.change.part, sent: flying.change.sent }
+    : await changedRecords(local, prints);
   // A change that came to nothing (undone, or already sent by another tab): every request counts.
-  if (!flying && options.onlyToSend && isEmptyData(delta) && current.epoch !== null && !current.closeCodes?.length) {
+  if (
+    !flying &&
+    options.onlyToSend &&
+    isEmptyData(delta) &&
+    current.epoch !== null &&
+    !current.closeCodes?.length
+  ) {
     return { kind: "ok", state: current, skew: 0, wait: 0, followUp: false, skipped: true };
   }
   // Nothing to send, but the others haven't heard from this device for a day (or of its new name): an empty change says so.
   const me = device.devices?.me();
-  const announce = !!me && (!current.announcedAt || now() - current.announcedAt > ANNOUNCE_EVERY || current.announcedName !== me.name);
+  const announce =
+    !!me &&
+    (!current.announcedAt ||
+      now() - current.announcedAt > ANNOUNCE_EVERY ||
+      current.announcedName !== me.name);
   const parts: (MergeData | null)[] = isEmptyData(delta)
     ? [announce && !flying ? emptyData() : null]
     : flying
@@ -270,11 +314,17 @@ async function exchangeOrThrow(
     const op = ahead
       ? ahead.change.op
       : part
-        ? await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: part, ...signed(device, now) } satisfies Packet)
+        ? await seal(keys, "op", {
+            v: BACKUP_SCHEMA_VERSION,
+            data: part,
+            ...signed(device, now),
+          } satisfies Packet)
         : new Uint8Array();
     if (op.length > MAX_REQUEST_BYTES) return { kind: "problem", reason: "full" };
     const started = ahead ? ahead.sentAt : now();
-    let result = ahead ? await ahead.result : await relay(syncRequest(keys, current, op.length), op);
+    let result = ahead
+      ? await ahead.result
+      : await relay(syncRequest(keys, current, op.length), op);
     // The box is full: fold its changes into the snapshot, then once more.
     if (!result.ok && result.error === "full" && !compacted) {
       compacted = true;
@@ -298,11 +348,19 @@ async function exchangeOrThrow(
     }
     const incoming = await openIncoming(keys, result, seen);
     const merged = isEmptyData(incoming) ? local : await takeIn(device, incoming);
-    const sentNow = part && reply.appended !== null ? subsetOf(sent, part) : new Map<string, string>();
+    const sentNow =
+      part && reply.appended !== null ? subsetOf(sent, part) : new Map<string, string>();
     prints = printsAfter(prints, sentNow, incoming, merged);
-    current = { ...current, epoch: reply.epoch, since: reply.latest, gen: reply.gen, lastSyncAt: now() };
+    current = {
+      ...current,
+      epoch: reply.epoch,
+      since: reply.latest,
+      gen: reply.gen,
+      lastSyncAt: now(),
+    };
     if (!isEmptyData(incoming)) current.othersSeenAt = now();
-    if (me && part && reply.appended !== null) Object.assign(current, { announcedAt: now(), announcedName: me.name });
+    if (me && part && reply.appended !== null)
+      Object.assign(current, { announcedAt: now(), announcedName: me.name });
     await Promise.all([device.saveState(current), device.savePrints(prints)]);
     stats = reply.stats;
     // Only from a quick answer: one held up (the page frozen in the background) would read as a clock off.
@@ -315,8 +373,12 @@ async function exchangeOrThrow(
     delete current.staleChoice;
     await device.saveState(current);
   }
-  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
-  if (stats && (stats.ops >= COMPACT_OPS || stats.opsBytes > Math.max(stats.snapshotBytes, COMPACT_MIN_BYTES))) {
+  if (device.devices && seen.length)
+    await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
+  if (
+    stats &&
+    (stats.ops >= COMPACT_OPS || stats.opsBytes > Math.max(stats.snapshotBytes, COMPACT_MIN_BYTES))
+  ) {
     const gen = await compact(device, relay, keys, current);
     if (gen !== null) current = { ...current, gen };
   }
@@ -336,25 +398,51 @@ async function pullAndCompact(
   const seen: SyncedDevice[] = [];
   const incoming = await openIncoming(keys, pull, seen);
   const merged = isEmptyData(incoming) ? await device.loadData() : await takeIn(device, incoming);
-  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen));
+  if (device.devices && seen.length)
+    await device.devices.save(mergeDevices(await device.devices.load(), seen));
   const next = { ...state, epoch: pull.reply.epoch, since: pull.reply.latest, gen: pull.reply.gen };
-  const nextPrints = printsAfter(pull.reply.reset ? new Map() : prints, new Map(), incoming, merged);
+  const nextPrints = printsAfter(
+    pull.reply.reset ? new Map() : prints,
+    new Map(),
+    incoming,
+    merged,
+  );
   await Promise.all([device.saveState(next), device.savePrints(nextPrints)]);
   const gen = await compact(device, relay, keys, next);
   return gen === null ? null : { state: { ...next, gen }, prints: nextPrints };
 }
 
 /** Everything here (which by now holds every change up to `since`) as the new snapshot. */
-async function compact(device: SyncDevice, relay: Relay, keys: SyncKeys, state: SyncState): Promise<number | null> {
+async function compact(
+  device: SyncDevice,
+  relay: Relay,
+  keys: SyncKeys,
+  state: SyncState,
+): Promise<number | null> {
   if (!state.epoch || state.since === null) return null;
   const all = await device.loadData();
   // The devices known go with it: one that starts from the snapshot knows them too.
   const me = device.devices?.me();
-  const devices = device.devices ? mergeDevices(await device.devices.load(), me ? [{ ...me, seenAt: Date.now() }] : []) : undefined;
-  const snapshot = await seal(keys, "snapshot", { v: BACKUP_SCHEMA_VERSION, data: all, ...(devices ? { devices } : {}) } satisfies Packet);
+  const devices = device.devices
+    ? mergeDevices(await device.devices.load(), me ? [{ ...me, seenAt: Date.now() }] : [])
+    : undefined;
+  const snapshot = await seal(keys, "snapshot", {
+    v: BACKUP_SCHEMA_VERSION,
+    data: all,
+    ...(devices ? { devices } : {}),
+  } satisfies Packet);
   if (snapshot.length > MAX_REQUEST_BYTES) return null;
   const result = await relay(
-    { v: 1, op: "snapshot", box: keys.box, pass: keys.pass, epoch: state.epoch, upto: state.since, gen: state.gen, size: snapshot.length },
+    {
+      v: 1,
+      op: "snapshot",
+      box: keys.box,
+      pass: keys.pass,
+      epoch: state.epoch,
+      upto: state.since,
+      gen: state.gen,
+      size: snapshot.length,
+    },
     snapshot,
   );
   // Someone else folded them first: just as good.
@@ -364,19 +452,33 @@ async function compact(device: SyncDevice, relay: Relay, keys: SyncKeys, state: 
 }
 
 /** "Keep the server's": this device's data becomes exactly what the relay holds. */
-async function takeServerCopy(device: SyncDevice, relay: Relay, keys: SyncKeys, state: SyncState, now: () => number): Promise<ExchangeOutcome> {
+async function takeServerCopy(
+  device: SyncDevice,
+  relay: Relay,
+  keys: SyncKeys,
+  state: SyncState,
+  now: () => number,
+): Promise<ExchangeOutcome> {
   const pull = await relay(syncRequest(keys, { epoch: null, since: null }, 0));
   if (!pull.ok) return { kind: "failed", error: pull.error, retryAfter: pull.retryAfter };
   if (pull.reply.op !== "sync") return { kind: "failed", error: "bad-reply" };
   const seen: SyncedDevice[] = [];
   const server = mergeData(emptyData(), await openIncoming(keys, pull, seen));
-  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
+  if (device.devices && seen.length)
+    await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
   const fresh = await device.loadData();
   await device.saveChanges(fresh, server);
   device.announce(changedKinds(fresh, server));
   const prints: Prints = new Map();
-  for (const kind of SYNC_KINDS) for (const r of server[kind] as { id: string }[]) prints.set(`${kind}:${r.id}`, fingerprint(r));
-  const next: SyncState = { ...state, epoch: pull.reply.epoch, since: pull.reply.latest, gen: pull.reply.gen, lastSyncAt: now() };
+  for (const kind of SYNC_KINDS)
+    for (const r of server[kind] as { id: string }[]) prints.set(`${kind}:${r.id}`, fingerprint(r));
+  const next: SyncState = {
+    ...state,
+    epoch: pull.reply.epoch,
+    since: pull.reply.latest,
+    gen: pull.reply.gen,
+    lastSyncAt: now(),
+  };
   delete next.staleChoice;
   await Promise.all([device.saveState(next), device.savePrints(prints)]);
   return { kind: "ok", state: next, skew: 0, wait: pull.reply.wait, followUp: false };

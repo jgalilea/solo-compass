@@ -44,8 +44,15 @@ describe("normalizeAdventure", () => {
   });
 
   it("keeps the oracle it's played with, if this copy of the app knows it", () => {
-    expect(normalizeAdventure({ id: "a", name: "A", oracle: "ironsworn", oracleUpdatedAt: 3 })).toMatchObject({ oracle: "ironsworn", oracleUpdatedAt: 3 });
-    const unknown = normalizeAdventure({ id: "a", name: "A", oracle: "mythic", oracleUpdatedAt: 3 });
+    expect(
+      normalizeAdventure({ id: "a", name: "A", oracle: "ironsworn", oracleUpdatedAt: 3 }),
+    ).toMatchObject({ oracle: "ironsworn", oracleUpdatedAt: 3 });
+    const unknown = normalizeAdventure({
+      id: "a",
+      name: "A",
+      oracle: "mythic",
+      oracleUpdatedAt: 3,
+    });
     expect(unknown).not.toHaveProperty("oracle");
     expect(unknown).not.toHaveProperty("oracleUpdatedAt");
   });
@@ -57,8 +64,16 @@ describe("normalizeAdventure", () => {
       gameDice: { ids: ["d20", 3, "attack"], updatedAt: 2 },
       gameTables: { ids: null, updatedAt: 4 },
     });
-    expect(a).toMatchObject({ gameDice: { ids: ["d20", "attack"], updatedAt: 2 }, gameTables: { ids: null, updatedAt: 4 } });
-    const broken = normalizeAdventure({ id: "a", name: "A", gameDice: { ids: "d20" }, gameTables: ["x"] });
+    expect(a).toMatchObject({
+      gameDice: { ids: ["d20", "attack"], updatedAt: 2 },
+      gameTables: { ids: null, updatedAt: 4 },
+    });
+    const broken = normalizeAdventure({
+      id: "a",
+      name: "A",
+      gameDice: { ids: "d20" },
+      gameTables: ["x"],
+    });
     expect(broken).not.toHaveProperty("gameDice");
     expect(broken).not.toHaveProperty("gameTables");
   });
@@ -91,11 +106,27 @@ describe("normalizeJournalEntry", () => {
 
 describe("normalizeHistoryEntry", () => {
   it("keeps oracle and table rolls and rejects the rest", () => {
-    const table = { kind: "tabla", id: "r", timestamp: 1, tableName: "T", resultText: "x", rolls: [3], total: 3 };
+    const table = {
+      kind: "tabla",
+      id: "r",
+      timestamp: 1,
+      tableName: "T",
+      resultText: "x",
+      rolls: [3],
+      total: 3,
+    };
     expect(normalizeHistoryEntry(table)).toEqual({ ...table, favorite: false });
     expect(normalizeHistoryEntry({ ...table, resultText: null })).toBeNull();
     expect(normalizeHistoryEntry({ ...table, kind: "other" })).toBeNull();
-    expect(normalizeHistoryEntry({ kind: "oraculo", id: "o", timestamp: 1, question: "?", answer: "si" })).toBeNull();
+    expect(
+      normalizeHistoryEntry({
+        kind: "oraculo",
+        id: "o",
+        timestamp: 1,
+        question: "?",
+        answer: "si",
+      }),
+    ).toBeNull();
   });
 
   it("keeps dice rolls with their text, starred or not", () => {
@@ -108,15 +139,35 @@ describe("normalizeHistoryEntry", () => {
     const dice = createDiceRollEntry("d6 -> 4", "adv-1", undefined, 5);
     expect(normalizeHistoryEntry(dice)).toMatchObject({ adventureId: "adv-1" });
     expect(normalizeHistoryEntry({ ...dice, adventureId: 7 })).not.toHaveProperty("adventureId");
-    const table = { kind: "tabla", id: "r", timestamp: 1, tableName: "T", resultText: "x", rolls: [3], total: 3 };
-    expect(normalizeHistoryEntry({ ...table, adventureId: "adv-2" })).toMatchObject({ adventureId: "adv-2" });
+    const table = {
+      kind: "tabla",
+      id: "r",
+      timestamp: 1,
+      tableName: "T",
+      resultText: "x",
+      rolls: [3],
+      total: 3,
+    };
+    expect(normalizeHistoryEntry({ ...table, adventureId: "adv-2" })).toMatchObject({
+      adventureId: "adv-2",
+    });
   });
 });
 
 describe("orderAdventures", () => {
   it("follows the saved order, with the ones it doesn't know first, newest first", () => {
-    const [a, b, c, d] = [adventure("a", 1), adventure("b", 2), adventure("c", 3), adventure("d", 4)];
-    expect(orderAdventures([a, b, c, d], ["b", "a"]).map((x) => x.id)).toEqual(["d", "c", "b", "a"]);
+    const [a, b, c, d] = [
+      adventure("a", 1),
+      adventure("b", 2),
+      adventure("c", 3),
+      adventure("d", 4),
+    ];
+    expect(orderAdventures([a, b, c, d], ["b", "a"]).map((x) => x.id)).toEqual([
+      "d",
+      "c",
+      "b",
+      "a",
+    ]);
   });
 });
 
@@ -124,15 +175,24 @@ describe("recentDeletions", () => {
   it("keeps a year of deletions", () => {
     const day = 24 * 60 * 60 * 1000;
     const now = 1000 * day;
-    expect(recentDeletions([{ id: "old", at: now - 400 * day }, { id: "new", at: now - 10 * day }], now)).toEqual([
-      { id: "new", at: now - 10 * day },
-    ]);
+    expect(
+      recentDeletions(
+        [
+          { id: "old", at: now - 400 * day },
+          { id: "new", at: now - 10 * day },
+        ],
+        now,
+      ),
+    ).toEqual([{ id: "new", at: now - 10 * day }]);
   });
 });
 
 describe("journal storage", () => {
   it("moves the old arrays over keeping the adventures' order", async () => {
-    await set("solo-compass:journal-adventures", [adventure("old-first", 1), adventure("new-second", 9)]);
+    await set("solo-compass:journal-adventures", [
+      adventure("old-first", 1),
+      adventure("new-second", 9),
+    ]);
     expect((await loadAdventures(t)).map((a) => a.id)).toEqual(["old-first", "new-second"]);
   });
 
@@ -140,14 +200,27 @@ describe("journal storage", () => {
     const known = await loadAdventures(t);
     await saveAdventureChanges(t, known, [adventure("tab-a", 20), ...known]);
     await saveAdventureChanges(t, known, [adventure("tab-b", 21), ...known]);
-    expect((await loadAdventures(t)).map((a) => a.id)).toEqual(expect.arrayContaining(["tab-a", "tab-b"]));
+    expect((await loadAdventures(t)).map((a) => a.id)).toEqual(
+      expect.arrayContaining(["tab-a", "tab-b"]),
+    );
   });
 
   it("restores a damaged backup without the records it can't read", async () => {
     const backup = {
       app: "solo-compass",
       schemaVersion: 4,
-      history: [{ id: "broken-roll" }, { kind: "tabla", id: "r", timestamp: 1, tableName: "T", resultText: "x", rolls: [1], total: 1 }],
+      history: [
+        { id: "broken-roll" },
+        {
+          kind: "tabla",
+          id: "r",
+          timestamp: 1,
+          tableName: "T",
+          resultText: "x",
+          rolls: [1],
+          total: 1,
+        },
+      ],
       journal: {
         adventures: [adventure("restored"), { name: "no id" }],
         entries: [

@@ -29,9 +29,26 @@ const MAX_HEADER_BYTES = 16 * 1024;
 
 export type SyncRequest =
   /** Sends a change (if `op` bytes follow) and asks for what's after `since`. */
-  | { v: 1; op: "sync"; box: string; pass: string; epoch: string | null; since: number | null; size: number }
+  | {
+      v: 1;
+      op: "sync";
+      box: string;
+      pass: string;
+      epoch: string | null;
+      since: number | null;
+      size: number;
+    }
   /** Replaces the snapshot with one that holds everything up to `upto`. */
-  | { v: 1; op: "snapshot"; box: string; pass: string; epoch: string; upto: number; gen: number; size: number }
+  | {
+      v: 1;
+      op: "snapshot";
+      box: string;
+      pass: string;
+      epoch: string;
+      upto: number;
+      gen: number;
+      size: number;
+    }
   /** Wipes the box and closes it for good: other devices stop syncing. */
   | { v: 1; op: "close"; box: string; pass: string };
 
@@ -90,7 +107,10 @@ export type SyncReply =
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: false });
 
-export function encodeFrame(header: object, parts: readonly Uint8Array[] = []): Uint8Array<ArrayBuffer> {
+export function encodeFrame(
+  header: object,
+  parts: readonly Uint8Array[] = [],
+): Uint8Array<ArrayBuffer> {
   const head = encoder.encode(JSON.stringify(header));
   const size = parts.reduce((sum, p) => sum + p.length, 4 + head.length);
   const frame = new Uint8Array(size);
@@ -109,7 +129,8 @@ export class FrameError extends Error {}
 export function decodeFrame(frame: Uint8Array): { header: unknown; payload: Uint8Array } {
   if (frame.length < 4) throw new FrameError("short frame");
   const length = new DataView(frame.buffer, frame.byteOffset, frame.byteLength).getUint32(0);
-  if (length > MAX_HEADER_BYTES || 4 + length > frame.length) throw new FrameError("bad header length");
+  if (length > MAX_HEADER_BYTES || 4 + length > frame.length)
+    throw new FrameError("bad header length");
   let header: unknown;
   try {
     header = JSON.parse(decoder.decode(frame.subarray(4, 4 + length)));
@@ -124,7 +145,8 @@ export function splitParts(payload: Uint8Array, sizes: readonly number[]): Uint8
   const parts: Uint8Array[] = [];
   let at = 0;
   for (const size of sizes) {
-    if (!Number.isInteger(size) || size < 0 || at + size > payload.length) throw new FrameError("bad part size");
+    if (!Number.isInteger(size) || size < 0 || at + size > payload.length)
+      throw new FrameError("bad part size");
     parts.push(payload.subarray(at, at + size));
     at += size;
   }
@@ -144,7 +166,11 @@ export function parseSyncRequest(header: unknown, payloadSize: number): SyncRequ
   if (typeof h.pass !== "string" || !BOX_PASS.test(h.pass)) return null;
   const box = { v: 1 as const, box: h.box, pass: h.pass };
   if (h.op === "sync") {
-    if (!(h.epoch === null || typeof h.epoch === "string") || !(h.since === null || isCount(h.since))) return null;
+    if (
+      !(h.epoch === null || typeof h.epoch === "string") ||
+      !(h.since === null || isCount(h.since))
+    )
+      return null;
     if (!isCount(h.size) || h.size !== payloadSize) return null;
     return { ...box, op: "sync", epoch: h.epoch, since: h.since, size: h.size };
   }

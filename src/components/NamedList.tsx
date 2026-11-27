@@ -2,7 +2,15 @@ import type { NamedCount } from "../lib/journalStats";
 import { CastIcon } from "./CastIcon";
 
 /** The most named (`limit` says how many at most), each with a bar against the first. */
-export function NamedList({ title, limit, items }: { title: string; limit: string; items: NamedCount[] }) {
+export function NamedList({
+  title,
+  limit,
+  items,
+}: {
+  title: string;
+  limit: string;
+  items: NamedCount[];
+}) {
   const max = items[0]?.count ?? 1;
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-4 py-3">
@@ -18,7 +26,11 @@ export function NamedList({ title, limit, items }: { title: string; limit: strin
               <span className="min-w-0 flex-1 truncate">{item.name}</span>
               <span className="tabular-nums text-parchment-dim">{item.count}</span>
             </span>
-            <span aria-hidden className="h-1 rounded-r bg-gold" style={{ width: `${(item.count / max) * 100}%` }} />
+            <span
+              aria-hidden
+              className="h-1 rounded-r bg-gold"
+              style={{ width: `${(item.count / max) * 100}%` }}
+            />
           </li>
         ))}
       </ol>

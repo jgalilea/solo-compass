@@ -37,8 +37,16 @@ export class GeneratorsStorageError extends Error {}
 export function normalizeGenerator(value: unknown): Generator | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
-  if (typeof v.id !== "string" || typeof v.name !== "string" || !v.name.trim() || !Array.isArray(v.tableIds)) return null;
-  const tableIds = [...new Set(v.tableIds.filter((id): id is string => typeof id === "string" && !!id))];
+  if (
+    typeof v.id !== "string" ||
+    typeof v.name !== "string" ||
+    !v.name.trim() ||
+    !Array.isArray(v.tableIds)
+  )
+    return null;
+  const tableIds = [
+    ...new Set(v.tableIds.filter((id): id is string => typeof id === "string" && !!id)),
+  ];
   if (tableIds.length === 0) return null;
   const createdAt = typeof v.createdAt === "number" ? v.createdAt : 0;
   return {
@@ -51,7 +59,13 @@ export function normalizeGenerator(value: unknown): Generator | null {
 }
 
 export function createGenerator(draft: GeneratorDraft, now = Date.now()): Generator {
-  return { id: makeId(), name: draft.name.trim(), tableIds: [...new Set(draft.tableIds)], createdAt: now, updatedAt: now };
+  return {
+    id: makeId(),
+    name: draft.name.trim(),
+    tableIds: [...new Set(draft.tableIds)],
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 /** In the order they were made. */
@@ -60,14 +74,21 @@ export function sortGenerators(generators: Generator[]): Generator[] {
 }
 
 /** Its tables among those loaded, in its order (one that's gone, or not loaded yet, is left out). */
-export function generatorTables(generator: Pick<Generator, "tableIds">, tables: readonly MeaningTable[]): MeaningTable[] {
+export function generatorTables(
+  generator: Pick<Generator, "tableIds">,
+  tables: readonly MeaningTable[],
+): MeaningTable[] {
   const byId = new Map(tables.map((t) => [t.id, t]));
   return generator.tableIds.map((id) => byId.get(id)).filter((t) => t !== undefined);
 }
 
 /** The built-in games the generators' tables come from (to load them). */
 export function generatorGames(generators: readonly Generator[]): GameId[] {
-  return [...new Set(generators.flatMap((g) => g.tableIds.map(gameOfTable)).filter((id) => id !== undefined))];
+  return [
+    ...new Set(
+      generators.flatMap((g) => g.tableIds.map(gameOfTable)).filter((id) => id !== undefined),
+    ),
+  ];
 }
 
 const store = createCollection<Generator>({ name: "generators", normalize: normalizeGenerator });
@@ -81,7 +102,11 @@ export async function loadGenerators(t: Dictionary): Promise<Generator[]> {
   }
 }
 
-export async function saveGeneratorChanges(t: Dictionary, prev: Generator[], next: Generator[]): Promise<void> {
+export async function saveGeneratorChanges(
+  t: Dictionary,
+  prev: Generator[],
+  next: Generator[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await store.save(diffById(prev, next));

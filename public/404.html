@@ -6,5 +6,7 @@
   // screens live after the "#" (HashRouter), so the path goes there:
   // a screen's name without "#" opens it, anything else gets the app's
   // own "off the map" page. "/solo-compass" is vite.config.ts's base.
-  location.replace("/solo-compass/#" + (location.pathname.replace(/^\/solo-compass/, "") || "/") + location.search);
+  location.replace(
+    "/solo-compass/#" + (location.pathname.replace(/^\/solo-compass/, "") || "/") + location.search,
+  );
 </script>

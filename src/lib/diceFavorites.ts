@@ -24,7 +24,10 @@ export function loadFavoriteDice(): Set<BuiltinDie> {
 export function saveFavoriteDice(dice: Set<BuiltinDie>): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(BUILTIN_DICE.filter((d) => dice.has(d))));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(BUILTIN_DICE.filter((d) => dice.has(d))),
+    );
   } catch {
     // Not critical: if it fails, it just doesn't persist.
   }

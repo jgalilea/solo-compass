@@ -55,7 +55,9 @@ export function GeneratorRow({
       <div className="flex items-start gap-3">
         <IconGenerator size={20} className="mt-0.5 shrink-0 text-gold" />
         <div className="min-w-0 flex-1">
-          <h3 className="break-words font-display text-lg leading-snug text-parchment">{generator.name}</h3>
+          <h3 className="break-words font-display text-lg leading-snug text-parchment">
+            {generator.name}
+          </h3>
           <p className="mt-0.5 text-sm text-parchment-dim">
             {loading ? t.common.loading : tables.map((table) => table.name).join(" · ")}
           </p>

@@ -22,7 +22,13 @@
  * its expiry.
  */
 
-import { MAX_BOX_BYTES, encodeFrame, type SyncReply, type SyncRequest, type SyncStats } from "../../src/lib/syncWire.ts";
+import {
+  MAX_BOX_BYTES,
+  encodeFrame,
+  type SyncReply,
+  type SyncRequest,
+  type SyncStats,
+} from "../../src/lib/syncWire.ts";
 
 const MINUTE = 60 * 1000;
 const DAY = 24 * 60 * MINUTE;
@@ -91,16 +97,35 @@ export interface BoxResult {
   alarmAt: number | null;
 }
 
-function answer(status: number, reply: SyncReply, parts: Uint8Array[] = [], alarmAt: number | null = null): BoxResult {
+function answer(
+  status: number,
+  reply: SyncReply,
+  parts: Uint8Array[] = [],
+  alarmAt: number | null = null,
+): BoxResult {
   return { status, frame: encodeFrame(reply, parts), alarmAt };
 }
 
-function failure(status: number, error: Extract<SyncReply, { ok: false }>["error"], now: number, retryAfter?: number): BoxResult {
+function failure(
+  status: number,
+  error: Extract<SyncReply, { ok: false }>["error"],
+  now: number,
+  retryAfter?: number,
+): BoxResult {
   return answer(status, { ok: false, error, now, ...(retryAfter ? { retryAfter } : {}) });
 }
 
 function newMeta(passHash: string, epoch: string): BoxMeta {
-  return { passHash, epoch, closed: false, upto: 0, gen: 0, snapshotBytes: 0, snapshotAt: 0, alarmAt: 0 };
+  return {
+    passHash,
+    epoch,
+    closed: false,
+    upto: 0,
+    gen: 0,
+    snapshotBytes: 0,
+    snapshotAt: 0,
+    alarmAt: 0,
+  };
 }
 
 function nextAlarm(meta: BoxMeta, now: number): number | null {
@@ -113,12 +138,18 @@ function statsOf(store: BoxStore, meta: BoxMeta): SyncStats {
   return { ops: count, opsBytes: bytes, snapshotBytes: meta.snapshotBytes };
 }
 
-export function handleBox(store: BoxStore, request: BoxRequest, payload: Uint8Array, options: BoxOptions): BoxResult {
+export function handleBox(
+  store: BoxStore,
+  request: BoxRequest,
+  payload: Uint8Array,
+  options: BoxOptions,
+): BoxResult {
   const { now, wait } = options;
   const stored = store.meta();
 
   if (stored?.closed) {
-    if (request.op === "close" && stored.passHash === request.passHash) return answer(200, { ok: true, op: "close", now });
+    if (request.op === "close" && stored.passHash === request.passHash)
+      return answer(200, { ok: true, op: "close", now });
     return failure(410, "closed", now);
   }
   if (stored && stored.passHash !== request.passHash) return failure(403, "forbidden", now);
@@ -136,16 +167,27 @@ export function handleBox(store: BoxStore, request: BoxRequest, payload: Uint8Ar
   let metaChanged = !stored;
 
   if (request.op === "snapshot") {
-    if (request.epoch !== meta.epoch || request.gen !== meta.gen || request.upto > latest || request.upto < meta.upto) {
+    if (
+      request.epoch !== meta.epoch ||
+      request.gen !== meta.gen ||
+      request.upto > latest ||
+      request.upto < meta.upto
+    ) {
       return failure(409, "conflict", now);
     }
-    if (now - meta.snapshotAt < SNAPSHOT_GAP) return failure(429, "rate", now, Math.ceil(SNAPSHOT_GAP / 1000));
+    if (now - meta.snapshotAt < SNAPSHOT_GAP)
+      return failure(429, "rate", now, Math.ceil(SNAPSHOT_GAP / 1000));
     // Checked before anything is touched: a refusal leaves the box as it was.
     const after = store.changeStatsAfter(request.upto);
     if (request.size + after.bytes > MAX_BOX_BYTES) return failure(413, "full", now);
     store.deleteChangesUpTo(request.upto);
     store.setSnapshot(payload);
-    Object.assign(meta, { upto: request.upto, gen: meta.gen + 1, snapshotBytes: request.size, snapshotAt: now });
+    Object.assign(meta, {
+      upto: request.upto,
+      gen: meta.gen + 1,
+      snapshotBytes: request.size,
+      snapshotAt: now,
+    });
     const alarmAt = nextAlarm(meta, now);
     if (alarmAt) meta.alarmAt = alarmAt;
     store.setMeta(meta);
@@ -158,10 +200,16 @@ export function handleBox(store: BoxStore, request: BoxRequest, payload: Uint8Ar
   if (request.size > 0) {
     const recent = store.recentChangeTimes(WRITES_PER_MINUTE);
     if (recent.length >= WRITES_PER_MINUTE && recent[WRITES_PER_MINUTE - 1] > now - MINUTE) {
-      return failure(429, "rate", now, Math.max(1, Math.ceil((recent[WRITES_PER_MINUTE - 1] + MINUTE - now) / 1000)));
+      return failure(
+        429,
+        "rate",
+        now,
+        Math.max(1, Math.ceil((recent[WRITES_PER_MINUTE - 1] + MINUTE - now) / 1000)),
+      );
     }
     const before = statsOf(store, meta);
-    if (meta.snapshotBytes + before.opsBytes + request.size > MAX_BOX_BYTES) return failure(413, "full", now);
+    if (meta.snapshotBytes + before.opsBytes + request.size > MAX_BOX_BYTES)
+      return failure(413, "full", now);
     appended = latest + 1;
     store.appendChange(appended, now, payload);
     // Only a device that sends needs them: it's the one that may fold the changes.

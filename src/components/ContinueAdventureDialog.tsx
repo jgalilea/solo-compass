@@ -26,9 +26,16 @@ export function ContinueAdventureDialog({
 
   return (
     <Modal onClose={onClose} labelledBy="continue-adventure-title" centered size="sm">
-      <DialogHeader id="continue-adventure-title" title={t.journal.continueAdventure} Icon={IconContinue} onClose={onClose} />
+      <DialogHeader
+        id="continue-adventure-title"
+        title={t.journal.continueAdventure}
+        Icon={IconContinue}
+        onClose={onClose}
+      />
       <DialogBody>
-        <p className="text-sm text-parchment-dim">{interpolate(t.journal.continueDescription, { name })}</p>
+        <p className="text-sm text-parchment-dim">
+          {interpolate(t.journal.continueDescription, { name })}
+        </p>
         <form
           id={formId}
           onSubmit={(e) => {
@@ -38,7 +45,12 @@ export function ContinueAdventureDialog({
         >
           <label className="block">
             <span className="text-sm text-parchment-dim">{t.journal.continueNameLabel}</span>
-            <input autoFocus value={value} onChange={(e) => setValue(e.target.value)} className={`${INPUT_CLASS} mt-1.5`} />
+            <input
+              autoFocus
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className={`${INPUT_CLASS} mt-1.5`}
+            />
           </label>
         </form>
       </DialogBody>

@@ -18,7 +18,15 @@
  */
 
 import { makeId } from "./ids";
-import { judgeDice, LIKELIHOOD_DICE, rollOracle, type Answer, type Likelihood, type OracleRoll, type Qualifier } from "./oracle";
+import {
+  judgeDice,
+  LIKELIHOOD_DICE,
+  rollOracle,
+  type Answer,
+  type Likelihood,
+  type OracleRoll,
+  type Qualifier,
+} from "./oracle";
 
 export type OracleId = "recluse" | "loner" | "ironsworn" | "opse";
 
@@ -53,12 +61,20 @@ interface Engine {
   /** The likelihoods it offers, from least to most likely. */
   levels: Likelihood[];
   /** The dice for a likelihood: one group per role. */
-  dice: (likelihood: Likelihood) => { role: OracleDiceGroup["role"]; sides: number; count: number }[];
+  dice: (
+    likelihood: Likelihood,
+  ) => { role: OracleDiceGroup["role"]; sides: number; count: number }[];
   /** Reads the kept die of each group (same order as `dice`). */
   read: (likelihood: Likelihood, kept: number[]) => OracleReading;
 }
 
-const FIVE: Likelihood[] = ["muy-improbable", "improbable", "equilibrado", "probable", "muy-probable"];
+const FIVE: Likelihood[] = [
+  "muy-improbable",
+  "improbable",
+  "equilibrado",
+  "probable",
+  "muy-probable",
+];
 const THREE: Likelihood[] = ["improbable", "equilibrado", "probable"];
 
 /** Ironsworn: the lowest roll that answers yes. */
@@ -71,7 +87,11 @@ const IRONSWORN_YES_FROM: Record<Likelihood, number> = {
 };
 
 /** One Page Solo Engine: the lowest answer die that answers yes. */
-const OPSE_YES_FROM: Partial<Record<Likelihood, number>> = { improbable: 5, equilibrado: 4, probable: 3 };
+const OPSE_YES_FROM: Partial<Record<Likelihood, number>> = {
+  improbable: 5,
+  equilibrado: 4,
+  probable: 3,
+};
 
 const ENGINES: Record<OracleId, Engine> = {
   recluse: {
@@ -129,7 +149,10 @@ export function fitLikelihood(id: OracleId, likelihood: Likelihood): Likelihood 
 }
 
 /** The dice an oracle throws for a likelihood, before throwing them: one group per role. */
-export function oracleDicePlan(id: OracleId, likelihood: Likelihood): { role: OracleDiceGroup["role"]; sides: number; count: number }[] {
+export function oracleDicePlan(
+  id: OracleId,
+  likelihood: Likelihood,
+): { role: OracleDiceGroup["role"]; sides: number; count: number }[] {
   return ENGINES[id].dice(likelihood);
 }
 
@@ -156,7 +179,13 @@ export function throwOracle(
     const rolls = Array.from({ length: count }, () => roll(sides));
     return { role, sides, rolls, kept: Math.max(...rolls) };
   });
-  return { ...engine.read(level, dice.map((d) => d.kept)), dice };
+  return {
+    ...engine.read(
+      level,
+      dice.map((d) => d.kept),
+    ),
+    dice,
+  };
 }
 
 export interface OracleOdds {
@@ -181,10 +210,14 @@ export function oracleOdds(id: OracleId, likelihood: Likelihood): OracleOdds {
   let total = 0;
 
   // Every die on its own, then the kept (highest) of each group.
-  const dice = groups.flatMap((g, group) => Array.from({ length: g.count }, () => ({ group, sides: g.sides })));
+  const dice = groups.flatMap((g, group) =>
+    Array.from({ length: g.count }, () => ({ group, sides: g.sides })),
+  );
   const values = dice.map(() => 1);
   for (;;) {
-    const kept = groups.map((_, group) => Math.max(...values.filter((_, i) => dice[i].group === group)));
+    const kept = groups.map((_, group) =>
+      Math.max(...values.filter((_, i) => dice[i].group === group)),
+    );
     const reading = engine.read(likelihood, kept);
     total += 1;
     if (reading.answer === "si") odds.yes += 1;
@@ -215,7 +248,12 @@ export function nextTwistCounter(previous: number): { counter: number; twist: bo
  * A question to an oracle, as saved in the history. Loner needs its
  * Twist Counter so far (`lonerCounter`, see lonerTwistCounter).
  */
-export function rollOracleWith(id: OracleId, question: string, likelihood: Likelihood, lonerCounter = 0): OracleRoll {
+export function rollOracleWith(
+  id: OracleId,
+  question: string,
+  likelihood: Likelihood,
+  lonerCounter = 0,
+): OracleRoll {
   if (id === "recluse") return { ...rollOracle(question, likelihood), oracle: "recluse" };
   const { dice, ...reading } = throwOracle(id, likelihood);
   const twist = reading.special === "double" ? nextTwistCounter(lonerCounter) : undefined;
@@ -241,12 +279,24 @@ export function rollOracleWith(id: OracleId, question: string, likelihood: Likel
  */
 /** The same, for one adventure's rolls (none: the free rolls'). */
 export function lonerTwistCounterOf(
-  history: readonly { kind: string; oracle?: string; twist?: { counter: number }; adventureId?: string }[],
+  history: readonly {
+    kind: string;
+    oracle?: string;
+    twist?: { counter: number };
+    adventureId?: string;
+  }[],
   adventureId: string | null | undefined,
 ): number {
-  return lonerTwistCounter(history.filter((h) => (h.adventureId ?? null) === (adventureId ?? null)));
+  return lonerTwistCounter(
+    history.filter((h) => (h.adventureId ?? null) === (adventureId ?? null)),
+  );
 }
 
-export function lonerTwistCounter(history: readonly { kind: string; oracle?: string; twist?: { counter: number } }[]): number {
-  return history.find((h) => h.kind === "oraculo" && h.oracle === "loner" && h.twist)?.twist?.counter ?? 0;
+export function lonerTwistCounter(
+  history: readonly { kind: string; oracle?: string; twist?: { counter: number } }[],
+): number {
+  return (
+    history.find((h) => h.kind === "oraculo" && h.oracle === "loner" && h.twist)?.twist?.counter ??
+    0
+  );
 }

@@ -64,7 +64,11 @@ export class AppErrorBoundary extends Component<Props, State> {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => void copyText(report).then((ok) => this.setState({ copied: ok ? "yes" : "failed" }))}
+                onClick={() =>
+                  void copyText(report).then((ok) =>
+                    this.setState({ copied: ok ? "yes" : "failed" }),
+                  )
+                }
                 className="flex items-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/20"
               >
                 <IconCopy size={16} />

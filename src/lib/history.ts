@@ -40,7 +40,9 @@ export interface DiceRollEntry {
 export type HistoryEntry = (OracleRoll | TableRollEntry | DiceRollEntry) & { adventureId?: string };
 
 /** What a table roll was made with; of an older one, only a d66 can be told (it kept its two dice). */
-export function tableRollDie(entry: Pick<TableRollEntry, "dice" | "rolls" | "total">): DiceType | null {
+export function tableRollDie(
+  entry: Pick<TableRollEntry, "dice" | "rolls" | "total">,
+): DiceType | null {
   if (entry.dice) return entry.dice;
   const [tens, ones] = entry.rolls;
   return entry.rolls.length === 2 && tens * 10 + ones === entry.total ? "d66" : null;
@@ -107,7 +109,10 @@ const LEGACY_LOCALSTORAGE_KEY = "solo-compass:history";
 
 const isNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 const isDiceGroup = (v: unknown): boolean =>
-  !!v && typeof v === "object" && Array.isArray((v as Record<string, unknown>).rolls) && isNumber((v as Record<string, unknown>).kept);
+  !!v &&
+  typeof v === "object" &&
+  Array.isArray((v as Record<string, unknown>).rolls) &&
+  isNumber((v as Record<string, unknown>).kept);
 
 /** A roll as stored or restored; null if it can't be shown. */
 export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
@@ -120,7 +125,9 @@ export function normalizeHistoryEntry(value: unknown): HistoryEntry | null {
   // The adventure it was for, only if it reads as one.
   const clean: HistoryEntry = { ...entry };
   delete clean.adventureId;
-  return typeof v.adventureId === "string" && v.adventureId ? { ...clean, adventureId: v.adventureId } : clean;
+  return typeof v.adventureId === "string" && v.adventureId
+    ? { ...clean, adventureId: v.adventureId }
+    : clean;
 }
 
 function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEntry | null {
@@ -128,14 +135,21 @@ function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEn
     // Recluse rolls carry white/black; any oracle's, `dice` (oracleEngines.ts).
     const hasDice =
       (isDiceGroup(v.white) && isDiceGroup(v.black)) ||
-      (Array.isArray(v.dice) && v.dice.length > 0 && v.dice.every((g) => isDiceGroup(g) && isNumber((g as Record<string, unknown>).sides)));
+      (Array.isArray(v.dice) &&
+        v.dice.length > 0 &&
+        v.dice.every((g) => isDiceGroup(g) && isNumber((g as Record<string, unknown>).sides)));
     if (typeof v.question !== "string" || typeof v.answer !== "string" || !hasDice) {
       return null;
     }
     return { ...(v as unknown as OracleRoll), favorite };
   }
   if (v.kind === "tabla") {
-    if (typeof v.tableName !== "string" || typeof v.resultText !== "string" || !Array.isArray(v.rolls) || !isNumber(v.total)) {
+    if (
+      typeof v.tableName !== "string" ||
+      typeof v.resultText !== "string" ||
+      !Array.isArray(v.rolls) ||
+      !isNumber(v.total)
+    ) {
       return null;
     }
     const entry: TableRollEntry = { ...(v as unknown as TableRollEntry), favorite };
@@ -151,7 +165,9 @@ function normalizeRoll(v: Record<string, unknown>, favorite: boolean): HistoryEn
       timestamp: v.timestamp as number,
       text: fixOldD66(v.text),
       favorite,
-      ...(card && isDeckId(card.deck) && typeof card.id === "string" ? { card: { deck: card.deck, id: card.id } } : {}),
+      ...(card && isDeckId(card.deck) && typeof card.id === "string"
+        ? { card: { deck: card.deck, id: card.id } }
+        : {}),
     };
   }
   return null;
@@ -202,7 +218,10 @@ export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
     throw new HistoryStorageError(t.history.storageUnavailableError);
   }
   if (stored.length === 0) {
-    const migrated = migrateFromLocalStorage()?.map(normalizeHistoryEntry).filter((e) => e !== null) ?? [];
+    const migrated =
+      migrateFromLocalStorage()
+        ?.map(normalizeHistoryEntry)
+        .filter((e) => e !== null) ?? [];
     if (migrated.length) {
       try {
         await historyStore.save({ put: migrated, remove: [] });
@@ -216,7 +235,11 @@ export async function loadHistory(t: Dictionary): Promise<HistoryEntry[]> {
 }
 
 /** Writes only what changed between the two lists. */
-export async function saveHistoryChanges(t: Dictionary, prev: HistoryEntry[], next: HistoryEntry[]): Promise<void> {
+export async function saveHistoryChanges(
+  t: Dictionary,
+  prev: HistoryEntry[],
+  next: HistoryEntry[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await historyStore.save(diffById(prev, next));

@@ -28,7 +28,8 @@ const HIGHEST = () => 1 - Number.EPSILON / 2;
 const ROLLS = 3000;
 
 const total = (line: string) => Number(line.split(" -> ")[1].split(" ")[0]);
-const range = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+const range = (from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => from + i);
 const D66 = diceValues("d66");
 
 /** Every total a formula gives, checked die by die as it's read back to draw it. */
@@ -46,22 +47,30 @@ function totals(formula: string, sides?: readonly number[]): number[] {
     if (!dice) throw new Error(`Not read back: ${line}`);
     for (const die of dice) {
       const faces = die.sides ? range(1, die.sides) : [-1, 0, 1];
-      if (!sides.includes(die.sides) || !faces.includes(die.value)) throw new Error(`Impossible die in ${line}`);
+      if (!sides.includes(die.sides) || !faces.includes(die.value))
+        throw new Error(`Impossible die in ${line}`);
     }
   }
   return [...seen].sort((a, b) => a - b);
 }
 
 describe("single dice", () => {
-  it.each([2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 30, 50, 100])("a d%i gives each of its faces and nothing else", (n) => {
-    expect(totals(`d${n}`, [n])).toEqual(range(1, n));
-    expect(totals(`1d${n}`, [n])).toEqual(range(1, n));
-    expect(totals(`d(${n})`, [n])).toEqual(range(1, n));
-  });
+  it.each([2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 30, 50, 100])(
+    "a d%i gives each of its faces and nothing else",
+    (n) => {
+      expect(totals(`d${n}`, [n])).toEqual(range(1, n));
+      expect(totals(`1d${n}`, [n])).toEqual(range(1, n));
+      expect(totals(`d(${n})`, [n])).toEqual(range(1, n));
+    },
+  );
 
   it("every button's die", () => {
     const expected: Record<string, number[]> = { "d%": range(1, 100), "4dF": range(-4, 4) };
-    for (const die of BUILTIN_DICE) expect(totals(die, [die === "4dF" ? 0 : die === "d%" ? 100 : Number(die.slice(1))]), die).toEqual(expected[die] ?? range(1, Number(die.slice(1))));
+    for (const die of BUILTIN_DICE)
+      expect(
+        totals(die, [die === "4dF" ? 0 : die === "d%" ? 100 : Number(die.slice(1))]),
+        die,
+      ).toEqual(expected[die] ?? range(1, Number(die.slice(1))));
   });
 
   it("Fudge dice, both kinds", () => {
@@ -79,9 +88,14 @@ describe("single dice", () => {
 
 describe("formulas", () => {
   it("a d66 stays one in any formula", () => {
-    for (const edge of ["advantage", "disadvantage"] as const) expect(totals(withEdge("d66", edge), [6]).every((n) => D66.includes(n))).toBe(true);
+    for (const edge of ["advantage", "disadvantage"] as const)
+      expect(totals(withEdge("d66", edge), [6]).every((n) => D66.includes(n))).toBe(true);
     expect(totals("d66+100", [6])).toEqual(D66.map((n) => n + 100));
-    for (const f of ["2d66kh1", "3d66kl1", "d66r<20", "d66ro", "{d66,d66}kh1"]) expect(totals(f, [6]).every((n) => D66.includes(n)), f).toBe(true);
+    for (const f of ["2d66kh1", "3d66kl1", "d66r<20", "d66ro", "{d66,d66}kh1"])
+      expect(
+        totals(f, [6]).every((n) => D66.includes(n)),
+        f,
+      ).toBe(true);
     expect(totals("d66r<20", [6])[0]).toBe(21);
     const pair = totals("2d66", [6]);
     expect([pair[0], pair.at(-1)]).toEqual([22, 132]);
@@ -119,7 +133,8 @@ describe("formulas", () => {
 
   it("exploding, minimum and maximum dice never go below what they can", () => {
     const random = seeded(1);
-    const lowest = (f: string) => Math.min(...Array.from({ length: ROLLS }, () => total(rollFormula(f, random)!)));
+    const lowest = (f: string) =>
+      Math.min(...Array.from({ length: ROLLS }, () => total(rollFormula(f, random)!)));
     expect(lowest("3d6!")).toBe(3);
     expect(lowest("d6!!")).toBe(1);
     expect(lowest("d6!p")).toBe(1);
@@ -127,11 +142,20 @@ describe("formulas", () => {
     const all = Array.from({ length: ROLLS }, () => total(rollFormula("2d6max4", random)!));
     expect(Math.max(...all)).toBe(8);
     // A die that explodes on its 6 can't end exactly on it.
-    expect(Array.from({ length: ROLLS }, () => total(rollFormula("d6!!", random)!)).some((n) => n % 6 === 0)).toBe(false);
+    expect(
+      Array.from({ length: ROLLS }, () => total(rollFormula("d6!!", random)!)).some(
+        (n) => n % 6 === 0,
+      ),
+    ).toBe(false);
   });
 
   it("doesn't favour any face", () => {
-    for (const [formula, faces] of [["d6", range(1, 6)], ["d20", range(1, 20)], ["d66", D66], ["d%", range(1, 100)]] as const) {
+    for (const [formula, faces] of [
+      ["d6", range(1, 6)],
+      ["d20", range(1, 20)],
+      ["d66", D66],
+      ["d%", range(1, 100)],
+    ] as const) {
       const random = seeded(99);
       const counts = new Map<number, number>();
       const n = faces.length * 1000;
@@ -139,16 +163,28 @@ describe("formulas", () => {
         const t = total(rollFormula(formula, random)!);
         counts.set(t, (counts.get(t) ?? 0) + 1);
       }
-      for (const face of faces) expect(Math.abs((counts.get(face) ?? 0) - 1000), `${formula} ${face}`).toBeLessThan(160);
+      for (const face of faces)
+        expect(Math.abs((counts.get(face) ?? 0) - 1000), `${formula} ${face}`).toBeLessThan(160);
     }
   });
 
   it("refuses dice that can't exist", () => {
-    for (const f of ["d0", "0d6", "d(0)", "d(1-2)", "d(5/2)", "-1d6x", "d", "2d", "d6.5"]) expect(rollFormula(f), f).toBeNull();
+    for (const f of ["d0", "0d6", "d(0)", "d(1-2)", "d(5/2)", "-1d6x", "d", "2d", "d6.5"])
+      expect(rollFormula(f), f).toBeNull();
   });
 
   it("doesn't draw a die that says something it doesn't have", () => {
-    for (const line of ["d6 -> 7", "d6 -> 0", "d20 -> 21", "2d6 -> 9 (2+7)", "d66 -> 70", "d66 -> 0", "d(66) -> 67", "d% -> 101"]) expect(readRolledDice(line), line).toBeNull();
+    for (const line of [
+      "d6 -> 7",
+      "d6 -> 0",
+      "d20 -> 21",
+      "2d6 -> 9 (2+7)",
+      "d66 -> 70",
+      "d66 -> 0",
+      "d(66) -> 67",
+      "d% -> 101",
+    ])
+      expect(readRolledDice(line), line).toBeNull();
   });
 });
 
@@ -160,23 +196,27 @@ describe("tables, oracles and cards", () => {
     vi.restoreAllMocks();
   };
 
-  it.each<DiceType>(["d4", "d6", "d8", "d10", "d12", "d20", "d66", "d100", "d300"])("a table's %s gives each of its values and nothing else", (die) => {
-    const seen = new Set<number>();
-    const roll = () => {
-      const { rolls, total: value } = rollForTable(die);
-      seen.add(value);
-      expect(tableDice(die, value)!.map((d) => d.value)).toEqual(rolls);
-    };
-    withRandom(LOWEST, roll);
-    withRandom(HIGHEST, roll);
-    withRandom(seeded(5), () => {
-      for (let i = 0; i < ROLLS * 2; i++) roll();
-    });
-    expect([...seen].sort((a, b) => a - b)).toEqual(diceValues(die));
-  });
+  it.each<DiceType>(["d4", "d6", "d8", "d10", "d12", "d20", "d66", "d100", "d300"])(
+    "a table's %s gives each of its values and nothing else",
+    (die) => {
+      const seen = new Set<number>();
+      const roll = () => {
+        const { rolls, total: value } = rollForTable(die);
+        seen.add(value);
+        expect(tableDice(die, value)!.map((d) => d.value)).toEqual(rolls);
+      };
+      withRandom(LOWEST, roll);
+      withRandom(HIGHEST, roll);
+      withRandom(seeded(5), () => {
+        for (let i = 0; i < ROLLS * 2; i++) roll();
+      });
+      expect([...seen].sort((a, b) => a - b)).toEqual(diceValues(die));
+    },
+  );
 
   it("no table die reads an impossible value", () => {
-    for (const bad of [0, 7, 10, 17, 20, 37, 60, 67, 99]) expect(tableDice("d66", bad), String(bad)).toBeNull();
+    for (const bad of [0, 7, 10, 17, 20, 37, 60, 67, 99])
+      expect(tableDice("d66", bad), String(bad)).toBeNull();
     expect(tableDice("d6", 7)).toBeNull();
     expect(tableDice("d6", 0)).toBeNull();
   });
@@ -190,7 +230,9 @@ describe("tables, oracles and cards", () => {
           withRandom(random, () => {
             for (let i = 0; i < 300; i++) {
               const { dice } = throwOracle(id, level);
-              expect(dice.map(({ role, sides, rolls }) => ({ role, sides, count: rolls.length }))).toEqual(plan);
+              expect(
+                dice.map(({ role, sides, rolls }) => ({ role, sides, count: rolls.length })),
+              ).toEqual(plan);
               for (const { rolls, sides, kept } of dice) {
                 expect(rolls.every((v) => Number.isInteger(v) && v >= 1 && v <= sides)).toBe(true);
                 expect(rolls).toContain(kept);
@@ -201,7 +243,9 @@ describe("tables, oracles and cards", () => {
       }
     }
     withRandom(seeded(3), () => {
-      for (let i = 0; i < 300; i++) for (const g of [rollOracle("?", "probable").white, rollOracle("?", "probable").black]) expect(g.rolls.every((v) => v >= 1 && v <= 6)).toBe(true);
+      for (let i = 0; i < 300; i++)
+        for (const g of [rollOracle("?", "probable").white, rollOracle("?", "probable").black])
+          expect(g.rolls.every((v) => v >= 1 && v <= 6)).toBe(true);
     });
   });
 
@@ -211,7 +255,12 @@ describe("tables, oracles and cards", () => {
       const all = deckCards(deck, options);
       for (const random of [LOWEST, HIGHEST, seeded(8)]) {
         const drawn: string[] = [];
-        for (let card = drawCard(deck, options, drawn, random); card; card = drawCard(deck, options, drawn, random)) drawn.push(card);
+        for (
+          let card = drawCard(deck, options, drawn, random);
+          card;
+          card = drawCard(deck, options, drawn, random)
+        )
+          drawn.push(card);
         expect([...drawn].sort()).toEqual([...all].sort());
       }
     }

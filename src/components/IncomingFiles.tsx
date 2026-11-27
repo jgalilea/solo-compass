@@ -14,7 +14,9 @@ import {
 import { preloadable } from "../lib/preloadable";
 import { IconFileImport } from "./icons/Icons";
 
-const IncomingFileDialog = preloadable(() => import("./IncomingFileDialog").then((m) => m.IncomingFileDialog));
+const IncomingFileDialog = preloadable(() =>
+  import("./IncomingFileDialog").then((m) => m.IncomingFileDialog),
+);
 
 /** A key for each file handed over, so the dialog starts afresh with the next one. */
 const fileIds = new WeakMap<File, number>();

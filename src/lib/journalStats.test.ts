@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import type { HistoryEntry } from "./history";
 import type { JournalEntry } from "./lonelog";
 import { buildCast } from "./lonelogTags";
-import { activityLevel, computeAdventureStats, lastYearByMonth, longestStreak, mostNamed, playTimeParts } from "./journalStats";
+import {
+  activityLevel,
+  computeAdventureStats,
+  lastYearByMonth,
+  longestStreak,
+  mostNamed,
+  playTimeParts,
+} from "./journalStats";
 
 let ts = Date.UTC(2026, 10, 1, 12);
 function entry(kind: JournalEntry["kind"], text: string, linkedRollId?: string): JournalEntry {
@@ -48,7 +55,13 @@ describe("adventure stats", () => {
 
   it("counts each session, and what comes before the first", () => {
     const stats = computeAdventureStats(
-      [entry("note", "Antes de todo"), entry("session", "Uno"), entry("note", "dos palabras"), entry("roll", "d6 -> 4"), entry("session", "Dos")],
+      [
+        entry("note", "Antes de todo"),
+        entry("session", "Uno"),
+        entry("note", "dos palabras"),
+        entry("roll", "d6 -> 4"),
+        entry("session", "Dos"),
+      ],
       new Map(),
     );
     expect(stats.perSession).toEqual([
@@ -96,10 +109,28 @@ describe("adventure stats", () => {
 
   it("sets the oracle's yes against the chances of what was asked", () => {
     const ask = (answer: string, n: number) =>
-      Array.from({ length: n }, (_, i) => ({ kind: "oraculo", id: `${answer}${i}`, answer, oracle: "ironsworn", likelihood: "equilibrado" }) as HistoryEntry);
+      Array.from(
+        { length: n },
+        (_, i) =>
+          ({
+            kind: "oraculo",
+            id: `${answer}${i}`,
+            answer,
+            oracle: "ironsworn",
+            likelihood: "equilibrado",
+          }) as HistoryEntry,
+      );
     const stats = (history: HistoryEntry[]) =>
-      computeAdventureStats(history.map((h) => entry("roll", "Ironsworn: d100 67 -> Sí", h.id)), new Map(history.map((h) => [h.id, h]))).oracleChance;
-    expect(stats([...ask("si", 5), ...ask("no", 5)])).toMatchObject({ total: 10, yes: 5, expected: 5, mood: "fair" });
+      computeAdventureStats(
+        history.map((h) => entry("roll", "Ironsworn: d100 67 -> Sí", h.id)),
+        new Map(history.map((h) => [h.id, h])),
+      ).oracleChance;
+    expect(stats([...ask("si", 5), ...ask("no", 5)])).toMatchObject({
+      total: 10,
+      yes: 5,
+      expected: 5,
+      mood: "fair",
+    });
     expect(stats(ask("si", 10)).mood).toBe("generous");
     expect(stats(ask("no", 10)).mood).toBe("stubborn");
     expect(stats(ask("si", 9)).mood).toBeNull();
@@ -120,12 +151,21 @@ describe("adventure stats", () => {
   });
 
   it("an empty adventure has no dates", () => {
-    expect(computeAdventureStats([], new Map())).toMatchObject({ entries: 0, first: null, topTable: null });
+    expect(computeAdventureStats([], new Map())).toMatchObject({
+      entries: 0,
+      first: null,
+      topTable: null,
+    });
   });
 });
 
 describe("play activity", () => {
-  const at = (y: number, m: number, d: number, id = `w-${y}${m}${d}-${Math.random()}`): JournalEntry => ({
+  const at = (
+    y: number,
+    m: number,
+    d: number,
+    id = `w-${y}${m}${d}-${Math.random()}`,
+  ): JournalEntry => ({
     id,
     adventureId: "a1",
     timestamp: new Date(y, m - 1, d, 20).getTime(),
@@ -135,16 +175,28 @@ describe("play activity", () => {
 
   it("counts what was written each day, but not what was imported", () => {
     const stats = computeAdventureStats(
-      [at(2026, 11, 8), at(2026, 11, 8), at(2026, 11, 9), at(2026, 11, 9, "1762717200000-3-abc123")],
+      [
+        at(2026, 11, 8),
+        at(2026, 11, 8),
+        at(2026, 11, 9),
+        at(2026, 11, 9, "1762717200000-3-abc123"),
+      ],
       new Map(),
     );
     expect(stats.activity).toEqual({ "2026-11-08": 2, "2026-11-09": 1 });
   });
 
   it("counts every entry on its session's day, imported ones too", () => {
-    const session = { ...at(2026, 11, 9, "1762717200000-0-abc123"), kind: "session" as const, date: "2025-09-03" };
+    const session = {
+      ...at(2026, 11, 9, "1762717200000-0-abc123"),
+      kind: "session" as const,
+      date: "2025-09-03",
+    };
     const later = { ...at(2026, 11, 10), timestamp: session.timestamp + 1 };
-    const imported = { ...at(2026, 11, 9, "1762717200000-1-abc123"), timestamp: session.timestamp + 2 };
+    const imported = {
+      ...at(2026, 11, 9, "1762717200000-1-abc123"),
+      timestamp: session.timestamp + 2,
+    };
     const stats = computeAdventureStats([session, later, imported], new Map());
     expect(stats.activity).toEqual({ "2025-09-03": 3 });
     expect(stats).toMatchObject({ daysPlayed: 1, first: "2025-09-03", last: "2025-09-03" });
@@ -153,14 +205,27 @@ describe("play activity", () => {
   it("finds the longest run of days in a row, across months", () => {
     expect(longestStreak([])).toBe(0);
     expect(longestStreak(["2026-01-05"])).toBe(1);
-    expect(longestStreak(["2026-01-30", "2026-01-31", "2026-02-01", "2026-02-03", "2026-02-04"])).toBe(3);
+    expect(
+      longestStreak(["2026-01-30", "2026-01-31", "2026-02-01", "2026-02-03", "2026-02-04"]),
+    ).toBe(3);
     expect(longestStreak(["2026-03-28", "2026-03-29", "2026-03-30", "2026-03-29"])).toBe(3);
   });
 
   it("lays out the last twelve months, one row each, with every day", () => {
     const months = lastYearByMonth({ "2026-11-09": 3, "2025-12-31": 1 }, new Date(2026, 10, 9));
     expect(months.map((m) => `${m.year}-${m.month + 1}`)).toEqual([
-      "2025-12", "2026-1", "2026-2", "2026-3", "2026-4", "2026-5", "2026-6", "2026-7", "2026-8", "2026-9", "2026-10", "2026-11",
+      "2025-12",
+      "2026-1",
+      "2026-2",
+      "2026-3",
+      "2026-4",
+      "2026-5",
+      "2026-6",
+      "2026-7",
+      "2026-8",
+      "2026-9",
+      "2026-10",
+      "2026-11",
     ]);
     expect(months[0].days.at(-1)).toEqual({ iso: "2025-12-31", day: 31, count: 1, future: false });
     expect(months[2].days).toHaveLength(28);

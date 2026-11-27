@@ -26,7 +26,9 @@ interface InPage {
   DataTransfer: new () => { items: { add(file: object): void }; files: unknown };
   File: new (parts: unknown[], name: string, options: { type: string }) => object;
   document: {
-    createElement(tag: string): Record<string, unknown> & { append(child: unknown): void; submit(): void };
+    createElement(
+      tag: string,
+    ): Record<string, unknown> & { append(child: unknown): void; submit(): void };
     body: { append(child: unknown): void };
   };
   navigator: { serviceWorker: { ready: Promise<unknown> } };
@@ -41,7 +43,11 @@ title: "El pozo"
 => Algo brilla en el fondo
 `;
 
-const TABLE = JSON.stringify({ name: "Tiempo en el pantano", dice: "d3", entries: ["Niebla", "Lluvia", "Bochorno"] });
+const TABLE = JSON.stringify({
+  name: "Tiempo en el pantano",
+  dice: "d3",
+  entries: ["Niebla", "Lluvia", "Bochorno"],
+});
 
 /** Drops a file on the window, as a file dragged from the desktop. `content` as bytes for a binary file. */
 async function dropFile(page: Page, name: string, content: string | number[], type: string) {
@@ -62,7 +68,9 @@ async function dropFile(page: Page, name: string, content: string | number[], ty
   await expect(page.getByText("Suelta el archivo para abrirlo")).toBeHidden();
 }
 
-test("a journal dropped on the window is imported as a new adventure, once asked", async ({ page }) => {
+test("a journal dropped on the window is imported as a new adventure, once asked", async ({
+  page,
+}) => {
   const errors = watchErrors(page);
   await page.goto("./#/dados");
   await dropFile(page, "pozo.md", JOURNAL, "text/markdown");
@@ -81,7 +89,12 @@ test("a file that isn't the app's is refused, and nothing is kept", async ({ pag
   const errors = watchErrors(page);
   await page.goto("./#/diario");
   // A PNG renamed to .md: not text.
-  await dropFile(page, "mapa.md", [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13], "text/markdown");
+  await dropFile(
+    page,
+    "mapa.md",
+    [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13],
+    "text/markdown",
+  );
   const dialog = page.getByRole("dialog", { name: "Abrir archivo" });
   await expect(dialog.getByText("No se puede abrir")).toBeVisible();
   await expect(dialog.getByText(/No es un archivo de texto/)).toBeVisible();
@@ -91,7 +104,13 @@ test("a file that isn't the app's is refused, and nothing is kept", async ({ pag
   await dropFile(
     page,
     "copia.json",
-    JSON.stringify({ app: "solo-compass", schemaVersion: 999, exportedAt: "", history: [], journal: { adventures: [], entries: [] } }),
+    JSON.stringify({
+      app: "solo-compass",
+      schemaVersion: 999,
+      exportedAt: "",
+      history: [],
+      journal: { adventures: [], entries: [] },
+    }),
     "application/json",
   );
   await expect(dialog.getByText(/versión de Solo Compass más nueva/)).toBeVisible();
@@ -129,7 +148,9 @@ test("a file shared to the installed app opens in the same dialog", async ({ pag
   const errors = watchErrors(page);
   await page.goto("./");
   // The service worker receives what the system shares (public/share-target.js).
-  await page.evaluate(() => (globalThis as unknown as InPage).navigator.serviceWorker.ready.then(() => undefined));
+  await page.evaluate(() =>
+    (globalThis as unknown as InPage).navigator.serviceWorker.ready.then(() => undefined),
+  );
 
   // What Android's share sheet does: a form posted to the manifest's share_target.
   await page.evaluate((journal) => {
@@ -161,7 +182,9 @@ test("a file shared to the installed app opens in the same dialog", async ({ pag
   expect(errors).toEqual([]);
 });
 
-test("replacing everything from a dropped backup asks again, and going back keeps all", async ({ page }) => {
+test("replacing everything from a dropped backup asks again, and going back keeps all", async ({
+  page,
+}) => {
   const errors = watchErrors(page);
   await page.goto("./#/diario");
   await page.getByRole("button", { name: "Nueva aventura" }).click();
@@ -174,7 +197,10 @@ test("replacing everything from a dropped backup asks again, and going back keep
     schemaVersion: 6,
     exportedAt: "2026-11-20T18:30:00.000Z",
     history: [],
-    journal: { adventures: [{ id: "x", name: "Lo de otro", createdAt: 1, updatedAt: 1 }], entries: [] },
+    journal: {
+      adventures: [{ id: "x", name: "Lo de otro", createdAt: 1, updatedAt: 1 }],
+      entries: [],
+    },
     settings: {},
   });
   await dropFile(page, "copia.json", backup, "application/json");

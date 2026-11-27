@@ -72,8 +72,8 @@ export function useJournal(): UseJournalResult {
   const { t } = useLocaleContext();
   const [status, setStatus] = useState<JournalStatus>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [activeAdventureId, setActiveAdventureIdState] = useState<string | null>(
-    () => loadActiveAdventureId(),
+  const [activeAdventureId, setActiveAdventureIdState] = useState<string | null>(() =>
+    loadActiveAdventureId(),
   );
 
   // Optimistic: the screen changes at once and each list saves only
@@ -125,9 +125,7 @@ export function useJournal(): UseJournalResult {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(
-          err instanceof JournalStorageError ? err.message : t.history.genericLoadError,
-        );
+        setError(err instanceof JournalStorageError ? err.message : t.history.genericLoadError);
         setStatus("error");
       });
     return () => {
@@ -178,7 +176,9 @@ export function useJournal(): UseJournalResult {
       saveActiveAdventureId(id);
       if (id) {
         updateAdventures((prev) =>
-          prev.map((a) => (a.id === id && a.status === "archived" ? { ...a, status: "ongoing" } : a)),
+          prev.map((a) =>
+            a.id === id && a.status === "archived" ? { ...a, status: "ongoing" } : a,
+          ),
         );
       }
     },
@@ -197,9 +197,7 @@ export function useJournal(): UseJournalResult {
   const renameAdventure = useCallback(
     (id: string, name: string) => {
       updateAdventures((prev) =>
-        prev.map((a) =>
-          a.id === id ? { ...a, name: name.trim(), updatedAt: Date.now() } : a,
-        ),
+        prev.map((a) => (a.id === id ? { ...a, name: name.trim(), updatedAt: Date.now() } : a)),
       );
     },
     [updateAdventures],
@@ -231,7 +229,10 @@ export function useJournal(): UseJournalResult {
   const deleteAdventure = useCallback(
     (id: string) => {
       // Recorded so a merged backup from another device doesn't bring them back.
-      recordDeletions([id, ...latestEntries.current.filter((e) => e.adventureId === id).map((e) => e.id)]);
+      recordDeletions([
+        id,
+        ...latestEntries.current.filter((e) => e.adventureId === id).map((e) => e.id),
+      ]);
       updateAdventures((prev) => prev.filter((a) => a.id !== id));
       updateEntries((prev) => prev.filter((e) => e.adventureId !== id));
       if (activeAdventureId === id) setActiveAdventureId(null);
@@ -258,7 +259,9 @@ export function useJournal(): UseJournalResult {
   // stays as it was, so the adventure doesn't jump in the list).
   const setAdventureNotes = useCallback(
     (id: string, notes: string) => {
-      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, notes, notesUpdatedAt: Date.now() } : a)));
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, notes, notesUpdatedAt: Date.now() } : a)),
+      );
     },
     [updateAdventures],
   );
@@ -279,7 +282,9 @@ export function useJournal(): UseJournalResult {
   // Like the oracle: no trace and no jump in the list.
   const setAdventurePick = useCallback(
     (id: string, which: "gameDice" | "gameTables", ids: string[] | null) => {
-      updateAdventures((prev) => prev.map((a) => (a.id === id ? { ...a, [which]: { ids, updatedAt: Date.now() } } : a)));
+      updateAdventures((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, [which]: { ids, updatedAt: Date.now() } } : a)),
+      );
     },
     [updateAdventures],
   );
@@ -302,7 +307,11 @@ export function useJournal(): UseJournalResult {
     (adventureId: string, key: string, text: string) => {
       const description = { text: text.replace(/\s+$/, ""), updatedAt: Date.now() };
       updateAdventures((prev) =>
-        prev.map((a) => (a.id === adventureId ? { ...a, descriptions: { ...a.descriptions, [key]: description } } : a)),
+        prev.map((a) =>
+          a.id === adventureId
+            ? { ...a, descriptions: { ...a.descriptions, [key]: description } }
+            : a,
+        ),
       );
     },
     [updateAdventures],
@@ -361,7 +370,9 @@ export function useJournal(): UseJournalResult {
 
   const editEntry = useCallback(
     (id: string, text: string) => {
-      updateEntries((prev) => prev.map((e) => (e.id === id ? { ...e, text, editedAt: Date.now() } : e)));
+      updateEntries((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, text, editedAt: Date.now() } : e)),
+      );
     },
     [updateEntries],
   );

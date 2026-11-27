@@ -20,7 +20,8 @@ const localWatchers = new Set<(topic: SyncTopic) => void>();
 
 function getChannel(): BroadcastChannel | null {
   if (channel === undefined) {
-    channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("solo-compass:changes");
+    channel =
+      typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("solo-compass:changes");
     // In Node (the tests) an open channel would keep the process alive.
     (channel as { unref?: () => void } | null)?.unref?.();
   }

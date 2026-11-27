@@ -24,7 +24,10 @@ export default defineConfig({
   },
   projects: [
     { name: "phone", use: { ...devices["Pixel 7"] } },
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
   ],
   webServer: {
     // In CI the build is already there (the workflow builds before).

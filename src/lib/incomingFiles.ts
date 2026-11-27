@@ -36,7 +36,8 @@ function set(next: readonly IncomingFile[]) {
 
 /** Files to open, after any already waiting. */
 export function offerFiles(files: readonly File[], source: FileSource): void {
-  if (files.length) set([...waiting, ...files.map((file) => ({ file, source }))].slice(0, MAX_WAITING));
+  if (files.length)
+    set([...waiting, ...files.map((file) => ({ file, source }))].slice(0, MAX_WAITING));
 }
 
 /** The file the dialog is showing, if any. */
@@ -83,7 +84,11 @@ export async function takeSharedFiles(): Promise<File[]> {
       } catch {
         // A name that can't be read: the file still opens, nameless.
       }
-      files.push(new File([await response.blob()], name, { type: response.headers.get("x-file-type") ?? "" }));
+      files.push(
+        new File([await response.blob()], name, {
+          type: response.headers.get("x-file-type") ?? "",
+        }),
+      );
     }
     await caches.delete(SHARED_CACHE);
     return files;
@@ -105,6 +110,9 @@ export function watchLaunchedFiles(): void {
   const queue = (window as Window & { launchQueue?: LaunchQueue }).launchQueue;
   queue?.setConsumer((params) => {
     if (!params.files?.length) return;
-    Promise.all(params.files.map((handle) => handle.getFile())).then((files) => offerFiles(files, "opened"), () => {});
+    Promise.all(params.files.map((handle) => handle.getFile())).then(
+      (files) => offerFiles(files, "opened"),
+      () => {},
+    );
   });
 }

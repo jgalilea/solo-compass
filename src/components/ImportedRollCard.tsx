@@ -11,7 +11,11 @@ import { IconJournal } from "./icons/Icons";
  */
 export function ImportedRollCard({ roll }: { roll: ImportedRoll }) {
   const { t } = useLocaleContext();
-  const kind = { oraculo: t.history.kindOracle, tabla: t.history.filterTables, dados: t.history.kindDice }[roll.kind];
+  const kind = {
+    oraculo: t.history.kindOracle,
+    tabla: t.history.filterTables,
+    dados: t.history.kindDice,
+  }[roll.kind];
   return (
     <div className="rounded-2xl border border-ink-border bg-ink-800/50 p-4">
       <div className="flex items-start justify-between gap-3 text-xs uppercase tracking-wide text-parchment-faint">

@@ -38,14 +38,10 @@ export function EmptyState({
       ].join(" ")}
     >
       {icon && (
-        <div className="flex items-center justify-center text-parchment-dim opacity-70">
-          {icon}
-        </div>
+        <div className="flex items-center justify-center text-parchment-dim opacity-70">{icon}</div>
       )}
       <p className="font-display text-base text-parchment">{title}</p>
-      {description && (
-        <p className="max-w-sm text-sm text-parchment-dim">{description}</p>
-      )}
+      {description && <p className="max-w-sm text-sm text-parchment-dim">{description}</p>}
       {action}
     </div>
   );
@@ -64,12 +60,8 @@ export function ErrorState({
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-no/30 bg-no/5 px-6 py-16 text-center">
       <IconAlertTriangle size={28} className="text-no" />
-      <p className="font-display text-lg text-parchment">
-        {title ?? t.common.somethingWrong}
-      </p>
-      {description && (
-        <p className="max-w-sm text-sm text-parchment-dim">{description}</p>
-      )}
+      <p className="font-display text-lg text-parchment">{title ?? t.common.somethingWrong}</p>
+      {description && <p className="max-w-sm text-sm text-parchment-dim">{description}</p>}
       {onRetry && (
         <button
           type="button"

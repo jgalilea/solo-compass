@@ -9,12 +9,27 @@ const MAX_ROW_DICE = 5;
  * A roll's dice in a row: all of them or, tiny, the first ones.
  * Decorative: the roll's text goes beside them.
  */
-export function RolledDice({ dice, size = "sm", animate = false }: { dice: RolledDie[]; size?: "sm" | "xs"; animate?: boolean }) {
+export function RolledDice({
+  dice,
+  size = "sm",
+  animate = false,
+}: {
+  dice: RolledDie[];
+  size?: "sm" | "xs";
+  animate?: boolean;
+}) {
   const shown = size === "xs" ? dice.slice(0, MAX_ROW_DICE) : dice;
   return (
     <span aria-hidden className="flex min-w-0 select-none flex-wrap gap-1">
       {shown.map((die, i) => (
-        <Die key={i} {...die} color="blanco" size={size} animate={animate} faded={die.mark === "out"} />
+        <Die
+          key={i}
+          {...die}
+          color="blanco"
+          size={size}
+          animate={animate}
+          faded={die.mark === "out"}
+        />
       ))}
       {shown.length < dice.length && <span className="self-center text-parchment-faint">…</span>}
     </span>
@@ -22,7 +37,15 @@ export function RolledDice({ dice, size = "sm", animate = false }: { dice: Rolle
 }
 
 /** The dice of one or several tables rolled (readTableDice), each table's together. Decorative too. */
-export function TableDiceRow({ groups, size = "xs", animate = false }: { groups: RolledDie[][]; size?: "sm" | "xs"; animate?: boolean }) {
+export function TableDiceRow({
+  groups,
+  size = "xs",
+  animate = false,
+}: {
+  groups: RolledDie[][];
+  size?: "sm" | "xs";
+  animate?: boolean;
+}) {
   return (
     // The gap isn't a class: the HTML export has the same drawing.
     <span aria-hidden className="flex min-w-0 select-none flex-wrap" style={{ gap: 8 }}>

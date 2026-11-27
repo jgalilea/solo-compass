@@ -34,7 +34,19 @@ import { OracleHelp } from "./OracleHelp";
 import { OracleSwitcher } from "./OracleSwitcher";
 import { SourceTag } from "./GameTableSource";
 import { TwistCounter } from "./TwistCounter";
-import { IconAdjust, IconCards, IconCheck, IconClose, IconDice, IconGenerator, IconPlus, IconRepeat, IconSearch, IconSparkles, IconStar } from "./icons/Icons";
+import {
+  IconAdjust,
+  IconCards,
+  IconCheck,
+  IconClose,
+  IconDice,
+  IconGenerator,
+  IconPlus,
+  IconRepeat,
+  IconSearch,
+  IconSparkles,
+  IconStar,
+} from "./icons/Icons";
 import { gameTableDice, gameTableIds, pickedIds } from "../lib/gameTablePicks";
 import { GameDicePicker, GameTablesPicker } from "./GameTablePickers";
 import { useGeneratorsContext } from "../hooks/useGeneratorsContext";
@@ -55,7 +67,11 @@ interface ToolProps {
   onRolled: (rollId?: string) => void;
 }
 
-export function OracleTool({ adventureId, onRolled, autoFocus = false }: ToolProps & { autoFocus?: boolean }) {
+export function OracleTool({
+  adventureId,
+  onRolled,
+  autoFocus = false,
+}: ToolProps & { autoFocus?: boolean }) {
   const { t } = useLocaleContext();
   const { askOracle } = usePlayActions();
   const [question, setQuestion] = useState("");
@@ -152,7 +168,9 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
         className="flex w-full items-center gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3.5 py-2.5 text-left transition hover:bg-gold/20 active:scale-[0.99]"
       >
         <IconSparkles size={16} className="shrink-0 text-gold" />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-gold">{t.tables.inspirationTitle}</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-gold">
+          {t.tables.inspirationTitle}
+        </span>
       </button>
       {/* The player's generators: several tables, one entry. */}
       {generators.length > 0 && (
@@ -163,13 +181,17 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
               <li key={generator.id} className="min-w-0">
                 <button
                   type="button"
-                  onClick={() => onRolled(rollGenerator(generator.name, tables, adventureId, all).id)}
+                  onClick={() =>
+                    onRolled(rollGenerator(generator.name, tables, adventureId, all).id)
+                  }
                   disabled={tables.length === 0}
                   title={tables.map((table) => table.name).join(" · ")}
                   className="flex w-full items-center gap-2 rounded-xl border border-gold/40 bg-ink-900/40 px-3.5 py-2.5 text-left transition hover:border-gold/70 active:scale-[0.99] disabled:opacity-60"
                 >
                   <IconGenerator size={16} className="shrink-0 text-gold" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">{generator.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">
+                    {generator.name}
+                  </span>
                 </button>
               </li>
             );
@@ -177,7 +199,10 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
         </ul>
       )}
       <label className="relative flex">
-        <IconSearch size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint" />
+        <IconSearch
+          size={15}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-parchment-faint"
+        />
         <input
           type="search"
           value={query}
@@ -207,10 +232,16 @@ export function TableTool({ adventureId, onRolled }: ToolProps) {
               title={table.description}
               className="flex w-full items-center gap-2 rounded-xl border border-ink-border bg-ink-900/40 px-3.5 py-2.5 text-left transition hover:border-gold/50 active:scale-[0.99]"
             >
-              {favorites.has(table.id) && <IconStar size={14} filled className="shrink-0 text-gold" />}
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">{table.name}</span>
+              {favorites.has(table.id) && (
+                <IconStar size={14} filled className="shrink-0 text-gold" />
+              )}
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-parchment">
+                {table.name}
+              </span>
               {/* Two games can share a table name (Action). */}
-              {table.game.tag && <span className="shrink-0 text-xs text-parchment-faint">{table.game.tag}</span>}
+              {table.game.tag && (
+                <span className="shrink-0 text-xs text-parchment-faint">{table.game.tag}</span>
+              )}
               <span className="shrink-0 rounded-md border border-gold/40 px-1.5 py-0.5 text-xs font-medium text-gold">
                 {table.dice}
               </span>
@@ -265,7 +296,11 @@ export function DiceTool({
   onRolled,
   dice = "favorites",
   handle,
-}: Omit<ToolProps, "adventureId"> & { adventureId?: string; dice?: "favorites" | "all"; handle?: Ref<DiceToolHandle> }) {
+}: Omit<ToolProps, "adventureId"> & {
+  adventureId?: string;
+  dice?: "favorites" | "all";
+  handle?: Ref<DiceToolHandle>;
+}) {
   const { t } = useLocaleContext();
   const { addEntry, entries: journalEntries, adventures, setAdventurePick } = useJournalContext();
   const { rolls: savedRolls, load: loadSavedRolls, addRoll } = useSavedRollsContext();
@@ -294,7 +329,9 @@ export function DiceTool({
   }
   // A formula the dice can read, not saved yet: it can become a saved roll.
   const canSave =
-    !justSaved && isRollable(formula) && !savedRolls.some((r) => r.formula === formula.trim() && r.name === label.trim());
+    !justSaved &&
+    isRollable(formula) &&
+    !savedRolls.some((r) => r.formula === formula.trim() && r.name === label.trim());
 
   // The tray is a preview: nothing is kept until it's logged (journal
   // and history) or, with no adventure, saved to the history. A card in
@@ -306,7 +343,9 @@ export function DiceTool({
     announce(spokenRoll(trayText(roll)));
     // On the Dice screen of a small phone the tray can be below the fold.
     if (dice === "all") {
-      requestAnimationFrame(() => trayRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" }));
+      requestAnimationFrame(() =>
+        trayRef.current?.scrollIntoView({ behavior: smoothBehavior(), block: "nearest" }),
+      );
     }
   }
 
@@ -324,7 +363,10 @@ export function DiceTool({
   // On the game table, the adventure's last roll can be made again (the
   // Dice screen has its latest rolls for that).
   const last = useMemo(
-    () => (dice === "favorites" && adventureId && tray.length === 0 ? lastOwnRoll(journalEntries, adventureId) : null),
+    () =>
+      dice === "favorites" && adventureId && tray.length === 0
+        ? lastOwnRoll(journalEntries, adventureId)
+        : null,
     [dice, adventureId, tray.length, journalEntries],
   );
   function repeatLast() {
@@ -337,7 +379,11 @@ export function DiceTool({
     setTray(again.map((text) => ({ text, dice: readRolledDice(text) })));
     announce(again.map(spokenRoll).join(", "));
   }
-  const lastText = last && [last.label, last.rolls.map((r) => [r.label, r.die].filter(Boolean).join(" ")).join(", ")].filter(Boolean).join(" · ");
+  const lastText =
+    last &&
+    [last.label, last.rolls.map((r) => [r.label, r.die].filter(Boolean).join(" ")).join(", ")]
+      .filter(Boolean)
+      .join(" · ");
 
   function removeFromTray(items: TrayItem[]) {
     const gone = new Set(items);
@@ -353,7 +399,10 @@ export function DiceTool({
   function log() {
     if (rolls.length === 0) return;
     const text = (roll: string) => [label.trim(), roll].filter(Boolean).join(" ");
-    for (const entry of createDiceRollEntries(tray.map((item) => ({ text: text(item.text), card: item.card })), adventureId)) {
+    for (const entry of createDiceRollEntries(
+      tray.map((item) => ({ text: text(item.text), card: item.card })),
+      adventureId,
+    )) {
       addHistoryEntry(entry);
     }
     setTray([]);
@@ -374,7 +423,11 @@ export function DiceTool({
     <div data-hotkey="dice" className="@container">
       <div className="flex flex-col gap-3 @xl:grid @xl:grid-cols-2 @xl:gap-5">
         <div className="flex min-w-0 flex-col gap-3">
-          <div role="group" aria-label={t.dice.toolLabel} className="grid grid-cols-2 gap-1 rounded-xl border border-ink-border bg-ink-900/60 p-1">
+          <div
+            role="group"
+            aria-label={t.dice.toolLabel}
+            className="grid grid-cols-2 gap-1 rounded-xl border border-ink-border bg-ink-900/60 p-1"
+          >
             {(
               [
                 ["dice", t.dice.toolDice, IconDice],
@@ -388,7 +441,9 @@ export function DiceTool({
                 onClick={() => changeCards({ ...cards, tool: id })}
                 className={[
                   "flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-sm transition pointer-coarse:py-2.5",
-                  cards.tool === id ? "bg-gold font-medium text-ink-950" : "text-parchment-dim hover:text-parchment",
+                  cards.tool === id
+                    ? "bg-gold font-medium text-ink-950"
+                    : "text-parchment-dim hover:text-parchment",
                 ].join(" ")}
               >
                 <Icon size={16} />
@@ -406,185 +461,205 @@ export function DiceTool({
             />
           ) : (
             <>
-            {dice === "all" && (
-              <div role="group" aria-label={t.journal.diceRollerLabel} className="grid grid-cols-4 gap-1.5 @md:grid-cols-8 @xl:grid-cols-4">
-                {builtins.map((die) => (
-                  <button
-                    key={die}
-                    type="button"
-                    onClick={() => add(rollBuiltin(die, edge ?? undefined))}
-                    className="flex h-16 flex-col items-center justify-center gap-0.5 rounded-xl border border-ink-border bg-ink-900/50 text-sm font-medium text-parchment transition hover:border-gold/50 hover:text-gold active:scale-95"
-                  >
-                    <span className="text-gold">
-                      <DieOutline sides={BUILTIN_DIE_SIDES[die]} />
-                    </span>
-                    {die}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div
-              role={dice === "all" ? undefined : "group"}
-              aria-label={dice === "all" ? undefined : t.journal.diceRollerLabel}
-              className={dice === "all" && own.length === 0 ? "hidden" : "flex flex-wrap gap-1.5"}
-            >
-              {dice === "favorites" && builtins.map((die) => (
-                <button
-                  key={die}
-                  type="button"
-                  onClick={() => add(rollBuiltin(die, edge ?? undefined))}
-                  className={`${DIE_CHIP} border-ink-border text-parchment hover:border-gold/50 hover:text-gold`}
+              {dice === "all" && (
+                <div
+                  role="group"
+                  aria-label={t.journal.diceRollerLabel}
+                  className="grid grid-cols-4 gap-1.5 @md:grid-cols-8 @xl:grid-cols-4"
                 >
-                  {die}
-                </button>
-              ))}
-              {/* The player's own dice: their name, in the accent colour. */}
-              {own.map((roll) => (
-                <button
-                  key={roll.id}
-                  type="button"
-                  onClick={() => add(rollSaved(roll, edge ?? undefined)!)}
-                  title={roll.formula}
-                  className={`${DIE_CHIP} border-gold/40 bg-gold/10 text-gold hover:bg-gold/20`}
-                >
-                  {savedRollLabel(roll)}
-                </button>
-              ))}
-              {builtins.length + own.length === 0 && pickedIds(dicePick) === null && (
-                <p className="text-xs text-parchment-dim">
-                  {t.dice.noFavorites}{" "}
-                  <Link to="/dados" className="font-medium text-gold underline decoration-dotted hover:text-gold-soft">
-                    {t.dice.title}
-                  </Link>
-                </p>
-              )}
-              {/* Which dice this adventure keeps at hand, on a line of its
-                  own with whether they're its own or the favourites. */}
-              {canPick && (
-                <div className="flex basis-full items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setPicking(true)}
-                    className={`${DIE_CHIP} shrink-0 gap-1.5 border-dashed border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold`}
-                  >
-                    <IconAdjust size={15} />
-                    {t.gameTable.pickDice}
-                  </button>
-                  <SourceTag tool="dice" source={pickedIds(dicePick) === null ? "favorite" : "adventure"} />
+                  {builtins.map((die) => (
+                    <button
+                      key={die}
+                      type="button"
+                      onClick={() => add(rollBuiltin(die, edge ?? undefined))}
+                      className="flex h-16 flex-col items-center justify-center gap-0.5 rounded-xl border border-ink-border bg-ink-900/50 text-sm font-medium text-parchment transition hover:border-gold/50 hover:text-gold active:scale-95"
+                    >
+                      <span className="text-gold">
+                        <DieOutline sides={BUILTIN_DIE_SIDES[die]} />
+                      </span>
+                      {die}
+                    </button>
+                  ))}
                 </div>
               )}
-              {picking && adventureId && <GameDicePicker adventureId={adventureId} onClose={() => setPicking(false)} />}
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {(
-                [
-                  ["advantage", t.journal.diceAdvantage],
-                  ["disadvantage", t.journal.diceDisadvantage],
-                ] as const
-              ).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={edge === id}
-                  onClick={() => setEdge((current) => (current === id ? null : id))}
-                  className={[
-                    "h-8 rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11",
-                    edge === id
-                      ? "border-gold bg-gold text-ink-950"
-                      : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
-                  ].join(" ")}
-                >
-                  {label}
-                </button>
-              ))}
-              <span className="ml-auto flex">
-                <DiceHelp />
-              </span>
-            </div>
-            {edge && (
-              <p aria-live="polite" className="-mt-1 text-xs text-gold">
-                {edge === "advantage" ? t.journal.diceAdvantageHint : t.journal.diceDisadvantageHint}
-              </p>
-            )}
-            <form
-              className="flex gap-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                rollTyped();
-              }}
-            >
-              <div className="relative flex min-w-0 flex-1">
-                <input
-                  ref={formulaRef}
-                  value={formula}
-                  onChange={(e) => {
-                    setFormula(e.target.value);
-                    setFormulaError(false);
-                  }}
-                  placeholder={t.journal.diceFormulaPlaceholder}
-                  aria-label={t.journal.diceFormulaLabel}
-                  aria-invalid={formulaError}
-                  enterKeyHint="go"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 pr-9 text-sm`}
-                />
-                {formula && (
+              <div
+                role={dice === "all" ? undefined : "group"}
+                aria-label={dice === "all" ? undefined : t.journal.diceRollerLabel}
+                className={dice === "all" && own.length === 0 ? "hidden" : "flex flex-wrap gap-1.5"}
+              >
+                {dice === "favorites" &&
+                  builtins.map((die) => (
+                    <button
+                      key={die}
+                      type="button"
+                      onClick={() => add(rollBuiltin(die, edge ?? undefined))}
+                      className={`${DIE_CHIP} border-ink-border text-parchment hover:border-gold/50 hover:text-gold`}
+                    >
+                      {die}
+                    </button>
+                  ))}
+                {/* The player's own dice: their name, in the accent colour. */}
+                {own.map((roll) => (
+                  <button
+                    key={roll.id}
+                    type="button"
+                    onClick={() => add(rollSaved(roll, edge ?? undefined)!)}
+                    title={roll.formula}
+                    className={`${DIE_CHIP} border-gold/40 bg-gold/10 text-gold hover:bg-gold/20`}
+                  >
+                    {savedRollLabel(roll)}
+                  </button>
+                ))}
+                {builtins.length + own.length === 0 && pickedIds(dicePick) === null && (
+                  <p className="text-xs text-parchment-dim">
+                    {t.dice.noFavorites}{" "}
+                    <Link
+                      to="/dados"
+                      className="font-medium text-gold underline decoration-dotted hover:text-gold-soft"
+                    >
+                      {t.dice.title}
+                    </Link>
+                  </p>
+                )}
+                {/* Which dice this adventure keeps at hand, on a line of its
+                  own with whether they're its own or the favourites. */}
+                {canPick && (
+                  <div className="flex basis-full items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setPicking(true)}
+                      className={`${DIE_CHIP} shrink-0 gap-1.5 border-dashed border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold`}
+                    >
+                      <IconAdjust size={15} />
+                      {t.gameTable.pickDice}
+                    </button>
+                    <SourceTag
+                      tool="dice"
+                      source={pickedIds(dicePick) === null ? "favorite" : "adventure"}
+                    />
+                  </div>
+                )}
+                {picking && adventureId && (
+                  <GameDicePicker adventureId={adventureId} onClose={() => setPicking(false)} />
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {(
+                  [
+                    ["advantage", t.journal.diceAdvantage],
+                    ["disadvantage", t.journal.diceDisadvantage],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={edge === id}
+                    onClick={() => setEdge((current) => (current === id ? null : id))}
+                    className={[
+                      "h-8 rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11",
+                      edge === id
+                        ? "border-gold bg-gold text-ink-950"
+                        : "border-ink-border text-parchment-dim hover:border-gold/50 hover:text-gold",
+                    ].join(" ")}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <span className="ml-auto flex">
+                  <DiceHelp />
+                </span>
+              </div>
+              {edge && (
+                <p aria-live="polite" className="-mt-1 text-xs text-gold">
+                  {edge === "advantage"
+                    ? t.journal.diceAdvantageHint
+                    : t.journal.diceDisadvantageHint}
+                </p>
+              )}
+              <form
+                className="flex gap-1.5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  rollTyped();
+                }}
+              >
+                <div className="relative flex min-w-0 flex-1">
+                  <input
+                    ref={formulaRef}
+                    value={formula}
+                    onChange={(e) => {
+                      setFormula(e.target.value);
+                      setFormulaError(false);
+                    }}
+                    placeholder={t.journal.diceFormulaPlaceholder}
+                    aria-label={t.journal.diceFormulaLabel}
+                    aria-invalid={formulaError}
+                    enterKeyHint="go"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className={`${INPUT_CLASS} min-w-0 flex-1 bg-ink-900/70 py-1.5 pr-9 text-sm`}
+                  />
+                  {formula && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormula("");
+                        setFormulaError(false);
+                        formulaRef.current?.focus();
+                      }}
+                      aria-label={t.journal.diceFormulaClear}
+                      title={t.journal.diceFormulaClear}
+                      className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
+                    >
+                      <IconClose size={15} />
+                    </button>
+                  )}
+                </div>
+                {canSave && (
                   <button
                     type="button"
                     onClick={() => {
-                      setFormula("");
-                      setFormulaError(false);
-                      formulaRef.current?.focus();
+                      const saved = addRoll({ name: label.trim(), formula }, true);
+                      // Saved here, it's on this table even if the adventure picked its own dice.
+                      const picked = pickedIds(dicePick);
+                      if (adventureId && picked)
+                        setAdventurePick(adventureId, "gameDice", [...picked, saved.id]);
+                      setJustSaved(true);
+                      window.setTimeout(() => setJustSaved(false), 1500);
                     }}
-                    aria-label={t.journal.diceFormulaClear}
-                    title={t.journal.diceFormulaClear}
-                    className="absolute inset-y-0 right-1.5 my-auto flex size-7 items-center justify-center rounded-md text-parchment-dim transition hover:text-parchment"
+                    aria-label={t.dice.saveFormula}
+                    title={t.dice.saveFormulaHint}
+                    className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
                   >
-                    <IconClose size={15} />
+                    <IconStar size={16} />
                   </button>
                 )}
-              </div>
-              {canSave && (
+                {justSaved && (
+                  <span
+                    role="status"
+                    className="flex shrink-0 items-center px-1 text-gold"
+                    title={t.dice.saved}
+                  >
+                    <IconCheck size={16} />
+                  </span>
+                )}
+                {/* Adds to the tray like a die button, so it looks like one. */}
                 <button
-                  type="button"
-                  onClick={() => {
-                    const saved = addRoll({ name: label.trim(), formula }, true);
-                    // Saved here, it's on this table even if the adventure picked its own dice.
-                    const picked = pickedIds(dicePick);
-                    if (adventureId && picked) setAdventurePick(adventureId, "gameDice", [...picked, saved.id]);
-                    setJustSaved(true);
-                    window.setTimeout(() => setJustSaved(false), 1500);
-                  }}
-                  aria-label={t.dice.saveFormula}
-                  title={t.dice.saveFormulaHint}
-                  className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+                  type="submit"
+                  disabled={!formula.trim()}
+                  aria-label={t.journal.diceFormulaRoll}
+                  title={t.journal.diceFormulaRoll}
+                  className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 disabled:text-parchment-dim/40 disabled:hover:border-ink-border"
                 >
-                  <IconStar size={16} />
+                  <IconPlus size={16} />
                 </button>
+              </form>
+              {formulaError && (
+                <p role="alert" className="text-xs text-no">
+                  {t.journal.diceFormulaError}
+                </p>
               )}
-              {justSaved && (
-                <span role="status" className="flex shrink-0 items-center px-1 text-gold" title={t.dice.saved}>
-                  <IconCheck size={16} />
-                </span>
-              )}
-              {/* Adds to the tray like a die button, so it looks like one. */}
-              <button
-                type="submit"
-                disabled={!formula.trim()}
-                aria-label={t.journal.diceFormulaRoll}
-                title={t.journal.diceFormulaRoll}
-                className="flex shrink-0 items-center rounded-lg border border-ink-border px-3 text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95 disabled:text-parchment-dim/40 disabled:hover:border-ink-border"
-              >
-                <IconPlus size={16} />
-              </button>
-            </form>
-            {formulaError && (
-              <p role="alert" className="text-xs text-no">
-                {t.journal.diceFormulaError}
-              </p>
-            )}
             </>
           )}
         </div>
@@ -602,31 +677,35 @@ export function DiceTool({
               // As high as a row of cards, or of dice.
               "flex items-center rounded-xl border p-2 @xl:flex-1",
               cards.tool === "cards" ? "min-h-[7.5rem]" : "min-h-24",
-              rolls.length === 0 ? "border-dashed border-ink-border @xl:justify-center" : "border-ink-border bg-ink-900/50 @xl:items-start",
+              rolls.length === 0
+                ? "border-dashed border-ink-border @xl:justify-center"
+                : "border-ink-border bg-ink-900/50 @xl:items-start",
             ].join(" ")}
           >
             {rolls.length === 0 ? (
               <div className="flex min-w-0 flex-col items-start gap-2 px-1">
-              <p className="text-xs text-parchment-faint">
-                {cards.tool === "cards"
-                  ? adventureId
-                    ? t.dice.cardsHint
-                    : t.dice.cardsTrayHint
-                  : adventureId
-                    ? t.journal.diceHint
-                    : t.dice.trayHint}
-              </p>
-              {last && cards.tool === "dice" && (
-                <button
-                  type="button"
-                  onClick={repeatLast}
-                  title={interpolate(t.dice.repeat, { roll: lastText! })}
-                  className="flex max-w-full items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
-                >
-                  <IconRepeat size={14} className="shrink-0" />
-                  <span className="truncate">{interpolate(t.dice.repeat, { roll: lastText! })}</span>
-                </button>
-              )}
+                <p className="text-xs text-parchment-faint">
+                  {cards.tool === "cards"
+                    ? adventureId
+                      ? t.dice.cardsHint
+                      : t.dice.cardsTrayHint
+                    : adventureId
+                      ? t.journal.diceHint
+                      : t.dice.trayHint}
+                </p>
+                {last && cards.tool === "dice" && (
+                  <button
+                    type="button"
+                    onClick={repeatLast}
+                    title={interpolate(t.dice.repeat, { roll: lastText! })}
+                    className="flex max-w-full items-center gap-1.5 rounded-lg border border-ink-border px-2.5 py-1.5 text-xs font-medium text-parchment-dim transition hover:border-gold/50 hover:text-gold active:scale-95"
+                  >
+                    <IconRepeat size={14} className="shrink-0" />
+                    <span className="truncate">
+                      {interpolate(t.dice.repeat, { roll: lastText! })}
+                    </span>
+                  </button>
+                )}
               </div>
             ) : (
               <ul className="flex w-full flex-wrap gap-1.5">
@@ -638,9 +717,15 @@ export function DiceTool({
                       className="relative flex w-[5.5rem] flex-col items-center gap-1 rounded-lg border border-ink-border bg-ink-800 px-1 pb-1.5 pt-2 text-center text-xs leading-tight text-parchment"
                     >
                       <PlayingCard id={item.card.id} animate />
-                      <span aria-hidden className="min-h-[2lh]">{cardDrawName(item.text)}</span>
+                      <span aria-hidden className="min-h-[2lh]">
+                        {cardDrawName(item.text)}
+                      </span>
                       <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                      <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                      <TrayRemove
+                        item={item}
+                        onRemove={removeFromTray}
+                        className="absolute right-0.5 top-0.5"
+                      />
                     </li>
                   ) : item.dice ? (
                     // Dice, with what was rolled below and, unless a lone die says it, the total.
@@ -652,18 +737,26 @@ export function DiceTool({
                       <span aria-hidden title={item.text} className="max-w-full break-words">
                         {rolledWhat(item.text)}
                         {(item.text.endsWith(")") || item.dice.length > 1) && (
-                          <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">{rolledTotal(item.text)}</span>
+                          <span className="ml-1.5 text-sm font-semibold leading-none text-parchment">
+                            {rolledTotal(item.text)}
+                          </span>
                         )}
                       </span>
                       <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
-                      <TrayRemove item={item} onRemove={removeFromTray} className="absolute right-0.5 top-0.5" />
+                      <TrayRemove
+                        item={item}
+                        onRemove={removeFromTray}
+                        className="absolute right-0.5 top-0.5"
+                      />
                     </li>
                   ) : (
                     <li
                       key={i}
                       className="flex items-center gap-1 rounded-lg border border-ink-border bg-ink-800 py-1 pl-2.5 pr-1 text-sm text-parchment"
                     >
-                      <span aria-hidden className="break-all">{trayText(item.text)}</span>
+                      <span aria-hidden className="break-all">
+                        {trayText(item.text)}
+                      </span>
                       <span className="sr-only">{spokenRoll(trayText(item.text))}</span>
                       <TrayRemove item={item} onRemove={removeFromTray} className="shrink-0" />
                     </li>
@@ -719,7 +812,6 @@ export function DiceTool({
 /** A die's button on the game table: compact with a mouse, thumb-sized on touch. */
 const DIE_CHIP =
   "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition active:scale-95 pointer-coarse:h-11 pointer-coarse:min-w-12";
-
 
 /** A roll waiting in the tray (a card keeps which, so it's out of the deck meanwhile). */
 interface TrayItem {

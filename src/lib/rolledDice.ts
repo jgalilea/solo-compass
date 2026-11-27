@@ -70,7 +70,9 @@ export function readOracleDice(detail: string): OracleDieRead[] | null {
     if (!all) dice.push({ role, sides, value: kept });
     // The one that counted is among them, or it isn't this.
     else if (!all.includes(kept)) return null;
-    else for (const value of all) dice.push({ role, sides, value, ...(value !== kept ? { out: true } : {}) });
+    else
+      for (const value of all)
+        dice.push({ role, sides, value, ...(value !== kept ? { out: true } : {}) });
   }
   return dice;
 }
@@ -100,7 +102,9 @@ export function rolledTotal(roll: string): string {
  */
 export function readTableDice(detail: string): RolledDie[][] | null {
   const groups: RolledDie[][] = [];
-  for (const [, count, sides, value] of detail.matchAll(/(?<![\p{L}\d])(\d*)d(\d+)(?:=(\d+)(?![\w.]))?/gu)) {
+  for (const [, count, sides, value] of detail.matchAll(
+    /(?<![\p{L}\d])(\d*)d(\d+)(?:=(\d+)(?![\w.]))?/gu,
+  )) {
     // Some other dice, or a "d6" in a table's name: it isn't known what came up.
     if (count || value === undefined) return null;
     const dice = tableDice(`d${sides}`, Number(value));

@@ -96,9 +96,14 @@ export function JournalListView() {
     [entries, search],
   );
   // Only the types found; the one picked waits if this search has none of it.
-  const matchTypes = useMemo(() => new Set(allMatches.map((m) => entryType(m.entry))), [allMatches]);
+  const matchTypes = useMemo(
+    () => new Set(allMatches.map((m) => entryType(m.entry))),
+    [allMatches],
+  );
   const shownType = searchType && matchTypes.has(searchType) ? searchType : null;
-  const entryMatches = shownType ? allMatches.filter((m) => entryType(m.entry) === shownType) : allMatches;
+  const entryMatches = shownType
+    ? allMatches.filter((m) => entryType(m.entry) === shownType)
+    : allMatches;
 
   const orderedActive = order
     .map((id) => byId.get(id))
@@ -206,7 +211,10 @@ export function JournalListView() {
 
   const hasAnyAdventures = adventures.length > 0;
   const hasVisibleResults =
-    pinned.length > 0 || rest.length > 0 || archivedAdventures.length > 0 || entryMatches.length > 0;
+    pinned.length > 0 ||
+    rest.length > 0 ||
+    archivedAdventures.length > 0 ||
+    entryMatches.length > 0;
 
   return (
     <div className={PAGE_CLASS}>
@@ -232,7 +240,11 @@ export function JournalListView() {
       {status === "loading" && <LoadingState label={t.journal.loading} />}
 
       {status === "error" && (
-        <ErrorState title={t.journal.loadErrorTitle} description={error ?? undefined} onRetry={retry} />
+        <ErrorState
+          title={t.journal.loadErrorTitle}
+          description={error ?? undefined}
+          onRetry={retry}
+        />
       )}
 
       {status === "ready" && (
@@ -256,10 +268,18 @@ export function JournalListView() {
                 placeholder={t.journal.newAdventurePlaceholder}
                 className={`${INPUT_CLASS} basis-full sm:basis-auto`}
               />
-              <button type="submit" disabled={!newAdventureName.trim()} className={`${PRIMARY_BUTTON_CLASS} flex-1 disabled:opacity-50 sm:flex-none`}>
+              <button
+                type="submit"
+                disabled={!newAdventureName.trim()}
+                className={`${PRIMARY_BUTTON_CLASS} flex-1 disabled:opacity-50 sm:flex-none`}
+              >
                 {t.journal.createButton}
               </button>
-              <button type="button" onClick={() => setShowNewAdventureForm(false)} className={`${SECONDARY_BUTTON_CLASS} flex-1 sm:flex-none`}>
+              <button
+                type="button"
+                onClick={() => setShowNewAdventureForm(false)}
+                className={`${SECONDARY_BUTTON_CLASS} flex-1 sm:flex-none`}
+              >
                 {t.common.cancel}
               </button>
             </form>
@@ -347,7 +367,9 @@ export function JournalListView() {
               <EmptyState
                 icon={<IconSearch size={22} />}
                 title={t.journal.noSearchResultsTitle}
-                description={interpolate(t.journal.noSearchResultsDescription, { query: search.trim() })}
+                description={interpolate(t.journal.noSearchResultsDescription, {
+                  query: search.trim(),
+                })}
                 compact
               />
             )}
@@ -385,7 +407,11 @@ export function JournalListView() {
             {/* What's done once in a while, below the list. */}
             {hasAnyAdventures && !query && (
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className={QUIET_BUTTON}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={QUIET_BUTTON}
+                >
                   <IconUpload size={16} />
                   {t.journal.importButton}
                 </button>
@@ -415,7 +441,9 @@ export function JournalListView() {
                 <FilterChips
                   label={t.journal.searchTypeLabel}
                   allLabel={t.journal.searchTypeAll}
-                  options={ENTRY_TYPES.filter((id) => matchTypes.has(id)).map((id) => [id, t.journal.searchTypes[id]] as const)}
+                  options={ENTRY_TYPES.filter((id) => matchTypes.has(id)).map(
+                    (id) => [id, t.journal.searchTypes[id]] as const,
+                  )}
                   value={shownType}
                   onChange={setSearchType}
                   className="-mx-4 px-4"
@@ -426,7 +454,9 @@ export function JournalListView() {
                 query={search.trim()}
                 adventureName={(id) => byId.get(id)?.name}
                 onPick={(match) =>
-                  navigate(`/diario/${match.entry.adventureId}`, { state: { entryId: match.entry.id } })
+                  navigate(`/diario/${match.entry.adventureId}`, {
+                    state: { entryId: match.entry.id },
+                  })
                 }
               />
             </section>
@@ -549,7 +579,11 @@ function AdventureRow({
           <span className="truncate text-xs text-parchment-faint">
             {entryCount > 0 &&
               `${entryCount === 1 ? t.journal.searchMatchCountOne : interpolate(t.journal.searchMatchCount, { count: entryCount })} · `}
-            {new Date(adventure.updatedAt).toLocaleDateString(t.dateLocale, { day: "numeric", month: "short", year: "numeric" })}
+            {new Date(adventure.updatedAt).toLocaleDateString(t.dateLocale, {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </span>
         </span>
         {/* Only the active one is marked: any other ongoing one is simply
@@ -560,7 +594,10 @@ function AdventureRow({
             {t.journal.activeLabel}
           </span>
         )}
-        <IconChevronRight size={16} className="shrink-0 text-parchment-dim/40 transition max-sm:hidden group-has-[a:hover]:translate-x-0.5 group-has-[a:hover]:text-gold" />
+        <IconChevronRight
+          size={16}
+          className="shrink-0 text-parchment-dim/40 transition max-sm:hidden group-has-[a:hover]:translate-x-0.5 group-has-[a:hover]:text-gold"
+        />
       </Link>
     </li>
   );

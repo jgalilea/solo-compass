@@ -7,16 +7,13 @@ import { OracleVerdict, OracleVerdictSpace } from "./OracleVerdict";
 const CARD_STYLE: Record<OracleRoll["answer"], { cardClass: string; glowClass: string }> = {
   si: { cardClass: "border-yes/40 shadow-yes/10", glowClass: "from-yes/10" },
   no: { cardClass: "border-no/40 shadow-no/10", glowClass: "from-no/10" },
-  contradiccion: { cardClass: "border-contradiction/40 shadow-contradiction/10", glowClass: "from-contradiction/10" },
+  contradiccion: {
+    cardClass: "border-contradiction/40 shadow-contradiction/10",
+    glowClass: "from-contradiction/10",
+  },
 };
 
-export function OracleResultCard({
-  roll,
-  animate,
-}: {
-  roll: OracleRoll;
-  animate: boolean;
-}) {
+export function OracleResultCard({ roll, animate }: { roll: OracleRoll; animate: boolean }) {
   const { t } = useLocaleContext();
   const style = CARD_STYLE[roll.answer];
   const oracle = rollOracleId(roll);
@@ -38,15 +35,15 @@ export function OracleResultCard({
         className={`pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-linear-to-b to-transparent ${style.glowClass}`}
       />
       {roll.question && (
-        <p className="mb-5 text-center text-lg italic text-parchment/90">
-          “{roll.question}”
-        </p>
+        <p className="mb-5 text-center text-lg italic text-parchment/90">“{roll.question}”</p>
       )}
 
       <div className="flex items-start justify-center gap-6">
         {groups.map((group, i) => (
           <div key={group.role} className="contents">
-            {i > 0 && contest && <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>}
+            {i > 0 && contest && (
+              <span className="self-center text-base text-parchment-faint">{t.oracle.vs}</span>
+            )}
             <div className="flex flex-col items-center gap-1.5">
               <DiceGroup group={group} animate={animate} large={singleDie} />
               {oracle !== "recluse" && (

@@ -18,9 +18,14 @@ const FONT_FILES: Record<string, string> = {
 export async function readExportTheme(): Promise<ExportTheme> {
   const root = document.documentElement;
   const style = getComputedStyle(root);
-  const colors = Object.fromEntries(EXPORT_COLOR_TOKENS.map((token) => [token, style.getPropertyValue(token).trim()]));
+  const colors = Object.fromEntries(
+    EXPORT_COLOR_TOKENS.map((token) => [token, style.getPropertyValue(token).trim()]),
+  );
   const fontDisplay = style.getPropertyValue("--font-display").trim() || "Georgia, serif";
-  const family = fontDisplay.split(",")[0].trim().replace(/^["']|["']$/g, "");
+  const family = fontDisplay
+    .split(",")[0]
+    .trim()
+    .replace(/^["']|["']$/g, "");
   const mode = root.dataset.mode === "light" ? "light" : "dark";
 
   const file = FONT_FILES[family];
@@ -31,7 +36,8 @@ export async function readExportTheme(): Promise<ExportTheme> {
     const blob = await response.blob();
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result).replace(/^data:[^;]*;/, "data:font/woff2;"));
+      reader.onload = () =>
+        resolve(String(reader.result).replace(/^data:[^;]*;/, "data:font/woff2;"));
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });

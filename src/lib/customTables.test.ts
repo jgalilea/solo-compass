@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { DICTIONARIES } from "./i18n/allDictionaries";
-import { createCustomTable, isCustomTable, MAX_TABLE_SIDES, toMeaningTable, webAddress } from "./customTables";
-import { buildEntries, definitionDraft, diceChoiceFor, entriesToText, exportTableToMarkdown, parseEntryLines, parseTablesFile, parseTheme } from "./customTableText";
+import {
+  createCustomTable,
+  isCustomTable,
+  MAX_TABLE_SIDES,
+  toMeaningTable,
+  webAddress,
+} from "./customTables";
+import {
+  buildEntries,
+  definitionDraft,
+  diceChoiceFor,
+  entriesToText,
+  exportTableToMarkdown,
+  parseEntryLines,
+  parseTablesFile,
+  parseTheme,
+} from "./customTableText";
 
 const t = DICTIONARIES.es;
 
@@ -27,7 +42,11 @@ describe("custom tables: entry lines", () => {
     const result = build("- Rata\n* Lobo\n• Oso");
     expect(result.ok && result.entries.map((e) => e.text)).toEqual(["Rata", "Lobo", "Oso"]);
     const numbered = build("1. Rata\n2) Lobo\n3: Oso");
-    expect(numbered.ok && numbered.entries.map((e) => e.range)).toEqual([[1, 1], [2, 2], [3, 3]]);
+    expect(numbered.ok && numbered.entries.map((e) => e.range)).toEqual([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]);
   });
 
   it("weighted ranges pick the die from the highest value", () => {
@@ -63,7 +82,9 @@ describe("custom tables: entry lines", () => {
   });
 
   it("reads a Markdown table, die included in the header", () => {
-    const parsed = parseEntryLines("| d4 | Resultado |\n|---|---|\n| 1-2 | A \\| B |\n| 3 | C |\n| 4 | D |");
+    const parsed = parseEntryLines(
+      "| d4 | Resultado |\n|---|---|\n| 1-2 | A \\| B |\n| 3 | C |\n| 4 | D |",
+    );
     expect(parsed.dice).toBe("d4");
     expect(parsed.lines[0]).toEqual({ range: [1, 2], text: "A | B" });
   });
@@ -78,7 +99,12 @@ describe("custom tables: files", () => {
       description: "Lo que acecha en el bosque.",
       dice: built.dice,
       entries: built.entries,
-      source: { name: "Mi zine", author: "Alguien", license: "CC BY 4.0", url: "https://example.com" },
+      source: {
+        name: "Mi zine",
+        author: "Alguien",
+        license: "CC BY 4.0",
+        url: "https://example.com",
+      },
     });
     const [back] = parseTablesFile(t, exportTableToMarkdown(t, table), "x.md");
     expect(back).toEqual({
@@ -134,16 +160,42 @@ describe("custom tables: files", () => {
     const one = { name: "Clima", entries: ["Sol", "Lluvia"] };
     expect(parseTablesFile(t, JSON.stringify(one), "x.json")).toHaveLength(1);
     expect(parseTablesFile(t, JSON.stringify([one, one]), "x.json")).toHaveLength(2);
-    const ranged = { tables: [{ name: "R", dice: "d6", entries: [{ range: [1, 4], text: "A" }, { range: [5, 6], text: "B" }] }] };
-    expect(parseTablesFile(t, JSON.stringify(ranged), "x.json")[0].entries[1].range).toEqual([5, 6]);
+    const ranged = {
+      tables: [
+        {
+          name: "R",
+          dice: "d6",
+          entries: [
+            { range: [1, 4], text: "A" },
+            { range: [5, 6], text: "B" },
+          ],
+        },
+      ],
+    };
+    expect(parseTablesFile(t, JSON.stringify(ranged), "x.json")[0].entries[1].range).toEqual([
+      5, 6,
+    ]);
     expect(parseTablesFile(t, "{ broken", "x.json")).toEqual([]);
   });
 
   it("the editor text and die choice come back from a saved table", () => {
-    const plain = { dice: "d3" as const, entries: [{ range: [1, 1] as [number, number], text: "A" }, { range: [2, 2] as [number, number], text: "B" }, { range: [3, 3] as [number, number], text: "C" }] };
+    const plain = {
+      dice: "d3" as const,
+      entries: [
+        { range: [1, 1] as [number, number], text: "A" },
+        { range: [2, 2] as [number, number], text: "B" },
+        { range: [3, 3] as [number, number], text: "C" },
+      ],
+    };
     expect(entriesToText(plain)).toBe("A\nB\nC");
     expect(diceChoiceFor(plain)).toBe("auto");
-    const weighted = { dice: "d6" as const, entries: [{ range: [1, 4] as [number, number], text: "A" }, { range: [5, 6] as [number, number], text: "B" }] };
+    const weighted = {
+      dice: "d6" as const,
+      entries: [
+        { range: [1, 4] as [number, number], text: "A" },
+        { range: [5, 6] as [number, number], text: "B" },
+      ],
+    };
     expect(entriesToText(weighted)).toBe("1-4 A\n5-6 B");
     expect(diceChoiceFor(weighted)).toBe("d6");
   });
@@ -152,11 +204,23 @@ describe("custom tables: files", () => {
 describe("a table written out in a journal", () => {
   it("becomes one of the player's, on its die", () => {
     expect(definitionDraft(t, "tbl: Clima (d4) [Sol, 3 nubes, Lluvia, Nieve]")).toEqual({
-      name: "Clima", description: "", dice: "d4",
-      entries: ["Sol", "3 nubes", "Lluvia", "Nieve"].map((text, i) => ({ range: [i + 1, i + 1], text })),
+      name: "Clima",
+      description: "",
+      dice: "d4",
+      entries: ["Sol", "3 nubes", "Lluvia", "Nieve"].map((text, i) => ({
+        range: [i + 1, i + 1],
+        text,
+      })),
     });
-    expect(definitionDraft(t, "tbl: Bosque (d6)\n1-2: Nada\n3: Huellas\n4: Campamento\n5: Viajero\n6: Algo te sigue")).toMatchObject({
-      name: "Bosque", dice: "d6", entries: [{ range: [1, 2], text: "Nada" }, {}, {}, {}, { range: [6, 6] }],
+    expect(
+      definitionDraft(
+        t,
+        "tbl: Bosque (d6)\n1-2: Nada\n3: Huellas\n4: Campamento\n5: Viajero\n6: Algo te sigue",
+      ),
+    ).toMatchObject({
+      name: "Bosque",
+      dice: "d6",
+      entries: [{ range: [1, 2], text: "Nada" }, {}, {}, {}, { range: [6, 6] }],
     });
     // With no die, or one that doesn't fit, a face each.
     expect(definitionDraft(t, "tbl: Ánimo [Tenso, Sereno, Raro]").dice).toBe("d3");
@@ -176,7 +240,13 @@ describe("custom tables: what a file can't do", () => {
       error: t.tables.editor.errorTooBig,
     });
     // A file naming such a die in its header has no table to import.
-    expect(parseTablesFile(t, "# Tabla\n| d999999 | Resultado |\n|---|---|\n| 1 | A |\n| 2 | B |", "t.md")).toEqual([]);
+    expect(
+      parseTablesFile(
+        t,
+        "# Tabla\n| d999999 | Resultado |\n|---|---|\n| 1 | A |\n| 2 | B |",
+        "t.md",
+      ),
+    ).toEqual([]);
   });
 
   it("still takes the biggest die allowed, quickly, with ranges", () => {
@@ -188,7 +258,13 @@ describe("custom tables: what a file can't do", () => {
   });
 
   it("drops a stored or restored table with a die past the limit or ranges that aren't whole numbers", () => {
-    const table = { id: "x", name: "X", description: "", dice: "d6", entries: [{ range: [1, 6], text: "a" }] };
+    const table = {
+      id: "x",
+      name: "X",
+      description: "",
+      dice: "d6",
+      entries: [{ range: [1, 6], text: "a" }],
+    };
     expect(isCustomTable(table)).toBe(true);
     expect(isCustomTable({ ...table, dice: "d1000000000" })).toBe(false);
     expect(isCustomTable({ ...table, dice: "d0" })).toBe(false);

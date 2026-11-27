@@ -45,11 +45,17 @@ export function buildSampleAdventure(
         ...verdict,
         favorite: false,
       });
-      return formatLine({ kind: "roll", text: `${oracleName}: ${dice} -> ${formatAnswer(t, verdict)}` });
+      return formatLine({
+        kind: "roll",
+        text: `${oracleName}: ${dice} -> ${formatAnswer(t, verdict)}`,
+      });
     }
     if ("table" in line) {
       const { table, total, result } = roll(line.table, line.roll);
-      return formatLine({ kind: "roll", text: formatTableRoll(table.name, table.dice, total, result) });
+      return formatLine({
+        kind: "roll",
+        text: formatTableRoll(table.name, table.dice, total, result),
+      });
     }
     if ("inspiration" in line) {
       // Written like usePlayActions' rollInspiration.

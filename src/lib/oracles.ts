@@ -59,7 +59,8 @@ export const ORACLES: OracleInfo[] = [
     license: "CC BY-SA 4.0",
     licenseUrl: CC_BY_SA,
     url: "https://inflatablestudios.itch.io/one-page-solo-engine",
-    attribution: "One Page Solo Engine v1.6 by Karl Hendricks (Inflatable Studios), licensed under CC BY-SA 4.0.",
+    attribution:
+      "One Page Solo Engine v1.6 by Karl Hendricks (Inflatable Studios), licensed under CC BY-SA 4.0.",
   },
 ];
 

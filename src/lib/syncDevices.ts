@@ -25,19 +25,32 @@ export const MAX_NAME_LENGTH = 40;
 /** Read from what came in: anything that isn't a device as written here is left out. */
 export function readDevice(value: unknown): SyncedDevice | null {
   const d = value as SyncedDevice | null;
-  if (!d || typeof d !== "object" || typeof d.id !== "string" || typeof d.name !== "string" || typeof d.seenAt !== "number") return null;
+  if (
+    !d ||
+    typeof d !== "object" ||
+    typeof d.id !== "string" ||
+    typeof d.name !== "string" ||
+    typeof d.seenAt !== "number"
+  )
+    return null;
   if (!d.id || d.id.length > 64) return null;
   return { id: d.id, name: d.name.trim().slice(0, MAX_NAME_LENGTH) || "?", seenAt: d.seenAt };
 }
 
 /** The devices known, with what was just seen: one per id, its latest news (and name). */
-export function mergeDevices(known: readonly SyncedDevice[], seen: readonly SyncedDevice[], now = Date.now()): SyncedDevice[] {
+export function mergeDevices(
+  known: readonly SyncedDevice[],
+  seen: readonly SyncedDevice[],
+  now = Date.now(),
+): SyncedDevice[] {
   const byId = new Map<string, SyncedDevice>();
   for (const d of [...known, ...seen]) {
     const had = byId.get(d.id);
     if (!had || d.seenAt > had.seenAt) byId.set(d.id, d);
   }
-  return [...byId.values()].filter((d) => now - d.seenAt < FORGET_AFTER).sort((a, b) => b.seenAt - a.seenAt);
+  return [...byId.values()]
+    .filter((d) => now - d.seenAt < FORGET_AFTER)
+    .sort((a, b) => b.seenAt - a.seenAt);
 }
 
 /** A name for this device until the person picks one: what it is, and the browser or "app". */

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CLOSED_KEPT, EXPIRE_AFTER, EXPIRY_STEP, handleBox, SNAPSHOT_GAP, WRITES_PER_MINUTE, type BoxRequest } from "./box.ts";
+import {
+  CLOSED_KEPT,
+  EXPIRE_AFTER,
+  EXPIRY_STEP,
+  handleBox,
+  SNAPSHOT_GAP,
+  WRITES_PER_MINUTE,
+  type BoxRequest,
+} from "./box.ts";
 import { MemoryBoxStore } from "./memoryStore.ts";
 import { MAX_BOX_BYTES, decodeFrame, splitParts, type SyncReply } from "../../src/lib/syncWire.ts";
 
@@ -8,16 +16,33 @@ const PASS = "a".repeat(64);
 let clock = 1_000_000;
 let epochs = 0;
 
-function call(store: MemoryBoxStore, request: Omit<BoxRequest, "v" | "box" | "passHash"> & { passHash?: string }, payload = new Uint8Array()) {
-  const result = handleBox(store, { v: 1, box: BOX, passHash: PASS, ...request } as BoxRequest, payload, {
-    now: clock,
-    newEpoch: () => `epoch-${++epochs}`,
-    wait: 0,
-  });
+function call(
+  store: MemoryBoxStore,
+  request: Omit<BoxRequest, "v" | "box" | "passHash"> & { passHash?: string },
+  payload = new Uint8Array(),
+) {
+  const result = handleBox(
+    store,
+    { v: 1, box: BOX, passHash: PASS, ...request } as BoxRequest,
+    payload,
+    {
+      now: clock,
+      newEpoch: () => `epoch-${++epochs}`,
+      wait: 0,
+    },
+  );
   const { header, payload: rest } = decodeFrame(result.frame);
   const reply = header as SyncReply;
-  const sizes = reply.ok && reply.op === "sync" ? [...(reply.snapshot !== null ? [reply.snapshot] : []), ...reply.ops.map((o) => o.size)] : [];
-  return { status: result.status, reply, parts: splitParts(rest, sizes).map((p) => new TextDecoder().decode(p)), alarmAt: result.alarmAt };
+  const sizes =
+    reply.ok && reply.op === "sync"
+      ? [...(reply.snapshot !== null ? [reply.snapshot] : []), ...reply.ops.map((o) => o.size)]
+      : [];
+  return {
+    status: result.status,
+    reply,
+    parts: splitParts(rest, sizes).map((p) => new TextDecoder().decode(p)),
+    alarmAt: result.alarmAt,
+  };
 }
 
 const bytes = (text: string) => new TextEncoder().encode(text);
@@ -57,7 +82,10 @@ describe("sync box", () => {
   it("refuses another pass and anything after closing", () => {
     const store = new MemoryBoxStore();
     sync(store, null, null, "x");
-    expect(call(store, { op: "sync", epoch: null, since: null, size: 0, passHash: "b".repeat(64) }).status).toBe(403);
+    expect(
+      call(store, { op: "sync", epoch: null, since: null, size: 0, passHash: "b".repeat(64) })
+        .status,
+    ).toBe(403);
     expect(call(store, { op: "close" }).status).toBe(200);
     const after = sync(store, null, null);
     expect(after.status).toBe(410);
@@ -74,12 +102,26 @@ describe("sync box", () => {
     sync(store, first.epoch, 1, "2");
     sync(store, first.epoch, 2, "3");
 
-    const snap = call(store, { op: "snapshot", epoch: first.epoch, upto: 3, gen: 0, size: 3 }, bytes("123"));
-    expect(ok(snap.reply)).toMatchObject({ op: "snapshot", gen: 1, stats: { ops: 0, opsBytes: 0, snapshotBytes: 3 } });
+    const snap = call(
+      store,
+      { op: "snapshot", epoch: first.epoch, upto: 3, gen: 0, size: 3 },
+      bytes("123"),
+    );
+    expect(ok(snap.reply)).toMatchObject({
+      op: "snapshot",
+      gen: 1,
+      stats: { ops: 0, opsBytes: 0, snapshotBytes: 3 },
+    });
     // Someone else's, on the old generation, loses.
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 3, gen: 0, size: 1 }, bytes("x")).status).toBe(409);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 3, gen: 0, size: 1 }, bytes("x"))
+        .status,
+    ).toBe(409);
     // Past the last change: refused.
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 9, gen: 1, size: 1 }, bytes("x")).status).toBe(409);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 9, gen: 1, size: 1 }, bytes("x"))
+        .status,
+    ).toBe(409);
 
     sync(store, first.epoch, 3, "4");
     // A new device: the snapshot, then what came after it.
@@ -105,7 +147,8 @@ describe("sync box", () => {
     const store = new MemoryBoxStore();
     const first = ok(sync(store, null, null, "x").reply);
     if (first.op !== "sync") throw new Error();
-    for (let i = 1; i < WRITES_PER_MINUTE; i++) expect(sync(store, first.epoch, i, "x").status).toBe(200);
+    for (let i = 1; i < WRITES_PER_MINUTE; i++)
+      expect(sync(store, first.epoch, i, "x").status).toBe(200);
     const limited = sync(store, first.epoch, WRITES_PER_MINUTE, "x");
     expect(limited.status).toBe(429);
     expect(limited.reply).toMatchObject({ ok: false, error: "rate" });
@@ -151,7 +194,10 @@ describe("sync box", () => {
     }
     clock += 61_000;
     const before = store.rowsWritten;
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 40, gen: 0, size: 3 }, bytes("all")).status).toBe(200);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 40, gen: 0, size: 3 }, bytes("all"))
+        .status,
+    ).toBe(200);
     expect(store.rowsWritten - before).toBeLessThanOrEqual(4);
     expect(sync(store, null, null).parts).toEqual(["all"]);
     // And numbering goes on after them.
@@ -174,15 +220,28 @@ describe("sync box", () => {
     if (first.op !== "sync") throw new Error();
     sync(store, first.epoch, 1, "2");
     const big = new Uint8Array(MAX_BOX_BYTES);
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 1, gen: 0, size: big.length }, big).status).toBe(413);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 1, gen: 0, size: big.length }, big)
+        .status,
+    ).toBe(413);
     expect(sync(store, null, null).parts).toEqual(["1", "2"]);
 
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 1, gen: 0, size: 1 }, bytes("A")).status).toBe(200);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 1, gen: 0, size: 1 }, bytes("A"))
+        .status,
+    ).toBe(200);
     expect(sync(store, null, null).parts).toEqual(["A", "2"]);
-    const soon = call(store, { op: "snapshot", epoch: first.epoch, upto: 2, gen: 1, size: 2 }, bytes("AB"));
+    const soon = call(
+      store,
+      { op: "snapshot", epoch: first.epoch, upto: 2, gen: 1, size: 2 },
+      bytes("AB"),
+    );
     expect(soon.status).toBe(429);
     clock += SNAPSHOT_GAP;
-    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 2, gen: 1, size: 2 }, bytes("AB")).status).toBe(200);
+    expect(
+      call(store, { op: "snapshot", epoch: first.epoch, upto: 2, gen: 1, size: 2 }, bytes("AB"))
+        .status,
+    ).toBe(200);
     expect(sync(store, null, null).parts).toEqual(["AB"]);
   });
 });

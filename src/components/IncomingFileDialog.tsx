@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useJournalContext } from "../hooks/useJournalContext";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
-import { fileProblemText, inspectFile, inspectJournal, inspectTables, type InspectedFile } from "../lib/fileImport";
+import {
+  fileProblemText,
+  inspectFile,
+  inspectJournal,
+  inspectTables,
+  type InspectedFile,
+} from "../lib/fileImport";
 import { readLonelog } from "../lib/lonelog";
 import { PRIMARY_BUTTON_CLASS } from "../lib/journalUi";
 import { DialogBody, DialogHeader } from "./Dialog";
@@ -73,7 +79,13 @@ export function IncomingFileDialog({
 
   return (
     <Modal onClose={onDone} labelledBy="incoming-file-title" centered size="sm">
-      <DialogHeader id="incoming-file-title" title={f.dialogTitle} Icon={IconFileImport} subtitle={file.name || undefined} onClose={onDone} />
+      <DialogHeader
+        id="incoming-file-title"
+        title={f.dialogTitle}
+        Icon={IconFileImport}
+        subtitle={file.name || undefined}
+        onClose={onDone}
+      />
       <DialogBody className="block">
         {shared && found?.kind !== "problem" && (
           <p className="mb-4 flex items-start gap-2 rounded-xl border border-ink-border px-3 py-2 text-xs text-parchment-dim">
@@ -98,10 +110,16 @@ export function IncomingFileDialog({
             <Counts rows={[[f.entriesLabel, found.entries]]} />
             <p className="mt-3 text-sm text-parchment-dim">{f.journalNote}</p>
             <div className="mt-4 flex flex-col items-start gap-2">
-              <button type="button" onClick={() => importJournal(found)} className={PRIMARY_BUTTON_CLASS}>
+              <button
+                type="button"
+                onClick={() => importJournal(found)}
+                className={PRIMARY_BUTTON_CLASS}
+              >
                 {f.journalAction}
               </button>
-              <QuietButton onClick={() => setFound(inspectTables(t, found.name, found.text))}>{f.asTables}</QuietButton>
+              <QuietButton onClick={() => setFound(inspectTables(t, found.name, found.text))}>
+                {f.asTables}
+              </QuietButton>
             </div>
           </>
         ) : found.kind === "tables" ? (
@@ -118,11 +136,19 @@ export function IncomingFileDialog({
             </ul>
             <p className="mt-3 text-sm text-parchment-dim">{f.tablesNote}</p>
             <div className="mt-4 flex flex-col items-start gap-2">
-              <button type="button" onClick={() => importTables(found)} className={PRIMARY_BUTTON_CLASS}>
-                {found.drafts.length === 1 ? f.tablesActionOne : interpolate(f.tablesAction, { count: found.drafts.length })}
+              <button
+                type="button"
+                onClick={() => importTables(found)}
+                className={PRIMARY_BUTTON_CLASS}
+              >
+                {found.drafts.length === 1
+                  ? f.tablesActionOne
+                  : interpolate(f.tablesAction, { count: found.drafts.length })}
               </button>
               {!isJson && (
-                <QuietButton onClick={() => setFound(inspectJournal(found.name, found.text))}>{f.asJournal}</QuietButton>
+                <QuietButton onClick={() => setFound(inspectJournal(found.name, found.text))}>
+                  {f.asJournal}
+                </QuietButton>
               )}
             </div>
           </>
@@ -132,7 +158,10 @@ export function IncomingFileDialog({
             {found.exportedAt !== null && (
               <p className="mt-1 text-sm text-parchment">
                 {interpolate(f.backupMadeOn, {
-                  date: new Intl.DateTimeFormat(t.dateLocale, { dateStyle: "long", timeStyle: "short" }).format(found.exportedAt),
+                  date: new Intl.DateTimeFormat(t.dateLocale, {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  }).format(found.exportedAt),
                 })}
               </p>
             )}
@@ -160,7 +189,9 @@ export function IncomingFileDialog({
 }
 
 function Kind({ label }: { label: string }) {
-  return <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">{label}</p>;
+  return (
+    <p className="text-xs font-medium uppercase tracking-wide text-parchment-faint">{label}</p>
+  );
 }
 
 function Counts({ rows }: { rows: [string, number][] }) {

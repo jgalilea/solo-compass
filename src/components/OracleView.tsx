@@ -93,7 +93,11 @@ function OracleScreen() {
             className="w-full rounded-2xl border border-ink-border bg-ink-900/70 px-4 py-3.5 text-base text-parchment placeholder:text-parchment-faint focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
           />
 
-          <LikelihoodPicker value={level} onChange={setLikelihood} levels={oracleLevels(oracleId)} />
+          <LikelihoodPicker
+            value={level}
+            onChange={setLikelihood}
+            levels={oracleLevels(oracleId)}
+          />
 
           <button
             type="submit"
@@ -116,7 +120,9 @@ function OracleScreen() {
                   onSave={(text) => addConsequence(lastRoll.id, text)}
                   placeholder={t.oracle.consequencePlaceholder}
                   saveLabel={t.common.save}
-                  savedLabel={interpolate(t.oracle.consequenceSaved, { name: activeAdventure.name })}
+                  savedLabel={interpolate(t.oracle.consequenceSaved, {
+                    name: activeAdventure.name,
+                  })}
                 />
               )}
             </div>

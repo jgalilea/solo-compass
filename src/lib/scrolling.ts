@@ -20,8 +20,10 @@ export function revealElement(el: Element | null, block: ScrollLogicalPosition):
   if (!el) return;
   const rect = el.getBoundingClientRect();
   const distance =
-    block === "center" ? rect.top + rect.height / 2 - window.innerHeight / 2
-    : block === "end" ? rect.bottom - window.innerHeight
-    : rect.top;
+    block === "center"
+      ? rect.top + rect.height / 2 - window.innerHeight / 2
+      : block === "end"
+        ? rect.bottom - window.innerHeight
+        : rect.top;
   el.scrollIntoView({ behavior: scrollBehaviorFor(distance), block });
 }

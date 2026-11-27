@@ -109,7 +109,9 @@ function DiceHelpContent() {
                 <ul className="flex flex-col gap-1.5">
                   {examples.map(({ line, text }) => (
                     <li key={line} className="rounded-lg bg-ink-950/50 px-2.5 py-1.5">
-                      <code className="block break-words font-mono text-xs text-parchment">{toRollLine(line)}</code>
+                      <code className="block break-words font-mono text-xs text-parchment">
+                        {toRollLine(line)}
+                      </code>
                       <span className="text-xs text-parchment-dim">{text}</span>
                     </li>
                   ))}

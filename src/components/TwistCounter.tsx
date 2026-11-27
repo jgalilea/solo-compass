@@ -18,7 +18,10 @@ export function TwistCounter({ adventureId }: { adventureId: string | null | und
   const count = useMemo(() => lonerTwistCounterOf(entries, adventureId), [entries, adventureId]);
   if (oracleId !== "loner") return null;
   return (
-    <span title={t.oracle.twistCounterHint} className="whitespace-nowrap text-xs tabular-nums text-parchment-faint">
+    <span
+      title={t.oracle.twistCounterHint}
+      className="whitespace-nowrap text-xs tabular-nums text-parchment-faint"
+    >
       <span aria-hidden>{interpolate(t.oracle.doubleShort, { count })}</span>
       <span className="sr-only">{`${t.oracle.twistCounterHint} ${count}/3`}</span>
     </span>

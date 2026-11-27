@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useLocaleContext } from "../hooks/useLocaleContext";
-import { formatProgressTag, formatQuantity, formatTag, writeDetails, type CastKind } from "../lib/lonelogTags";
+import {
+  formatProgressTag,
+  formatQuantity,
+  formatTag,
+  writeDetails,
+  type CastKind,
+} from "../lib/lonelogTags";
 import { INPUT_CLASS } from "../lib/journalUi";
 import { CastIcon } from "./CastIcon";
 import { NumberField } from "./NumberField";
@@ -32,19 +38,33 @@ export function AddCastForm({
   const [owner, setOwner] = useState(purseOwner ?? "");
   const [size, setSize] = useState(6);
   const [quantity, setQuantity] = useState(initialKind === "deck" ? 52 : 1);
-  const hint = kind in t.notebook.kindHints ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints] : t.notebook.addHint;
+  const hint =
+    kind in t.notebook.kindHints
+      ? t.notebook.kindHints[kind as keyof typeof t.notebook.kindHints]
+      : t.notebook.addHint;
   const sizeLabel = kind === "timer" ? t.notebook.timerStartLabel : t.notebook.segmentsLabel;
-  const hasDetails = kind === "pc" || kind === "npc" || kind === "place" || kind === "room" || kind === "foe" || kind === "item" || kind === "deck";
+  const hasDetails =
+    kind === "pc" ||
+    kind === "npc" ||
+    kind === "place" ||
+    kind === "room" ||
+    kind === "foe" ||
+    kind === "item" ||
+    kind === "deck";
 
   function tag(): string {
     if (kind === "thread") return formatTag("thread", name, [t.notebook.statuses.open]);
     if (kind === "clock" || kind === "track") return formatProgressTag(kind, name, 0, size);
     if (kind === "timer") return formatProgressTag(kind, name, size);
-    if (kind === "item" || kind === "deck") return formatTag(kind, name, [`×${quantity}`, ...details.split(",")]);
+    if (kind === "item" || kind === "deck")
+      return formatTag(kind, name, [`×${quantity}`, ...details.split(",")]);
     if (kind === "wealth") return formatQuantity("wealth", name, String(quantity), owner.trim());
     // A group's size is a count, not part of its name: "Goblins×4".
     const group = kind === "foe" ? name.match(/^(.*?\S)\s*[×x]\s*(\d+)$/) : null;
-    return formatTag(kind, group ? group[1] : name, [...(group ? [`×${group[2]}`] : []), ...writeDetails(kind, details.split(","), t.notebook.categories)]);
+    return formatTag(kind, group ? group[1] : name, [
+      ...(group ? [`×${group[2]}`] : []),
+      ...writeDetails(kind, details.split(","), t.notebook.categories),
+    ]);
   }
 
   return (
@@ -62,7 +82,11 @@ export function AddCastForm({
       }}
       className="flex flex-col gap-2 rounded-xl border border-ink-border bg-ink-800/50 p-2.5"
     >
-      <div role="radiogroup" aria-label={t.notebook.addKindLabel} className="grid grid-cols-2 gap-1 rounded-lg bg-ink-900/60 p-1">
+      <div
+        role="radiogroup"
+        aria-label={t.notebook.addKindLabel}
+        className="grid grid-cols-2 gap-1 rounded-lg bg-ink-900/60 p-1"
+      >
         {kinds.map((id) => (
           <button
             key={id}
@@ -118,7 +142,12 @@ export function AddCastForm({
       {(kind === "item" || kind === "wealth" || kind === "deck") && (
         <div className="flex items-center gap-2 text-xs text-parchment-dim">
           <span className="flex-1">{t.notebook.quantityLabel}</span>
-          <NumberField value={quantity} onChange={setQuantity} min={0} label={t.notebook.quantityLabel} />
+          <NumberField
+            value={quantity}
+            onChange={setQuantity}
+            min={0}
+            label={t.notebook.quantityLabel}
+          />
         </div>
       )}
       <p className="text-[0.7rem] text-parchment-faint">{hint}</p>

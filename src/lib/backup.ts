@@ -11,7 +11,13 @@
  * already handle gets duplicated.
  */
 
-import { loadHistory, normalizeHistoryEntry, replaceHistory, saveHistoryChanges, type HistoryEntry } from "./history";
+import {
+  loadHistory,
+  normalizeHistoryEntry,
+  replaceHistory,
+  saveHistoryChanges,
+  type HistoryEntry,
+} from "./history";
 import {
   loadAdventures,
   loadJournalEntries,
@@ -25,21 +31,57 @@ import {
   type Adventure,
 } from "./journal";
 import type { JournalEntry } from "./lonelog";
-import { isCustomTable, loadCustomTables, replaceCustomTables, saveCustomTableChanges, type CustomTable } from "./customTables";
-import { loadSavedRolls, normalizeSavedRoll, replaceSavedRolls, saveSavedRollChanges, type SavedRoll } from "./savedRolls";
-import { loadGenerators, normalizeGenerator, replaceGenerators, saveGeneratorChanges, type Generator } from "./generators";
+import {
+  isCustomTable,
+  loadCustomTables,
+  replaceCustomTables,
+  saveCustomTableChanges,
+  type CustomTable,
+} from "./customTables";
+import {
+  loadSavedRolls,
+  normalizeSavedRoll,
+  replaceSavedRolls,
+  saveSavedRollChanges,
+  type SavedRoll,
+} from "./savedRolls";
+import {
+  loadGenerators,
+  normalizeGenerator,
+  replaceGenerators,
+  saveGeneratorChanges,
+  type Generator,
+} from "./generators";
 import { loadTheme, saveTheme, isThemeId } from "./theme";
 import { loadMode, saveMode, isThemeMode } from "./mode";
 import { loadLocale, saveLocale, isLocale, type Dictionary } from "./i18n";
-import { isOracleId, loadFavoriteOracleId, loadOracleId, saveFavoriteOracleId, saveOracleId } from "./oracles";
+import {
+  isOracleId,
+  loadFavoriteOracleId,
+  loadOracleId,
+  saveFavoriteOracleId,
+  saveOracleId,
+} from "./oracles";
 import { loadFavoriteTableIds, saveFavoriteTableIds } from "./tableFavorites";
 import { loadFavoriteDice, saveFavoriteDice } from "./diceFavorites";
-import { loadCardSettings, mergeCardSettings, normalizeCardSettings, saveCardSettings, type CardSettings } from "./cardSettings";
+import {
+  loadCardSettings,
+  mergeCardSettings,
+  normalizeCardSettings,
+  saveCardSettings,
+  type CardSettings,
+} from "./cardSettings";
 import { isBuiltinDie } from "./dice";
 import { loadActiveAdventureId, saveActiveAdventureId } from "./activeAdventure";
 import { saveLastBackupAt } from "./backupReminder";
 import { mergeData, type MergeData } from "./backupMerge";
-import { loadDeletions, recentDeletions, replaceDeletions, saveDeletionChanges, type Deletion } from "./deletions";
+import {
+  loadDeletions,
+  recentDeletions,
+  replaceDeletions,
+  saveDeletionChanges,
+  type Deletion,
+} from "./deletions";
 import { announceChange } from "./sync";
 
 // 2: journal.adventures (formerly journal.campaigns) — backups are so
@@ -86,15 +128,16 @@ export interface BackupPayload {
 export class BackupError extends Error {}
 
 export async function buildBackup(t: Dictionary): Promise<BackupPayload> {
-  const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
-    loadHistory(t),
-    loadAdventures(t),
-    loadJournalEntries(t),
-    loadCustomTables(t),
-    loadSavedRolls(t),
-    loadGenerators(t),
-    loadDeletions(),
-  ]);
+  const [history, adventures, entries, customTables, savedRolls, generators, deleted] =
+    await Promise.all([
+      loadHistory(t),
+      loadAdventures(t),
+      loadJournalEntries(t),
+      loadCustomTables(t),
+      loadSavedRolls(t),
+      loadGenerators(t),
+      loadDeletions(),
+    ]);
   return {
     app: "solo-compass",
     schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -145,7 +188,11 @@ export type RestoreMode = "merge" | "replace";
  *   skipping any that are invalid, so a single stray field doesn't
  *   block the rest.
  */
-export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMode = "replace"): Promise<void> {
+export async function restoreBackup(
+  t: Dictionary,
+  text: string,
+  mode: RestoreMode = "replace",
+): Promise<void> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -219,30 +266,36 @@ export async function restoreBackup(t: Dictionary, text: string, mode: RestoreMo
     if (typeof s.locale === "string" && isLocale(s.locale)) saveLocale(s.locale);
     if (typeof s.oracleId === "string" && isOracleId(s.oracleId)) saveOracleId(s.oracleId);
     if (s.favoriteOracleId === null) saveFavoriteOracleId(null);
-    else if (typeof s.favoriteOracleId === "string" && isOracleId(s.favoriteOracleId)) saveFavoriteOracleId(s.favoriteOracleId);
+    else if (typeof s.favoriteOracleId === "string" && isOracleId(s.favoriteOracleId))
+      saveFavoriteOracleId(s.favoriteOracleId);
     if (typeof s.activeAdventureId === "string" || s.activeAdventureId === null) {
       saveActiveAdventureId((s.activeAdventureId as string | null) ?? null);
     }
     if (Array.isArray(s.favoriteTableIds)) {
-      saveFavoriteTableIds(new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")));
+      saveFavoriteTableIds(
+        new Set(s.favoriteTableIds.filter((id): id is string => typeof id === "string")),
+      );
     }
-    if (Array.isArray(s.favoriteDice)) saveFavoriteDice(new Set(s.favoriteDice.filter(isBuiltinDie)));
+    if (Array.isArray(s.favoriteDice))
+      saveFavoriteDice(new Set(s.favoriteDice.filter(isBuiltinDie)));
     // A deck shuffled on either device stays shuffled.
-    if (s.cards) saveCardSettings(mergeCardSettings(loadCardSettings(), normalizeCardSettings(s.cards)));
+    if (s.cards)
+      saveCardSettings(mergeCardSettings(loadCardSettings(), normalizeCardSettings(s.cards)));
   }
 }
 
 /** Everything a merge (restoring a backup, or a sync) works on, as stored here. */
 export async function loadMergeData(t: Dictionary): Promise<MergeData> {
-  const [history, adventures, entries, customTables, savedRolls, generators, deleted] = await Promise.all([
-    loadHistory(t),
-    loadAdventures(t),
-    loadJournalEntries(t),
-    loadCustomTables(t),
-    loadSavedRolls(t),
-    loadGenerators(t),
-    loadDeletions(),
-  ]);
+  const [history, adventures, entries, customTables, savedRolls, generators, deleted] =
+    await Promise.all([
+      loadHistory(t),
+      loadAdventures(t),
+      loadJournalEntries(t),
+      loadCustomTables(t),
+      loadSavedRolls(t),
+      loadGenerators(t),
+      loadDeletions(),
+    ]);
   return { history, adventures, entries, customTables, savedRolls, generators, deleted };
 }
 
@@ -256,12 +309,22 @@ function listOf(value: unknown): unknown[] {
  */
 export function normalizeMergeData(raw: { [K in keyof MergeData]?: unknown }): MergeData {
   return {
-    history: listOf(raw.history).map(normalizeHistoryEntry).filter((x) => x !== null),
-    adventures: listOf(raw.adventures).map(normalizeAdventure).filter((x) => x !== null),
-    entries: listOf(raw.entries).map(normalizeJournalEntry).filter((x) => x !== null),
+    history: listOf(raw.history)
+      .map(normalizeHistoryEntry)
+      .filter((x) => x !== null),
+    adventures: listOf(raw.adventures)
+      .map(normalizeAdventure)
+      .filter((x) => x !== null),
+    entries: listOf(raw.entries)
+      .map(normalizeJournalEntry)
+      .filter((x) => x !== null),
     customTables: listOf(raw.customTables).filter(isCustomTable),
-    savedRolls: listOf(raw.savedRolls).map(normalizeSavedRoll).filter((x) => x !== null),
-    generators: listOf(raw.generators).map(normalizeGenerator).filter((x) => x !== null),
+    savedRolls: listOf(raw.savedRolls)
+      .map(normalizeSavedRoll)
+      .filter((x) => x !== null),
+    generators: listOf(raw.generators)
+      .map(normalizeGenerator)
+      .filter((x) => x !== null),
     deleted: recentDeletions(
       listOf(raw.deleted).filter(
         (d): d is Deletion =>
@@ -277,8 +340,15 @@ export function normalizeMergeData(raw: { [K in keyof MergeData]?: unknown }): M
  * this tab or another, isn't written over. Adventures new here go first,
  * newest first, like any adventure missing from the saved order.
  */
-export async function saveMergeChanges(t: Dictionary, before: MergeData, after: MergeData): Promise<void> {
-  const adventures = orderAdventures(after.adventures, before.adventures.map((a) => a.id));
+export async function saveMergeChanges(
+  t: Dictionary,
+  before: MergeData,
+  after: MergeData,
+): Promise<void> {
+  const adventures = orderAdventures(
+    after.adventures,
+    before.adventures.map((a) => a.id),
+  );
   await Promise.all([
     saveHistoryChanges(t, before.history, after.history),
     saveAdventureChanges(t, before.adventures, adventures),

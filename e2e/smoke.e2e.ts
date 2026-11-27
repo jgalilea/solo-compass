@@ -32,7 +32,9 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   const composer = page.locator("[data-composer] textarea");
   await composer.fill("Bajo las escaleras de la cripta.");
   await page.getByRole("button", { name: "Añadir al diario" }).click();
-  await expect(page.locator("[id^=entry-]").getByText("Bajo las escaleras de la cripta.")).toBeVisible();
+  await expect(
+    page.locator("[id^=entry-]").getByText("Bajo las escaleras de la cripta."),
+  ).toBeVisible();
   // A scene, numbered on its own.
   await page.locator("[data-composer] button[aria-haspopup=menu]").click();
   await page.getByRole("menuitemradio", { name: /Nueva escena/ }).click();
@@ -48,12 +50,19 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   await composer.fill("El osario");
   await page.getByRole("button", { name: "Añadir al diario" }).click();
   await expect(page.locator("[id^=entry-]").getByText("S2")).toBeVisible();
-  await expect(page.locator("[id^=entry-]").getByText("¿La escena va como esperaba?")).toBeVisible();
+  await expect(
+    page.locator("[id^=entry-]").getByText("¿La escena va como esperaba?"),
+  ).toBeVisible();
 
   // A table roll.
   await page.getByRole("link", { name: "Tablas", exact: true }).click();
   await page.getByRole("button", { name: "Inspírame" }).click();
-  await expect(page.getByText(/Acción d66=\d+, Tema d66=\d+/).filter({ visible: true }).first()).toBeVisible();
+  await expect(
+    page
+      .getByText(/Acción d66=\d+, Tema d66=\d+/)
+      .filter({ visible: true })
+      .first(),
+  ).toBeVisible();
 
   // Everything is still there after reloading.
   await page.reload();
@@ -164,7 +173,9 @@ test("rolls own dice in an adventure and keeps track of them", async ({ page }) 
   await expect(dice.getByText("Quedan 52 de 52")).toBeVisible();
   await dice.getByRole("button", { name: "Sacar carta" }).click();
   await dice.getByRole("button", { name: "Apuntar" }).click();
-  await expect(page.locator("[id^=entry-]").getByText(/ de (picas|corazones|diamantes|tréboles)$/)).toBeVisible();
+  await expect(
+    page.locator("[id^=entry-]").getByText(/ de (picas|corazones|diamantes|tréboles)$/),
+  ).toBeVisible();
 
   // Half written, it waits for the way back.
   await composer.fill("A medio escribir");
@@ -239,7 +250,10 @@ test("going back closes an open menu, and an edit can be undone", async ({ page 
 test("an address that isn't a screen leads back to the oracle", async ({ page }) => {
   await page.goto("./#/mapa-perdido");
   await expect(page.getByRole("heading", { name: "Te has salido del mapa" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Contarlo en el formulario" })).toHaveAttribute("href", /tally\.so.*version=/);
+  await expect(page.getByRole("link", { name: "Contarlo en el formulario" })).toHaveAttribute(
+    "href",
+    /tally\.so.*version=/,
+  );
   await page.getByRole("link", { name: "Volver al oráculo" }).click();
   await expect(page.getByLabel("Pregunta para el oráculo")).toBeVisible();
 });
@@ -296,9 +310,15 @@ test("jumps to a session from the index", async ({ page }) => {
       await page.getByRole("button", { name: "Añadir al diario" }).click();
     }
   }
-  const menu = page.getByRole("button", { name: "Sesiones", exact: true }).and(page.locator("[aria-haspopup]"));
+  const menu = page
+    .getByRole("button", { name: "Sesiones", exact: true })
+    .and(page.locator("[aria-haspopup]"));
   if (await menu.isVisible()) await menu.click();
-  await page.getByRole("navigation", { name: "Sesiones" }).getByRole("button", { name: /^La orilla/ }).filter({ visible: true }).click();
+  await page
+    .getByRole("navigation", { name: "Sesiones" })
+    .getByRole("button", { name: /^La orilla/ })
+    .filter({ visible: true })
+    .click();
   // Once the menu's history entry is gone too.
   await page.waitForTimeout(500);
   await expect(page.locator("[id^=entry-]").getByText("La orilla, 1.")).toBeInViewport();
@@ -315,7 +335,10 @@ test("each adventure keeps its own oracle", async ({ page }) => {
   };
   // The game table's oracle: a sheet on phones, a panel on desktop.
   const switcher = async () => {
-    const button = page.getByRole("button", { name: "Cambiar oráculo" }).filter({ visible: true }).first();
+    const button = page
+      .getByRole("button", { name: "Cambiar oráculo" })
+      .filter({ visible: true })
+      .first();
     const opener = page.getByRole("button", { name: "Tirar: oráculo, dados o tablas" });
     await expect(button.or(opener).first()).toBeVisible();
     if (!(await button.isVisible())) await opener.click();
@@ -387,9 +410,14 @@ test("each adventure keeps its own dice and tables at hand", async ({ page }) =>
   await tables.getByRole("button", { name: "Elegir tablas" }).click();
   const tablesDialog = page.getByRole("dialog", { name: "Tablas de esta aventura" });
   await tablesDialog.getByRole("searchbox").fill("Nombre de asentamiento");
-  await tablesDialog.getByRole("button", { name: "Añadir Nombre de asentamiento", exact: true }).first().click();
+  await tablesDialog
+    .getByRole("button", { name: "Añadir Nombre de asentamiento", exact: true })
+    .first()
+    .click();
   await tablesDialog.getByRole("button", { name: "Hecho", exact: true }).click();
-  await expect(tables.getByRole("button", { name: /^Nombre de asentamiento/ }).first()).toBeVisible();
+  await expect(
+    tables.getByRole("button", { name: /^Nombre de asentamiento/ }).first(),
+  ).toBeVisible();
   await expect(tables.getByText("De esta aventura")).toBeVisible();
 
   // Another adventure keeps the usual ones.
@@ -397,5 +425,7 @@ test("each adventure keeps its own dice and tables at hand", async ({ page }) =>
   dice = await tool("Dados", "dice");
   await expect(dice.getByRole("button", { name: "d4", exact: true })).toBeVisible();
   await expect(dice.getByText("Tus favoritos")).toBeVisible();
-  await expect((await tool("Tabla", "table")).getByRole("button", { name: /^Nombre de asentamiento/ })).toHaveCount(0);
+  await expect(
+    (await tool("Tabla", "table")).getByRole("button", { name: /^Nombre de asentamiento/ }),
+  ).toHaveCount(0);
 });

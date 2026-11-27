@@ -71,14 +71,30 @@ async function readReply(response: Response): Promise<RelayResult> {
   let parts: Uint8Array[] = [];
   try {
     const { header, payload: rest } = decodeFrame(bytes);
-    if (!header || typeof header !== "object" || typeof (header as { ok?: unknown }).ok !== "boolean") throw new Error();
+    if (
+      !header ||
+      typeof header !== "object" ||
+      typeof (header as { ok?: unknown }).ok !== "boolean"
+    )
+      throw new Error();
     reply = header as SyncReply;
     if (reply.ok && reply.op === "sync") {
-      parts = splitParts(rest, [...(reply.snapshot !== null ? [reply.snapshot] : []), ...reply.ops.map((o) => o.size)]);
+      parts = splitParts(rest, [
+        ...(reply.snapshot !== null ? [reply.snapshot] : []),
+        ...reply.ops.map((o) => o.size),
+      ]);
     }
   } catch {
-    return { ok: false, error: response.status === 429 || response.status >= 500 ? "unavailable" : "bad-reply" };
+    return {
+      ok: false,
+      error: response.status === 429 || response.status >= 500 ? "unavailable" : "bad-reply",
+    };
   }
-  if (!reply.ok) return { ok: false, error: reply.error, ...(reply.retryAfter ? { retryAfter: reply.retryAfter } : {}) };
+  if (!reply.ok)
+    return {
+      ok: false,
+      error: reply.error,
+      ...(reply.retryAfter ? { retryAfter: reply.retryAfter } : {}),
+    };
   return { ok: true, reply, parts };
 }

@@ -111,7 +111,11 @@ export async function loadCustomTables(t: Dictionary): Promise<CustomTable[]> {
 }
 
 /** Writes only what changed between the two lists. */
-export async function saveCustomTableChanges(t: Dictionary, prev: CustomTable[], next: CustomTable[]): Promise<void> {
+export async function saveCustomTableChanges(
+  t: Dictionary,
+  prev: CustomTable[],
+  next: CustomTable[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await tableStore.save(diffById(prev, next));

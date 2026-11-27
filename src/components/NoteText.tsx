@@ -23,7 +23,10 @@ function drawInline(nodes: InlineNode[]): ReactNode[] {
         return <Fragment key={i}>{node.text}</Fragment>;
       case "code":
         return (
-          <code key={i} className="rounded border border-ink-border bg-ink-900/70 px-1 font-mono text-[0.85em]">
+          <code
+            key={i}
+            className="rounded border border-ink-border bg-ink-900/70 px-1 font-mono text-[0.85em]"
+          >
             {node.text}
           </code>
         );
@@ -82,7 +85,10 @@ export function NoteText({ text, onToggle }: { text: string; onToggle: (line: nu
             }}
             className={`${INDENT[line.depth]} -mx-1 flex items-start gap-2 rounded-md px-1 py-0.5 text-left transition hover:bg-ink-700/50`}
           >
-            <Icon size={16} className={`mt-0.5 shrink-0 ${line.checked ? "text-gold" : "text-parchment-dim"}`} />
+            <Icon
+              size={16}
+              className={`mt-0.5 shrink-0 ${line.checked ? "text-gold" : "text-parchment-dim"}`}
+            />
             <span className={line.checked ? "text-parchment-dim line-through" : ""}>
               <InlineText text={line.text} />
             </span>

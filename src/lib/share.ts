@@ -32,7 +32,9 @@ export async function shareTextFile(
   title: string,
   type = "text/markdown",
 ): Promise<ShareOutcome> {
-  const asText = new File([content], filename.replace(/\.(md|json)$/, ".txt"), { type: "text/plain" });
+  const asText = new File([content], filename.replace(/\.(md|json)$/, ".txt"), {
+    type: "text/plain",
+  });
   const candidates = isChromium() ? [asText] : [new File([content], filename, { type }), asText];
   // As a last resort, the text itself instead of a file.
   const file = candidates.find((f) => navigator.canShare?.({ files: [f] }));
@@ -58,4 +60,3 @@ export async function copyText(text: string): Promise<boolean> {
     return false;
   }
 }
-

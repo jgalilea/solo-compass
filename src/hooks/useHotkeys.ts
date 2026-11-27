@@ -3,16 +3,23 @@ import { useEffect, useRef } from "react";
 /** Key (`e.key`, lowercased if it's a character) → action. */
 export type HotkeyMap = Record<string, () => void>;
 
-const FOCUSABLE = "input, textarea, select, button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
+const FOCUSABLE =
+  "input, textarea, select, button:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
 /** If focus is in a text field, keys are text, not shortcuts. */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+  if (
+    target.isContentEditable ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  ) {
     return true;
   }
   if (!(target instanceof HTMLInputElement)) return false;
-  return !["button", "checkbox", "radio", "range", "submit", "reset", "file", "color"].includes(target.type);
+  return !["button", "checkbox", "radio", "range", "submit", "reset", "file", "color"].includes(
+    target.type,
+  );
 }
 
 /**
@@ -29,7 +36,8 @@ export function useHotkeys(map: HotkeyMap) {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.defaultPrevented || e.repeat || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.defaultPrevented || e.repeat || e.isComposing || e.ctrlKey || e.metaKey || e.altKey)
+        return;
       if (isTypingTarget(e.target) || document.querySelector('[aria-modal="true"]')) return;
       const action = mapRef.current[e.key.length === 1 ? e.key.toLowerCase() : e.key];
       if (!action) return;

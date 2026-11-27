@@ -3,7 +3,13 @@ import type { JournalEntry } from "./lonelog";
 import { entryType, searchEntries } from "./journalSearch";
 import { highlightParts, matchesAllWords } from "./text";
 
-function entry(id: string, kind: JournalEntry["kind"], text: string, timestamp: number, adventureId = "a"): JournalEntry {
+function entry(
+  id: string,
+  kind: JournalEntry["kind"],
+  text: string,
+  timestamp: number,
+  adventureId = "a",
+): JournalEntry {
   return { id, adventureId, kind, text, timestamp };
 }
 
@@ -41,7 +47,11 @@ describe("journal search", () => {
       { ...entry("1762717200000-0-abc", "session", "Sesión 2", written + 3), date: "" },
       entry("1762717200000-1-abc", "note", "Bram importado", written + 4),
     ];
-    expect(searchEntries(entries, "bram").map((m) => m.day)).toEqual(["2026-11-10", "2025-09-03", null]);
+    expect(searchEntries(entries, "bram").map((m) => m.day)).toEqual([
+      "2026-11-10",
+      "2025-09-03",
+      null,
+    ]);
   });
 
   it("keeps to one type of entry, all of them with no query", () => {

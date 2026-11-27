@@ -20,18 +20,27 @@ export function OracleVerdict({ roll }: { roll: Verdict }) {
   const style = ANSWER_STYLE[roll.answer];
   return (
     <div className="text-center">
-      <div className={`break-words font-display font-semibold ${style.sizeClass} ${style.className}`}>{t.answer[roll.answer]}</div>
+      <div
+        className={`break-words font-display font-semibold ${style.sizeClass} ${style.className}`}
+      >
+        {t.answer[roll.answer]}
+      </div>
       {roll.qualifier && (
-        <div className={`mt-1 text-lg font-medium ${roll.qualifier === "y" ? "text-yes" : "text-no"}`}>
+        <div
+          className={`mt-1 text-lg font-medium ${roll.qualifier === "y" ? "text-yes" : "text-no"}`}
+        >
           …{t.qualifier[roll.qualifier]}.
         </div>
       )}
       {roll.answer === "contradiccion" && (
-        <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">{t.oracle.contradictionExplanation}</p>
+        <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
+          {t.oracle.contradictionExplanation}
+        </p>
       )}
       {roll.special === "match" && (
         <p className="mx-auto mt-3 max-w-sm text-sm text-parchment-dim">
-          <span className="font-semibold text-contradiction">{t.oracle.matchLabel}.</span> {t.oracle.matchExplanation}
+          <span className="font-semibold text-contradiction">{t.oracle.matchLabel}.</span>{" "}
+          {t.oracle.matchExplanation}
         </p>
       )}
       {roll.twist && !roll.twist.happened && (
@@ -41,8 +50,12 @@ export function OracleVerdict({ roll }: { roll: Verdict }) {
       )}
       {roll.twist?.happened && (
         <div className="mx-auto mt-4 max-w-sm rounded-2xl border border-contradiction/40 bg-contradiction/10 px-4 py-3">
-          <p className="font-display text-lg font-semibold text-contradiction">{t.oracle.twistLabel}</p>
-          {roll.twist.result && <p className="mt-1 text-base text-parchment">{roll.twist.result}</p>}
+          <p className="font-display text-lg font-semibold text-contradiction">
+            {t.oracle.twistLabel}
+          </p>
+          {roll.twist.result && (
+            <p className="mt-1 text-base text-parchment">{roll.twist.result}</p>
+          )}
           <p className="mt-1 text-xs text-parchment-dim">{t.oracle.twistExplanation}</p>
         </div>
       )}
@@ -66,7 +79,13 @@ const TALLEST: Record<OracleId, Verdict[]> = {
  * comes up (and before the first): the tallest ones are laid out unseen
  * behind what's shown.
  */
-export function OracleVerdictSpace({ oracle, children }: { oracle: OracleId; children: ReactNode }) {
+export function OracleVerdictSpace({
+  oracle,
+  children,
+}: {
+  oracle: OracleId;
+  children: ReactNode;
+}) {
   return (
     <div className="grid w-full">
       {TALLEST[oracle].map((roll, i) => (

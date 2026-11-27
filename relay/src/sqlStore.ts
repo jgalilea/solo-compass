@@ -6,8 +6,10 @@ import type { BoxMeta, BoxStore } from "./box.ts";
  */
 const PART_BYTES = Math.floor(1.8 * 1024 * 1024);
 
-const CREATE_CHANGES = "CREATE TABLE IF NOT EXISTS changes (seq INTEGER PRIMARY KEY, at INTEGER NOT NULL, data BLOB NOT NULL)";
-const CREATE_SNAPSHOT = "CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NULL)";
+const CREATE_CHANGES =
+  "CREATE TABLE IF NOT EXISTS changes (seq INTEGER PRIMARY KEY, at INTEGER NOT NULL, data BLOB NOT NULL)";
+const CREATE_SNAPSHOT =
+  "CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NULL)";
 
 function toBuffer(data: Uint8Array): ArrayBuffer {
   return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
@@ -56,7 +58,10 @@ export class SqlBoxStore implements BoxStore {
 
   changesAfter(seq: number): { seq: number; data: Uint8Array }[] {
     return this.sql
-      .exec<{ seq: number; data: ArrayBuffer }>("SELECT seq, data FROM changes WHERE seq > ? ORDER BY seq", seq)
+      .exec<{ seq: number; data: ArrayBuffer }>(
+        "SELECT seq, data FROM changes WHERE seq > ? ORDER BY seq",
+        seq,
+      )
       .toArray()
       .map((row) => ({ seq: row.seq, data: new Uint8Array(row.data) }));
   }

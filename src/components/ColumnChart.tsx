@@ -75,7 +75,11 @@ export function ColumnChart({
         <div aria-hidden className="relative h-24">
           <span className="invisible">{top}</span>
           {ticks.map((tick) => (
-            <span key={tick} className="absolute right-0 translate-y-1/2" style={{ bottom: at(tick) }}>
+            <span
+              key={tick}
+              className="absolute right-0 translate-y-1/2"
+              style={{ bottom: at(tick) }}
+            >
               {tick}
             </span>
           ))}
@@ -89,7 +93,11 @@ export function ColumnChart({
           className="relative flex h-24 touch-pan-y border-b border-ink-border"
         >
           {ticks.slice(1).map((tick) => (
-            <span key={tick} className="pointer-events-none absolute inset-x-0 border-t border-ink-border/50" style={{ bottom: at(tick) }} />
+            <span
+              key={tick}
+              className="pointer-events-none absolute inset-x-0 border-t border-ink-border/50"
+              style={{ bottom: at(tick) }}
+            />
           ))}
           {bars.map((b, i) => (
             <button
@@ -112,7 +120,10 @@ export function ColumnChart({
           ))}
           {/* Edged in the surface, to show over the bars too. */}
           {line !== undefined && (
-            <span className="pointer-events-none absolute inset-x-0 h-px bg-parchment ring-1 ring-ink-900" style={{ bottom: at(line.at) }} />
+            <span
+              className="pointer-events-none absolute inset-x-0 h-px bg-parchment ring-1 ring-ink-900"
+              style={{ bottom: at(line.at) }}
+            />
           )}
         </div>
         <div aria-hidden className="col-start-2 mt-1.5 flex">
@@ -132,7 +143,10 @@ export function ColumnChart({
           {line.label}
         </p>
       )}
-      <p aria-hidden className={`min-h-[2lh] text-center md:min-h-[1lh] text-xs ${detail ? "font-medium text-parchment" : "text-parchment-faint"}`}>
+      <p
+        aria-hidden
+        className={`min-h-[2lh] text-center md:min-h-[1lh] text-xs ${detail ? "font-medium text-parchment" : "text-parchment-faint"}`}
+      >
         {detail ?? t.journal.stats.chartHint}
       </p>
     </div>

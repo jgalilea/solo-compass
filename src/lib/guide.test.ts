@@ -7,7 +7,13 @@ import { parseMarkdownToEntries, type JournalEntry } from "./lonelog";
 import { noteForm, splitActor, splitRollSymbol } from "./lonelogLines";
 import { buildCast, foeIsOut, threadStatus } from "./lonelogTags";
 
-const note = (text: string, i: number): JournalEntry => ({ id: `e${i}`, adventureId: "a", kind: "note", text, timestamp: i });
+const note = (text: string, i: number): JournalEntry => ({
+  id: `e${i}`,
+  adventureId: "a",
+  kind: "note",
+  text,
+  timestamp: i,
+});
 
 describe("guide store", () => {
   it("opens and closes, telling whoever listens", () => {
@@ -30,7 +36,20 @@ for (const locale of LOCALES) {
   describe(`quick guide (${locale})`, () => {
     it("reads every notation example as it says", () => {
       const read = (code: string) => parseMarkdownToEntries(code, "a", 0)[0];
-      const [action, question, roll, consequence, session, scene, actor, dialogue, meta, , table, card] = g.notation.map((r) => r.code);
+      const [
+        action,
+        question,
+        roll,
+        consequence,
+        session,
+        scene,
+        actor,
+        dialogue,
+        meta,
+        ,
+        table,
+        card,
+      ] = g.notation.map((r) => r.code);
       expect(read(action).kind).toBe("action");
       expect(read(question).kind).toBe("question");
       expect(read(roll).kind).toBe("roll");
@@ -40,20 +59,40 @@ for (const locale of LOCALES) {
       expect(splitActor(read(actor).text).actor).toBe("Odile");
       expect(noteForm(read(dialogue).text).form).toBe("dialogue");
       expect(noteForm(read(meta).text).form).toBe("meta");
-      expect(parseMarkdownToEntries(g.notation.find((r) => r.code.startsWith("S4 "))!.code, "a", 0).map((e) => e.kind)).toEqual([
-        "scene", "action", "roll", "consequence",
-      ]);
+      expect(
+        parseMarkdownToEntries(g.notation.find((r) => r.code.startsWith("S4 "))!.code, "a", 0).map(
+          (e) => e.kind,
+        ),
+      ).toEqual(["scene", "action", "roll", "consequence"]);
       expect(splitRollSymbol(read(table).text).symbol).toBe("tbl");
       expect(read(card).kind).toBe("roll");
       expect(isCardDraw(read(card).text)).toBe(true);
       // The narrative block and the fight, written out in full.
       expect(noteForm("\\---\nA letter\n---\\").form).toBe("excerpt");
-      expect(["[COMBAT]", "Rd1 Strike", "[/COMBAT]"].map((t) => noteForm(t).form)).toEqual(["block", "round", "block"]);
+      expect(["[COMBAT]", "Rd1 Strike", "[/COMBAT]"].map((t) => noteForm(t).form)).toEqual([
+        "block",
+        "round",
+        "block",
+      ]);
     });
 
     it("makes one notebook element of each tag", () => {
       const kinds = g.tags.map((r, i) => buildCast([note(r.code, i)]).map((c) => c.kind));
-      expect(kinds).toEqual([["pc"], ["npc"], ["place"], ["npc"], ["thread"], ["clock"], ["timer"], ["room"], ["foe"], ["event"], ["item"], ["wealth"], ["deck"]]);
+      expect(kinds).toEqual([
+        ["pc"],
+        ["npc"],
+        ["place"],
+        ["npc"],
+        ["thread"],
+        ["clock"],
+        ["timer"],
+        ["room"],
+        ["foe"],
+        ["event"],
+        ["item"],
+        ["wealth"],
+        ["deck"],
+      ]);
     });
 
     it("changes their state as the updates say", () => {

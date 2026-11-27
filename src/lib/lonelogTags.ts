@@ -94,7 +94,9 @@ const PREFIXES = "PC|N|L|Thread|Clock|Track|Timer|E|R|F|Inv|Wealth|Deck";
 
 /** A tag's kind; an `[E:…]` with a counter is a clock, as it was written before 1.7. */
 function kindOf(prefix: string, name: string): CastKind {
-  return prefix === "E" && /\d\s*\/\s*\d+$|\S\s*[+-]\d+$/.test(name) ? "clock" : KIND_OF_PREFIX[prefix];
+  return prefix === "E" && /\d\s*\/\s*\d+$|\S\s*[+-]\d+$/.test(name)
+    ? "clock"
+    : KIND_OF_PREFIX[prefix];
 }
 
 /** A clock's, track's or timer's number: "5/12" sets it, "+1" changes it. */
@@ -124,7 +126,10 @@ export type TextPart = { text: string; tag?: undefined } | { text: string; tag: 
 // "[", optional "#", the type, ":", the name (one line), then optional
 // "|"-separated details, which may span lines (multi-line tags, §4.1.8;
 // on paper their first line needs no "|").
-const TAG = new RegExp(`\\[(#?)(${PREFIXES}):[ \\t]*([^\\]|\\n]*?)[ \\t]*((?:\\s*\\|[^\\]]*|\\n[^\\]]*)?)\\]`, "g");
+const TAG = new RegExp(
+  `\\[(#?)(${PREFIXES}):[ \\t]*([^\\]|\\n]*?)[ \\t]*((?:\\s*\\|[^\\]]*|\\n[^\\]]*)?)\\]`,
+  "g",
+);
 const OPEN_BLOCK = new RegExp(`\\[(?:${PREFIXES}):[^\\]]*$`);
 
 /** Whether a text ends inside a tag (a multi-line one whose "]" is on its own line). */
@@ -138,7 +143,11 @@ const PROGRESS_NAME = /^(.*?\S)\s*(?:([+-])\s*(\d+)|(\d+)(?:\s*\/\s*(\d+))?)$/;
 function readProgress(raw: string): { name: string; progress?: Progress } {
   const m = raw.match(PROGRESS_NAME);
   if (!m) return { name: raw };
-  if (m[2]) return { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } };
+  if (m[2])
+    return {
+      name: m[1],
+      progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true },
+    };
   return { name: m[1], progress: { value: Number(m[4]), ...(m[5] ? { max: Number(m[5]) } : {}) } };
 }
 
@@ -161,11 +170,16 @@ const RELATIVE_NAME = /^(.*?[^\s\d])\s*([+-])\s*(\d+)$/;
 const GROUP_NAME = /^(.*?\S)\s*[×x]\s*(\d+)$/;
 
 /** The name and the number in it, each kind as the spec writes it. */
-function readName(kind: CastKind, raw: string): { name: string; progress?: Progress; group?: string } {
+function readName(
+  kind: CastKind,
+  raw: string,
+): { name: string; progress?: Progress; group?: string } {
   if (PROGRESS_KINDS.has(kind) || kind === "wealth") return readProgress(toLatest(raw));
   if (kind === "item") {
     const m = raw.match(RELATIVE_NAME);
-    return m ? { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } } : { name: raw };
+    return m
+      ? { name: m[1], progress: { value: Number(m[3]) * (m[2] === "-" ? -1 : 1), relative: true } }
+      : { name: raw };
   }
   if (kind === "foe" || (kind === "npc" && raw.includes("×"))) {
     const m = raw.match(GROUP_NAME);
@@ -191,7 +205,8 @@ export function splitTags(text: string): TextPart[] {
         .map((d) => d.replace(/\s+/g, " ").trim())
         .filter(Boolean),
     ];
-    const owned = kind === "wealth" && !progress && details.some((d) => readProgress(toLatest(d)).progress);
+    const owned =
+      kind === "wealth" && !progress && details.some((d) => readProgress(toLatest(d)).progress);
     if (match.index > last) parts.push({ text: text.slice(last, match.index) });
     parts.push({
       text: match[0],
@@ -223,7 +238,9 @@ export function purseKey(owner: string, currency: string): string {
 
 /** The element a tag names (a purse's, its first currency). */
 export function tagKey(tag: TagRef): string {
-  return tag.owned ? purseKey(tag.name, readProgress(toLatest(tag.details[0])).name) : castKey(tag.kind, tag.name);
+  return tag.owned
+    ? purseKey(tag.name, readProgress(toLatest(tag.details[0])).name)
+    : castKey(tag.kind, tag.name);
 }
 
 /** The element with this key, also by what it was called before its purse had an owner, or by the owner alone. */
@@ -259,13 +276,30 @@ export function combineSteps(previous: string, next: string): string | null {
 }
 
 /** A clock, track or timer with its number: `[Clock:Ritual 6/12]`, `[Timer:Dawn 2]`. */
-export function formatProgressTag(kind: CastKind, name: string, value: number, max?: number): string {
-  return formatTag(kind, `${name.replace(/[[\]|]/g, " ").trim()} ${value}${max !== undefined ? `/${max}` : ""}`);
+export function formatProgressTag(
+  kind: CastKind,
+  name: string,
+  value: number,
+  max?: number,
+): string {
+  return formatTag(
+    kind,
+    `${name.replace(/[[\]|]/g, " ").trim()} ${value}${max !== undefined ? `/${max}` : ""}`,
+  );
 }
 
 /** Writes a tag the way the spec does: `[N:Name|a|b]` or `[#N:Name]`. */
-export function formatTag(kind: CastKind, name: string, details: string[] = [], reference = false): string {
-  const clean = (s: string) => s.replace(/[[\]|]/g, " ").replace(/\s+/g, " ").trim();
+export function formatTag(
+  kind: CastKind,
+  name: string,
+  details: string[] = [],
+  reference = false,
+): string {
+  const clean = (s: string) =>
+    s
+      .replace(/[[\]|]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   const rest = details.map(clean).filter(Boolean);
   return `[${reference ? "#" : ""}${PREFIX[kind]}:${clean(name)}${rest.map((d) => `|${d}`).join("")}]`;
 }
@@ -282,7 +316,11 @@ const REPLACE = /^(.+?)\s*(?:→|->|>)\s*(.+)$/;
 const RAN_OUT = /^(.+\S)\s+(?:depleted|agotad[oa]s?|gastad[oa]s?)$/i;
 
 const same = (a: string, b: string) => normalizeForSearch(a) === normalizeForSearch(b);
-const listOf = (values: string) => values.split(",").map((x) => x.trim()).filter(Boolean);
+const listOf = (values: string) =>
+  values
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 function statKey(tag: string): string | null {
   const m = tag.match(STAT);
@@ -309,7 +347,9 @@ const KNOWN_CATEGORIES: Record<string, keyof CategoryWords> = {
 /** A detail as it's shown: an add-on's category, in the player's language ("owner:Nela" → "dueño:Nela"). */
 export function showDetail(detail: string, words: CategoryWords): string {
   const category = readCategory(detail);
-  return category && Object.hasOwn(words, category.key) ? `${words[category.key as keyof CategoryWords]}:${category.values}` : detail;
+  return category && Object.hasOwn(words, category.key)
+    ? `${words[category.key as keyof CategoryWords]}:${category.values}`
+    : detail;
 }
 
 /** A category's name and what it holds; null for any other value. */
@@ -342,7 +382,8 @@ function updateList(current: string[], update: string): string[] {
       if (index >= 0) list.splice(index, 1, swap[2]);
       else if (list.length <= 1) list = [swap[2]];
       else add(swap[2]);
-    } else if (isChange(entry) && entry.startsWith("-")) list = list.filter((x) => !same(x, entry.slice(1).trim()));
+    } else if (isChange(entry) && entry.startsWith("-"))
+      list = list.filter((x) => !same(x, entry.slice(1).trim()));
     else add(isChange(entry) ? entry.slice(1).trim() : entry);
   }
   return list;
@@ -398,7 +439,9 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
       const labelled = replace[1].match(/^(.*\s)(\S+)$/);
       const label = labelled && !/\s/.test(replace[2].trim()) ? labelled[1] : null;
       const next = label ? `${label}${replace[2]}` : replace[2];
-      const index = tags.findIndex((t) => same(t, replace[1]) || (!!label && same(t.slice(0, label.length), label)));
+      const index = tags.findIndex(
+        (t) => same(t, replace[1]) || (!!label && same(t.slice(0, label.length), label)),
+      );
       // Never twice: "wary>ally" when it's already an ally.
       const existing = tags.findIndex((t) => same(t, next));
       if (index >= 0) {
@@ -429,7 +472,9 @@ export function applyTagUpdates(current: string[], updates: string[]): string[] 
     }
     const out = value.match(RAN_OUT);
     if (out) {
-      const index = tags.findIndex((t) => /\s(?:d?\d\S*|\d+)$/.test(t) && same(t.replace(/\s+\S+$/, ""), out[1]));
+      const index = tags.findIndex(
+        (t) => /\s(?:d?\d\S*|\d+)$/.test(t) && same(t.replace(/\s+\S+$/, ""), out[1]),
+      );
       if (index >= 0) {
         tags[index] = value;
         continue;
@@ -501,7 +546,19 @@ export function threadStatus(member: CastMember): ThreadStatus {
 }
 
 // A foe's range band (combat add-on §3.3), in English and Spanish: one at a time.
-const RANGES = new Set(["close", "near", "medium", "far", "engaged", "cerca", "media", "medio", "lejos", "trabado", "cuerpo a cuerpo"]);
+const RANGES = new Set([
+  "close",
+  "near",
+  "medium",
+  "far",
+  "engaged",
+  "cerca",
+  "media",
+  "medio",
+  "lejos",
+  "trabado",
+  "cuerpo a cuerpo",
+]);
 const isRange = (tag: string) => RANGES.has(normalizeForSearch(tag.trim()));
 const isPosition = (tag: string) => /^(pos|zone|zona)\s*:/i.test(tag);
 // "depleted", "agotado": an item or supply that's gone.
@@ -535,7 +592,9 @@ const newRoom = (): RoomState => ({ status: [], rest: [], exits: new Map() });
 function exitKey(exit: string): string {
   // "N:R5(secret)", "N R2", "E R7 secret", "R4".
   const direction = exit.match(/^([^\s:]+)(?::|\s+(?=R?\d))/);
-  return normalizeForSearch(direction ? direction[1] : exit.replace(/\s*\(.*\)$/, "").split(/\s/)[0]);
+  return normalizeForSearch(
+    direction ? direction[1] : exit.replace(/\s*\(.*\)$/, "").split(/\s/)[0],
+  );
 }
 
 function applyRoomUpdates(room: RoomState, details: string[]): void {
@@ -563,8 +622,10 @@ function applyRoomUpdates(room: RoomState, details: string[]): void {
       room.rest = applyTagUpdates(room.rest, [detail]);
     } else if (/^[+-]\S/.test(detail)) {
       const value = detail.slice(1).trim();
-      if (detail.startsWith("-") && room.description && same(room.description, value)) room.description = undefined;
-      else if (room.labelled && detail.startsWith("+") && !isRoomStatus(value)) room.description = value;
+      if (detail.startsWith("-") && room.description && same(room.description, value))
+        room.description = undefined;
+      else if (room.labelled && detail.startsWith("+") && !isRoomStatus(value))
+        room.description = value;
       else room.status = updateList(room.status, detail);
     } else if (isRoomStatus(detail) || (!room.labelled && plain === 0)) {
       // "cleared, looted": a status can be several at once.
@@ -634,7 +695,12 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
     return member;
   }
 
-  function memberFor(kind: CastKind, name: string, entry: JournalEntry, key = castKey(kind, name)): CastMember {
+  function memberFor(
+    kind: CastKind,
+    name: string,
+    entry: JournalEntry,
+    key = castKey(kind, name),
+  ): CastMember {
     let member = byKey.get(key);
     if (!member) {
       member = { key, kind, name, tags: [], mentions: [], lastSeen: entry.timestamp };
@@ -668,8 +734,16 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
   function applyProgress(member: CastMember, progress: Progress) {
     const before = member.progress;
     member.progress = progress.relative
-      ? { value: (before?.value ?? 0) + progress.value, ...(before?.max !== undefined ? { max: before.max } : {}) }
-      : { value: progress.value, ...((progress.max ?? before?.max) !== undefined ? { max: progress.max ?? before!.max } : {}) };
+      ? {
+          value: (before?.value ?? 0) + progress.value,
+          ...(before?.max !== undefined ? { max: before.max } : {}),
+        }
+      : {
+          value: progress.value,
+          ...((progress.max ?? before?.max) !== undefined
+            ? { max: progress.max ?? before!.max }
+            : {}),
+        };
   }
 
   for (const entry of sorted) {
@@ -681,17 +755,26 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
       if (reference) {
         // It changes nothing. `[#E:Alarm]` may be a clock from before 1.7,
         // and `[#Wealth:Kael]` everything in a purse.
-        const owned = kind === "wealth" ? money().filter((m) => m.owner && same(m.owner, name)) : [];
+        const owned =
+          kind === "wealth" ? money().filter((m) => m.owner && same(m.owner, name)) : [];
         if (owned.length) for (const member of owned) mention(member, entry);
         else if (kind === "wealth") currency(name, entry);
-        else if (kind === "event" && !byKey.has(castKey("event", name)) && byKey.has(castKey("clock", name))) memberFor("clock", name, entry);
+        else if (
+          kind === "event" &&
+          !byKey.has(castKey("event", name)) &&
+          byKey.has(castKey("clock", name))
+        )
+          memberFor("clock", name, entry);
         else memberFor(kind, name, entry);
         continue;
       }
 
       if (kind === "wealth") {
         // Each currency counts on its own: "Gold 45|Silver 12" is two.
-        for (const { name: coin, progress: amount } of [...(part.tag.owned ? [] : [{ name, progress }]), ...details.map((d) => readProgress(toLatest(d)))]) {
+        for (const { name: coin, progress: amount } of [
+          ...(part.tag.owned ? [] : [{ name, progress }]),
+          ...details.map((d) => readProgress(toLatest(d))),
+        ]) {
           if (part.tag.owned && !amount) continue;
           const member = part.tag.owned ? purse(name, coin, entry) : currency(coin, entry);
           if (amount) applyProgress(member, amount);
@@ -701,7 +784,8 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
 
       // "[E:Alarm]" or "[E:Alarm 3]" of one already a clock (before 1.7).
       const counted = kind === "event" ? readProgress(name) : null;
-      const clock = counted && !byKey.has(castKey("event", name)) && byKey.get(castKey("clock", counted.name));
+      const clock =
+        counted && !byKey.has(castKey("event", name)) && byKey.get(castKey("clock", counted.name));
       if (clock) {
         mention(clock, entry);
         if (counted.progress) applyProgress(clock, counted.progress);
@@ -751,7 +835,8 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
         }
       }
       if (kind === "foe") {
-        if (details.some((d) => isRange(d))) current = current.filter((t) => !isRange(t) && !isPosition(t));
+        if (details.some((d) => isRange(d)))
+          current = current.filter((t) => !isRange(t) && !isPosition(t));
         else if (details.some(isPosition)) current = current.filter((t) => !isRange(t));
       }
       member.tags = applyTagUpdates(current, updates);
@@ -763,7 +848,11 @@ export function buildCast(entries: JournalEntry[]): CastMember[] {
 
 /** A foe that's out of the fight ("dead", "fled"…): shown dimmed. */
 export function foeIsOut(member: CastMember): boolean {
-  return member.tags.some((t) => /^(?:(?:status|estado)\s*:\s*)?(×0|dead|fled|muert[oa]s?|huid[oa]s?|derrotad[oa]s?|defeated)$/i.test(t.trim()));
+  return member.tags.some((t) =>
+    /^(?:(?:status|estado)\s*:\s*)?(×0|dead|fled|muert[oa]s?|huid[oa]s?|derrotad[oa]s?|defeated)$/i.test(
+      t.trim(),
+    ),
+  );
 }
 
 /** "5/12", "3", "+1". */
@@ -771,14 +860,22 @@ export function foeIsOut(member: CastMember): boolean {
  * A clock or a track that's full, or a timer that's run out: shown
  * apart (colour and a word), quietly, where its number is.
  */
-export function progressDone(kind: CastKind, progress: Progress | { value: number; max?: number } | undefined): boolean {
+export function progressDone(
+  kind: CastKind,
+  progress: Progress | { value: number; max?: number } | undefined,
+): boolean {
   if (!progress || ("relative" in progress && progress.relative)) return false;
   if (kind === "timer") return progress.value <= 0;
-  return (kind === "clock" || kind === "track") && progress.max !== undefined && progress.value >= progress.max;
+  return (
+    (kind === "clock" || kind === "track") &&
+    progress.max !== undefined &&
+    progress.value >= progress.max
+  );
 }
 
 export function progressText(progress: Progress | { value: number; max?: number }): string {
-  if ("relative" in progress && progress.relative) return `${progress.value >= 0 ? "+" : ""}${progress.value}`;
+  if ("relative" in progress && progress.relative)
+    return `${progress.value >= 0 ? "+" : ""}${progress.value}`;
   return `${progress.value}${progress.max !== undefined ? `/${progress.max}` : ""}`;
 }
 
@@ -788,7 +885,13 @@ export function tagsToPlainText(text: string): string {
     .map((part) => {
       if (!part.tag) return part.text;
       const { name, progress, kind, details, owned } = part.tag;
-      const amount = progress ? progressText(progress) : owned ? details.join(", ") : kind === "item" ? (details.find((d) => COUNT.test(d)) ?? "") : "";
+      const amount = progress
+        ? progressText(progress)
+        : owned
+          ? details.join(", ")
+          : kind === "item"
+            ? (details.find((d) => COUNT.test(d)) ?? "")
+            : "";
       return amount ? `${name} ${amount}` : name;
     })
     .join("");
@@ -804,7 +907,12 @@ export function formatReference(member: Pick<CastMember, "kind" | "name" | "owne
  * spec writes it: `[Inv:Torch|×-1]`, `[Wealth:Kael|Gold+15]`. Money with
  * no owner known keeps the form from before 1.7 (`[Wealth:Gold+15]`).
  */
-export function formatQuantity(kind: CastKind, name: string, amount: string, owner?: string): string {
+export function formatQuantity(
+  kind: CastKind,
+  name: string,
+  amount: string,
+  owner?: string,
+): string {
   if (kind !== "wealth") return formatTag(kind, name, [`×${amount}`]);
   const currency = `${name.replace(/[[\]|]/g, " ").trim()}${/^[+-]/.test(amount) ? "" : " "}${amount}`;
   return owner ? formatTag("wealth", owner, [currency]) : formatTag("wealth", currency);
@@ -829,7 +937,9 @@ export interface TagQuery {
 // Any case while typing ("[clock:"): picking an option writes the
 // notation's own ("[Clock:…]").
 const OPEN_TAG = new RegExp(`\\[(#?)(?:(${PREFIXES}):)?([^[\\]|\\n]*)$`, "i");
-const KIND_OF_TYPED_PREFIX = new Map(Object.entries(KIND_OF_PREFIX).map(([p, kind]) => [p.toLowerCase(), kind]));
+const KIND_OF_TYPED_PREFIX = new Map(
+  Object.entries(KIND_OF_PREFIX).map(([p, kind]) => [p.toLowerCase(), kind]),
+);
 
 /**
  * The tag being typed just before the caret, for the composer's
@@ -842,7 +952,11 @@ export function findTagQuery(beforeCaret: string): TagQuery | null {
   if (!match) return null;
   const text = match[3];
   if ((!match[2] && text.includes(":")) || /^\s/.test(text) || text.length > 40) return null;
-  return { start: match.index!, kind: match[2] ? KIND_OF_TYPED_PREFIX.get(match[2].toLowerCase()) : undefined, text };
+  return {
+    start: match.index!,
+    kind: match[2] ? KIND_OF_TYPED_PREFIX.get(match[2].toLowerCase()) : undefined,
+    text,
+  };
 }
 
 /**
@@ -851,9 +965,15 @@ export function findTagQuery(beforeCaret: string): TagQuery | null {
  * which stays as it is (other tools read it), offered like a tag.
  */
 export function findActorQuery(beforeCaret: string, context: "action" | "note"): TagQuery | null {
-  const match = beforeCaret.match(context === "action" ? /^\(([^()\n]{0,40})$/ : /^N \(([^()\n]{0,40})$/);
+  const match = beforeCaret.match(
+    context === "action" ? /^\(([^()\n]{0,40})$/ : /^N \(([^()\n]{0,40})$/,
+  );
   if (!match || /^\s/.test(match[1])) return null;
-  return { start: beforeCaret.length - match[1].length, text: match[1], actor: context === "action" ? "action" : "dialogue" };
+  return {
+    start: beforeCaret.length - match[1].length,
+    text: match[1],
+    actor: context === "action" ? "action" : "dialogue",
+  };
 }
 
 /** Characters who can act or speak: NPCs and PCs. */
@@ -886,7 +1006,21 @@ export type TagOption = { member: CastMember; recent?: boolean } | { kind: CastK
 /** How many of the last named go first in the "[" list. */
 const RECENT = 3;
 /** Every kind a new tag can be, in the order "[" offers them. */
-const NEW_KINDS: CastKind[] = ["npc", "place", "pc", "thread", "clock", "track", "timer", "event", "room", "foe", "item", "wealth", "deck"];
+const NEW_KINDS: CastKind[] = [
+  "npc",
+  "place",
+  "pc",
+  "thread",
+  "clock",
+  "track",
+  "timer",
+  "event",
+  "room",
+  "foe",
+  "item",
+  "wealth",
+  "deck",
+];
 
 /**
  * What "[" offers: the cast members that fit what's typed, in
@@ -909,7 +1043,10 @@ export function tagOptions(cast: CastMember[], query: TagQuery): TagOption[] {
   const exists = found.some((m) => normalizeForSearch(m.name) === normalizeForSearch(name));
   // Someone not in the notebook just gets their name written.
   const kinds = query.actor ? ["npc" as const] : query.kind ? [query.kind] : NEW_KINDS;
-  return [...found.map((member) => ({ member })), ...(exists ? [] : kinds.map((kind) => ({ kind, name })))];
+  return [
+    ...found.map((member) => ({ member })),
+    ...(exists ? [] : kinds.map((kind) => ({ kind, name }))),
+  ];
 }
 
 /** Size a new clock, track or timer starts with when none is typed (as in the notebook). */
@@ -922,7 +1059,10 @@ const NEW_PROGRESS_SIZE = 6;
  */
 export function tagOptionText(option: TagOption, query?: Pick<TagQuery, "actor">): string {
   if (query?.actor) {
-    const name = ("member" in option ? option.member.name : option.name).replace(/[()\n]/g, " ").replace(/\s+/g, " ").trim();
+    const name = ("member" in option ? option.member.name : option.name)
+      .replace(/[()\n]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     return query.actor === "dialogue" ? `${name}): ` : `${name}) `;
   }
   if ("member" in option) return formatReference(option.member);
@@ -947,40 +1087,62 @@ export function renameInEntry(
   member: Pick<CastMember, "kind" | "name" | "owner">,
   newName: string,
 ): string {
-  const name = newName.replace(/[[\]|\n]/g, " ").replace(/\s+/g, " ").trim();
+  const name = newName
+    .replace(/[[\]|\n]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!name) return entry.text;
   const target = normalizeForSearch(member.name.trim());
   const same = (s: string) => normalizeForSearch(s.trim()) === target;
   const character = member.kind === "npc" || member.kind === "pc";
   const numbered = PROGRESS_KINDS.has(member.kind) || QUANTITY_KINDS.has(member.kind);
   const isGroup = member.kind === "foe" || member.kind === "npc";
-  let text = entry.text.replace(new RegExp(TAG.source, "g"), (whole, hash: string, prefix: string, tagName: string, details: string) => {
-    const tag = splitTags(whole)[0].tag;
-    if (!tag) return whole;
-    if (tag.owned || (tag.kind === "wealth" && hash)) {
-      if (character && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
-      if (!tag.owned && member.kind === "wealth" && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
-      if (!tag.owned || member.kind !== "wealth" || (member.owner && normalizeForSearch(member.owner) !== normalizeForSearch(tag.name))) return whole;
-      return `[${hash}${prefix}:${tagName}${details.replace(/(\|\s*)([^|]+)/g, (w, bar: string, d: string) =>
-        same(readProgress(toLatest(d.trim())).name) ? `${bar}${name}${d.trimEnd().match(/\s*[+-]?\s*\d+(?:\s*(?:→|->|>)\s*\d+)?$/)?.[0] ?? ""}` : w,
-      )}]`;
-    }
-    const owner = character
-      ? details.replace(/(\|\s*(?:owner|dueñ[oa])\s*:\s*)([^|]+)/gi, (w, a: string, who: string) => (same(who) ? a + name : w))
-      : details;
-    if (tag.kind !== member.kind) return `[${hash}${prefix}:${tagName}${owner}]`;
-    const split = numbered
-      ? tagName.match(/^(.*?)(\s*[+-]?\s*\d+(?:\/\d+|\s*(?:→|->|>)\s*\d+)?)?$/)
-      : isGroup
-        ? tagName.match(/^(.*?)(\s*[×x]\s*\d+)?$/)
-        : null;
-    const base = same(tagName) ? tagName : split ? split[1] : tagName;
-    if (!same(base)) return whole;
-    return `[${hash}${prefix}:${name}${tagName.slice(base.length)}${owner}]`;
-  });
+  let text = entry.text.replace(
+    new RegExp(TAG.source, "g"),
+    (whole, hash: string, prefix: string, tagName: string, details: string) => {
+      const tag = splitTags(whole)[0].tag;
+      if (!tag) return whole;
+      if (tag.owned || (tag.kind === "wealth" && hash)) {
+        if (character && same(tagName)) return `[${hash}${prefix}:${name}${details}]`;
+        if (!tag.owned && member.kind === "wealth" && same(tagName))
+          return `[${hash}${prefix}:${name}${details}]`;
+        if (
+          !tag.owned ||
+          member.kind !== "wealth" ||
+          (member.owner && normalizeForSearch(member.owner) !== normalizeForSearch(tag.name))
+        )
+          return whole;
+        return `[${hash}${prefix}:${tagName}${details.replace(
+          /(\|\s*)([^|]+)/g,
+          (w, bar: string, d: string) =>
+            same(readProgress(toLatest(d.trim())).name)
+              ? `${bar}${name}${d.trimEnd().match(/\s*[+-]?\s*\d+(?:\s*(?:→|->|>)\s*\d+)?$/)?.[0] ?? ""}`
+              : w,
+        )}]`;
+      }
+      const owner = character
+        ? details.replace(
+            /(\|\s*(?:owner|dueñ[oa])\s*:\s*)([^|]+)/gi,
+            (w, a: string, who: string) => (same(who) ? a + name : w),
+          )
+        : details;
+      if (tag.kind !== member.kind) return `[${hash}${prefix}:${tagName}${owner}]`;
+      const split = numbered
+        ? tagName.match(/^(.*?)(\s*[+-]?\s*\d+(?:\/\d+|\s*(?:→|->|>)\s*\d+)?)?$/)
+        : isGroup
+          ? tagName.match(/^(.*?)(\s*[×x]\s*\d+)?$/)
+          : null;
+      const base = same(tagName) ? tagName : split ? split[1] : tagName;
+      if (!same(base)) return whole;
+      return `[${hash}${prefix}:${name}${tagName.slice(base.length)}${owner}]`;
+    },
+  );
   if (!character) return text;
   if (entry.kind === "note") {
-    const speaker = member.kind === "npc" ? /^(N\s*\()([^()\n]+)(\)\s*:)/ : /^(PC\s*\()([^(),\n]+)((?:,[^()\n]*)?\)\s*:)/;
+    const speaker =
+      member.kind === "npc"
+        ? /^(N\s*\()([^()\n]+)(\)\s*:)/
+        : /^(PC\s*\()([^(),\n]+)((?:,[^()\n]*)?\)\s*:)/;
     text = text.replace(speaker, (w, a, n: string, b) => (same(n) ? a + name + b : w));
   }
   const actors = (list: string) =>
@@ -988,8 +1150,10 @@ export function renameInEntry(
       .split(/(\s*[>+]\s*)/)
       .map((n) => (same(n) ? name : n))
       .join("");
-  if (entry.kind === "action") text = text.replace(/^\(([^()\n]+)\)/, (_, n: string) => `(${actors(n)})`);
-  if (entry.kind === "scene") text = text.replace(/(@\()([^()\n]+)(\)\s*)$/, (_, a, n: string, b) => a + actors(n) + b);
+  if (entry.kind === "action")
+    text = text.replace(/^\(([^()\n]+)\)/, (_, n: string) => `(${actors(n)})`);
+  if (entry.kind === "scene")
+    text = text.replace(/(@\()([^()\n]+)(\)\s*)$/, (_, a, n: string, b) => a + actors(n) + b);
   return text;
 }
 
@@ -1001,8 +1165,11 @@ export function renameInEntry(
  */
 export function snapshotTag(member: CastMember): string {
   const { kind, name, tags, progress } = member;
-  if (PROGRESS_KINDS.has(kind) && progress) return formatProgressTag(kind, name, progress.value, progress.max);
-  if (kind === "wealth") return formatQuantity("wealth", name, String(progress?.value ?? 0), member.owner);
-  if (QUANTITY_KINDS.has(kind) && progress) return formatTag(kind, name, [`×${progress.value}`, ...tags]);
+  if (PROGRESS_KINDS.has(kind) && progress)
+    return formatProgressTag(kind, name, progress.value, progress.max);
+  if (kind === "wealth")
+    return formatQuantity("wealth", name, String(progress?.value ?? 0), member.owner);
+  if (QUANTITY_KINDS.has(kind) && progress)
+    return formatTag(kind, name, [`×${progress.value}`, ...tags]);
   return formatTag(kind, name, tags);
 }

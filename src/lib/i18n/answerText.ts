@@ -20,7 +20,12 @@ export function expandAnswer(t: Dictionary, result: string): string {
   if (!code) return result;
   const qualifier = code.shade === "a" ? "y" : code.shade === "b" ? "pero" : null;
   const answer = formatAnswer(t, { answer: code.answer, qualifier });
-  return [code.shade === "x" ? interpolate(t.journal.exceptionalAnswer, { answer }) : answer, code.rest].filter(Boolean).join(" ");
+  return [
+    code.shade === "x" ? interpolate(t.journal.exceptionalAnswer, { answer }) : answer,
+    code.rest,
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 /**
@@ -32,8 +37,10 @@ export function expandAnswer(t: Dictionary, result: string): string {
 export function formatOracleResult(t: Dictionary, roll: OracleRoll): string {
   const extras: string[] = [];
   if (roll.special === "match") extras.push(t.oracle.matchLabel);
-  if (roll.twist?.happened) extras.push(t.oracle.twistLabel, ...(roll.twist.result ? [roll.twist.result] : []));
-  else if (roll.twist) extras.push(interpolate(t.oracle.doubleShort, { count: roll.twist.counter }));
+  if (roll.twist?.happened)
+    extras.push(t.oracle.twistLabel, ...(roll.twist.result ? [roll.twist.result] : []));
+  else if (roll.twist)
+    extras.push(interpolate(t.oracle.doubleShort, { count: roll.twist.counter }));
   return [formatAnswer(t, roll), ...extras].join(" · ");
 }
 

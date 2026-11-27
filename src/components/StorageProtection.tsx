@@ -52,7 +52,10 @@ function StorageExplanation() {
 function DeniedNote() {
   const { t } = useLocaleContext();
   return (
-    <div role="status" className="flex items-start gap-2.5 rounded-2xl border border-ink-border bg-ink-900/60 p-3.5">
+    <div
+      role="status"
+      className="flex items-start gap-2.5 rounded-2xl border border-ink-border bg-ink-900/60 p-3.5"
+    >
       <IconShieldAlert size={20} className="mt-0.5 shrink-0 text-parchment-dim" />
       <div>
         <p className="text-sm font-medium text-parchment">{t.storage.deniedTitle}</p>
@@ -113,7 +116,10 @@ export function StorageProtectionSettings() {
         aria-expanded={expanded}
         className="flex w-fit items-center gap-1.5 text-sm text-parchment-dim transition hover:text-gold"
       >
-        <IconChevronRight size={14} className={`transition-transform ${expanded ? "rotate-90" : ""}`} />
+        <IconChevronRight
+          size={14}
+          className={`transition-transform ${expanded ? "rotate-90" : ""}`}
+        />
         {t.storage.learnMore}
       </button>
       {expanded && (

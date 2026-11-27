@@ -13,7 +13,14 @@ import {
   syncGlance,
   type SyncGlance,
 } from "../lib/syncStatus";
-import { IconAlertTriangle, IconCloud, IconCloudCheck, IconCloudOff, IconCloudUp, IconSync } from "./icons/Icons";
+import {
+  IconAlertTriangle,
+  IconCloud,
+  IconCloudCheck,
+  IconCloudOff,
+  IconCloudUp,
+  IconSync,
+} from "./icons/Icons";
 
 /** Each state its own shape (a theme's colours alone may not tell them apart), and a colour on top. */
 const LOOK: Record<Exclude<SyncGlance, "off">, { Icon: typeof IconCloud; className: string }> = {
@@ -59,7 +66,8 @@ export function SyncIndicator({ onlyTrouble = false }: { onlyTrouble?: boolean }
   if (!syncAvailable()) return null;
   const glance = syncGlance(enabled, status, busy, pending);
   if (glance === "off") return null;
-  if (onlyTrouble && glance !== "offline" && glance !== "paused" && glance !== "problem") return null;
+  if (onlyTrouble && glance !== "offline" && glance !== "paused" && glance !== "problem")
+    return null;
   const { Icon, className } = LOOK[glance];
   const label =
     glance === "ok" && status?.state === "ok"

@@ -18,19 +18,12 @@ export function ConfirmDialog({
   const { t } = useLocaleContext();
 
   return (
-    <Modal
-      onClose={onCancel}
-      labelledBy="confirm-dialog-title"
-      centered
-      size="sm"
-    >
+    <Modal onClose={onCancel} labelledBy="confirm-dialog-title" centered size="sm">
       <DialogBody className="block">
         <h2 id="confirm-dialog-title" className="font-display text-xl text-parchment">
           {title}
         </h2>
-        {description && (
-          <p className="mt-2 text-sm text-parchment-dim">{description}</p>
-        )}
+        {description && <p className="mt-2 text-sm text-parchment-dim">{description}</p>}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"

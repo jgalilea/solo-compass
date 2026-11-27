@@ -33,12 +33,19 @@ export function DiceView() {
     <div className={PAGE_CLASS}>
       <PageHeader
         title={t.dice.title}
-        subtitle={active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure}
+        subtitle={
+          active ? interpolate(t.dice.loggingTo, { name: active.name }) : t.dice.noAdventure
+        }
       />
 
       <div className="flex flex-col gap-5 md:gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] 3xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)_minmax(0,28rem)]">
         <section className="rounded-3xl border border-ink-border bg-ink-800/50 p-4 sm:p-5">
-          <DiceTool adventureId={active?.id} onRolled={() => setLogged((n) => n + 1)} dice="all" handle={tool} />
+          <DiceTool
+            adventureId={active?.id}
+            onRolled={() => setLogged((n) => n + 1)}
+            dice="all"
+            handle={tool}
+          />
         </section>
         {/* As on the Oracle screen: the latest dice rolls, and the full history. */}
         <RecentRolls
@@ -72,7 +79,8 @@ export function DiceView() {
  */
 function SavedRollsPanel() {
   const { t } = useLocaleContext();
-  const { rolls, load, addRoll, updateRoll, removeRoll, restoreRoll, error } = useSavedRollsContext();
+  const { rolls, load, addRoll, updateRoll, removeRoll, restoreRoll, error } =
+    useSavedRollsContext();
   useEffect(() => load(), [load]);
   // null: no form; "new": a new roll; otherwise the id being edited.
   const [editing, setEditing] = useState<string | null>(null);
@@ -110,7 +118,9 @@ function SavedRollsPanel() {
       )}
 
       {rolls.length === 0 && editing !== "new" ? (
-        <p className="rounded-2xl border border-dashed border-ink-border p-4 text-sm text-parchment-dim">{t.dice.savedEmpty}</p>
+        <p className="rounded-2xl border border-dashed border-ink-border p-4 text-sm text-parchment-dim">
+          {t.dice.savedEmpty}
+        </p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {rolls.map((roll) =>
@@ -126,12 +136,18 @@ function SavedRollsPanel() {
                 />
               </li>
             ) : (
-              <li key={roll.id} className="flex items-center gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-3 py-2">
+              <li
+                key={roll.id}
+                className="flex items-center gap-2 rounded-2xl border border-ink-border bg-ink-900/50 px-3 py-2"
+              >
                 <button
                   type="button"
                   onClick={() => updateRoll(roll.id, { favorite: !roll.favorite })}
                   aria-pressed={roll.favorite}
-                  aria-label={interpolate(roll.favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, { name: savedRollLabel(roll) })}
+                  aria-label={interpolate(
+                    roll.favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd,
+                    { name: savedRollLabel(roll) },
+                  )}
                   title={roll.favorite ? t.dice.favoriteRemoveHint : t.dice.favoriteAddHint}
                   className={`-m-2 shrink-0 p-2.5 transition ${roll.favorite ? "text-gold" : "text-parchment-faint hover:text-gold"}`}
                 >
@@ -140,11 +156,17 @@ function SavedRollsPanel() {
                 <span className="min-w-0 flex-1">
                   {roll.name ? (
                     <>
-                      <span className="block truncate text-sm font-medium text-parchment">{roll.name}</span>
-                      <code className="block truncate font-mono text-xs text-parchment-dim">{roll.formula}</code>
+                      <span className="block truncate text-sm font-medium text-parchment">
+                        {roll.name}
+                      </span>
+                      <code className="block truncate font-mono text-xs text-parchment-dim">
+                        {roll.formula}
+                      </code>
                     </>
                   ) : (
-                    <code className="block truncate font-mono text-sm text-parchment">{roll.formula}</code>
+                    <code className="block truncate font-mono text-sm text-parchment">
+                      {roll.formula}
+                    </code>
                   )}
                 </span>
                 <button
@@ -177,7 +199,9 @@ function SavedRollsPanel() {
       {/* Which dice the journal's game table shows: chips to tick, not
           dice to roll, hence a place of their own. */}
       <div className="mt-2 flex flex-col gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">{t.dice.builtinTitle}</h3>
+        <h3 className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+          {t.dice.builtinTitle}
+        </h3>
         <p className="text-xs text-parchment-dim">{t.dice.favoritesHint}</p>
         <BuiltinFavorites />
       </div>
@@ -220,7 +244,9 @@ function BuiltinFavorites() {
             type="button"
             onClick={() => toggle(die)}
             aria-pressed={favorite}
-            aria-label={interpolate(favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, { name: die })}
+            aria-label={interpolate(favorite ? t.dice.favoriteRemove : t.dice.favoriteAdd, {
+              name: die,
+            })}
             title={favorite ? t.dice.favoriteRemoveHint : t.dice.favoriteAddHint}
             className={[
               "flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium transition pointer-coarse:h-10",
@@ -289,7 +315,9 @@ function SavedRollForm({
         spellCheck={false}
         className={`${INPUT_CLASS} bg-ink-900/70 py-2 font-mono`}
       />
-      {formula.trim() !== "" && !readable && <p className="text-xs text-no">{t.journal.diceFormulaError}</p>}
+      {formula.trim() !== "" && !readable && (
+        <p className="text-xs text-no">{t.journal.diceFormulaError}</p>
+      )}
       <div className="flex justify-end gap-1.5">
         <button
           type="button"

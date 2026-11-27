@@ -4,12 +4,7 @@ import { highlightParts } from "../lib/text";
 import { useLocaleContext } from "../hooks/useLocaleContext";
 import { interpolate } from "../lib/i18n";
 import type { Adventure } from "../lib/journal";
-import {
-  IconDice,
-  IconExternalLink,
-  IconList,
-  IconStar,
-} from "./icons/Icons";
+import { IconDice, IconExternalLink, IconList, IconStar } from "./icons/Icons";
 import { DialogBody, DialogHeader } from "./Dialog";
 import { Modal } from "./Modal";
 import { ResultPanel, type LastResult } from "./TableResultPanel";
@@ -65,7 +60,9 @@ export function TableRow({
       <div className="flex flex-1 items-center gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-0.5">
-            <h2 className="min-w-0 break-words font-display text-lg leading-snug text-parchment">{table.name}</h2>
+            <h2 className="min-w-0 break-words font-display text-lg leading-snug text-parchment">
+              {table.name}
+            </h2>
             <button
               type="button"
               onClick={onToggleFavorite}
@@ -80,7 +77,9 @@ export function TableRow({
               <IconStar size={16} filled={favorite} />
             </button>
           </div>
-          {table.description && <p className="text-sm leading-snug text-parchment-dim">{table.description}</p>}
+          {table.description && (
+            <p className="text-sm leading-snug text-parchment-dim">{table.description}</p>
+          )}
           {found && found.length > 0 && <FoundResults found={found} query={query} />}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
             {showGame && <GameBadge table={table} />}
@@ -206,7 +205,8 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
             subtitle={
               <>
                 <p className="text-xs uppercase tracking-wide text-parchment-faint">
-                  {table.dice} · {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
+                  {table.dice} ·{" "}
+                  {interpolate(t.tables.resultsCountLabel, { count: table.entries.length })}
                 </p>
                 {credit.length > 0 && <p className="mt-0.5 text-xs">{credit.join(" · ")}</p>}
               </>
@@ -220,7 +220,9 @@ export function TableEntriesButton({ table }: { table: MeaningTable }) {
                   key={`${entry.range[0]}-${entry.range[1]}`}
                   className="flex gap-3 rounded-xl border border-ink-border/70 bg-ink-900/50 px-3 py-2 text-sm"
                 >
-                  <span className="shrink-0 font-medium tabular-nums text-parchment-dim">{formatRange(entry.range)}</span>
+                  <span className="shrink-0 font-medium tabular-nums text-parchment-dim">
+                    {formatRange(entry.range)}
+                  </span>
                   <span className="text-parchment/90">{entry.text}</span>
                 </li>
               ))}

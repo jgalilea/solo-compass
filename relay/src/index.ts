@@ -33,7 +33,12 @@ export interface Env {
 
 const HEADER_ROOM = 16 * 1024;
 
-function failureResponse(status: number, error: SyncFailure, cors: HeadersInit, retryAfter?: number): Response {
+function failureResponse(
+  status: number,
+  error: SyncFailure,
+  cors: HeadersInit,
+  retryAfter?: number,
+): Response {
   const reply = { ok: false, error, now: Date.now(), ...(retryAfter ? { retryAfter } : {}) };
   return new Response(encodeFrame(reply), {
     status,
@@ -50,20 +55,31 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const origin = request.headers.get("Origin") ?? "";
-    const allowed = env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).includes(origin);
-    const cors: Record<string, string> = allowed ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" } : { Vary: "Origin" };
+    const allowed = env.ALLOWED_ORIGINS.split(",")
+      .map((o) => o.trim())
+      .includes(origin);
+    const cors: Record<string, string> = allowed
+      ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" }
+      : { Vary: "Origin" };
 
     if (url.pathname !== "/v1") {
-      return new Response("Solo Compass sync relay\n", { status: url.pathname === "/" ? 200 : 404 });
+      return new Response("Solo Compass sync relay\n", {
+        status: url.pathname === "/" ? 200 : 404,
+      });
     }
     // The app only sends simple requests; this is for anything else that asks.
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: { ...cors, "Access-Control-Allow-Methods": "POST", "Access-Control-Max-Age": "86400" },
+        headers: {
+          ...cors,
+          "Access-Control-Allow-Methods": "POST",
+          "Access-Control-Max-Age": "86400",
+        },
       });
     }
-    if (request.method !== "POST") return new Response(null, { status: 405, headers: { Allow: "POST" } });
+    if (request.method !== "POST")
+      return new Response(null, { status: 405, headers: { Allow: "POST" } });
     if (!allowed) return failureResponse(403, "origin", cors);
 
     const declared = Number(request.headers.get("Content-Length") ?? "0");
@@ -89,7 +105,11 @@ export default {
       const result = await box.handle(boxRequest, parsed.payload, ip);
       return new Response(result.frame, {
         status: result.status,
-        headers: { ...cors, "Content-Type": "application/octet-stream", "Cache-Control": "no-store" },
+        headers: {
+          ...cors,
+          "Content-Type": "application/octet-stream",
+          "Cache-Control": "no-store",
+        },
       });
     } catch (error) {
       // The Durable Objects' free daily allowance, used up, throws here.
@@ -112,7 +132,11 @@ export class SyncBox extends DurableObject<Env> {
     if (request.op !== "close" && this.env.NEW_BOXES && this.store.meta() === null) {
       const { success } = await this.env.NEW_BOXES.limit({ key: ip || "unknown" });
       if (!success) {
-        return { status: 429, frame: encodeFrame({ ok: false, error: "rate", now: Date.now(), retryAfter: 60 }), alarmAt: null };
+        return {
+          status: 429,
+          frame: encodeFrame({ ok: false, error: "rate", now: Date.now(), retryAfter: 60 }),
+          alarmAt: null,
+        };
       }
     }
     const result = this.ctx.storage.transactionSync(() =>
@@ -132,4 +156,3 @@ export class SyncBox extends DurableObject<Env> {
     this.store.init();
   }
 }
-

@@ -69,7 +69,10 @@ function normalizePick(value: unknown): AdventurePick | null {
   if (!isNumber(v.updatedAt)) return null;
   if (v.ids === null) return { ids: null, updatedAt: v.updatedAt };
   if (!Array.isArray(v.ids)) return null;
-  return { ids: v.ids.filter((id): id is string => typeof id === "string"), updatedAt: v.updatedAt };
+  return {
+    ids: v.ids.filter((id): id is string => typeof id === "string"),
+    updatedAt: v.updatedAt,
+  };
 }
 
 /** Each one carries its date: the newer wins on a merge, one by one. */
@@ -117,12 +120,23 @@ export function normalizeAdventure(value: unknown): Adventure | null {
   if (typeof v.id !== "string" || typeof v.name !== "string") return null;
   const createdAt = isNumber(v.createdAt) ? v.createdAt : 0;
   const descriptions = Object.entries(
-    v.descriptions && typeof v.descriptions === "object" ? (v.descriptions as Record<string, unknown>) : {},
+    v.descriptions && typeof v.descriptions === "object"
+      ? (v.descriptions as Record<string, unknown>)
+      : {},
   ).filter((entry): entry is [string, CastDescription] => {
     const d = entry[1] as Record<string, unknown> | null;
     return !!d && typeof d.text === "string" && isNumber(d.updatedAt);
   });
-  const { notes, notesUpdatedAt, descriptions: _descriptions, oracle, oracleUpdatedAt, gameDice, gameTables, ...rest } = v;
+  const {
+    notes,
+    notesUpdatedAt,
+    descriptions: _descriptions,
+    oracle,
+    oracleUpdatedAt,
+    gameDice,
+    gameTables,
+    ...rest
+  } = v;
   const dicePick = normalizePick(gameDice);
   const tablesPick = normalizePick(gameTables);
   return {
@@ -178,7 +192,10 @@ const adventureStore = createCollection<Adventure>({
   legacyKey: LEGACY_ADVENTURES_KEY,
   normalize: normalizeAdventure,
   fromLegacy: async (items) => {
-    await set(ADVENTURE_ORDER_KEY, items.map((a) => a.id));
+    await set(
+      ADVENTURE_ORDER_KEY,
+      items.map((a) => a.id),
+    );
     return items;
   },
 });
@@ -193,7 +210,9 @@ const entryStore = createCollection<JournalEntry>({
 export function orderAdventures(adventures: Adventure[], order: readonly string[]): Adventure[] {
   const rank = new Map(order.map((id, i) => [id, i]));
   const fresh = adventures.filter((a) => !rank.has(a.id)).sort((a, b) => b.createdAt - a.createdAt);
-  const known = adventures.filter((a) => rank.has(a.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+  const known = adventures
+    .filter((a) => rank.has(a.id))
+    .sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
   return [...fresh, ...known];
 }
 
@@ -210,12 +229,17 @@ export async function loadAdventures(t: Dictionary): Promise<Adventure[]> {
 }
 
 /** Writes only what changed between the two lists, and the order if it moved. */
-export async function saveAdventureChanges(t: Dictionary, prev: Adventure[], next: Adventure[]): Promise<void> {
+export async function saveAdventureChanges(
+  t: Dictionary,
+  prev: Adventure[],
+  next: Adventure[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await adventureStore.save(diffById(prev, next));
     const ids = next.map((a) => a.id);
-    if (ids.length !== prev.length || ids.some((id, i) => prev[i].id !== id)) await set(ADVENTURE_ORDER_KEY, ids);
+    if (ids.length !== prev.length || ids.some((id, i) => prev[i].id !== id))
+      await set(ADVENTURE_ORDER_KEY, ids);
   } catch {
     throw new JournalStorageError(t.history.storageSaveError);
   }
@@ -225,7 +249,10 @@ export async function replaceAdventures(t: Dictionary, adventures: Adventure[]):
   if (typeof window === "undefined") return;
   try {
     await adventureStore.replace(adventures);
-    await set(ADVENTURE_ORDER_KEY, adventures.map((a) => a.id));
+    await set(
+      ADVENTURE_ORDER_KEY,
+      adventures.map((a) => a.id),
+    );
   } catch {
     throw new JournalStorageError(t.history.storageSaveError);
   }
@@ -240,7 +267,11 @@ export async function loadJournalEntries(t: Dictionary): Promise<JournalEntry[]>
   }
 }
 
-export async function saveJournalEntryChanges(t: Dictionary, prev: JournalEntry[], next: JournalEntry[]): Promise<void> {
+export async function saveJournalEntryChanges(
+  t: Dictionary,
+  prev: JournalEntry[],
+  next: JournalEntry[],
+): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     await entryStore.save(diffById(prev, next));

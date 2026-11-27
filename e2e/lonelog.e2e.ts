@@ -35,18 +35,26 @@ test("imports, shows, changes and writes Lonelog 1.7", async ({ page }) => {
   });
 
   await page.goto("./#/diario");
-  await page.locator('input[type=file][accept*=".md"]').setInputFiles({ name: "log.md", mimeType: "text/markdown", buffer: Buffer.from(LOG) });
+  await page
+    .locator('input[type=file][accept*=".md"]')
+    .setInputFiles({ name: "log.md", mimeType: "text/markdown", buffer: Buffer.from(LOG) });
   await expect(page.getByRole("heading", { level: 1, name: "La cripta" })).toBeVisible();
   const entries = page.locator("[id^=entry-]");
   // The compact line, an entry per element; the answer's code written out.
   await expect(entries.getByText("Me cuelo")).toBeVisible();
   await expect(entries.getByText("No, pero. (3)")).toBeVisible();
   // The storyline's point of view, which PC speaks and the dice of a roll.
-  await expect(entries.filter({ hasText: "La ciudad" }).getByText("Kael", { exact: true })).toBeVisible();
-  await expect(entries.filter({ hasText: "Aquí está" }).getByText("Kael", { exact: true })).toBeVisible();
+  await expect(
+    entries.filter({ hasText: "La ciudad" }).getByText("Kael", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    entries.filter({ hasText: "Aquí está" }).getByText("Kael", { exact: true }),
+  ).toBeVisible();
   await expect(entries.filter({ hasText: "Daño" }).getByText("5 + 2")).toBeVisible();
 
-  await expect(entries.filter({ hasText: "Busco planos" }).getByText("Kael", { exact: true })).toBeVisible();
+  await expect(
+    entries.filter({ hasText: "Busco planos" }).getByText("Kael", { exact: true }),
+  ).toBeVisible();
   // A table written out, to the player's own.
   await page.getByRole("button", { name: "Guardar en mis tablas" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Guardar tabla" }).click();
@@ -93,7 +101,14 @@ test("imports, shows, changes and writes Lonelog 1.7", async ({ page }) => {
   const download = page.waitForEvent("download");
   await page.getByRole("menuitem", { name: "Exportar a Markdown" }).click();
   const md = readFileSync(await (await download).path(), "utf8");
-  for (const line of ["[Inv:Antorcha|×-1]", "[Thread:El robo|Abierto>Cerrado]", "[Wealth:Kael|Oro 1]", "d: Daño 1d8+2[6]=8", "T2-S1 *La ciudad* @(Kael)", "! Algo de otra notación"])
+  for (const line of [
+    "[Inv:Antorcha|×-1]",
+    "[Thread:El robo|Abierto>Cerrado]",
+    "[Wealth:Kael|Oro 1]",
+    "d: Daño 1d8+2[6]=8",
+    "T2-S1 *La ciudad* @(Kael)",
+    "! Algo de otra notación",
+  ])
     expect(md).toContain(`\n${line}\n`);
   expect(md).toMatch(/\nd: d20=\d+\n/);
   expect(md).toMatch(/\ntbl: draw=\w+ -> /);
@@ -106,7 +121,8 @@ test("the guide says what's used of Lonelog and what isn't", async ({ page }) =>
   await page.keyboard.press("?");
   const guide = page.getByRole("dialog");
   await expect(guide.getByRole("heading", { name: "Qué se usa de Lonelog" })).toBeVisible();
-  for (const name of ["Partylog", "Lorelog", "Maplog", "Solo Wargaming"]) await expect(guide.getByText(name, { exact: true })).toBeVisible();
+  for (const name of ["Partylog", "Lorelog", "Maplog", "Solo Wargaming"])
+    await expect(guide.getByText(name, { exact: true })).toBeVisible();
 });
 
 /** A sheet on phones; on a wide desktop, the left column. */
