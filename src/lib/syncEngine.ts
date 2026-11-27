@@ -8,10 +8,12 @@
  * meanwhile); on coming back to it after half a minute away (another
  * app, another window, the screen off), or on the first touch or key
  * after five minutes without any (a computer's window left in view while
- * the phone was used); three minutes after the last change (at most a
- * quarter of an hour after the first one, so a long session sends a few
- * times an hour instead of after every roll); on leaving the app with
- * changes waiting; when the connection comes back; and with "Sync now".
+ * the phone was used), while another device is in use these days (else
+ * only after ten minutes away: a device used alone has nothing to find);
+ * three minutes after the last change (at most half an hour after the
+ * first one: leaving sends at once anyway); on leaving the app with
+ * changes waiting; when the connection comes back, if something was
+ * waiting or failed; and with "Sync now".
  * Waiting leaves time for "Undo", too: a deletion that has travelled
  * can't be undone on the other devices.
  *
@@ -68,12 +70,15 @@ import type { SyncRequest } from "./syncWire";
 const MINUTE = 60 * 1000;
 /** After the last change… */
 const CHANGE_DELAY = 3 * MINUTE;
-/** …but no later than this after the first one still waiting. */
-const CHANGE_MAX_DELAY = 15 * MINUTE;
+/** …but no later than this after the first one still waiting (leaving sends at once anyway). */
+const CHANGE_MAX_DELAY = 30 * MINUTE;
 /** Opening the app looks for what's new unless an exchange is this fresh (two tabs opened together, a reload). */
 const JUST_SYNCED = 20 * 1000;
-/** Coming back looks for what's new after this long away (another device may have been used meanwhile). */
+/** Coming back looks for what's new after this long away (another device may have been used meanwhile)… */
 const AWAY = 30 * 1000;
+/** …or this long, when nothing has come from another device for SHARED_WINDOW (used alone, it has nothing to find). */
+const AWAY_ALONE = 10 * MINUTE;
+const SHARED_WINDOW = 14 * 24 * 60 * MINUTE;
 /** No touch, click or key for this long: the next one is a coming back too. */
 const IDLE = 5 * MINUTE;
 /** A change is worked out and sealed this long after the last one, ready for leaving. */
@@ -165,6 +170,12 @@ let prepareTimer: ReturnType<typeof setTimeout> | undefined;
 /** Sent on leaving, with the change it was prepared after (later ones are still to go). */
 let inFlight: { flight: ChangeInFlight; stamp: number } | null = null;
 let cachedKeys: { code: string; keys: SyncKeys } | null = null;
+/** When something last came from another device (from the saved state, kept here for the event handlers). */
+let othersSeenAt = 0;
+
+function sharedLately(now = Date.now()): boolean {
+  return now - othersSeenAt < SHARED_WINDOW;
+}
 
 async function keysFor(code: string): Promise<SyncKeys | null> {
   if (cachedKeys?.code === code) return cachedKeys.keys;
@@ -198,7 +209,7 @@ function attach(): () => void {
     const away = leftAt ? Date.now() - leftAt : 0;
     leftAt = 0;
     lastInput = Date.now();
-    if (away >= AWAY) void request("back");
+    if (away >= (sharedLately() ? AWAY : AWAY_ALONE)) void request("back");
   };
   const onVisibility = () => {
     if (document.visibilityState === "visible") return cameBack();
@@ -211,10 +222,14 @@ function attach(): () => void {
   };
   const onInput = () => {
     const now = Date.now();
-    if (!leftAt && now - lastInput >= IDLE) void request("back");
+    if (!leftAt && now - lastInput >= IDLE && sharedLately(now)) void request("back");
     lastInput = now;
   };
-  const onOnline = () => void request("online");
+  // A connection back matters if something was waiting or failed (phones change networks all the time).
+  const onOnline = () => {
+    const status = loadSyncStatus();
+    if (pending || (status && status.state !== "ok")) void request("online");
+  };
   const listen = { capture: true, passive: true } as const;
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("blur", onBlur);
@@ -303,6 +318,14 @@ function leave(): void {
   void request("leaving");
 }
 
+/** Another code, or none: what was prepared or sent for the old one is no longer this device's business. */
+function forgetPrepared(): void {
+  clearTimeout(prepareTimer);
+  prepared = null;
+  inFlight = null;
+  othersSeenAt = 0;
+}
+
 function scheduleRetry(ms: number): void {
   clearTimeout(retryTimer);
   retryTimer = setTimeout(() => void request("retry"), Math.max(1000, ms));
@@ -355,17 +378,19 @@ const SENDS = new Set<Reason>(["change", "leaving"]);
 async function cycle(t: Dictionary, reason: Reason): Promise<void> {
   const state = await loadState();
   if (!state) return;
-  // A change sent on leaving: this exchange takes its answer in, whatever brought it about.
-  const flying = inFlight?.flight;
+  othersSeenAt = state.othersSeenAt ?? 0;
+  const keys = await keysFor(state.code);
+  if (!keys) return problem("damaged");
+  // A change sent on leaving: this exchange takes its answer in, whatever brought it about. Only one
+  // for this box: sent to the code just replaced, a "closed" from it must not stop this device.
+  const flying = inFlight?.flight.change.request.box === keys.box ? inFlight.flight : undefined;
   // Changes made since it left (back in the app at once): still to go.
-  const behind = !!inFlight && inFlight.stamp !== changeStamp;
+  const behind = !!flying && inFlight?.stamp !== changeStamp;
   inFlight = null;
   // Checked here, holding the lock: another tab may have just done it. Changes waiting go with their timer.
   const status = loadSyncStatus();
   const fresh = FRESH[reason];
   if (!flying && fresh && state.lastSyncAt && Date.now() - state.lastSyncAt < fresh && status?.state === "ok") return;
-  const keys = await keysFor(state.code);
-  if (!keys) return problem("damaged");
   clearTimeout(changeTimer);
   clearTimeout(prepareTimer);
   prepared = null;
@@ -383,6 +408,7 @@ async function cycle(t: Dictionary, reason: Reason): Promise<void> {
     if (behind) noteChange();
     switch (outcome.kind) {
       case "ok":
+        othersSeenAt = outcome.state.othersSeenAt ?? othersSeenAt;
         failures = 0;
         waitUntil = outcome.wait > 0 ? Date.now() + outcome.wait * 1000 : 0;
         saveSyncStatus({ state: "ok", at: Date.now(), skew: outcome.skew });
@@ -507,6 +533,7 @@ export async function currentCode(): Promise<string | null> {
 
 /** A new code (sync turned on here first) or another device's. */
 export async function linkDevice(code?: string): Promise<string> {
+  forgetPrepared();
   const secret = code ? parseCode(code) : newSecret();
   if (!secret) throw new Error("invalid code");
   const shown = formatCode(secret);
@@ -527,6 +554,7 @@ export function syncNow(): Promise<void> {
 
 /** Stops syncing here: the relay's copy and the other devices go on. */
 export async function unlinkDevice(): Promise<void> {
+  forgetPrepared();
   setSyncPending(false);
   await clearState();
   setSyncEnabled(false);
@@ -548,6 +576,7 @@ export async function deleteServerCopy(): Promise<boolean> {
 
 /** A new code: everything goes to a new box, and the old one is closed (the other devices stop until linked again). */
 export async function changeCode(): Promise<string> {
+  forgetPrepared();
   const state = await loadState();
   const shown = formatCode(newSecret());
   await set("prints", new Map(), db());

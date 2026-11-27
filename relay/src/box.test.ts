@@ -144,6 +144,19 @@ describe("sync box", () => {
     for (let i = 0; i < 5; i++) sync(store, first.epoch, 2);
     sync(store, null, null);
     expect(store.rowsWritten).toBe(3);
+    // Folding: the snapshot's part, its record, and the folded changes dropped at once (not a row each).
+    for (let i = 3; i <= 40; i++) {
+      clock += 4000;
+      expect(sync(store, first.epoch, i - 1, String(i)).status).toBe(200);
+    }
+    clock += 61_000;
+    const before = store.rowsWritten;
+    expect(call(store, { op: "snapshot", epoch: first.epoch, upto: 40, gen: 0, size: 3 }, bytes("all")).status).toBe(200);
+    expect(store.rowsWritten - before).toBeLessThanOrEqual(4);
+    expect(sync(store, null, null).parts).toEqual(["all"]);
+    // And numbering goes on after them.
+    const next = ok(sync(store, first.epoch, 40, "41").reply);
+    expect(next.op === "sync" && next.appended).toBe(41);
   });
 
   it("hands the counters only to a device that sent something", () => {

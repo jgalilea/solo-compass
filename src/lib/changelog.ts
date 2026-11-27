@@ -25,6 +25,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.11.2",
+    date: "2026-11-27",
+    text: {
+      es: {
+        title: "Capítulo XXVIII, al margen · Menos idas y venidas",
+        items: [
+          "La sincronización pide aún menos al servicio gratuito que compartimos todos: en una partida larga envía la mitad de veces (al salir de la app ya se envía en el acto), y si llevas semanas con un solo dispositivo no pregunta cada vez que vuelves de otra app. Lo automático sigue igual.",
+          "Arreglos pequeños: cambiar el código justo al salir de la app ya no puede dejar el dispositivo sin sincronizar, y una respuesta que tardó en llegar (con la app en segundo plano) ya no hace creer que la hora del dispositivo va mal.",
+          "Con lector de pantalla, la aventura activa de la cabecera se oye por su nombre, como se ve.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVIII, in the margin · Fewer comings and goings",
+        items: [
+          "The sync asks even less of the free service we all share: in a long session it sends half as often (leaving the app sends at once anyway), and if you've used a single device for weeks it doesn't ask each time you come back from another app. What's automatic stays the same.",
+          "Small fixes: changing the code just as you leave the app can no longer leave the device unsynced, and an answer that took long to arrive (with the app in the background) no longer makes it look as if the device's clock were off.",
+          "With a screen reader, the header's active adventure is read out by its name, as it shows.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.11.1",
     date: "2026-11-27",
     text: {

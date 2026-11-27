@@ -309,7 +309,6 @@ export interface Dictionary {
   };
   about: {
     triggerLabel: string;
-    dialogLabel: string;
     description: string;
     oracleUsedBy: string;
     journalUsedBy: string;
@@ -449,12 +448,10 @@ export interface Dictionary {
     twistCounterHint: string;
     twistLabel: string;
     twistExplanation: string;
-    rollTwist: string;
     /** "{die} {value} vs {target}+" detail pieces in the journal. */
     targetSuffix: string;
     consequencePlaceholder: string;
     consequenceSaved: string;
-    consequenceSavedNoAdventure: string;
     enterHint: string;
     recentHeading: string;
     viewAllHistory: string;
@@ -482,7 +479,6 @@ export interface Dictionary {
     noResultsDescription: string;
     favoritesHeading: string;
     toolTableHint: string;
-    allHeading: string;
     favoriteAdd: string;
     favoriteRemove: string;
     /** What a starred table is for. */
@@ -677,6 +673,7 @@ export interface Dictionary {
     /** The notice once an adventure is made the active one. */
     activatedTitle: string;
     activatedDescription: string;
+    /** "{name}": the adventure's name first, as the chip shows it. */
     goToActiveAdventure: string;
     favoriteAdd: string;
     favoriteRemove: string;
@@ -790,7 +787,6 @@ export interface Dictionary {
     composerHintConsequence: string;
     composerHintNote: string;
     addPlaceholder: string;
-    addButton: string;
     sendButton: string;
     kindMenuLabel: string;
     composerHintSession: string;
@@ -954,7 +950,6 @@ export interface Dictionary {
     exportedToastTitle: string;
     exportedToastDescription: string;
     importButton: string;
-    importNamePrompt: string;
     importError: string;
     loading: string;
     loadErrorTitle: string;

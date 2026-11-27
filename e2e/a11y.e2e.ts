@@ -127,3 +127,22 @@ test("dialogs pass axe", async ({ page }) => {
   await expect(page.getByText(/No se puede deshacer/)).toBeVisible();
   await expectNoViolations(page, "restore");
 });
+
+test("the header passes axe in English, with and without an active adventure", async ({ page }) => {
+  await useTheme(page, "osr", "dark");
+  await page.addInitScript(() => {
+    (globalThis as unknown as { localStorage: { setItem(k: string, v: string): void } }).localStorage.setItem("solo-compass:locale", "en");
+  });
+  // No active adventure: the chip says so, and its name starts with what it shows.
+  await page.goto("./");
+  await expect(page.getByRole("link", { name: /^No adventure/ })).toBeVisible();
+  await expectNoViolations(page, "header, no adventure (en)");
+  // One active: the chip names it, first.
+  await page.goto("./#/diario");
+  await page.getByRole("button", { name: "New adventure" }).click();
+  await page.getByPlaceholder("Adventure name").fill("The ford");
+  await page.getByRole("button", { name: "Create" }).click();
+  await page.goto("./");
+  await expect(page.getByRole("link", { name: /^The ford: go to the active adventure/ })).toBeVisible();
+  await expectNoViolations(page, "header, an adventure active (en)");
+});

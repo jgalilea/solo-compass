@@ -52,8 +52,9 @@ build has no relay (`SYNC_E2E_LIVE=1` sends it to a real relay instead:
 files handed to the app (dropped on the window, shared through the
 service worker's share target, the wrong kind picked with a button, and
 refused ones); `a11y.e2e.ts` axe (WCAG 2.1 A and AA) on the main screens
-in every theme and mode on the desktop, OSR on the phone, and the
-dialogs, with reduced motion (a colour caught mid-fade isn't the one
+in every theme and mode on the desktop, OSR on the phone, the
+dialogs, and the header in English with and without an active
+adventure (its chip's name starts with what it shows), with reduced motion (a colour caught mid-fade isn't the one
 shown) and `meta-viewport` left out (zoom is blocked on purpose). The deploy
 workflow runs `npm test`, builds, then runs the smoke test, so a
 failure in either blocks the publish. Keep its selectors on visible
@@ -325,7 +326,9 @@ No backend; persistence is split by access pattern, not by feature:
   it; a device sends what the relay doesn't have yet and gets the
   others' since its last number in one POST (`syncWire.ts`, shared with
   the relay; `text/plain`, so no CORS preflight, which would count as a
-  request), and folds changes into a new snapshot past 50 of them.
+  request), and folds changes into a new snapshot past 100 of them
+  (the relay drops the folded ones at once: two rows written, not one
+  each).
   What to send is worked out from the data alone (`syncData.ts`): each
   record's fingerprint against the ones the relay has (`prints`), so
   anything (another tab, an import, a change made while sync was off)
@@ -340,7 +343,10 @@ No backend; persistence is split by access pattern, not by feature:
   20 s old: checked holding the lock, so two tabs don't both ask); on
   coming back after 30 s away (hidden, or the window blurred) and on
   the first touch or key after 5 min idle (a computer's window left in
-  view); 3 min after a change (15 at most from the first one); on
+  view), both only while another device is in use (something came
+  from one in the last 14 days, `othersSeenAt`; else coming back looks
+  after 10 min away); 3 min after a change (30 at most from the first
+  one); on
   leaving with changes waiting, which can't wait for reading and
   sealing (a closed tab doesn't live that long), so a change is
   prepared and sealed 0.5 s after it's made (`prepareChange`; only one
@@ -348,12 +354,13 @@ No backend; persistence is split by access pattern, not by feature:
   what was undone since) and
   leaving sends it within the event itself (`keepalive`), its answer
   taken in by the next exchange (`inFlight`; unanswered, it's sent
-  again, harmlessly); when back online; and "Sync now"; a change
+  again, harmlessly); when back online, if something was waiting or
+  failed; and "Sync now"; a change
   that leaves nothing to send makes no request (`onlyToSend`), and a
   device stops itself past `DAILY_EXCHANGES` automatic ones in a UTC day
   (pause `daily`). Requests and the relay's rows written are each a
   100,000-a-day allowance shared by every player: `sync.e2e.ts` checks
-  two hours of play cost about eight requests, and the relay's tests one
+  two hours of play cost about four requests, and the relay's tests one
   row per change (`MemoryBoxStore.rowsWritten`); keep both. One
   exchange at a time across tabs (Web Locks), and a request that hangs
   is given up (`relayTimeout`, half a minute and more for big ones).

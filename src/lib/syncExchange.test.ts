@@ -148,6 +148,22 @@ describe("sync exchange", () => {
     expect(box.rowsWritten).toBe(written);
   });
 
+  it("notes when something last came from another device", async () => {
+    const code = formatCode(newSecret());
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    await phone.sync();
+    await phone.sync();
+    // Alone: nothing has ever come in.
+    expect(phone.state.othersSeenAt).toBeUndefined();
+    const laptop = new Device(code);
+    await laptop.sync();
+    expect(laptop.state.othersSeenAt).toBeGreaterThan(0);
+    laptop.data.entries.push(entry("e1", "a1", "Desde el portátil"));
+    await laptop.sync();
+    await phone.sync();
+    expect(phone.state.othersSeenAt).toBeGreaterThan(0);
+  });
+
   it("makes no request after a change that left nothing to send", async () => {
     const code = formatCode(newSecret());
     const a = new Device(code, { adventures: [adventure("a1")] });
@@ -201,6 +217,18 @@ describe("sync exchange", () => {
     expect(phone.ids("entries")).toEqual(["e1"]);
   });
 
+  it("doesn't read an answer held up in the background as a clock off", async () => {
+    const code = formatCode(newSecret());
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    await phone.sync();
+    phone.data.entries.push(entry("e1", "a1", "Escrito antes de cerrar"));
+    const ready = (await prepareChange(phone.device, phone.keys, phone.state, 60 * 1024))!;
+    // Sent ten minutes ago, the page frozen since: the answer is taken in now.
+    const inFlight = { change: ready, result: relay(ready.request, ready.op), sentAt: Date.now() - 10 * 60_000 };
+    const outcome = await exchange(phone.device, relay, phone.keys, phone.state, Date.now, { inFlight });
+    expect(outcome).toMatchObject({ kind: "ok", skew: 0 });
+  });
+
   it("prepares nothing when there's nothing to send, or it isn't a small change", async () => {
     const code = formatCode(newSecret());
     const phone = new Device(code, { adventures: [adventure("a1")] });
@@ -239,16 +267,16 @@ describe("sync exchange", () => {
     const code = formatCode(newSecret());
     const a = new Device(code, { adventures: [adventure("a1")] });
     await a.sync();
-    for (let i = 0; i < 55; i++) {
+    for (let i = 0; i < 105; i++) {
       a.data.entries = [...a.data.entries, entry(`e${i}`, "a1", `Entrada ${i}`, { timestamp: 100 + i })];
       await a.sync();
     }
     const box = [...boxes.values()][0];
     expect(box.meta()!.gen).toBeGreaterThan(0);
-    expect(box.changeStatsAfter(box.meta()!.upto).count).toBeLessThan(50);
+    expect(box.changeStatsAfter(box.meta()!.upto).count).toBeLessThan(100);
     const c = new Device(code);
     await c.sync();
-    expect(c.ids("entries")).toHaveLength(55);
+    expect(c.ids("entries")).toHaveLength(105);
   });
 
   it("sends a big first upload in parts", async () => {

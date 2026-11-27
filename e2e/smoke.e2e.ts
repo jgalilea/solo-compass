@@ -70,10 +70,10 @@ test("ask, write, roll and keep it after reloading", async ({ page }) => {
   await expect(page.getByText("Acción", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Apuntar", exact: true }).click();
   await expect(page.getByText("Apuntado en «La cripta»")).toBeVisible();
-  await expect(page.getByRole("link", { name: "La cripta" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "La cripta", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Deshacer" }).click();
   await page.getByRole("button", { name: "Apuntar", exact: true }).click();
-  await page.getByRole("link", { name: "La cripta" }).click();
+  await page.getByRole("link", { name: "La cripta", exact: true }).click();
   await expect(page.locator("[id^=entry-]").getByText("¿Hay alguien en la posada?")).toHaveCount(1);
 
   expect(errors).toEqual([]);

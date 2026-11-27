@@ -32,10 +32,12 @@ import { MAX_REQUEST_BYTES, type SyncRequest, type SyncStats } from "./syncWire"
 const DAY = 24 * 60 * 60 * 1000;
 /** Unsynced this long (deletions are kept a year), a device asks before merging. */
 export const STALE_AFTER = 335 * DAY;
+/** The clock's offset is read only from answers quicker than this. */
+const SKEW_MAX_ROUND_TRIP = 10_000;
 /** A first upload goes in parts of this many records. */
 export const RECORDS_PER_PART = 2000;
 /** The changes are folded into the snapshot past this many… */
-const COMPACT_OPS = 50;
+const COMPACT_OPS = 100;
 /** …or when they weigh more than the snapshot (and at least this). */
 const COMPACT_MIN_BYTES = 512 * 1024;
 
@@ -50,6 +52,8 @@ export interface SyncState {
   closeCodes?: string[];
   /** What the person chose for a device unsynced most of a year. */
   staleChoice?: "merge" | "server";
+  /** When something last came in from another device: whether another one is in use these days. */
+  othersSeenAt?: number;
 }
 
 export interface SyncDevice {
@@ -265,9 +269,12 @@ async function exchangeOrThrow(
     const sentNow = part && reply.appended !== null ? subsetOf(sent, part) : new Map<string, string>();
     prints = printsAfter(prints, sentNow, incoming, merged);
     current = { ...current, epoch: reply.epoch, since: reply.latest, gen: reply.gen, lastSyncAt: now() };
+    if (!isEmptyData(incoming)) current.othersSeenAt = now();
     await Promise.all([device.saveState(current), device.savePrints(prints)]);
     stats = reply.stats;
-    skew = Math.round((started + now()) / 2 - reply.now);
+    // Only from a quick answer: one held up (the page frozen in the background) would read as a clock off.
+    const elapsed = now() - started;
+    if (elapsed < SKEW_MAX_ROUND_TRIP) skew = Math.round((started + now()) / 2 - reply.now);
     wait = reply.wait;
   }
 

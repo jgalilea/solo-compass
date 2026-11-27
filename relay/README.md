@@ -28,14 +28,16 @@ say so, so keep it that way or change them too.
 100,000 requests a day (Worker and Durable Objects each), 100,000 rows
 written a day, 5 million rows read, 5 GB stored. The app sends one
 request per exchange (no CORS preflight), gathers changes (3 minutes
-after the last one, a quarter of an hour at most: two hours of steady
-play are about eight requests), sends nothing when there's nothing to
-send and asks again on coming back only after five minutes: about
-10–20 requests a day per active player. A box writes one row per change
-sent and none to say what's new (its counters are read from the
-changes); its own record only when made, folded, closed or, once a
-week, to move its expiry. Folding (past 50 changes) rewrites the
-snapshot in parts of 1.8 MB, a row each. Past the daily allowance
+after the last one, half an hour at most, and at once on leaving: two
+hours of steady play are about four requests), sends nothing when
+there's nothing to send, and looks for news on opening and on coming
+back (after half a minute away while another device is in use, ten
+minutes otherwise): about 10–25 requests a day per active player. A box
+writes one row per change sent and none to say what's new (its counters
+are read from the changes); its own record only when made, folded,
+closed or, once a week, to move its expiry. Folding (past 100 changes)
+rewrites the snapshot in parts of 1.8 MB, a row each, and drops the
+folded changes at once (two rows, measured, instead of one each). Past the daily allowance
 Cloudflare answers for the Worker (error 1027) until midnight UTC: the
 app pauses, says so in Settings, and tries again after the reset.
 Nothing is billed on the free plan. `MIN_WAIT` (seconds, in

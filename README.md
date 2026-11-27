@@ -11,8 +11,10 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workspace-dark.png">
-  <img src="docs/screenshots/workspace-light.png" alt="An adventure open on desktop: sessions with their scenes, pinned notes and the cast on the left, the journal with a scene, actions, a table roll, oracle questions and consequences in the middle, and the oracle, dice and tables on the right">
+  <img src="docs/screenshots/workspace-light.png" alt="The sample adventure open on desktop in the OSR theme: its sessions and scenes, pinned notes with checkboxes and its characters on the left; in the middle, a scene with an oracle question drawn as three dice and answered No, a consequence tagged with an event and a track, a weather table roll and an item used up; the oracle and the dice on the right">
 </picture>
+
+<p align="center"><sub>Every screenshot shows the app's own sample adventure (fictional), in the OSR theme.</sub></p>
 
 ## Why Solo Compass
 
@@ -49,7 +51,7 @@ New to solo play? Open **Journal**. While it's empty, it offers a short **sample
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/oracle-dark.png">
-  <img src="docs/screenshots/oracle-light.png" alt="The oracle screen with Recluse: the question 'Is the miller hiding something about the box?' with Likely selected, two white dice against one black die, and the answer Yes, and">
+  <img src="docs/screenshots/oracle-light.png" alt="The oracle screen with Recluse: the question 'Is the miller hiding something about the box?' asked as Likely, two white dice (3 and 5) against one black die (1), the answer Yes, and the roll listed under Recent rolls">
 </picture>
 
 Type a yes/no question, pick how likely it is, and roll. The **Recluse** rules (by Graven Utterance, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)) work like this:
@@ -80,6 +82,10 @@ When an adventure is active, the question and answer go into its journal, and a 
 
 Roll for inspiration when a yes or no isn't enough. Besides its own generic tables, Solo Compass brings over 750 tables from open-licensed games, in English and Spanish: **Ironsworn**, **Delve**, **Ironsmith**, **Starforged**, **Starsmith**, **Loner**, **Knave**, **Cairn**, the **Lazy GM's Resource Document** and the One Page Solo Engine's "How much?". Each game sits in its own folding block and is only downloaded when you open it. You can also make or import your own. Search by name, game or theme, or switch on searching the results too ("which table had a lighthouse?"). Results that say "Roll twice" roll again by themselves, and in your own tables `{Table name}` rolls on another table. Search them all, star your favourites, and open the full list of results for any table.
 
+### Dice and cards
+
+The **Dice** tab rolls whatever your own system asks for. Tap the dice you need (d4 to d20, d%, 4dF) or type a formula in Lonelog's dice notation, such as `2d6+3`, `4d6kh3`, `5d6>=5` or `3d6!`, with advantage or disadvantage for the next roll. They wait in a tray, drawn as they fell, until you log them in the active adventure or save them to the history; nothing is kept before that. Rolls you make often can be saved as **your own dice**, with a name and a formula, and starred to have them at hand on the game table. Switch to **Cards** for a standard deck (jokers optional) or a tarot (reversed cards optional, or the Major Arcana alone), and optionally with no repeats: each card comes out once in an adventure until you shuffle. The **?** explains every formula with examples.
+
 ### Journal
 
 Create adventures, split them into sessions and scenes, and log actions, rolls, consequences and notes; questions come in from the oracle. A question, its roll and the consequences that follow are grouped into one card. Any entry or session title can be edited later. Deleting an entry can be undone straight away.
@@ -100,7 +106,7 @@ Create adventures, split them into sessions and scenes, and log actions, rolls, 
 - **Export** an adventure as Lonelog Markdown or as a self-contained **web page** in the current theme (to read, share or print), or **import** a `.md` journal. The pinned notes travel in the file's front matter. The import accepts any text: lines it doesn't recognise become notes, so nothing is lost. A journal, a table or a backup can also be dropped onto the window, opened with the installed app ("Open with" on a computer) or shared to it (Android's share sheet); the app says what the file is and asks before keeping anything, and refuses what isn't its own.
 
 <p align="center">
-  <img src="docs/screenshots/phones.png" alt="Three phone screens: an oracle answer of Yes, but; an adventure journal with a scene and the one-row composer; and the meaning tables, one folding block per game" width="860">
+  <img src="docs/screenshots/phones.png" alt="Three phone screens in the OSR theme: an oracle answer of No to 'Does anyone follow me out of the inn?'; an adventure's journal with a scene, an oracle question with its dice and a consequence, above the one-row composer; and the Dice screen with a d20 and two d6 waiting in the tray" width="860">
 </p>
 
 #### What's used of Lonelog, and what isn't
@@ -118,7 +124,7 @@ A journal that has any of the latter loses nothing: what is theirs stays as text
 ### Themes and language
 
 <p align="center">
-  <img src="docs/screenshots/themes.png" alt="The same journal in the five themes: Fantasy, Pulp, Modern, Sci-fi and OSR" width="860">
+  <img src="docs/screenshots/themes.png" alt="The same journal on a phone in the five themes, dark: OSR, Fantasy, Pulp, Modern and Sci-fi" width="860">
 </p>
 
 In **Settings** (the gear icon) you can choose the theme, light, dark or automatic mode, and the language. These choices are saved on your device.
@@ -145,9 +151,16 @@ Your adventures, rolls and settings are stored in this browser on this device: t
 
 **Sync your devices** (Settings → Your data) keeps the same journal on your phone and your computer, up to date by itself. It's optional and off until you turn it on.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/sync-dark.png">
+    <img src="docs/screenshots/sync-light.png" alt="Settings on a phone in the OSR theme, open at Your data: the Sync your devices card says Synced now, with Sync now, Show the code, More options and How it works, security and privacy; above, beside Settings, the cloud icon with a check that shows how the sync is going" width="320">
+  </picture>
+</p>
+
 **How to use it.** On the device that has your journal, press *Turn on for this device*. You get a sync code with a QR code: keep it somewhere safe (a password manager, a private note) or download it, since it's the only key to your synced data. On the other device, go to the same card and press *Scan the QR code* (the camera opens inside the app), or *I have a code* to type or paste it (a typo is caught before anything happens); the system camera works too, since the QR code is a link that opens the app. It always asks before linking, and what each device had is joined, losing nothing. On an iPhone or iPad with the app installed, paste the code inside the app: the QR code opens Safari, which keeps its data apart. Any number of devices can share one code.
 
-**When it syncs.** When the app opens, always; when you come back to it after half a minute in another app or window (and, on a computer, on the first click after five minutes without touching it); three minutes after your last change (a quarter of an hour at most while you keep playing); when you leave the app or close the tab (the change is prepared and sealed a moment after it's made, so leaving only sends it, and it arrives even if the page closes right then); when the connection comes back; and with *Sync now*. Changes are gathered and nothing is asked for no reason, since the relay's free daily allowance is shared by everyone: two hours of steady play cost about eight requests. Offline you play as usual and changes go out later. If the same thing changes on two devices, the most recent edit wins (by each device's clock; the app warns if a clock is off), and deletions are remembered for a year so they don't come back from another device. A cloud icon beside Settings shows at a glance how it's going (synced, sending, changes waiting, offline or paused, something to look at) and opens the details.
+**When it syncs.** When the app opens, always; when you come back to it after half a minute in another app or window (and, on a computer, on the first click after five minutes without touching it; used alone for two weeks, only after ten minutes away); three minutes after your last change (half an hour at most while you keep playing); when you leave the app or close the tab (the change is prepared and sealed a moment after it's made, so leaving only sends it, and it arrives even if the page closes right then); when the connection comes back, if something was waiting or failed; and with *Sync now*. Changes are gathered and nothing is asked for no reason, since the relay's free daily allowance is shared by everyone: two hours of steady play cost about four requests. Offline you play as usual and changes go out later. If the same thing changes on two devices, the most recent edit wins (by each device's clock; the app warns if a clock is off), and deletions are remembered for a year so they don't come back from another device. A cloud icon beside Settings shows at a glance how it's going (synced, sending, changes waiting, offline or paused, something to look at) and opens the details.
 
 **What travels.** Your adventures (journal, pinned notes, descriptions, game table), the roll history, your own tables, dice and generators, and what you delete. Each device's settings don't: theme, mode, language, favorites, the order of your adventures, the active one, card shuffles and unsent drafts.
 
@@ -190,11 +203,11 @@ The browser tests need Playwright's Chromium once: `npx playwright install chrom
 | `npm run build` | Type-check (`tsc -b`) and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm test` | Vitest unit tests for `src/lib` (oracles and their odds, Lonelog import/export, tags, dice formulas, journal grouping, tables, sample adventure, backup, device sync) and the sync relay (`relay/src`) |
-| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, two devices syncing through a fake relay (when the build has one), and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
-| `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU. Not part of the deploy |
+| `npm run test:e2e` | Builds, then plays the main path (oracle, an adventure, an entry and a scene, a table roll, a reload) with Playwright on a phone and a desktop viewport; also Lonelog and backups in and out, files dropped or shared to the app, two devices syncing through a fake relay when the build has one (a session of play on both, opening and coming back, leaving the app, the QR code scanned by a fake camera, what it costs in requests), and an axe accessibility check (WCAG 2.1 AA) in every theme and mode |
+| `npm run test:perf` | Restores years of synthetic play (11,000 entries, 10,000 rolls) and times the main screens on a phone with a slowed-down CPU, then syncs it all and checks the page never freezes meanwhile. Not part of the deploy |
 | `npm run lint` | oxlint |
 
-The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, and [Tabler Icons](https://tabler.io/icons).
+The stack is React 19, TypeScript, Vite, Tailwind CSS v4, React Router (`HashRouter`, so it works on GitHub Pages without server rewrites), `idb-keyval` for IndexedDB, `vite-plugin-pwa`, [Tabler Icons](https://tabler.io/icons), [uqr](https://github.com/unjs/uqr) (MIT) to draw the sync's QR code and [jsQR](https://github.com/cozmo/jsQR) (Apache-2.0) to read it where the browser can't. The sync relay is a Cloudflare Worker (`relay/`, deployed with Wrangler).
 
 The UI text lives in `src/lib/i18n/locales/{es,en}.ts`, which share one typed `Dictionary`, so TypeScript flags a missing key. The UI is Spanish first; the code comments, test names and commit messages are in English. [`CLAUDE.md`](CLAUDE.md) describes the architecture in more depth: state, storage, theming and responsive layout.
 

@@ -118,8 +118,8 @@ export const esLong: LongTexts = {
         {
           heading: "Cuándo se sincroniza",
           items: [
-            "Al abrir la app, siempre; al volver a ella tras medio minuto en otra app o ventana, o con la pantalla apagada; en el ordenador, también al primer clic o tecla tras cinco minutos sin tocarlo. Así ves lo que escribiste en otro dispositivo sin pedirlo.",
-            "Lo que cambias sale tres minutos después de tu último cambio (un cuarto de hora como mucho, si sigues jugando) y, sobre todo, al salir de la app o cerrar la pestaña: queda preparado y cifrado un momento después de cada cambio, así que al irte solo hay que enviarlo y llega aunque cierres en el acto. También al recuperar la conexión, y cuando pulsas «Sincronizar ahora».",
+            "Al abrir la app, siempre; al volver a ella tras medio minuto en otra app o ventana, o con la pantalla apagada; en el ordenador, también al primer clic o tecla tras cinco minutos sin tocarlo. Así ves lo que escribiste en otro dispositivo sin pedirlo. (Si hace dos semanas que no llega nada de otro dispositivo, al volver solo mira tras diez minutos fuera: usado a solas, no hay nada que buscar.)",
+            "Lo que cambias sale tres minutos después de tu último cambio (media hora como mucho, si sigues jugando) y, sobre todo, al salir de la app o cerrar la pestaña: queda preparado y cifrado un momento después de cada cambio, así que al irte solo hay que enviarlo y llega aunque cierres en el acto. También al recuperar la conexión, si algo esperaba o había fallado, y cuando pulsas «Sincronizar ahora».",
             "El icono de la nube, arriba junto a Ajustes, dice de un vistazo cómo va: con ✓, al día; con una flecha, cambios por enviar; girando, enviando; tachada, sin conexión o en pausa; un triángulo, algo que mirar. Tócalo para ver el detalle aquí.",
             "Junta los cambios y no pregunta al servidor sin motivo: el servicio gratuito tiene un cupo diario que compartimos todos, y así alcanza para muchos más.",
             "Esa espera deja tiempo para «Deshacer»: un borrado que ya ha viajado no se deshace en los otros dispositivos.",

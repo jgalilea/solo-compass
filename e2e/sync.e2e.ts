@@ -180,6 +180,7 @@ test("two devices share a journal through the relay, and a pause says so", async
   // At a glance, from the header: synced.
   await expect(glance(page)).toHaveAttribute("data-sync-glance", "ok");
   await expect(glance(page)).toHaveAccessibleName(/^Sincronizado ahora/);
+  await expectAccessible(page, "header with the sync icon", "header");
 
   // The computer: nothing yet, then the code typed in.
   const computer = await browser.newContext({ ...testInfo.project.use, locale: "es-ES" });
@@ -537,10 +538,10 @@ test("two hours of play cost a handful of requests", async ({ page }) => {
     await page.clock.runFor(2 * 60_000);
   }
   await page.clock.runFor(5 * 60_000);
-  await expect.poll(() => relay.requests() - before).toBeGreaterThanOrEqual(8);
-  // A send a quarter of an hour at most: about eight, never one per entry.
+  await expect.poll(() => relay.requests() - before).toBeGreaterThanOrEqual(4);
+  // A send every half hour at most while writing on (leaving sends at once): never one per entry.
   console.log(`Two hours of play, 60 entries: ${relay.requests() - before} requests, ${relay.rowsWritten()} rows written in all`);
-  expect(relay.requests() - before).toBeLessThanOrEqual(10);
+  expect(relay.requests() - before).toBeLessThanOrEqual(6);
   // And on the relay, one row per change sent.
   expect(relay.rowsWritten()).toBeLessThanOrEqual(relay.requests() + 2);
 
@@ -559,9 +560,15 @@ test("two hours of play cost a handful of requests", async ({ page }) => {
   await setVisible(page, true);
   await page.clock.runFor(5_000);
   expect(relay.requests()).toBe(leaving + 1);
-  // Back after a while: another device may have been used meanwhile, so it looks.
+  // Used alone (nothing has come from another device): a minute and a half away isn't worth a look…
   await setVisible(page, false);
   await page.clock.runFor(90_000);
+  await setVisible(page, true);
+  await page.clock.runFor(5_000);
+  expect(relay.requests()).toBe(leaving + 1);
+  // …ten minutes away is: another device may have been taken up meanwhile.
+  await setVisible(page, false);
+  await page.clock.runFor(11 * 60_000);
   await setVisible(page, true);
   await expect.poll(() => relay.requests()).toBe(leaving + 2);
   expect(errors).toEqual([]);

@@ -6,6 +6,9 @@ import type { BoxMeta, BoxStore } from "./box.ts";
  */
 const PART_BYTES = Math.floor(1.8 * 1024 * 1024);
 
+const CREATE_CHANGES = "CREATE TABLE IF NOT EXISTS changes (seq INTEGER PRIMARY KEY, at INTEGER NOT NULL, data BLOB NOT NULL)";
+const CREATE_SNAPSHOT = "CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NULL)";
+
 function toBuffer(data: Uint8Array): ArrayBuffer {
   return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
 }
@@ -26,8 +29,8 @@ export class SqlBoxStore implements BoxStore {
   /** Again after an expiry, which deletes the tables too. */
   init(): void {
     this.sql.exec("CREATE TABLE IF NOT EXISTS meta (id INTEGER PRIMARY KEY, json TEXT NOT NULL)");
-    this.sql.exec("CREATE TABLE IF NOT EXISTS changes (seq INTEGER PRIMARY KEY, at INTEGER NOT NULL, data BLOB NOT NULL)");
-    this.sql.exec("CREATE TABLE IF NOT EXISTS snapshot (part INTEGER PRIMARY KEY, data BLOB NOT NULL)");
+    this.sql.exec(CREATE_CHANGES);
+    this.sql.exec(CREATE_SNAPSHOT);
   }
 
   meta(): BoxMeta | null {
@@ -75,8 +78,21 @@ export class SqlBoxStore implements BoxStore {
       .map((row) => row.at);
   }
 
+  /**
+   * Usually every change is folded: then the table goes and comes back
+   * (measured: dropping writes no row, making it two), instead of one row
+   * written per change deleted, which made folding cost as much as
+   * sending.
+   */
   deleteChangesUpTo(seq: number): void {
-    this.sql.exec("DELETE FROM changes WHERE seq <= ?", seq);
+    const last = this.lastChange();
+    if (last === null) return;
+    if (last > seq) {
+      this.sql.exec("DELETE FROM changes WHERE seq <= ?", seq);
+      return;
+    }
+    this.sql.exec("DROP TABLE changes");
+    this.sql.exec(CREATE_CHANGES);
   }
 
   snapshot(): Uint8Array | null {
@@ -108,8 +124,9 @@ export class SqlBoxStore implements BoxStore {
   }
 
   wipe(): void {
-    this.sql.exec("DELETE FROM changes");
-    this.sql.exec("DELETE FROM snapshot");
+    this.sql.exec("DROP TABLE changes");
+    this.sql.exec("DROP TABLE snapshot");
     this.sql.exec("DELETE FROM meta");
+    this.init();
   }
 }

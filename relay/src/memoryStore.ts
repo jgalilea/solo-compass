@@ -42,11 +42,12 @@ export class MemoryBoxStore implements BoxStore {
       .map(([, { at }]) => at);
   }
   deleteChangesUpTo(seq: number): void {
-    for (const s of [...this.changes.keys()]) {
-      if (s > seq) continue;
-      this.changes.delete(s);
-      this.rowsWritten++;
-    }
+    const keys = [...this.changes.keys()];
+    if (keys.length === 0) return;
+    // All of them: the SQLite one drops the table and makes it again (two rows); else one per change.
+    const all = keys.every((s) => s <= seq);
+    for (const s of keys) if (s <= seq) this.changes.delete(s);
+    this.rowsWritten += all ? 2 : keys.filter((s) => s <= seq).length;
   }
   snapshot(): Uint8Array | null {
     return this.snap;
@@ -57,7 +58,8 @@ export class MemoryBoxStore implements BoxStore {
     this.rowsWritten += Math.max(1, Math.ceil(data.length / Math.floor(1.8 * 1024 * 1024)));
   }
   wipe(): void {
-    this.rowsWritten += this.changes.size + (this.snap ? 1 : 0) + (this.stored ? 1 : 0);
+    // Its tables dropped and made again (two rows each), its record deleted.
+    this.rowsWritten += 4 + (this.stored ? 1 : 0);
     this.stored = null;
     this.changes.clear();
     this.snap = null;

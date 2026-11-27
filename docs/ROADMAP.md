@@ -5,10 +5,16 @@ visible es `src/lib/changelog.ts`). Ojo: el repositorio es público, así
 que esto sí se ve en GitHub.
 
 Prioridad: **P1** siguiente, **P2** después, **P3** cuando haya hueco.
-Última revisión: 2026-11-26 (archivos de fuera, modo zen, continuar aventura, buscar en resultados, tiempo de juego y axe en el e2e, 1.9.0; repaso de diseño para móvil, tablet, escritorio y ultrawide, 1.6.0; Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
+Última revisión: 2026-11-27 (sincronizar dispositivos con un relevo cifrado en Cloudflare, 1.11.0–1.11.2: ver §9; archivos de fuera, modo zen, continuar aventura, buscar en resultados, tiempo de juego y axe en el e2e, 1.9.0; repaso de diseño para móvil, tablet, escritorio y ultrawide, 1.6.0; Lonelog 1.7, 1.5.0; estadísticas y búsqueda por tipo, 1.3.0; historial y dados de las tablas, 1.2.0; dados y cartas dibujados, 1.1.0; recuadros, 1.1.1; accesos directos del icono; la instalación en Android ya va, faltan los accesos).
 
 ## Hecho recientemente
 
+- Sincronizar dispositivos (2026-11-27, 1.11.0–1.11.2): relevo cifrado de
+  extremo a extremo en Cloudflare (Worker + Durable Object con SQLite,
+  plan gratis), código con QR que se escanea dentro de la app, nube de
+  estado en la cabecera, explicación completa de seguridad y privacidad,
+  y sincronización automática al abrir, al volver y al salir. Detalle,
+  costes y pendientes en §9.
 - Análisis de rendimiento, optimización y seguridad (2026-11-26, 1.10.0):
   - **Rendimiento**: sin cuellos de botella. Primera visita ~1,37 s en
     4G lento simulado, repetida 0,14 s; con 11.000 entradas y 10.000
@@ -947,12 +953,16 @@ con Dropbox, OneDrive, P2P (Trystero), Evolu, Jazz, InstantDB (cierra en
   pregunta antes de juntar un dispositivo que lleva casi un año sin
   sincronizar. Sin token de Cloudflare en GitHub (Workers Builds).
 - **Peticiones:** una por intercambio, sin preflight, cambios agrupados
-  (3 min tras el último, 15 como mucho; al volver, solo si hace más de 5
-  min; nada si no hay nada que enviar): unas 10–20 al día por jugador
-  activo. El relevo escribe una fila por cambio enviado y ninguna al
-  preguntar (las filas escritas son otro cupo de 100.000 al día, y
-  antes, con tres por envío, era el que se agotaba primero). Da para del
-  orden de 5.000–8.000 jugadores activos al día en el plan gratis. Un
+  (3 min tras el último, 30 como mucho, y al momento al salir de la app;
+  al abrir siempre se mira, al volver tras 30 s fuera si otro
+  dispositivo está en uso estas dos semanas, si no tras 10 min; nada si
+  no hay nada que enviar): dos horas de partida, unas 4 peticiones; unas
+  10–25 al día por jugador activo. El relevo escribe una fila por cambio
+  enviado y ninguna al preguntar, y al compactar (cada 100 cambios)
+  vacía la tabla de golpe: 2 filas en vez de una por cambio (medido con
+  el contador de filas de SQLite; las filas escritas son otro cupo de
+  100.000 al día, y antes era el que se agotaba primero). Da para del
+  orden de 4.000–8.000 jugadores activos al día en el plan gratis. Un
   dispositivo se para solo pasados 150 intercambios automáticos en un
   día (salvaguarda contra un fallo que repita peticiones).
   `MIN_WAIT` en `relay/wrangler.jsonc` frena a todos sin publicar app.
@@ -990,6 +1000,18 @@ con Dropbox, OneDrive, P2P (Trystero), Evolu, Jazz, InstantDB (cierra en
   de hacerlo para que salir solo tenga que enviarlo (dentro del propio
   evento, con keepalive). Probado en la e2e y con 11.000 entradas en un
   móvil lento (sin bloqueos).
+- **1.11.2** (2026-11-27, «optimiza al máximo sin perder lo automático»):
+  el envío de seguridad en una partida larga, cada 30 min (al salir ya
+  se envía al momento); al volver a la app tras 30 s solo si otro
+  dispositivo está en uso estas dos semanas (si no, tras 10 min); al
+  recuperar la conexión solo si algo esperaba o falló; compactar cada
+  100 cambios y vaciando la tabla de golpe en el relevo. Dos horas de
+  partida: 4 peticiones y 6 filas (antes 8 y 10). Arreglados: un envío
+  preparado para el código anterior podía, al responder «cerrado»,
+  desactivar la sincronización tras «Cambiar el código»; y una
+  respuesta retenida con la app en segundo plano se leía como reloj
+  desajustado. Repaso general: seis textos sin usar quitados, textos
+  revisados (sin erratas tipográficas), `npm audit` a 0 en app y relevo.
 - **Pendiente / a vigilar:** probarlo en un iPhone real (app instalada y
   Safari); una carrera muy improbable: si editas una entrada justo en
   la décima de segundo en que llega un cambio de esa misma entrada desde

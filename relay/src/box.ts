@@ -15,9 +15,11 @@
  * Written rows are a daily allowance on the free plan (100,000 a day,
  * like requests), so a box writes as little as it can: sending a change
  * writes that one row, and nothing else (the counters are read from the
- * changes themselves); asking for what's new writes nothing; the box's
- * own record changes only when it's made, folded, closed, or once a week
- * to move its expiry.
+ * changes themselves); asking for what's new writes nothing; folding the
+ * changes into the snapshot writes its parts and drops the folded ones
+ * at once (sqlStore.ts) rather than a row each; the box's own record
+ * changes only when it's made, folded, closed, or once a week to move
+ * its expiry.
  */
 
 import { MAX_BOX_BYTES, encodeFrame, type SyncReply, type SyncRequest, type SyncStats } from "../../src/lib/syncWire.ts";

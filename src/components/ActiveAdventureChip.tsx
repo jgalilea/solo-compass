@@ -39,7 +39,8 @@ export function ActiveAdventureChip() {
     <Link
       to={`/diario/${active.id}`}
       title={interpolate(t.journal.activeChipTitle, { name: active.name })}
-      aria-label={t.journal.goToActiveAdventure}
+      // Its name first, as it shows (WCAG 2.5.3), then where it leads.
+      aria-label={interpolate(t.journal.goToActiveAdventure, { name: active.name })}
       className="flex min-w-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs pointer-coarse:py-2 font-medium text-gold transition hover:bg-gold/20"
     >
       <IconJournal size={14} className="shrink-0" />

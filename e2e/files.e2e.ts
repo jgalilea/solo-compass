@@ -190,7 +190,8 @@ test("replacing everything from a dropped backup asks again, and going back keep
   await expect.poll(() => page.evaluate("history.state?.modalDepth ?? 0")).toBe(0);
 
   await page.goto("./#/diario");
-  await expect(page.getByRole("link", { name: /^Lo mío/ })).toBeVisible();
+  // The list's link (the header's chip names it too, as the active one).
+  await expect(page.getByRole("main").getByRole("link", { name: /^Lo mío/ })).toBeVisible();
   await expect(page.getByText("Lo de otro")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
