@@ -28,6 +28,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # The relay's types too: type-aware lint reads relay/tsconfig.json.
+      - run: npm ci --prefix relay
       - run: npm run lint
       - run: npm run format:check
       - run: npm test

@@ -25,11 +25,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # The relay's types too: type-aware lint reads relay/tsconfig.json.
+      - run: npm ci --prefix relay
       - run: npm run lint
       - run: npm run format:check
       - run: npm test
       # The sync relay (relay/; Cloudflare deploys it): its types against the Workers runtime.
-      - run: npm ci --prefix relay
       - run: npm run --prefix relay typecheck
       - run: npm run build
       - run: timeout 180 npx playwright install --with-deps chromium || npx playwright install chromium
