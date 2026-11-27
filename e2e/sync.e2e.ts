@@ -220,6 +220,13 @@ test("two devices share a journal through the relay, and a pause says so", async
   card = await openSettings(page);
   await card.getByRole("button", { name: "Sincronizar ahora" }).click();
   await expect(card.getByText(/^Sincronizado/)).toBeVisible();
+  // Both devices, by name (it travels sealed), and this one's name changed.
+  await expect(card.getByText("Dispositivos (2)")).toBeVisible();
+  await expect(card.getByText(/^visto /)).toBeVisible();
+  await card.getByRole("button", { name: "Cambiar nombre" }).click();
+  await card.getByLabel("Nombre de este dispositivo").fill("Móvil del faro");
+  await card.getByRole("button", { name: "Guardar", exact: true }).click();
+  await expect(card.getByText("Móvil del faro")).toBeVisible();
   await closeSettings(page);
   await page.getByText("El faro").first().click();
   await expect(page.locator("[id^=entry-]").getByText("Alguien ha dejado huellas en la arena.")).toBeVisible();

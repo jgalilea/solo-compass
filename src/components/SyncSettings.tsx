@@ -12,7 +12,9 @@ import {
   deleteServerCopy,
   dismissClosed,
   linkDevice,
+  renameDevice,
   resolveStale,
+  syncedDevices,
   syncNow,
   unlinkDevice,
 } from "../lib/syncEngine";
@@ -77,12 +79,21 @@ function useHasCamera(): boolean {
 
 /** "2 minutes ago", "now"… re-read every half minute while shown. */
 function useAgo(time: number | null, locale: string): string | null {
+  const now = useNow();
+  return time === null ? null : relativeTime(time, locale, now);
+}
+
+/** The time now, read again every half minute while shown. */
+function useNow(): number {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
-  if (time === null) return null;
+  return now;
+}
+
+function relativeTime(time: number, locale: string, now: number): string {
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const seconds = Math.round((time - Math.max(now, time)) / 1000);
   if (seconds > -60) return rtf.format(0, "second");
@@ -211,6 +222,7 @@ export function SyncSettings() {
               {sync.showCode}
             </button>
           </div>
+          <SyncedDevicesList status={status} />
           <Disclosure open={moreOpen} onToggle={() => setMoreOpen((v) => !v)} label={sync.moreOptions}>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => setConfirm("change")} className={quietButton}>
@@ -793,5 +805,93 @@ function QrScanDialog({ onCode, onClose }: { onCode: (code: string) => void; onC
         </button>
       </DialogBody>
     </Modal>
+  );
+}
+
+/**
+ * The devices sharing the code, as they've told this one (inside what's
+ * sealed: the relay knows nothing of them): this one, with its name to
+ * change, and the others with when they were last heard of.
+ */
+function SyncedDevicesList({ status }: { status: SyncStatus | null }) {
+  const { t, locale } = useLocaleContext();
+  const sync = useLongTexts().sync;
+  const now = useNow();
+  const [devices, setDevices] = useState<Awaited<ReturnType<typeof syncedDevices>> | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
+  const fieldId = useId();
+  // Read again after each exchange (what came in may name a new device).
+  const lastAt = status?.state === "ok" ? status.at : 0;
+  useEffect(() => {
+    let cancelled = false;
+    syncedDevices()
+      .then((found) => !cancelled && setDevices(found))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [lastAt]);
+  if (!devices) return null;
+
+  function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (editing === null) return;
+    renameDevice(editing);
+    setDevices((d) => d && { ...d, me: { ...d.me, name: editing.trim() || d.me.name } });
+    setEditing(null);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 border-t border-ink-border pt-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-parchment-dim">
+        {interpolate(sync.devicesTitle, { count: String(devices.others.length + 1) })}
+      </p>
+      <ul className="flex flex-col gap-1.5 text-sm">
+        <li className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <IconDevices size={16} className="shrink-0 text-gold" />
+          {editing === null ? (
+            <>
+              <span className="font-medium text-parchment">{devices.me.name}</span>
+              <span className="text-parchment-faint">{sync.thisDevice}</span>
+              <button
+                type="button"
+                onClick={() => setEditing(devices.me.name)}
+                className="text-parchment-dim underline decoration-parchment-faint underline-offset-4 transition hover:text-gold"
+              >
+                {sync.rename}
+              </button>
+            </>
+          ) : (
+            <form onSubmit={save} className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <label htmlFor={fieldId} className="sr-only">
+                {sync.renameLabel}
+              </label>
+              <input
+                id={fieldId}
+                value={editing}
+                onChange={(e) => setEditing(e.target.value)}
+                maxLength={40}
+                autoFocus
+                className="min-w-0 flex-1 rounded-xl border border-ink-border bg-ink-950/60 px-3 py-2 text-base text-parchment focus:border-gold focus:outline-none"
+              />
+              <button type="submit" className={quietButton}>
+                {t.common.save}
+              </button>
+              <button type="button" onClick={() => setEditing(null)} className={quietButton}>
+                {t.common.cancel}
+              </button>
+            </form>
+          )}
+        </li>
+        {devices.others.map((d) => (
+          <li key={d.id} className="flex flex-wrap items-center gap-x-2">
+            <IconDevices size={16} className="shrink-0 text-parchment-dim" />
+            <span className="text-parchment">{d.name}</span>
+            <span className="text-parchment-faint">{interpolate(sync.seen, { when: relativeTime(d.seenAt, locale, now) })}</span>
+          </li>
+        ))}
+      </ul>
+      {devices.others.length === 0 && <p className="text-xs text-parchment-faint">{sync.noOthers}</p>}
+    </div>
   );
 }

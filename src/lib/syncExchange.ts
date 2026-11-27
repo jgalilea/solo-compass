@@ -26,6 +26,7 @@ import {
   type SyncKind,
 } from "./syncData";
 import { seal, unseal, type SealedKind, type SyncKeys } from "./syncCrypto";
+import { ANNOUNCE_EVERY, mergeDevices, readDevice, type SyncedDevice } from "./syncDevices";
 import type { RelayError, RelayResult } from "./syncRelay";
 import { MAX_REQUEST_BYTES, type SyncRequest, type SyncStats } from "./syncWire";
 
@@ -54,6 +55,9 @@ export interface SyncState {
   staleChoice?: "merge" | "server";
   /** When something last came in from another device: whether another one is in use these days. */
   othersSeenAt?: number;
+  /** When this device last told the others it's there, and by which name (syncDevices.ts). */
+  announcedAt?: number;
+  announcedName?: string;
 }
 
 export interface SyncDevice {
@@ -65,6 +69,12 @@ export interface SyncDevice {
   saveState(state: SyncState): Promise<void>;
   loadPrints(): Promise<Prints>;
   savePrints(prints: Prints): Promise<void>;
+  /** The devices sharing the code (syncDevices.ts): this one, and the list it keeps. */
+  devices?: {
+    me(): { id: string; name: string };
+    load(): Promise<SyncedDevice[]>;
+    save(devices: SyncedDevice[]): Promise<void>;
+  };
 }
 
 export type Relay = (request: SyncRequest, payload?: Uint8Array) => Promise<RelayResult>;
@@ -80,12 +90,22 @@ export type ExchangeOutcome =
 interface Packet {
   v: number;
   data: Partial<Record<SyncKind, unknown>>;
+  /** A change's sender. */
+  device?: SyncedDevice;
+  /** A snapshot's list of devices. */
+  devices?: SyncedDevice[];
 }
 
 class NewerDataError extends Error {}
 
+/** This device as a change's sender, if it keeps a list of devices. */
+function signed(device: SyncDevice, now: () => number): { device?: SyncedDevice } {
+  const me = device.devices?.me();
+  return me ? { device: { ...me, seenAt: now() } } : {};
+}
+
 /** What came in, opened and read like a backup's records. A part that can't be opened is left out. */
-async function openIncoming(keys: SyncKeys, result: Extract<RelayResult, { ok: true }>): Promise<MergeData> {
+async function openIncoming(keys: SyncKeys, result: Extract<RelayResult, { ok: true }>, seen: SyncedDevice[] = []): Promise<MergeData> {
   if (result.reply.op !== "sync") return emptyData();
   const kinds: SealedKind[] = [
     ...(result.reply.snapshot !== null ? ["snapshot" as const] : []),
@@ -103,6 +123,10 @@ async function openIncoming(keys: SyncKeys, result: Extract<RelayResult, { ok: t
     // From a newer version of the app: merged here, it could lose what this one doesn't know.
     if (packet.v > BACKUP_SCHEMA_VERSION) throw new NewerDataError();
     datas.push(normalizeMergeData(packet.data ?? {}));
+    for (const d of [packet.device, ...(Array.isArray(packet.devices) ? packet.devices : [])]) {
+      const device = d && readDevice(d);
+      if (device) seen.push(device);
+    }
   }
   return combineData(datas);
 }
@@ -176,7 +200,7 @@ export async function prepareChange(
   const [prints, local] = await Promise.all([device.loadPrints(), device.loadData()]);
   const { delta, sent } = await changedRecords(local, prints);
   if (isEmptyData(delta) || countRecords(delta) > RECORDS_PER_PART) return null;
-  const op = await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: delta } satisfies Packet);
+  const op = await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: delta, ...signed(device, now) } satisfies Packet);
   if (op.length > maxBytes) return null;
   return { request: syncRequest(keys, state, op.length), op, part: delta, sent };
 }
@@ -226,7 +250,15 @@ async function exchangeOrThrow(
   if (!flying && options.onlyToSend && isEmptyData(delta) && current.epoch !== null && !current.closeCodes?.length) {
     return { kind: "ok", state: current, skew: 0, wait: 0, followUp: false, skipped: true };
   }
-  const parts: (MergeData | null)[] = isEmptyData(delta) ? [null] : flying ? [delta] : splitData(delta, RECORDS_PER_PART);
+  // Nothing to send, but the others haven't heard from this device for a day (or of its new name): an empty change says so.
+  const me = device.devices?.me();
+  const announce = !!me && (!current.announcedAt || now() - current.announcedAt > ANNOUNCE_EVERY || current.announcedName !== me.name);
+  const parts: (MergeData | null)[] = isEmptyData(delta)
+    ? [announce && !flying ? emptyData() : null]
+    : flying
+      ? [delta]
+      : splitData(delta, RECORDS_PER_PART);
+  const seen: SyncedDevice[] = [];
   let stats: SyncStats | null = null;
   let skew = 0;
   let wait = 0;
@@ -238,7 +270,7 @@ async function exchangeOrThrow(
     const op = ahead
       ? ahead.change.op
       : part
-        ? await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: part } satisfies Packet)
+        ? await seal(keys, "op", { v: BACKUP_SCHEMA_VERSION, data: part, ...signed(device, now) } satisfies Packet)
         : new Uint8Array();
     if (op.length > MAX_REQUEST_BYTES) return { kind: "problem", reason: "full" };
     const started = ahead ? ahead.sentAt : now();
@@ -264,12 +296,13 @@ async function exchangeOrThrow(
       prints = new Map();
       followUp = true;
     }
-    const incoming = await openIncoming(keys, result);
+    const incoming = await openIncoming(keys, result, seen);
     const merged = isEmptyData(incoming) ? local : await takeIn(device, incoming);
     const sentNow = part && reply.appended !== null ? subsetOf(sent, part) : new Map<string, string>();
     prints = printsAfter(prints, sentNow, incoming, merged);
     current = { ...current, epoch: reply.epoch, since: reply.latest, gen: reply.gen, lastSyncAt: now() };
     if (!isEmptyData(incoming)) current.othersSeenAt = now();
+    if (me && part && reply.appended !== null) Object.assign(current, { announcedAt: now(), announcedName: me.name });
     await Promise.all([device.saveState(current), device.savePrints(prints)]);
     stats = reply.stats;
     // Only from a quick answer: one held up (the page frozen in the background) would read as a clock off.
@@ -282,6 +315,7 @@ async function exchangeOrThrow(
     delete current.staleChoice;
     await device.saveState(current);
   }
+  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
   if (stats && (stats.ops >= COMPACT_OPS || stats.opsBytes > Math.max(stats.snapshotBytes, COMPACT_MIN_BYTES))) {
     const gen = await compact(device, relay, keys, current);
     if (gen !== null) current = { ...current, gen };
@@ -299,8 +333,10 @@ async function pullAndCompact(
 ): Promise<{ state: SyncState; prints: Prints } | null> {
   const pull = await relay(syncRequest(keys, state, 0));
   if (!pull.ok || pull.reply.op !== "sync") return null;
-  const incoming = await openIncoming(keys, pull);
+  const seen: SyncedDevice[] = [];
+  const incoming = await openIncoming(keys, pull, seen);
   const merged = isEmptyData(incoming) ? await device.loadData() : await takeIn(device, incoming);
+  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen));
   const next = { ...state, epoch: pull.reply.epoch, since: pull.reply.latest, gen: pull.reply.gen };
   const nextPrints = printsAfter(pull.reply.reset ? new Map() : prints, new Map(), incoming, merged);
   await Promise.all([device.saveState(next), device.savePrints(nextPrints)]);
@@ -312,7 +348,10 @@ async function pullAndCompact(
 async function compact(device: SyncDevice, relay: Relay, keys: SyncKeys, state: SyncState): Promise<number | null> {
   if (!state.epoch || state.since === null) return null;
   const all = await device.loadData();
-  const snapshot = await seal(keys, "snapshot", { v: BACKUP_SCHEMA_VERSION, data: all } satisfies Packet);
+  // The devices known go with it: one that starts from the snapshot knows them too.
+  const me = device.devices?.me();
+  const devices = device.devices ? mergeDevices(await device.devices.load(), me ? [{ ...me, seenAt: Date.now() }] : []) : undefined;
+  const snapshot = await seal(keys, "snapshot", { v: BACKUP_SCHEMA_VERSION, data: all, ...(devices ? { devices } : {}) } satisfies Packet);
   if (snapshot.length > MAX_REQUEST_BYTES) return null;
   const result = await relay(
     { v: 1, op: "snapshot", box: keys.box, pass: keys.pass, epoch: state.epoch, upto: state.since, gen: state.gen, size: snapshot.length },
@@ -329,7 +368,9 @@ async function takeServerCopy(device: SyncDevice, relay: Relay, keys: SyncKeys, 
   const pull = await relay(syncRequest(keys, { epoch: null, since: null }, 0));
   if (!pull.ok) return { kind: "failed", error: pull.error, retryAfter: pull.retryAfter };
   if (pull.reply.op !== "sync") return { kind: "failed", error: "bad-reply" };
-  const server = mergeData(emptyData(), await openIncoming(keys, pull));
+  const seen: SyncedDevice[] = [];
+  const server = mergeData(emptyData(), await openIncoming(keys, pull, seen));
+  if (device.devices && seen.length) await device.devices.save(mergeDevices(await device.devices.load(), seen, now()));
   const fresh = await device.loadData();
   await device.saveChanges(fresh, server);
   device.announce(changedKinds(fresh, server));

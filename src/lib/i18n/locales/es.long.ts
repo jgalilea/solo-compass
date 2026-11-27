@@ -99,6 +99,12 @@ export const esLong: LongTexts = {
     fileName: "solo-compass-codigo-sincronizacion.txt",
     fileText:
       "Solo Compass · código de sincronización\n\n{code}\n\nEnlace para vincular otro dispositivo:\n{link}\n\nGuárdalo en un sitio seguro: quien lo tenga puede leer y cambiar tu diario sincronizado.\n",
+    devicesTitle: "Dispositivos ({count})",
+    thisDevice: "(este)",
+    seen: "visto {when}",
+    rename: "Cambiar nombre",
+    renameLabel: "Nombre de este dispositivo",
+    noOthers: "Aún no ha llegado nada de otro dispositivo: aparecerán aquí cuando sincronicen. Los nombres viajan cifrados, y uno que deja de sincronizar desaparece de la lista a los dos meses.",
     learnMore: "Cómo funciona, seguridad y privacidad",
     help: {
       title: "Cómo funciona la sincronización",
@@ -132,6 +138,7 @@ export const esLong: LongTexts = {
           heading: "Qué viaja y qué no",
           items: [
             "Viajan tus aventuras con su diario, sus notas fijas, sus descripciones y su mesa de juego; el historial de tiradas; tus tablas, tus dados y tus generadores; y lo que borras.",
+            "También el nombre de cada dispositivo (lo cambias en la tarjeta), cifrado como lo demás, para ver qué dispositivos comparten el código y cuándo se supo de ellos.",
             "No viajan los ajustes de cada dispositivo: tema, modo, idioma, pantalla encendida, tus tablas, dados y oráculo favoritos, el orden de las aventuras, cuál es la activa, las barajadas de cartas ni lo que tengas a medio escribir.",
           ],
         },

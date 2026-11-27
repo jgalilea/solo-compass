@@ -1186,6 +1186,14 @@ export interface LongTexts {
     fileName: string;
     /** The .txt with the code: "{code}", "{link}". */
     fileText: string;
+    /** "{count}": this device and the others. */
+    devicesTitle: string;
+    thisDevice: string;
+    /** "{when}": "2 hours ago". */
+    seen: string;
+    rename: string;
+    renameLabel: string;
+    noOthers: string;
     /** Opens the full explanation (`help`). */
     learnMore: string;
     help: {

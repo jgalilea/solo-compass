@@ -392,6 +392,12 @@ No backend; persistence is split by access pattern, not by feature:
   service worker's precache; only shown with a
   camera), then asks the same way (`offerSyncLink(code, "scan")`). Settings
   per device (theme, mode, language…) don't travel, as with "merge".
+  The devices sharing a code (`syncDevices.ts`) are known only inside
+  what's sealed: each change carries its sender (a random id kept in
+  localStorage and a name, made from the browser or chosen on the
+  card), a snapshot the whole list; a device with nothing to send says
+  it's there once a day (an empty change); one not heard of for 60 days
+  drops off the card's list.
   Not a backup: the backup reminders stay as they are (`BackupNote`
   says so on a device that syncs). The card's "How it works, security
   and privacy" (also from About's privacy note, `SyncHelpButton`) is

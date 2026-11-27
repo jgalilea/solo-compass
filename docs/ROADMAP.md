@@ -1012,6 +1012,11 @@ con Dropbox, OneDrive, P2P (Trystero), Evolu, Jazz, InstantDB (cierra en
   respuesta retenida con la app en segundo plano se leía como reloj
   desajustado. Repaso general: seis textos sin usar quitados, textos
   revisados (sin erratas tipográficas), `npm audit` a 0 en app y relevo.
+- **1.11.3** (2026-11-27): la tarjeta lista los dispositivos que comparten
+  el código, con su nombre (editable) y cuándo se supo de ellos; viaja
+  cifrado dentro de los cambios y de la foto, el relevo no sabe nada.
+  Un dispositivo que solo lee se anuncia una vez al día (una fila). En
+  la cabecera, la nube junto a Ajustes y el café aparte.
 - **Pendiente / a vigilar:** probarlo en un iPhone real (app instalada y
   Safari); una carrera muy improbable: si editas una entrada justo en
   la décima de segundo en que llega un cambio de esa misma entrada desde

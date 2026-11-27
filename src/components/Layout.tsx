@@ -186,22 +186,24 @@ export function Layout() {
           </nav>
           <div className="flex min-w-0 items-center justify-end gap-1.5 lg:gap-2">
             <ActiveAdventureChip />
-            {/* How the device sync is going, on a device that syncs. */}
-            <SyncIndicator />
-            {/* Ko-fi, as a quiet icon beside Settings and in the same
-                style, at every size: in sight on phones too without
-                taking room or asking for anything. */}
+            {/* Ko-fi, as a quiet icon in the same style, at every size: in
+                sight on phones too without taking room or asking for
+                anything, and apart from what works the app. */}
             <a
               href={KOFI_URL}
               target="_blank"
               rel="noreferrer"
               aria-label={t.support.button}
               title={t.support.button}
-              className="ml-1 flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-gold"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full text-parchment-dim transition hover:text-gold"
             >
               <IconCoffee size={22} />
             </a>
-            <SettingsDialog />
+            {/* What works the app, side by side: how the sync is going (on a device that syncs) and Settings. */}
+            <div className="flex shrink-0 items-center">
+              <SyncIndicator />
+              <SettingsDialog />
+            </div>
           </div>
         </div>
       </header>

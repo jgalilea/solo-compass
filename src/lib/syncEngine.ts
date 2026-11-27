@@ -51,6 +51,7 @@ import { announceChange, onLocalChange, type SyncTopic } from "./sync";
 import { formatCode, newSecret, parseCode } from "./syncCode";
 import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import type { Prints, SyncKind } from "./syncData";
+import { defaultDeviceName, FORGET_AFTER, MAX_NAME_LENGTH, mergeDevices, type SyncedDevice } from "./syncDevices";
 import { exchange, prepareChange, type ChangeInFlight, type PreparedChange, type SyncDevice, type SyncState } from "./syncExchange";
 import { callRelay, type RelayError } from "./syncRelay";
 import {
@@ -98,7 +99,7 @@ const loadState = () => get<SyncState>("state", db());
 const saveState = (state: SyncState) => set("state", state, db());
 
 async function clearState(): Promise<void> {
-  await Promise.all([del("state", db()), del("prints", db())]);
+  await Promise.all([del("state", db()), del("prints", db()), del("devices", db())]);
 }
 
 const TOPICS: Record<SyncKind, SyncTopic | null> = {
@@ -111,8 +112,35 @@ const TOPICS: Record<SyncKind, SyncTopic | null> = {
   deleted: null,
 };
 
+const DEVICE_KEY = "solo-compass:sync-device";
+
+/** This device among the ones that sync: a random id kept here, and the name chosen (or made from the browser). */
+function me(): { id: string; name: string } {
+  let saved: { id?: string; name?: string } = {};
+  try {
+    saved = JSON.parse(window.localStorage.getItem(DEVICE_KEY) ?? "{}") ?? {};
+  } catch {
+    // Unreadable: a new one.
+  }
+  let id = saved.id;
+  if (!id) {
+    id = crypto.randomUUID();
+    saved = { ...saved, id };
+    try {
+      window.localStorage.setItem(DEVICE_KEY, JSON.stringify(saved));
+    } catch {
+      // Not kept: it's a new device next time, harmlessly.
+    }
+  }
+  const installed = window.matchMedia?.("(display-mode: standalone)").matches || (navigator as { standalone?: boolean }).standalone === true;
+  return { id, name: saved.name || defaultDeviceName(navigator.userAgent, !!installed, navigator.maxTouchPoints > 1) };
+}
+
+const loadDevices = async () => (await get<SyncedDevice[]>("devices", db())) ?? [];
+
 function deviceFor(t: Dictionary): SyncDevice {
   return {
+    devices: { me, load: loadDevices, save: (devices) => set("devices", devices, db()) },
     loadData: () => loadMergeData(t),
     saveChanges: (before, after) => saveMergeChanges(t, before, after),
     announce(kinds) {
@@ -525,6 +553,25 @@ async function failed(error: RelayError, retryAfter?: number): Promise<void> {
 }
 
 // ---- What Settings does -------------------------------------------------
+
+/** This device, and the others that have told it they share the code (most recent first). */
+export async function syncedDevices(now = Date.now()): Promise<{ me: { id: string; name: string }; others: SyncedDevice[] }> {
+  const self = me();
+  const others = mergeDevices(await loadDevices(), [], now).filter((d) => d.id !== self.id && now - d.seenAt < FORGET_AFTER);
+  return { me: self, others };
+}
+
+/** This device's name, as the others will see it: it goes with the next exchange. */
+export function renameDevice(name: string): void {
+  const clean = name.trim().slice(0, MAX_NAME_LENGTH);
+  const self = me();
+  try {
+    window.localStorage.setItem(DEVICE_KEY, JSON.stringify({ id: self.id, ...(clean ? { name: clean } : {}) }));
+  } catch {
+    // Not kept: the name stays as it was.
+  }
+  void request("manual");
+}
 
 /** The code this device syncs with, as shown (null: it doesn't). */
 export async function currentCode(): Promise<string | null> {

@@ -25,6 +25,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.11.3",
+    date: "2026-11-27",
+    text: {
+      es: {
+        title: "Capítulo XXVIII, al margen · Quién comparte la libreta",
+        items: [
+          "La tarjeta de sincronización dice con cuántos dispositivos compartes el código, cómo se llaman y cuándo se supo de cada uno. El nombre de este lo cambias ahí mismo, y viaja cifrado como todo lo demás.",
+          "En la cabecera, la nube de la sincronización va junto a Ajustes, y el café de invitar queda aparte.",
+        ],
+      },
+      en: {
+        title: "Chapter XXVIII, in the margin · Who shares the notebook",
+        items: [
+          "The sync card says how many devices share your code, their names and when each was last heard of. You rename this one right there, and the name travels encrypted like everything else.",
+          "In the header, the sync's cloud sits beside Settings, and the coffee to buy me one stands apart.",
+        ],
+      },
+    },
+  },
+  {
     version: "1.11.2",
     date: "2026-11-27",
     text: {

@@ -7,6 +7,7 @@ import type { JournalEntry } from "./lonelog";
 import { formatCode, newSecret, parseCode } from "./syncCode";
 import { deriveKeys, type SyncKeys } from "./syncCrypto";
 import { emptyData, type Prints } from "./syncData";
+import type { SyncedDevice } from "./syncDevices";
 import { exchange, prepareChange, RECORDS_PER_PART, STALE_AFTER, type Relay, type SyncDevice, type SyncState } from "./syncExchange";
 import type { HistoryEntry } from "./history";
 import { callRelay } from "./syncRelay";
@@ -73,6 +74,8 @@ class Device {
   state: SyncState;
   prints: Prints = new Map();
   keys!: SyncKeys;
+  roster?: SyncDevice["devices"];
+  name?: string;
 
   constructor(code: string, data: Partial<MergeData> = {}) {
     this.data = { ...emptyData(), ...data };
@@ -94,6 +97,7 @@ class Device {
       savePrints: async (prints) => {
         this.prints = new Map(prints);
       },
+      ...(this.roster ? { devices: this.roster } : {}),
     };
   }
 
@@ -146,6 +150,42 @@ describe("sync exchange", () => {
     expect(box.lastChange()).toBe(latest);
     // Asking for what's new writes nothing on the relay.
     expect(box.rowsWritten).toBe(written);
+  });
+
+  it("tells the devices sharing the code their names, without anything new to send", async () => {
+    const code = formatCode(newSecret());
+    const named = (d: Device, id: string, name: string) => {
+      const list: SyncedDevice[][] = [[]];
+      d.roster = { me: () => ({ id, name: d.name ?? name }), load: async () => list[0], save: async (l) => void (list[0] = l) };
+      return list;
+    };
+    const phone = new Device(code, { adventures: [adventure("a1")] });
+    const laptop = new Device(code);
+    const phoneList = named(phone, "p", "iPhone · app");
+    const laptopList = named(laptop, "l", "Windows · Chrome");
+    await settle(phone, laptop);
+    expect(laptopList[0].map((d) => d.name)).toContain("iPhone · app");
+    expect(phoneList[0].map((d) => d.name)).toContain("Windows · Chrome");
+    // Only reading, it says it's there once a day, not each time.
+    requests = 0;
+    const rows = [...boxes.values()][0].rowsWritten;
+    await laptop.sync();
+    await laptop.sync();
+    expect([...boxes.values()][0].rowsWritten).toBe(rows);
+    // A new name goes with the next exchange.
+    laptop.name = "Portátil del salón";
+    await laptop.sync();
+    await phone.sync();
+    expect(phoneList[0].find((d) => d.id === "l")?.name).toBe("Portátil del salón");
+    // A device that starts from the snapshot knows them too.
+    for (let i = 0; i < 105; i++) {
+      phone.data.entries = [...phone.data.entries, entry(`e${i}`, "a1", `E${i}`, { timestamp: 100 + i })];
+      await phone.sync();
+    }
+    const tablet = new Device(code);
+    const tabletList = named(tablet, "t", "iPad · Safari");
+    await tablet.sync();
+    expect(tabletList[0].map((d) => d.id)).toEqual(expect.arrayContaining(["p", "l"]));
   });
 
   it("notes when something last came from another device", async () => {

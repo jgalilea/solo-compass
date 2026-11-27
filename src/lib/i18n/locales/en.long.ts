@@ -96,6 +96,12 @@ export const enLong: LongTexts = {
     fileName: "solo-compass-sync-code.txt",
     fileText:
       "Solo Compass · sync code\n\n{code}\n\nLink to add another device:\n{link}\n\nKeep it somewhere safe: whoever has it can read and change your synced journal.\n",
+    devicesTitle: "Devices ({count})",
+    thisDevice: "(this one)",
+    seen: "seen {when}",
+    rename: "Rename",
+    renameLabel: "This device's name",
+    noOthers: "Nothing has come from another device yet: they'll show up here once they sync. Names travel encrypted, and one that stops syncing drops off the list after two months.",
     learnMore: "How it works, security and privacy",
     help: {
       title: "How sync works",
@@ -129,6 +135,7 @@ export const enLong: LongTexts = {
           heading: "What travels and what doesn't",
           items: [
             "Your adventures travel with their journal, pinned notes, descriptions and game table; your roll history; your tables, dice and generators; and what you delete.",
+            "So does each device's name (you change it on the card), encrypted like the rest, to see which devices share the code and when they were last heard of.",
             "Each device's settings don't: theme, mode, language, keeping the screen on, your favorite tables, dice and oracle, the order of your adventures, which one is active, card shuffles, or anything you're halfway through writing.",
           ],
         },
